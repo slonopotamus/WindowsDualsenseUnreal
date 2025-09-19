@@ -310,4 +310,19 @@ private:
 	 * initialization, input handling, and managing device-specific settings.
 	 */
 	FDeviceContext HIDDeviceContexts;
+	/**
+	 * @variable SensorsDeadZone
+	 * @brief Defines the threshold for ignoring small sensor input variations.
+	 *
+	 * SensorsDeadZone is used to eliminate unintended small variations or noise
+	 * in sensor readings by setting a minimum threshold value. Any input changes
+	 * below this value are considered insignificant and are ignored in further
+	 * processing.
+	 *
+	 * @details This variable is particularly useful for fine-tuning input systems
+	 * to ensure smoother and more reliable sensor-based interactions by reducing
+	 * the sensitivity to unintentional micro-adjustments. It is often applied in
+	 * joystick or motion sensor implementations.
+	 */
+	float SensorsDeadZone = 0.3f;
 };
