@@ -106,7 +106,7 @@ void DeviceManager::SetHapticFeedbackValues(const int32 ControllerId, const int3
 	}
 
 	ISonyGamepadTriggerInterface* GamepadTrigger = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-	if (!IsValid(GamepadTrigger->_getUObject()))
+	if (!GamepadTrigger)
 	{
 		return;
 	}
