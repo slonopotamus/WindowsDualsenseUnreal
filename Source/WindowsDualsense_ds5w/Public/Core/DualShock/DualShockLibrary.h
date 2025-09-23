@@ -113,7 +113,7 @@ public:
 	 * @return A boolean value indicating whether the input update was successful.
 	 */
 	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) override;
+							 const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override;
 	/**
 	 * Retrieves the current battery level of the DualSense controller.
 	 *
@@ -311,18 +311,25 @@ private:
 	 */
 	FDeviceContext HIDDeviceContexts;
 	/**
-	 * @variable SensorsDeadZone
-	 * @brief Defines the threshold for ignoring small sensor input variations.
+	 * @brief Defines the sensitivity threshold for sensors to ignore minor inputs.
 	 *
-	 * SensorsDeadZone is used to eliminate unintended small variations or noise
-	 * in sensor readings by setting a minimum threshold value. Any input changes
-	 * below this value are considered insignificant and are ignored in further
-	 * processing.
+	 * This variable sets a minimum threshold value, below which input
+	 * data from sensors are considered insignificant and are ignored.
+	 * It is used to reduce noise and unintentional movements, ensuring
+	 * stable and accurate sensor data processing.
 	 *
-	 * @details This variable is particularly useful for fine-tuning input systems
-	 * to ensure smoother and more reliable sensor-based interactions by reducing
-	 * the sensitivity to unintentional micro-adjustments. It is often applied in
-	 * joystick or motion sensor implementations.
+	 * @variable SensorsDeadZone A float representing the dead zone limit for sensor input.
 	 */
 	float SensorsDeadZone = 0.3f;
+	/**
+	 * @brief Represents the threshold value to filter out unintended analog stick movements.
+	 *
+	 * AnalogDeadZone defines a small range of stick movement near the neutral
+	 * position that is treated as no input. This helps in ignoring minor stick
+	 * drift or unintentional movement input due to hardware sensitivity.
+	 *
+	 * The value is in the range [0.0, 1.0], where 0.3f means 30% of the
+	 * full analog stick range is treated as a dead zone.
+	 */
+	float AnalogDeadZone = 0.3f;
 };

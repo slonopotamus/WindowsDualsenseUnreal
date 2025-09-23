@@ -67,7 +67,7 @@ void UDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMes
 }
 
 void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-	const FPlatformUserId UserId, const FInputDeviceId InputDeviceId)
+	const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta)
 {
 		FDeviceContext* Context = &HIDDeviceContexts;
 		AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
@@ -119,15 +119,15 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonRight, bCircle);
 		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonTop, bTriangle);
 
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickUp, RightAnalogY > SensorsDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickDown, RightAnalogY < -SensorsDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickLeft, RightAnalogX < -SensorsDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickRight, RightAnalogX > SensorsDeadZone);
+		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickUp, RightAnalogY > AnalogDeadZone);
+		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickDown, RightAnalogY < -AnalogDeadZone);
+		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickLeft, RightAnalogX < -AnalogDeadZone);
+		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickRight, RightAnalogX > AnalogDeadZone);
 
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickUp, LeftAnalogY > SensorsDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickDown, LeftAnalogY < -SensorsDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickLeft, LeftAnalogX < -SensorsDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickRight, LeftAnalogX > SensorsDeadZone);
+		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickUp, LeftAnalogY > AnalogDeadZone);
+		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickDown, LeftAnalogY < -AnalogDeadZone);
+		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickLeft, LeftAnalogX < -AnalogDeadZone);
+		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickRight, LeftAnalogX > AnalogDeadZone);
 
 		switch (HIDInput[0x04] & 0x0F)
 		{

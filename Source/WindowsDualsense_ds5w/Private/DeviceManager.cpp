@@ -63,7 +63,7 @@ void DeviceManager::Tick(float DeltaTime)
 			}
 
 			FInputDeviceScope InputScope(this, TEXT("DeviceManager.WindowsDualsense"), Device.GetId(), ContextDrive);
-			Gamepad->UpdateInput(MessageHandler, UserId, Device);
+			Gamepad->UpdateInput(MessageHandler, UserId, Device, DeltaTime);
 		}
 	}
 }

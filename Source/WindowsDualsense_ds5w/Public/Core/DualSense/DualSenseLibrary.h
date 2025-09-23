@@ -399,7 +399,7 @@ public:
 	 * @return A boolean value indicating whether the input update was successful.
 	 */
 	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) override;
+	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override;
 
 	/**
 	 * Retrieves the current battery level of the DualSense controller.
@@ -834,6 +834,21 @@ private:
 	 */
 	float SensorsDeadZone = 0.3f;
 	/**
+	 * @variable SensorsDeadZone
+	 * @brief Defines the threshold for ignoring small sensor input variations.
+	 *
+	 * SensorsDeadZone is used to eliminate unintended small variations or noise
+	 * in sensor readings by setting a minimum threshold value. Any input changes
+	 * below this value are considered insignificant and are ignored in further
+	 * processing.
+	 *
+	 * @details This variable is particularly useful for fine-tuning input systems
+	 * to ensure smoother and more reliable sensor-based interactions by reducing
+	 * the sensitivity to unintentional micro-adjustments. It is often applied in
+	 * joystick or motion sensor implementations.
+	 */
+	float AnalogDeadZone = 0.3f;
+	/**
 	 * @variable EnableAccelerometerAndGyroscope
 	 * @brief Flags the activation of accelerometer and gyroscope sensors in the system.
 	 *
@@ -994,5 +1009,34 @@ private:
 	 */
 	FVector AccelBaseline;
 
+	/**
+	 * @class FusedOrientation
+	 * @brief Represents the fused orientation in quaternion format.
+	 *
+	 * The FusedOrientation variable is used to store the orientation data
+	 * expressed as a quaternion. It is typically derived by integrating data
+	 * from multiple sources, such as gyroscope, accelerometer, or magnetometer.
+	 *
+	 * This value is intended for applications that require precise orientation
+	 * tracking, such as virtual reality, augmented reality, or motion-based input systems.
+	 *
+	 * @details The quaternion representation allows for smooth interpolation
+	 * and avoidance of issues like gimbal lock, making it ideal for 3D rotational data.
+	 */
+	FQuat FusedOrientation;
+	/**
+	 * @class FSensorBounds
+	 * @brief Represents the boundaries or limits of a sensor's detectable range.
+	 *
+	 * The FSensorBounds class is utilized to define and handle the spatial or operational
+	 * limits of a sensor within a system. This can include constraints such as minimum and
+	 * maximum values that the sensor can register or operate within, which are essential for
+	 * validating and processing sensor data.
+	 *
+	 * @details This class can be especially useful in applications where sensors are required
+	 * to operate within strict parameters, ensuring data integrity and preventing erroneous
+	 * readings. By defining these bounds, it assists in managing sensor interactions and maintaining
+	 * proper system functionality.
+	 */
 	FSensorBounds Bounds;
 };

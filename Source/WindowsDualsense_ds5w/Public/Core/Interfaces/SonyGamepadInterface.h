@@ -183,5 +183,5 @@ public:
 	 * @param UserId The platform-specific user identifier associated with the input.
 	 * @param InputDeviceId The identifier for the input device being updated.
 	 */
-	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) = 0;
+	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) = 0;
 };
