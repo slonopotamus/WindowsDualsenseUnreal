@@ -5,7 +5,6 @@
 #include "Core/DeviceRegistry.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "Core/HIDPollingRunnable.h"
 #include "Core/HIDDeviceInfo.h"
 #include "Windows/WindowsApplication.h"
 #include "Core/DualSense/DualSenseLibrary.h"
@@ -21,7 +20,6 @@ TSharedPtr<FDeviceRegistry> FDeviceRegistry::Instance;
 TMap<FString, FInputDeviceId> FDeviceRegistry::KnownDevicePaths;
 TMap<FString, FInputDeviceId> FDeviceRegistry::HistoryDevices;
 TMap<FInputDeviceId, ISonyGamepadInterface*> FDeviceRegistry::LibraryInstances;
-TMap<int32, TUniquePtr<FHIDPollingRunnable>> FDeviceRegistry::ActiveConnectionWatchers;
 
 bool PrimaryTick = true;
 float AccumulateSecurity = 0;
@@ -80,7 +78,7 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 						{
 							IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(DeviceId, EInputDeviceConnectionState::Disconnected);
 
-							Manager->RemoveLibraryInstance(DeviceId.GetId());
+							Manager->RemoveLibraryInstance(DeviceId);
 							DisconnectedPaths.Add(Path);
 						}
 					}
@@ -127,10 +125,10 @@ TSharedPtr<FDeviceRegistry> FDeviceRegistry::Get()
 
 FDeviceRegistry::~FDeviceRegistry()
 {
-	TArray<int32> WatcherKeys;
-	ActiveConnectionWatchers.GetKeys(WatcherKeys);
+	TArray<FInputDeviceId> WatcherKeys;
+	LibraryInstances.GetKeys(WatcherKeys);
 
-	for (const int32 ControllerId : WatcherKeys)
+	for (const FInputDeviceId& ControllerId : WatcherKeys)
 	{
 		RemoveLibraryInstance(ControllerId);
 	}
@@ -150,9 +148,8 @@ ISonyGamepadInterface* FDeviceRegistry::GetLibraryInstance(const FInputDeviceId&
 	return LibraryInstances[DeviceId];
 }
 
-void FDeviceRegistry::RemoveLibraryInstance(int32 ControllerId)
+void FDeviceRegistry::RemoveLibraryInstance(const FInputDeviceId& GamepadId)
 {
-	FInputDeviceId GamepadId = FInputDeviceId::CreateFromInternalId(ControllerId);
 	if (
 		IPlatformInputDeviceMapper::Get().GetInputDeviceConnectionState(GamepadId) !=
 		EInputDeviceConnectionState::Disconnected)
@@ -168,8 +165,6 @@ void FDeviceRegistry::RemoveLibraryInstance(int32 ControllerId)
 
 	LibraryInstances[GamepadId]->ShutdownLibrary();
 	LibraryInstances.Remove(GamepadId);
-
-	const int32 NumRemoved = ActiveConnectionWatchers.Remove(ControllerId);
 }
 
 void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
@@ -243,33 +238,7 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 		                                                                UserId,
 		                                                                EInputDeviceConnectionState::Connected);
 	}
-
-
-	if (ActiveConnectionWatchers.Contains(Context.UniqueInputDeviceId.GetId()))
-	{
-		ActiveConnectionWatchers.Remove(Context.UniqueInputDeviceId.GetId());
-	}
-
-	auto WatcherRunnable = MakeUnique<FHIDPollingRunnable>(
-		MoveTemp(Context.Handle),
-		std::chrono::milliseconds(150)
-	);
-	if (WatcherRunnable)
-	{
-		WatcherRunnable->StartThread();
-		ActiveConnectionWatchers.Add(Context.UniqueInputDeviceId.GetId(), MoveTemp(WatcherRunnable));
-	}
 }
-
-void FDeviceRegistry::RemoveAllLibraryInstance()
-{
-	for (const auto& LibraryInstance : LibraryInstances)
-	{
-		RemoveLibraryInstance(LibraryInstance.Key.GetId());
-	}
-	LibraryInstances.Reset();
-}
-
 
 int32 FDeviceRegistry::GetAllocatedDevices()
 {

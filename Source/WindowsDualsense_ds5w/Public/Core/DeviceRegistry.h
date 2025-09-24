@@ -7,7 +7,6 @@
 #include "CoreMinimal.h"
 #include "Windows/WindowsApplication.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "Core/HIDPollingRunnable.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
 #include "Interfaces/SonyGamepadInterface.h"
@@ -31,8 +30,7 @@ public:
 	static TSharedPtr<FDeviceRegistry> Get();
 	/**
 	 * Destructor for the FDeviceRegistry class. Responsible for cleaning up resources associated with the device
-	 * library instances. Ensures that all active connection watchers are properly removed and their corresponding
-	 * controller instances are cleaned up to prevent resource leakage.
+	 * library instances. Ensures that all controller instances are cleaned up to prevent resource leakage.
 	 */
 	virtual ~FDeviceRegistry();
 	/**
@@ -73,9 +71,9 @@ public:
 	 * corresponding input device if it is currently connected. Ensures proper removal and cleanup
 	 * of the library instance from the internal container.
 	 *
-	 * @param ControllerId The unique identifier of the controller whose library instance is to be removed.
+	 * @param GamepadId The unique identifier of the controller whose library instance is to be removed.
 	 */
-	void RemoveLibraryInstance(int32 ControllerId);
+	void RemoveLibraryInstance(const FInputDeviceId& GamepadId);
 	/**
 	 * Creates an instance of a device library based on the provided device context. It initializes and
 	 * manages the lifecycle of the Sony gamepad library for controllers like DualSense, DualSense Edge,
@@ -133,10 +131,4 @@ private:
 	 * within the system, enabling efficient querying and management of device-user relationships.
 	 */
 	static TMap<FString, FInputDeviceId> HistoryDevices;
-	/**
-	 * A static map that maintains active connections by associating unique integer identifiers with their
-	 * corresponding HID polling runnable instances. This map is used to manage and monitor ongoing input
-	 * device connection activities and ensures proper lifecycle control of the associated polling threads.
-	 */
-	static TMap<int32, TUniquePtr<FHIDPollingRunnable>> ActiveConnectionWatchers;
 };
