@@ -415,21 +415,21 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 			Acc.Z = FinalAccelValueZ;
 
 			FRotator GyroDelta(
-				Gyro.Y * Delta,
+			Gyro.X * Delta,
 				Gyro.Z * Delta,
-				Gyro.X * Delta
+				Gyro.Y * Delta
 			);
 			FQuat GyroBasedOrientation = FusedOrientation * GyroDelta.Quaternion();
-			FVector AccelDirection = FVector(Acc.X , Acc.Y, Acc.Z).GetSafeNormal();
+			FVector AccelDirection = FVector(Acc.X ,  Acc.Z, Acc.Y).GetSafeNormal();
 			FQuat AccelBasedOrientation = AccelDirection.ToOrientationQuat();
 			FusedOrientation = FQuat::Slerp(AccelBasedOrientation, GyroBasedOrientation,  0.98f);
 			const FRotator FusedOrientationRotator = FusedOrientation.Rotator();
 			const FVector Tilt = FVector( FusedOrientationRotator.Pitch, FusedOrientationRotator.Yaw, FusedOrientationRotator.Roll);
 			
-			const FVector Gyroscope = FVector(Gyro.X, Gyro.Y, Gyro.Z);
-			const FVector Accelerometer = FVector(Acc.X, Acc.Y, Acc.Z);
-			const float GravityMagnitude = FVector(Acc.X, Acc.Y, Acc.Z).Size();
-			const FVector Gravity = (FVector(Acc.X, Acc.Y, Acc.Z) / GravityMagnitude) * 9.81f;
+			const FVector Gyroscope = FVector(Gyro.X, Gyro.Z, Gyro.Y);
+			const FVector Accelerometer = FVector(Acc.X, Acc.Z, Acc.Y);
+			const float GravityMagnitude = FVector(Acc.X, Acc.Z, Acc.Y).Size();
+			const FVector Gravity = (FVector(Acc.X, Acc.Z, Acc.Y) / GravityMagnitude) * 9.81f;
 			InMessageHandler.Get().OnMotionDetected(Tilt, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
 		}
 	}
