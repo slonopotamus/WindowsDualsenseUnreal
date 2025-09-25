@@ -52,6 +52,12 @@ O objetivo é preencher a lacuna deixada pelo suporte genérico a controles no W
 
 To demonstrate the practical use of the **Windows Dualsense Unreal Plugin**, a sample project has been developed using the [*Arena Shooter* template](https://www.unrealengine.com/marketplace/en-US/product/arena-shooter-template) and upgraded to Unreal Engine 5.6. This project integrates key features of the DualSense controller to enhance the player's experience.
 
+* 🎯 **Mira por Giroscópio**: Um tutorial completo sobre como implementar um sistema de mira por giroscópio (ADS) preciso e responsivo, utilizando o template Arena Shooter.
+    ➡️ **[[Leia o Tutorial de Mira por Giroscópio]](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/Example-Project:-Gyroscope-Aiming)**
+
+* 🔫 **Arena Shooter**: Um exemplo utilizando o template Arena Shooter que implementa gatilhos adaptáveis para armas automáticas/semiautomáticas e feedback háptico para dano no jogador.
+    ➡️ **[[Leia o Tutorial do Arena Shooter]](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/Example-Project:-Arena-Shooter-Tutorial)**
+
 ![Arena Shooter UE 5.6](Images/ArenaBanner.jpg)
 
 ### Funcionalidades Implementadas
