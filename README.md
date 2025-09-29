@@ -82,12 +82,6 @@ We've created a detailed, step-by-step tutorial that breaks down the entire impl
 * 🔫 **Arena Shooter**: An example using the Arena Shooter template that implements adaptive triggers for automatic/semi-automatic weapons and haptic feedback for player damage.
     ➡️ **[[Read the Arena Shooter Tutorial]](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/Example-Project:-Arena-Shooter-Tutorial)**
 
-### 💡 Implementation Note
-
-To create a clean and scalable system, all core DualSense features are centralized in the **`BPS_ShooterGameInstance`** Blueprint. 
-
-This `GameInstance` acts as a central command hub for all controller effects. The **`BP_ShooterCharacter`** is then used to capture player actions (like swapping weapons or taking damage) and calls the corresponding events in the `GameInstance` to trigger the effects. This approach keeps the code organized and easy to expand.
-
 ## 🎮 Example Project: Parrot Game Sample
 
 To demonstrate the practical use of the **Windows Dualsense Unreal Plugin**, a sample project has been developed using the [*Parrot Game Sample*](https://dev.epicgames.com/documentation/en-us/unreal-engine/parrot-game-sample-for-unreal-engine) from Epic Games. This project integrates key features of the DualSense controller to enhance the player's experience.
