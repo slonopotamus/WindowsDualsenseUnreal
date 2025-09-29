@@ -57,7 +57,7 @@ To demonstrate the practical use of the **Windows Dualsense Unreal Plugin**, a s
 
 * 🔫 **Arena Shooter**: Um exemplo utilizando o template Arena Shooter que implementa gatilhos adaptáveis para armas automáticas/semiautomáticas e feedback háptico para dano no jogador.
     ➡️ **[[Leia o Tutorial do Arena Shooter]](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/Example-Project:-Arena-Shooter-Tutorial)**
-
+  
 ![Arena Shooter UE 5.6](Images/ArenaBanner.jpg)
 
 ### Funcionalidades Implementadas
