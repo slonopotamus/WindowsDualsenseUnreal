@@ -260,59 +260,76 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		Touch.Y = (Touchpad1Raw & 0xFFF00000) >> 20;
 		Touch.X = (Touchpad1Raw & 0x000FFF00) >> 8;
 		Touch.Down = (Touchpad1Raw & (1 << 7)) == 0;
-		Touch.Id = (Touchpad1Raw & 127);
+		Touch.Id = (Touchpad1Raw & 127) % 10;
+
+		bool bIsTouchDown = Touch.Down;
+		if (bIsTouchDown) // pressed
+		{
+			if (!bWasTouch1Down)
+			{
+				const FVector2D TouchVectorStart = FVector2D(Touch.X, Touch.Y);
+				InMessageHandler->OnTouchStarted(
+					nullptr,
+					TouchVectorStart,
+					1.0f,
+					Touch.Id,
+					UserId,
+					InputDeviceId
+				);
+			}
+			else
+			{
+				const FVector2D TouchVector = FVector2D(Touch.X, Touch.Y);
+				InMessageHandler->OnTouchMoved(TouchVector, 1.0f, Touch.Id, UserId, InputDeviceId);
+			}
+		}
+		else if (!bIsTouchDown && bWasTouch1Down)
+		{
+			const FVector2D TouchVectorEnded = FVector2D(Touch.X, Touch.Y);
+			InMessageHandler->OnTouchEnded(
+				TouchVectorEnded,
+				Touch.Id,
+				UserId,
+				InputDeviceId
+			);
+		}
+
+		bWasTouch1Down = bIsTouchDown;
 
 		// // Evaluate touch state 2
 		FTouchPoint2 Touch2;
-		const UINT32 Touchpad2Raw = *reinterpret_cast<const UINT32*>(&HIDInput[0x20]);
+		const UINT32 Touchpad2Raw = *reinterpret_cast<const UINT32*>(&HIDInput[0x24]);
 		Touch2.Y = (Touchpad2Raw & 0xFFF00000) >> 20;
 		Touch2.X = (Touchpad2Raw & 0x000FFF00) >> 8;
 		Touch2.Down = (Touchpad2Raw & (1 << 7)) == 0;
-		Touch2.Id = (Touchpad2Raw & 127);
+		Touch2.Id = (Touchpad2Raw & 127) % 10;
 
-		if (Touch.Down) // pressed
+		bool bIsTouch2Down = Touch2.Down;
+		if (bIsTouch2Down)
 		{
-			InMessageHandler->OnTouchStarted(
-				nullptr,
-				FVector2D(Touch.X, Touch.Y),
-				1.0f,
-				Touch.Id,
-				UserId,
-				InputDeviceId
-			);
+			if (!bWasTouch2Down)
+			{
+				const FVector2D Touch2VectorStart = FVector2D(Touch2.X, Touch2.Y);
+				InMessageHandler->OnTouchStarted(nullptr, Touch2VectorStart, 1.0f, Touch2.Id, UserId, InputDeviceId);
+			}
+			else
+			{
+				const FVector2D Touch2Vector = FVector2D(Touch2.X, Touch2.Y);
+				InMessageHandler->OnTouchMoved(Touch2Vector, 1.0f, Touch2.Id, UserId, InputDeviceId);
+			}
 		}
-		else
+		else if (!bIsTouch2Down && bWasTouch2Down)
 		{
-			// OnTouchEnded
+			const FVector2D Touch2VectorEnded = FVector2D(Touch2.X, Touch2.Y);
 			InMessageHandler->OnTouchEnded(
-				FVector2D(Touch.X, Touch.Y),
-				Touch.Id,
-				UserId,
-				InputDeviceId
-			);
-		}
-
-		if (Touch2.Down) // pressed
-		{
-			InMessageHandler->OnTouchStarted(
-				nullptr,
-				FVector2D(Touch2.X, Touch2.Y),
-				1.0f,
+				Touch2VectorEnded,
 				Touch2.Id,
 				UserId,
 				InputDeviceId
 			);
 		}
-		else
-		{
-			// OnTouchEnded
-			InMessageHandler->OnTouchEnded(
-				FVector2D(Touch2.X, Touch2.Y),
-				Touch2.Id,
-				UserId,
-				InputDeviceId
-			);
-		}
+
+		bWasTouch2Down = bIsTouch2Down;
 	}
 
 	if (bEnableAccelerometerAndGyroscope)

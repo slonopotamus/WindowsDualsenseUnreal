@@ -71,7 +71,7 @@ struct FTouchPoint1
 	 * It could be used in contexts such as 2D games, simulations, or navigation systems
 	 * where positioning within a coordinate grid needs to be adjusted downward.
 	 */
-	unsigned char Down;
+	bool Down;
 	/**
 	 * @class Id
 	 * @brief Represents a unique identifier.
@@ -132,7 +132,7 @@ struct FTouchPoint2
 	 * orientation, or state in various contexts such as navigation, positioning,
 	 * or directional control in a program.
 	 */
-	unsigned char Down;
+	bool Down;
 	/**
 	 * @brief Represents a unique identifier.
 	 *
@@ -780,6 +780,8 @@ private:
 	 * When set to false, touch input is disabled, and touch interactions are ignored.
 	 */
 	bool bEnableTouch;
+	bool bWasTouch1Down;
+	bool bWasTouch2Down;
 	/**
 	 * Indicates whether a phone is connected to the system.
 	 *
