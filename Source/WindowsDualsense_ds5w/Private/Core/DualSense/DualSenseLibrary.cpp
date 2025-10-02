@@ -5,9 +5,9 @@
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "Core/HIDDeviceInfo.h"
 #include "InputCoreTypes.h"
 #include "Helpers/ValidateHelpers.h"
+#include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Structs/FOutputContext.h"
 
@@ -119,7 +119,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	FDeviceContext* Context = &HIDDeviceContexts;
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
 	{
-		FHIDDeviceInfo::Read(NewContext);
+		IPlatformHardwareInfoInterface::Get().Read(NewContext);
 	});
 
 	const size_t Padding = HIDDeviceContexts.ConnectionType == Bluetooth ? 2 : 1;

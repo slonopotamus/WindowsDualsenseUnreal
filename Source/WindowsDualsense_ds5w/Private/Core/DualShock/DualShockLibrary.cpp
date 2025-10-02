@@ -6,10 +6,10 @@
 #include "Core/DualShock/DualShockLibrary.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "Core/HIDDeviceInfo.h"
 #include "InputCoreTypes.h"
 #include "Helpers/ValidateHelpers.h"
 #include "Core/PlayStationOutputComposer.h"
+#include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/Structs/FOutputContext.h"
 
 void UDualShockLibrary::Settings(const FSettings<FFeatureReport>& Settings)
@@ -72,7 +72,7 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		FDeviceContext* Context = &HIDDeviceContexts;
 		AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
 		{
-				FHIDDeviceInfo::Read(NewContext);
+				IPlatformHardwareInfoInterface::Get().Read(NewContext);
 		});
 		
 		const unsigned char* HIDInput;

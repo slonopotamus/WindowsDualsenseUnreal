@@ -10,7 +10,9 @@
 #include <Windows.h>
 #include "Windows/HideWindowsPlatformTypes.h"
 #include <chrono>
-#include "Structs/FDeviceContext.h"
+
+#include "../../Interfaces/PlatformHardwareInfoInterface.h"
+#include "../../Structs/FDeviceContext.h"
 
 enum class EPollResult {
 	ReadOk,
@@ -25,8 +27,10 @@ enum class EPollResult {
  * This class encapsulates various tasks related to managing multiple HID devices, including handling connections,
  * transmitting and receiving data, detecting device presence, and managing device-specific states or contexts.
  */
-class FHIDDeviceInfo
+class FHIDDeviceInfo final : public IPlatformHardwareInfoInterface
 {
+	
+public:
 	/**
 	 * @brief Reads data from the specified HID device context.
 	 *
@@ -38,8 +42,7 @@ class FHIDDeviceInfo
 	 *        should contain a valid device handle and input buffer. If the context is invalid or disconnected,
 	 *        the method will handle associated cleanup and reporting.
 	 */
-public:
-	static void Read(FDeviceContext* Context);
+	virtual void Read(FDeviceContext* Context) override;
 	/**
 	 * @brief Writes data to the specified HID device context.
 	 *
@@ -52,7 +55,7 @@ public:
 	 *        handle, connection type, device type, and output buffer. Must not be null and must
 	 *        represent a valid device handle for a successful write operation.
 	 */
-	static void Write(FDeviceContext* Context);
+	virtual void Write(FDeviceContext* Context) override;
 	/**
 	 * @brief Detects available HID devices and updates the provided list of device contexts.
 	 *
@@ -63,7 +66,7 @@ public:
 	 * @param Devices A reference to an array of FDeviceContext objects that will be updated to include
 	 *        the detected and initialized HID device contexts. Existing data in the array will be overwritten.
 	 */
-	static void Detect(TArray<FDeviceContext>& Devices);
+	virtual void Detect(TArray<FDeviceContext>& Devices) override;
 	/**
 	 * @brief Creates and returns a handle for the specified HID device context.
 	 *
@@ -78,7 +81,7 @@ public:
 	 * @return A HANDLE to the opened device if successful, or INVALID_HANDLE_VALUE
 	 *         if the operation fails.
 	 */
-	static HANDLE CreateHandle(FDeviceContext* Context);
+	virtual bool CreateHandle(FDeviceContext* Context) override;
 	/**
 	 * @brief Invalidates the handle of the specified HID device context and updates its connection status.
 	 *
@@ -89,9 +92,8 @@ public:
 	 * @param Context Pointer to the device context representing the HID device whose handle is to be invalidated.
 	 *        If the provided context is null, the method will return without performing any operations.
 	 */
-	static void InvalidateHandle(FDeviceContext* Context);
+	virtual void InvalidateHandle(FDeviceContext* Context) override;
 	static void InvalidateHandle(HANDLE Handle);
-
 	/**
 	 * @brief Performs a single ping operation on an HID device handle.
 	 *
@@ -121,7 +123,6 @@ public:
 	 * @return An enumeration value of type EPollResult indicating the result of the polling operation.
 	 */
 	static EPollResult PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, DWORD& OutBytesRead);
-
 	/**
 	 * @brief Determines whether the given error code should be treated as a device disconnection.
 	 *

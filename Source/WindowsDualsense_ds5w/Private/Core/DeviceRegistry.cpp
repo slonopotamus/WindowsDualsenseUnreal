@@ -5,16 +5,19 @@
 #include "Core/DeviceRegistry.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "Core/HIDDeviceInfo.h"
-#include "Windows/WindowsApplication.h"
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/DualShock/DualShockLibrary.h"
+#include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "GameFramework/InputSettings.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Core/Structs/FDeviceContext.h"
 #include "Core/Structs/FOutputContext.h"
 #include "Runtime/Launch/Resources/Version.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
+
+#if PLATFORM_WINDOWS
+#include "Windows/WindowsApplication.h"
+#endif
 
 TSharedPtr<FDeviceRegistry> FDeviceRegistry::Instance;
 TMap<FString, FInputDeviceId> FDeviceRegistry::KnownDevicePaths;
@@ -50,7 +53,7 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 			TArray<FDeviceContext> DetectedDevices;
 			DetectedDevices.Reset();
 
-			FHIDDeviceInfo::Detect(DetectedDevices);
+			IPlatformHardwareInfoInterface::Get().Detect(DetectedDevices);
 			AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable
 			{
 				const TSharedPtr<FDeviceRegistry> Manager = WeakManager.Pin();
@@ -58,8 +61,6 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 				{
 					return;
 				}
-
-				const TUniquePtr<FHIDDeviceInfo> HidManagerObj;
 			
 				TSet<FString> CurrentlyConnectedPaths;
 				for (const FDeviceContext& Context : DetectedDevices)
@@ -97,7 +98,7 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 					if (!Manager->KnownDevicePaths.Contains(Context.Path))
 					{
 						Context.Output = FOutputContext();
-						Context.Handle = HidManagerObj->CreateHandle(&Context);
+						IPlatformHardwareInfoInterface::Get().CreateHandle(&Context);
 
 						if (Context.Handle == INVALID_HANDLE_VALUE)
 						{

@@ -4,14 +4,15 @@
 
 
 #include "Core/PlayStationOutputComposer.h"
-#include "Core/HIDDeviceInfo.h"
+#include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/Structs/FDeviceContext.h"
+
 
 const UINT32 FPlayStationOutputComposer::CRCSeed = 0xeada2d49;
 
 void FPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
 {
-	FHIDDeviceInfo::InvalidateHandle(Context);
+	IPlatformHardwareInfoInterface::Get().InvalidateHandle(Context);
 }
 
 void FPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
@@ -55,7 +56,7 @@ void FPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
 		DeviceContext->BufferOutput[0x4D] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
 	}
 
-	FHIDDeviceInfo::Write(DeviceContext);
+	IPlatformHardwareInfoInterface::Get().Write(DeviceContext);
 }
 
 void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
@@ -102,7 +103,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 		DeviceContext->BufferOutput[0x4D] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
 	}
 
-	FHIDDeviceInfo::Write(DeviceContext);
+	IPlatformHardwareInfoInterface::Get().Write(DeviceContext);
 }
 
 void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapticTriggers& Effect)
