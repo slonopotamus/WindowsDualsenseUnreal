@@ -7,8 +7,11 @@
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/DeviceRegistry.h"
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
-#include "Windows/WindowsApplication.h"
 #include "Misc/CoreDelegates.h"
+
+#if PLATFORM_WINDOWS
+#include "Windows/WindowsApplication.h"
+#endif
 
 DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
                              bool Lazily): MessageHandler(InMessageHandler)

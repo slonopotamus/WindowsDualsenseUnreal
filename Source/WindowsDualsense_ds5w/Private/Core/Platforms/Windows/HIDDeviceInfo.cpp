@@ -2,9 +2,13 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-#include "Core/HIDDeviceInfo.h"
+#include "Core/Platforms/Windows/HIDDeviceInfo.h"
+
+#if PLATFORM_WINDOWS
 #include <hidsdi.h>
 #include <setupapi.h>
+#endif
+
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 
@@ -146,15 +150,6 @@ void FHIDDeviceInfo::Read(FDeviceContext* Context)
 	}
 	
 	HidD_FlushQueue(Context->Handle);
-
-	
-	// if (!PollResults.Contains(Context->UniqueInputDeviceId))
-	// {
-	// 	
-	// 	PollResults.Add(Context->UniqueInputDeviceId, TPair<EPollResult, FPollState>(EPollResult::NoIoThisTick, State));
-	// }
-
-	// TPair<EPollResult, FPollState>& PollResult = FHIDDeviceInfo::PollResults[Context->UniqueInputDeviceId];
 	
 	DWORD BytesRead = 0;
 	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
@@ -207,7 +202,7 @@ void FHIDDeviceInfo::Write(FDeviceContext* Context)
 	}
 }
 
-HANDLE FHIDDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
+bool FHIDDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 {
 	const HANDLE DeviceHandle = CreateFileW(
 			DeviceContext->Path,
@@ -216,11 +211,13 @@ HANDLE FHIDDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 
 	if (DeviceHandle == INVALID_HANDLE_VALUE)
 	{
+		DeviceContext->Handle = DeviceHandle;
 		UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to open device handle for the DualSense."));
-		return INVALID_HANDLE_VALUE;
+		return false;
 	}
 	
-	return DeviceHandle;
+	DeviceContext->Handle = DeviceHandle;
+	return true;
 }
 
 void FHIDDeviceInfo::InvalidateHandle(FDeviceContext* Context)
@@ -241,7 +238,6 @@ void FHIDDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
 		ZeroMemory(Context->BufferDS4, sizeof(Context->BufferDS4));
 		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
-
 		UE_LOG(LogTemp, Log, TEXT("HIDManager: Invalidate Handle."));
 	}
 }
@@ -256,24 +252,6 @@ void FHIDDeviceInfo::InvalidateHandle(HANDLE Handle)
 
 EPollResult FHIDDeviceInfo::PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, DWORD& OutBytesRead)
 {
-	// const auto Now = std::chrono::steady_clock::now();
-	//
-	// const bool NeedPing =
-	// 	(Now - State.LastSuccess > Policy.WakeThreshold) &&
-	// 	(Now - State.LastPing    >= Policy.MinInterval);
-	//
-	// if (NeedPing)
-	// {
-	// 	DWORD Err = ERROR_SUCCESS;
-	// 	if (!PingOnce(Handle, &Err))
-	// 	{
-	// 		if (ShouldTreatAsDisconnected(Err)) {
-	// 			return EPollResult::Disconnected;
-	// 		}
-	// 	}
-	// 	State.LastPing = Now;
-	// }
-	
 	DWORD Err = ERROR_SUCCESS;
 	PingOnce(Handle, &Err);
 	
@@ -287,19 +265,14 @@ EPollResult FHIDDeviceInfo::PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, 
 		}
 
 		InvalidateHandle(Handle);
-		// Transient read/keep-alive issue
-		// State.LastSuccess = Now - Policy.WakeThreshold - std::chrono::milliseconds(1);
-		// return EPollResult::TransientError;
 	}
 
-	// State.LastSuccess = Now;
 	return EPollResult::ReadOk;
 }
 
 
 bool FHIDDeviceInfo::PingOnce(HANDLE Handle, DWORD* OutLastError)
 {
-	// UE_LOG(LogTemp, Warning, TEXT("Ping..."));
 	FILE_STANDARD_INFO Info;
 	if (!GetFileInformationByHandleEx(Handle, FileStandardInfo, &Info, sizeof(Info)))
 	{

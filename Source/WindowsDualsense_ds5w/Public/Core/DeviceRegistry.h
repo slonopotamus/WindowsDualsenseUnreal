@@ -4,12 +4,17 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
-#include "Windows/WindowsApplication.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
 #include "Interfaces/SonyGamepadInterface.h"
+
+#if PLATFORM_WINDOWS
+#include "Windows/WindowsApplication.h"
+#endif
+
 
 /**
  * A manager class that handles the creation, storage, and lifecycle management of device library
@@ -59,13 +64,6 @@ public:
 	 * managed devices.
 	 */
 	TMap<FInputDeviceId, ISonyGamepadInterface*> GetAllocatedDevicesMap();
-	/**
-	 * Removes all existing library instances managed by the device container. This method
-	 * is responsible for cleaning up and unloading all currently allocated Sony gamepad
-	 * controllers' library resources, ensuring proper resource management and preventing
-	 * potential memory leaks.
-	 */
-	void RemoveAllLibraryInstance();
 	/**
 	 * Removes a library instance associated with the specified controller ID, disconnecting the
 	 * corresponding input device if it is currently connected. Ensures proper removal and cleanup
