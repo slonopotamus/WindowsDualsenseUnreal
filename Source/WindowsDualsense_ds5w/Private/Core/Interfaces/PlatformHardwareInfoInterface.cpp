@@ -6,7 +6,7 @@
 #include "../../../Public/Core/Interfaces/PlatformHardwareInfoInterface.h"
 
 #if PLATFORM_WINDOWS
-#include "Core/Platforms/Windows/FWindowsDeviceInfo.h"
+#include "Core/Platforms/Windows/WindowsDeviceInfo.h"
 #elif PLATFORM_MAC
 #include "Core/Platforms/Mac/FNullHardwareInterface.h"
 #elif PLATFORM_LINUX

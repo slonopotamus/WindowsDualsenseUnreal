@@ -3,15 +3,15 @@
 // Planned Release Year: 2025
 
 
-#if PLATFORM_WINDOWS
-#include <hidsdi.h>
-#include <setupapi.h>
-#endif
+
 
 #include "Core/Platforms/Windows/WindowsDeviceInfo.h"
 
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
+
+#include <hidsdi.h>
+#include <setupapi.h>
 
 void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 {
@@ -29,13 +29,12 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	SP_DEVICE_INTERFACE_DATA DeviceInterfaceData = {};
 	DeviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
-	TMap<int32, WCHAR> DevicePaths;
+	TMap<int32, FString> DevicePaths;
 	DevicePaths.Empty();
-	for (DWORD DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
+	for (int32 DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
 	                                                        &DeviceInterfaceData); DeviceIndex++)
 	{
 		DWORD RequiredSize = 0;
-
 		SetupDiGetDeviceInterfaceDetail(DeviceInfoSet, &DeviceInterfaceData, nullptr, 0, &RequiredSize, nullptr);
 
 		const auto DetailDataBuffer = static_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA>(malloc(RequiredSize));
@@ -85,9 +84,10 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 						{
 							continue;
 						}
-						
-						memcpy_s(Context.Path, 260, DetailDataBuffer->DevicePath, 260);
-						DevicePaths.Add(DeviceIndex, *Context.Path);
+
+						FString PathStr(DetailDataBuffer->DevicePath);
+						Context.Path = PathStr;
+						DevicePaths.Add(DeviceIndex, PathStr);
 						switch (Attributes.ProductID)
 						{
 							case 0x05C4:
@@ -206,7 +206,7 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 {
 	const HANDLE DeviceHandle = CreateFileW(
-			DeviceContext->Path,
+			*DeviceContext->Path,
 			GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
 		);
 
@@ -234,8 +234,8 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		CloseHandle(Context->Handle);
 		Context->Handle = INVALID_HANDLE_VALUE;
 		Context->IsConnected = false;
+		Context->Path = nullptr;
 		
-		ZeroMemory(Context->Path, sizeof(Context->Path));
 		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
 		ZeroMemory(Context->BufferDS4, sizeof(Context->BufferDS4));
 		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
@@ -245,21 +245,22 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 
 void FWindowsDeviceInfo::InvalidateHandle(HANDLE Handle)
 {
-	if (Handle != INVALID_HANDLE_VALUE)
+	if (Handle != INVALID_PLATFORM_HANDLE)
 	{
 		CloseHandle(Handle);
+		UE_LOG(LogTemp, Log, TEXT("HIDManager: Invalidate Handle."));
 	}
 }
 
-EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, DWORD& OutBytesRead)
+EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, int32 Length, DWORD& OutBytesRead)
 {
-	DWORD Err = ERROR_SUCCESS;
+	int32 Err = ERROR_SUCCESS;
 	PingOnce(Handle, &Err);
 	
 	OutBytesRead = 0;
 	if (!ReadFile(Handle, Buffer, Length, &OutBytesRead, nullptr))
 	{
-		const DWORD Error = GetLastError();
+		const int32 Error = GetLastError();
 		if (ShouldTreatAsDisconnected(Error))
 		{
 			return EPollResult::Disconnected;
@@ -272,9 +273,9 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, BYTE* Buffer, DWORD Leng
 }
 
 
-bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, DWORD* OutLastError)
+bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, int32* OutLastError)
 {
-	FILE_STANDARD_INFO Info;
+	FILE_STANDARD_INFO Info{};
 	if (!GetFileInformationByHandleEx(Handle, FileStandardInfo, &Info, sizeof(Info)))
 	{
 		if (OutLastError) *OutLastError = GetLastError();
