@@ -2,6 +2,7 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
+
 using System.IO;
 using UnrealBuildTool;
 
@@ -17,5 +18,13 @@ public class WindowsDualsense_ds5w : ModuleRules
 	    {
 		    PublicSystemLibraries.Add("hid.lib");
 	    }
+	    
+	    
+	    if (Target.Platform == UnrealTargetPlatform.Linux)
+	    {
+		    PublicAdditionalLibraries.Add("/usr/lib/x86_64-linux-gnu/libhidapi-hidraw.so");
+		    PublicIncludePaths.Add("/usr/include/hidapi");
+	    }
 	}
+
 }

@@ -3,14 +3,17 @@
 // Planned Release Year: 2025
 
 #pragma once
+
+#if PLATFORM_WINDOWS
 #define NOMINMAX
 
-#include "CoreMinimal.h"
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include <Windows.h>
 #include "Windows/HideWindowsPlatformTypes.h"
 #include <chrono>
+#endif
 
+#include "CoreMinimal.h"
 #include "../../Interfaces/PlatformHardwareInfoInterface.h"
 #include "../../Structs/FDeviceContext.h"
 
@@ -27,7 +30,7 @@ enum class EPollResult {
  * This class encapsulates various tasks related to managing multiple HID devices, including handling connections,
  * transmitting and receiving data, detecting device presence, and managing device-specific states or contexts.
  */
-class FHIDDeviceInfo final : public IPlatformHardwareInfoInterface
+class FWindowsDeviceInfo final : public IPlatformHardwareInfoInterface
 {
 	
 public:
@@ -68,18 +71,13 @@ public:
 	 */
 	virtual void Detect(TArray<FDeviceContext>& Devices) override;
 	/**
-	 * @brief Creates and returns a handle for the specified HID device context.
+	 * @brief Creates a handle for the specified device context.
 	 *
-	 * This method opens a connection to the HID device represented by the provided
-	 * device context and returns a handle for managing further I/O operations.
-	 * It ensures the device is accessible and logs errors in case of failure to
-	 * open the handle.
+	 * This method attempts to open a communication channel with the device specified in the provided
+	 * context by creating a handle. If successful, the handle is associated with the device context.
 	 *
-	 * @param DeviceContext Pointer to the FDeviceContext object that contains the
-	 *        path and other device-specific information required to establish the
-	 *        connection. Must not be null and must represent a valid device path.
-	 * @return A HANDLE to the opened device if successful, or INVALID_HANDLE_VALUE
-	 *         if the operation fails.
+	 * @param Context A pointer to the device context containing the device path and other relevant information.
+	 * @return True if the handle creation is successful; otherwise, false.
 	 */
 	virtual bool CreateHandle(FDeviceContext* Context) override;
 	/**
@@ -93,23 +91,26 @@ public:
 	 *        If the provided context is null, the method will return without performing any operations.
 	 */
 	virtual void InvalidateHandle(FDeviceContext* Context) override;
+	/**
+	 * @brief Invalidates the specified handle to prevent further use.
+	 *
+	 * This method ensures that the provided handle is marked invalid, preventing unintended operations on invalid resources.
+	 *
+	 * @param Handle The handle to be invalidated.
+	 */
 	static void InvalidateHandle(HANDLE Handle);
 	/**
-	 * @brief Performs a single ping operation on an HID device handle.
+	 * @brief Sends a single ping operation to check the state of the specified handle.
 	 *
-	 * This method checks the accessibility and basic functionality of the specified
-	 * HID device by attempting to retrieve file information through the provided handle.
-	 * It validates whether the device is responsive and updates the error code if the
-	 * operation fails.
+	 * This method determines whether the provided handle is in a valid state and retrieves
+	 * additional error information if the ping operation fails.
 	 *
-	 * @param Handle The handle to the HID device that will be pinged. Must be a valid and open handle
-	 *        to a device that supports the required operations.
-	 * @param OutLastError Pointer to a DWORD variable that receives the error code if the operation
-	 *        fails. If the operation is successful, this will be set to ERROR_SUCCESS. This parameter
-	 *        is optional and can be null.
-	 * @return true if the ping operation succeeds and the device is accessible; false if an error occurs.
+	 * @param Handle The handle to be checked.
+	 * @param OutLastError Pointer to an integer that receives the error code if the operation fails.
+	 *                     On successful execution, this will be set to ERROR_SUCCESS.
+	 * @return True if the ping operation succeeds; otherwise, false.
 	 */
-	static bool PingOnce(HANDLE Handle, DWORD* OutLastError = nullptr);
+	static bool PingOnce(HANDLE Handle, int32* OutLastError = nullptr);
 	/**
 	 * @brief Polls and processes a single tick for a HID device, performing ping and read operations.
 	 *
@@ -122,7 +123,7 @@ public:
 	 * @param OutBytesRead A reference to a variable where the number of bytes successfully read will be stored.
 	 * @return An enumeration value of type EPollResult indicating the result of the polling operation.
 	 */
-	static EPollResult PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, DWORD& OutBytesRead);
+	static EPollResult PollTick(HANDLE Handle, unsigned char* Buffer, int32 Length, DWORD& OutBytesRead);
 	/**
 	 * @brief Determines whether the given error code should be treated as a device disconnection.
 	 *
@@ -132,7 +133,7 @@ public:
 	 * @param Error The error code to evaluate.
 	 * @return true if the error code indicates a device disconnection, false otherwise.
 	 */
-	static bool ShouldTreatAsDisconnected(const DWORD Error)
+	static bool ShouldTreatAsDisconnected(const int32 Error)
 	{
 		switch (Error)
 		{

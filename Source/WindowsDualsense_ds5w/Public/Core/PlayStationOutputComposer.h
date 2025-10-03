@@ -26,7 +26,7 @@ class WINDOWSDUALSENSE_DS5W_API FPlayStationOutputComposer
 	 * Acts as the initial value for the hash generation algorithm employed in the Compute method.
 	 * Ensures consistent and reliable hash results by providing a stable starting point.
 	 */
-	const static UINT32 CRCSeed;
+	const static uint32 CRCSeed;
 	/**
 	 * @variable HashTable
 	 *
@@ -43,7 +43,7 @@ class WINDOWSDUALSENSE_DS5W_API FPlayStationOutputComposer
 	 * The structure of the table ensures constant-time retrieval of hash values,
 	 * making it integral to performance-critical systems where such operations are frequent.
 	 */
-	const static UINT32 HashTable[256];
+	const static uint32 HashTable[256];
 public:
 	/**
 	 * @fn FPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
@@ -97,5 +97,5 @@ public:
 	 * @param Len The length of the input buffer in bytes.
 	 * @return The computed CRC32 hash value.
 	 */
-	static UINT32 Compute(const unsigned char* Buffer, size_t Len);
+	static uint32 Compute(const unsigned char* Buffer, size_t Len);
 };

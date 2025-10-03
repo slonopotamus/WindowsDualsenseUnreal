@@ -4,6 +4,26 @@
 
 #pragma once
 
+
+#if PLATFORM_WINDOWS
+	#include "Windows/AllowWindowsPlatformTypes.h"
+	#include <Windows.h>
+	#include "Windows/HideWindowsPlatformTypes.h"
+    
+	// Windows usa HANDLE
+	using FPlatformDeviceHandle = HANDLE;
+#define INVALID_PLATFORM_HANDLE INVALID_HANDLE_VALUE
+    
+#elif PLATFORM_LINUX
+#include <hidapi.h>
+using FPlatformDeviceHandle = hid_device*;
+#define INVALID_PLATFORM_HANDLE nullptr
+    
+#else
+using FPlatformDeviceHandle = void*;
+#define INVALID_PLATFORM_HANDLE nullptr
+#endif
+
 #include "CoreMinimal.h"
 #include "FOutputContext.h"
 #include "Core/Enums/EDeviceConnection.h"
@@ -38,14 +58,9 @@ struct FDeviceContext
 	 * disconnected handles can result in undefined behavior.
 	 * For instance, it may hold `INVALID_HANDLE_VALUE` when invalid or disconnected.
 	 */
-	void* Handle;
-	/**
-	 * A wchar_t array that represents the path to the device or resource
-	 * associated with the FDeviceContext structure. The path is limited
-	 * to 260 characters, which is commonly considered a maximum path length
-	 * in various systems.
-	 */
-	wchar_t Path[260];
+	FPlatformDeviceHandle Handle;
+
+	FString Path;
 	/**
 	 * @brief Internal data buffer for device communication.
 	 *
@@ -151,7 +166,7 @@ struct FDeviceContext
 	 */
 	FInputDeviceId UniqueInputDeviceId;
 
-	FDeviceContext(): Handle(nullptr), Path{}, Buffer{}, BufferDS4{}, BufferOutput{}, IsConnected(false),
+	FDeviceContext(): Path{}, Buffer{}, BufferDS4{}, BufferOutput{}, IsConnected(false),
 	                  ConnectionType(), DeviceType(),
 	                  UniqueInputDeviceId()
 	{

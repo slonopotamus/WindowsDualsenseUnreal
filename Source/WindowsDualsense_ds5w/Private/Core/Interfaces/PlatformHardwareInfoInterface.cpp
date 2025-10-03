@@ -6,11 +6,11 @@
 #include "../../../Public/Core/Interfaces/PlatformHardwareInfoInterface.h"
 
 #if PLATFORM_WINDOWS
-#include "Core/Platforms/Windows/HIDDeviceInfo.h"
+#include "Core/Platforms/Windows/WindowsDeviceInfo.h"
 #elif PLATFORM_MAC
 #include "Core/Platforms/Mac/FNullHardwareInterface.h"
 #elif PLATFORM_LINUX
-#include "Core/Platforms/Linux/FNullHardwareInterface.h"
+#include "Core/Platforms/Linux/LinuxDeviceInfo.h"
 #elif PLATFORM_SONY
 #include "Core/Platforms/Sony/FNullHardwareInterface.h"
 #endif
@@ -43,11 +43,11 @@ IPlatformHardwareInfoInterface& IPlatformHardwareInfoInterface::Get()
 		// - PLATFORM_SONY: Reserved for future PlayStation implementation
 		//
 #if PLATFORM_WINDOWS
-		PlatformInfoInstance = MakeUnique<FHIDDeviceInfo>();
+		PlatformInfoInstance = MakeUnique<FWindowsDeviceInfo>();
 #elif PLATFORM_MAC
 		PlatformInfoInstance = nullptr;
 #elif PLATFORM_LINUX
-		PlatformInfoInstance = nullptr;
+		PlatformInfoInstance = MakeUnique<FLinuxDeviceInfo>();
 #elif PLATFORM_SONY
 		// Note: PLATFORM_SONY implementation is reserved for licensed PlayStation developers only
 		// Example:
