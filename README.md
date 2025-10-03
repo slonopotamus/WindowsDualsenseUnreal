@@ -1,7 +1,7 @@
 <h1 align="center">Dualsense Unreal Plugin</h1>
 
 <p align="center">
-Integrate all the features of Sony's DualSense™ and DualShock 4® controllers into your Unreal Engine project for Windows.
+Integrate all the features of Sony's DualSense™ and DualShock 4® controllers into your Unreal Engine project.
 <br />
 <br />
 <a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Report Bug</a>
