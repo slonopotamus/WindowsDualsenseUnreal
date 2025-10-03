@@ -1,7 +1,7 @@
-<h1 align="center">Windows Dualsense Unreal Plugin</h1>
+<h1 align="center">Dualsense Unreal Plugin</h1>
 
 <p align="center">
-Integre todos os recursos do controle DualSense™ e DualShock 4® da Sony no seu projeto Unreal Engine para Windows.
+Integre todos os recursos do controle DualSense™ e DualShock 4® da Sony no seu projeto Unreal Engine para Windows, Linux, Mac e PlayStation.
 <br />
 <br />
 <a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Reportar Bug</a>
@@ -19,16 +19,20 @@ Integre todos os recursos do controle DualSense™ e DualShock 4® da Sony no se
 <a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/blob/main/LICENSE">
 <img src="https://img.shields.io/github/license/rafaelvaloto/WindowsDualsenseUnreal?style=for-the-badge" alt="Licença">
 </a>
-<img src="https://img.shields.io/badge/Unreal%20Engine-5.2+-blue?style=for-the-badge&logo=unrealengine" alt="Unreal Engine 5.x"><br/>
-<img src="https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows" alt="Platform: Windows">
+<img src="https://img.shields.io/badge/Unreal%20Engine-5.2+-blue?style=for-the-badge&logo=unrealengine" alt="Unreal Engine 5.x">
+<br/>
+<img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Platform: Windows">
+<img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Platform: Linux">
+<img src="https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white" alt="Platform: macOS">
+<img src="https://img.shields.io/badge/PlayStation-0070D1?style=for-the-badge&logo=playstation&logoColor=white" alt="Platform: PlayStation">
 </p>
 
 ## Aviso Legal e Marcas Registradas
 
-"PlayStation", "PlayStation Family Mark", "PS5 logo", "PS5", "DualSense" e "DUALSHOCK" são marcas registradas ou marcas comerciais da Sony Interactive Entertainment Inc. "SONY" é uma marca registrada da Sony Corporation.
-"Windows" é uma marca registrada da Microsoft Corporation.
+"PlayStation", "PlayStation Family Mark", "PS5 logo", "PS5", "DualSense" e "DualShock" são marcas registradas ou marcas comerciais da Sony Interactive Entertainment Inc. "SONY" é uma marca registrada da Sony Corporation. "Windows" é uma marca registrada da Microsoft Corporation. "Linux" é uma marca registrada de Linus Torvalds. "Mac" é uma marca registrada da Apple Inc.
 
-O autor deste projeto não é afiliado, associado, autorizado ou de qualquer forma oficialmente conectado com a Sony Interactive Entertainment Inc. ou com a Microsoft Corporation. Este é um projeto independente e não oficial.
+O autor deste projeto não é afiliado, associado, autorizado ou de qualquer forma oficialmente conectado com a Sony Interactive Entertainment Inc., Microsoft Corporation, Apple Inc. ou Linus Torvalds. Este é um projeto independente e não oficial.
+
 
 ## 📖 Sobre o Projeto
 
@@ -37,7 +41,7 @@ Este é um plugin para a Unreal Engine que permite a comunicação nativa com os
 O objetivo é preencher a lacuna deixada pelo suporte genérico a controles no Windows, dando aos desenvolvedores acesso direto às features que tornam os controles da Sony tão imersivos.
 
 ## ✨ Funcionalidades
-
+* 🏗️ **Arquitetura Multiplataforma Extensível**: Sua arquitetura flexível permite a compilação para todas as plataformas disponíveis na Unreal Engine. A adaptação para novos hardwares é feita simplesmente implementando a interface de conexão.
 * 🔌 **Conexão Dinâmica (Hot-Swap)**: Detecta a conexão e desconexão de controles automaticamente, mesmo durante o gameplay.
 * ⚡ **Otimizado para Multiplayer**: Arquitetura de alta performance com impacto mínimo em jogos de rede.
 * 🎮 **Integração Perfeita de Input**: Coexiste perfeitamente com os gerenciadores de input nativos da Unreal (como o Enhanced Input) e outros plugins de gamepad, evitando conflitos entre dispositivos.
