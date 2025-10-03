@@ -1,4 +1,4 @@
-<h1 align="center">Windows Dualsense Unreal Plugin</h1>
+<h1 align="center">Dualsense Unreal Plugin</h1>
 
 <p align="center">
 Integrate all the features of Sony's DualSense™ and DualShock 4® controllers into your Unreal Engine project for Windows.
