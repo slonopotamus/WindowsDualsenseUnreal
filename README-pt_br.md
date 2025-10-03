@@ -36,9 +36,9 @@ O autor deste projeto não é afiliado, associado, autorizado ou de qualquer for
 
 ## 📖 Sobre o Projeto
 
-Este é um plugin para a Unreal Engine que permite a comunicação nativa com os controles DualSense™ (PlayStation 5) e DualShock 4® (PlayStation 4) em sistemas Windows. Ele expõe as funcionalidades únicas de cada controle, como o Feedback Háptico e os Gatilhos Adaptáveis do DualSense, através de uma biblioteca de funções de Blueprint e C++ fácil de usar.
+Este é um plugin para a Unreal Engine que permite a comunicação nativa com os controles DualSense™ (PlayStation 5) e DualShock 4® (PlayStation 4) na Unreal Engine. Ele expõe as funcionalidades únicas de cada controle, como o Feedback Háptico e os Gatilhos Adaptáveis do DualSense, através de uma biblioteca de funções de Blueprint e C++ fácil de usar.
 
-O objetivo é preencher a lacuna deixada pelo suporte genérico a controles no Windows, dando aos desenvolvedores acesso direto às features que tornam os controles da Sony tão imersivos.
+O objetivo é preencher a lacuna deixada pelo suporte genérico a controles, dando aos desenvolvedores acesso direto às features que tornam os controles da Sony tão imersivos.
 
 ## ✨ Funcionalidades
 * 🏗️ **Arquitetura Multiplataforma Extensível**: Sua arquitetura flexível permite a compilação para todas as plataformas disponíveis na Unreal Engine. A adaptação para novos hardwares é feita simplesmente implementando a interface de conexão.
@@ -54,7 +54,7 @@ O objetivo é preencher a lacuna deixada pelo suporte genérico a controles no W
 
 ## 🎮 Projeto de Exemplo: Arena Shooter UE 5.6
 
-To demonstrate the practical use of the **Windows Dualsense Unreal Plugin**, a sample project has been developed using the [*Arena Shooter* template](https://www.unrealengine.com/marketplace/en-US/product/arena-shooter-template) and upgraded to Unreal Engine 5.6. This project integrates key features of the DualSense controller to enhance the player's experience.
+To demonstrate the practical use of the **Dualsense Unreal Plugin**, a sample project has been developed using the [*Arena Shooter* template](https://www.unrealengine.com/marketplace/en-US/product/arena-shooter-template) and upgraded to Unreal Engine 5.6. This project integrates key features of the DualSense controller to enhance the player's experience.
 
 * 🎯 **Mira por Giroscópio**: Um tutorial completo sobre como implementar um sistema de mira por giroscópio (ADS) preciso e responsivo, utilizando o template Arena Shooter.
     ➡️ **[[Leia o Tutorial de Mira por Giroscópio]](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/Example-Project:-Gyroscope-Aiming)**
