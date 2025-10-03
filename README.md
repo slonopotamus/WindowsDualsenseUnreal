@@ -30,7 +30,7 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 
 ## Disclaimer and Trademarks
 
-"PlayStation", "PlayStation Family Mark", "PS5 logo", "PS5", "DualSense" and "DUALSHOCK" are registered trademarks or trademarks of Sony Interactive Entertainment Inc. "SONY" is a registered trademark of Sony Corporation. "Windows" is a registered trademark of Microsoft Corporation. "Linux" is a registered trademark of Linus Torvalds. "Mac" is a registered trademark of Apple Inc.
+"PlayStation", "PlayStation Family Mark", "PS5 logo", "PS5", "DualSense" and "DualShock" are registered trademarks or trademarks of Sony Interactive Entertainment Inc. "SONY" is a registered trademark of Sony Corporation. "Windows" is a registered trademark of Microsoft Corporation. "Linux" is a registered trademark of Linus Torvalds. "Mac" is a registered trademark of Apple Inc.
 
 The author of this project is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Sony Interactive Entertainment Inc., Microsoft Corporation, Apple Inc., or Linus Torvalds. This is an independent and unofficial project.
 
