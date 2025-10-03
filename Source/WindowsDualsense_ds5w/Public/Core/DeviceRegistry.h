@@ -4,17 +4,16 @@
 
 #pragma once
 
-
 #include "CoreMinimal.h"
-#include "Async/TaskGraphInterfaces.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/RunnableThread.h"
-#include "Interfaces/SonyGamepadInterface.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsApplication.h"
 #endif
 
+#include "Async/TaskGraphInterfaces.h"
+#include "Interfaces/SonyGamepadInterface.h"
 
 /**
  * A manager class that handles the creation, storage, and lifecycle management of device library

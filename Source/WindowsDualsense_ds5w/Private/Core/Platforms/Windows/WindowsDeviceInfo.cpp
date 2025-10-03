@@ -2,17 +2,18 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-#include "Core/Platforms/Windows/HIDDeviceInfo.h"
 
 #if PLATFORM_WINDOWS
 #include <hidsdi.h>
 #include <setupapi.h>
 #endif
 
+#include "Core/Platforms/Windows/WindowsDeviceInfo.h"
+
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 
-void FHIDDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
+void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 {
 	GUID HidGuid;
 	HidD_GetHidGuid(&HidGuid);
@@ -128,7 +129,7 @@ void FHIDDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 
 
 
-void FHIDDeviceInfo::Read(FDeviceContext* Context)
+void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 {
 	if (!Context)
 	{
@@ -183,7 +184,7 @@ void FHIDDeviceInfo::Read(FDeviceContext* Context)
 	}
 }
 
-void FHIDDeviceInfo::Write(FDeviceContext* Context)
+void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 {
 	if (Context->Handle == INVALID_HANDLE_VALUE)
 	{
@@ -202,7 +203,7 @@ void FHIDDeviceInfo::Write(FDeviceContext* Context)
 	}
 }
 
-bool FHIDDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
+bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 {
 	const HANDLE DeviceHandle = CreateFileW(
 			DeviceContext->Path,
@@ -220,7 +221,7 @@ bool FHIDDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 	return true;
 }
 
-void FHIDDeviceInfo::InvalidateHandle(FDeviceContext* Context)
+void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 {
 	IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(Context->UniqueInputDeviceId, EInputDeviceConnectionState::Disconnected);
 	if (!Context)
@@ -242,7 +243,7 @@ void FHIDDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 	}
 }
 
-void FHIDDeviceInfo::InvalidateHandle(HANDLE Handle)
+void FWindowsDeviceInfo::InvalidateHandle(HANDLE Handle)
 {
 	if (Handle != INVALID_HANDLE_VALUE)
 	{
@@ -250,7 +251,7 @@ void FHIDDeviceInfo::InvalidateHandle(HANDLE Handle)
 	}
 }
 
-EPollResult FHIDDeviceInfo::PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, DWORD& OutBytesRead)
+EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, DWORD& OutBytesRead)
 {
 	DWORD Err = ERROR_SUCCESS;
 	PingOnce(Handle, &Err);
@@ -271,7 +272,7 @@ EPollResult FHIDDeviceInfo::PollTick(HANDLE Handle, BYTE* Buffer, DWORD Length, 
 }
 
 
-bool FHIDDeviceInfo::PingOnce(HANDLE Handle, DWORD* OutLastError)
+bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, DWORD* OutLastError)
 {
 	FILE_STANDARD_INFO Info;
 	if (!GetFileInformationByHandleEx(Handle, FileStandardInfo, &Info, sizeof(Info)))

@@ -8,7 +8,9 @@
 #include "UObject/Object.h"
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Enums/EDeviceConnection.h"
+#if PLATFORM_WINDOWS
 #include "Windows/WindowsApplication.h"
+#endif
 #include "SonyGamepadProxy.generated.h"
 
 

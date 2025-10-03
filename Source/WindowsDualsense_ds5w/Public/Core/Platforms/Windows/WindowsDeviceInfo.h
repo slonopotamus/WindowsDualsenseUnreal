@@ -3,14 +3,17 @@
 // Planned Release Year: 2025
 
 #pragma once
+
+#if PLATFORM_WINDOWS
 #define NOMINMAX
 
-#include "CoreMinimal.h"
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include <Windows.h>
 #include "Windows/HideWindowsPlatformTypes.h"
 #include <chrono>
+#endif
 
+#include "CoreMinimal.h"
 #include "../../Interfaces/PlatformHardwareInfoInterface.h"
 #include "../../Structs/FDeviceContext.h"
 
@@ -27,7 +30,7 @@ enum class EPollResult {
  * This class encapsulates various tasks related to managing multiple HID devices, including handling connections,
  * transmitting and receiving data, detecting device presence, and managing device-specific states or contexts.
  */
-class FHIDDeviceInfo final : public IPlatformHardwareInfoInterface
+class FWindowsDeviceInfo final : public IPlatformHardwareInfoInterface
 {
 	
 public:

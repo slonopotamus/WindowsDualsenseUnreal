@@ -8,8 +8,10 @@
 #include "InputCoreTypes.h"
 #include "Misc/Paths.h"
 #include "DeviceManager.h"
+#if PLATFORM_WINDOWS
 #include "Microsoft/AllowMicrosoftPlatformTypes.h"
 #include <stdio.h>
+#endif
 
 #define LOCTEXT_NAMESPACE "FWindowsDualsense_ds5wModule"
 

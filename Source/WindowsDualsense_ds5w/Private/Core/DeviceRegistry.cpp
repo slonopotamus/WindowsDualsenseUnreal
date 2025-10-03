@@ -5,6 +5,8 @@
 #include "Core/DeviceRegistry.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
+#include "HAL/PlatformProcess.h"
+#include "HAL/RunnableThread.h"
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/DualShock/DualShockLibrary.h"
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
@@ -25,15 +27,8 @@ TMap<FString, FInputDeviceId> FDeviceRegistry::HistoryDevices;
 TMap<FInputDeviceId, ISonyGamepadInterface*> FDeviceRegistry::LibraryInstances;
 
 bool PrimaryTick = true;
-float AccumulateSecurity = 0;
 void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 {
-	AccumulateSecurity += DeltaTime;
-	if (bIsDeviceDetectionInProgress && AccumulateSecurity >= 1.f)
-	{
-		bIsDeviceDetectionInProgress = false;
-	}
-
 	if (!PrimaryTick)
 	{
 		AccumulatorDelta += DeltaTime;
@@ -98,13 +93,16 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 					if (!Manager->KnownDevicePaths.Contains(Context.Path))
 					{
 						Context.Output = FOutputContext();
-						IPlatformHardwareInfoInterface::Get().CreateHandle(&Context);
-
-						if (Context.Handle == INVALID_HANDLE_VALUE)
+						if (!IPlatformHardwareInfoInterface::Get().CreateHandle(&Context))
+						{
+							UE_LOG(LogTemp, Log, TEXT("DualSense: DeviceManager Failed to create handle for device %s."), *Context.Path);
+							continue;
+						}
+						
+						if (Context.Handle == INVALID_PLATFORM_HANDLE)
 						{
 							continue;
 						}
-
 						Manager->CreateLibraryInstance(Context);
 					}
 				}
@@ -199,7 +197,7 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	}
 
 	const FName UniqueNamespace = TEXT("DeviceManager.WindowsDualsense");
-	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, Context.Path);
+	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, *Context.Path);
 	if (HistoryDevices.Contains(Context.Path))
 	{
 		Context.UniqueInputDeviceId = HistoryDevices[Context.Path];
@@ -213,7 +211,7 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	SonyGamepad->_getUObject()->AddToRoot();
 	SonyGamepad->SetControllerId(Context.UniqueInputDeviceId.GetId());
 	SonyGamepad->InitializeLibrary(Context);
-
+	
 	KnownDevicePaths.Add(Context.Path, Context.UniqueInputDeviceId);
 	LibraryInstances.Add(Context.UniqueInputDeviceId, SonyGamepad);
 

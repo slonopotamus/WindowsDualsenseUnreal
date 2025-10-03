@@ -256,7 +256,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	if (bEnableTouch)
 	{
 		FTouchPoint1 Touch;
-		const UINT32 Touchpad1Raw = *reinterpret_cast<const UINT32*>(&HIDInput[0x20]);
+		const int32 Touchpad1Raw = *reinterpret_cast<const int32*>(&HIDInput[0x20]);
 		Touch.Y = (Touchpad1Raw & 0xFFF00000) >> 20;
 		Touch.X = (Touchpad1Raw & 0x000FFF00) >> 8;
 		Touch.Down = (Touchpad1Raw & (1 << 7)) == 0;
@@ -298,7 +298,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 		// // Evaluate touch state 2
 		FTouchPoint2 Touch2;
-		const UINT32 Touchpad2Raw = *reinterpret_cast<const UINT32*>(&HIDInput[0x24]);
+		const int32 Touchpad2Raw = *reinterpret_cast<const int32*>(&HIDInput[0x24]);
 		Touch2.Y = (Touchpad2Raw & 0xFFF00000) >> 20;
 		Touch2.X = (Touchpad2Raw & 0x000FFF00) >> 8;
 		Touch2.Down = (Touchpad2Raw & (1 << 7)) == 0;
