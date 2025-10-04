@@ -4,7 +4,7 @@ name: 'PlayStation SDK and Folder Protection'
 # Trigger: This workflow runs on every pull request targeting the main branch
 on:
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   code-guardian:
