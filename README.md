@@ -153,37 +153,14 @@ Call functions directly to control DualSense features. Some available effects in
 
 The plugin has been designed with an extensible architecture, allowing developers with access to other platform SDKs (such as the official Sony PlayStation® SDK) to integrate them with minimal effort.
 
-The low-level hardware communication is abstracted through the IPlatformHardwareInfoInterface. The default implementation for Windows uses the HID API to communicate with the controllers.
+The low-level hardware communication is abstracted through the `IPlatformHardwareInfoInterface`. The default implementation for Windows and Linux uses the HID API to communicate with the controllers.
 
 For licensed developers, extending the plugin involves these steps:
 
-Create a new implementation class: Create a new C++ class that inherits from IPlatformHardwareInfoInterface and implements its virtual methods using the specific SDK's functions.
+1.  **Create a new implementation class**: Create a new C++ class that inherits from `IPlatformHardwareInfoInterface` and implements its virtual methods using the specific SDK's functions.
+2.  **Modify the Singleton**: In the `IPlatformHardwareInfoInterface.cpp` file, include the header for your new class and instantiate it within the appropriate conditional compilation block.
 
-Modify the Singleton: In the IPlatformHardwareInfoInterface.cpp file, include the header for your new class and instantiate it within the appropriate conditional compilation block.
-
-```c++
-// IPlatformHardwareInfoInterface.cpp
-
-#if PLATFORM_WINDOWS
-    // For Windows, the HID implementation is used.
-    PlatformInfoInstance = TUniquePtr<IPlatformHardwareInfoInterface>(new FHIDDeviceInfo());
-
-#elif PLATFORM_SONY // (PLATFORM_PS4 || PLATFORM_PS5)
-    // FOR LICENSED DEVELOPERS:
-    // 1. Create your class, e.g., "FPlayStationSDKInterface", that implements IPlatformHardwareInfoInterface.
-    // 2. Include its header here.
-    // 3. Replace "FNullHardwareInterface" with your class name.
-    // ------------------------------------------------------------------
-    // Example: PlatformInfoInstance = TUniquePtr<IPlatformHardwareInfoInterface>(new FPlayStationSDKInterface());
-    
-    // By default, it uses a null implementation to allow compilation without the SDK.
-    PlatformInfoInstance = TUniquePtr<IPlatformHardwareInfoInterface>(new FNullHardwareInterface());
-    
-#else
-    // For all other platforms, a null implementation is used.
-    PlatformInfoInstance = TUniquePtr<IPlatformHardwareInfoInterface>(new FNullHardwareInterface());
-#endif
-```
+> ➡️ **For a detailed, step-by-step guide on how to add support for a new platform, [please see our tutorial on the Wiki](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8C%90-Extending-the-Plugin-for-Other-Platforms).**
 
 ## 🤝 How to Contribute
 
