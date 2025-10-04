@@ -23,17 +23,10 @@ void FLinuxDeviceInfo::Read(FDeviceContext* Context)
 	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
 	{
 		const size_t InputReportLength = 547;
-		if (sizeof(Context->BufferDS4) < InputReportLength)
-		{
-			UE_LOG(LogTemp, Error, TEXT("BufferDS4 é muito pequeno para o relatório de input."));
-			InvalidateHandle(Context);
-			return;
-		}
-        
 		BytesRead = hid_read(Context->Handle, Context->BufferDS4, InputReportLength);
 		if (BytesRead < 0)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to read from device (likely disconnected): %ls"), hid_error(Context->Handle));
+			UE_LOG(LogTemp, Warning, TEXT("Failed to read from device (likely disconnected)"));
 			InvalidateHandle(Context);
 		}
 		return;
@@ -50,7 +43,7 @@ void FLinuxDeviceInfo::Read(FDeviceContext* Context)
 	BytesRead = hid_read(Context->Handle, Context->Buffer, InputReportLength);
 	if (BytesRead < 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to read from device (likely disconnected): %ls"), hid_error(Context->Handle));
+		UE_LOG(LogTemp, Warning, TEXT("Failed to read from device (likely disconnected)"));
 		InvalidateHandle(Context);
 	}
 }
@@ -68,7 +61,7 @@ void FLinuxDeviceInfo::Write(FDeviceContext* Context)
 	int BytesWritten = hid_write(Context->Handle, Context->BufferOutput, OutputReportLength);
 	if (BytesWritten < 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to write to device: %ls"), hid_error(Context->Handle));
+		UE_LOG(LogTemp, Error, TEXT("Failed to write to device"));
 		InvalidateHandle(Context);
 	}
 }
@@ -142,7 +135,7 @@ bool FLinuxDeviceInfo::CreateHandle(FDeviceContext* Context)
 
 	if (Handle == INVALID_PLATFORM_HANDLE)
 	{
-		UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to open device handle for the DualSense."), *Context->Path, hid_error(Handle));
+		UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to open device handle for the DualSense."));
 		return false;
 	}
 	
