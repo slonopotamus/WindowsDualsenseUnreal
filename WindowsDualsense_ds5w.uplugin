@@ -12,16 +12,17 @@
 	"CanContainContent": false,
 	"IsBetaVersion": false,
 	"Installed": true,
-	"EnabledByDefault": false,
+	"EnabledByDefault": true,
 	"RequiresBuildPlatform": true,
-	"EngineVersion": "5.2.0",
+	"EngineVersion": "5.6.0",
 	"Modules": [
 		{
 			"Name": "WindowsDualsense_ds5w",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault",
 			"PlatformAllowList": [
-				"Win64"
+				"Win64",
+                "Linux"
 			]
 		}
 	]

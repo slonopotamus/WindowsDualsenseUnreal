@@ -36,6 +36,7 @@ jobs:
             "ThirdParty/Sony/**"
             "Plugins/PlayStation5/**"
             "Platforms/PS5/**"
+            "Sony/**"
 
             # --- Block specific file types common to PlayStation SDKs ---
             "*.prx"
