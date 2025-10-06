@@ -36,9 +36,9 @@ O autor deste projeto não é afiliado, associado, autorizado ou de qualquer for
 
 ## 📖 Sobre o Projeto
 
-Este é um plugin para a Unreal Engine que permite a comunicação nativa com os controles DualSense™ (PlayStation 5) e DualShock 4® (PlayStation 4) na Unreal Engine. Ele expõe as funcionalidades únicas de cada controle, como o Feedback Háptico e os Gatilhos Adaptáveis do DualSense, através de uma biblioteca de funções de Blueprint e C++ fácil de usar.
+Construído com uma arquitetura multiplataforma, este plugin para Unreal Engine fornece uma solução unificada para integrar os controles DualSense™ (PlayStation 5) e DualShock 4® (PlayStation 4). Ele oferece suporte nativo no PC e, ao mesmo tempo, foi projetado para ser facilmente compilado para outras plataformas da Unreal Engine, incluindo PlayStation®. Este ativo fornece acesso direto à API ao conjunto completo de recursos de cada controlador, incluindo o revolucionário Haptic Feedback e Adaptive Triggers do DualSense™. Todos os recursos são expostos por meio de uma biblioteca de funções limpa e bem documentada para Blueprint e C++.
 
-O objetivo é preencher a lacuna deixada pelo suporte genérico a controles, dando aos desenvolvedores acesso direto às features que tornam os controles da Sony tão imersivos.
+Projetado para preencher a lacuna deixada pelo suporte genérico ao controlador, este ativo capacita os desenvolvedores a implementar o feedback imersivo e de alta fidelidade que torna os controladores da Sony únicos.
 
 ## ✨ Funcionalidades
 * 🏗️ **Arquitetura Multiplataforma Extensível**: Sua arquitetura flexível permite a compilação para todas as plataformas disponíveis na Unreal Engine. A adaptação para novos hardwares é feita simplesmente implementando a interface de conexão.
