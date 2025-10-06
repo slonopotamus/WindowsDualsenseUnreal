@@ -59,7 +59,7 @@ public:
 	 * @param Hand The controller hand (e.g., left or right) where the effect will be applied.
 	 * @param KeepEffect Indicates whether the applied effect should persist after the action.
 	 */
-	virtual void SetAutomaticGun(int32 BeginStrength, int32 MiddleStrength, int32 EndStrength, const EControllerHand& Hand, bool KeepEffect) = 0;
+	virtual void SetAutomaticGun(int32 BeginStrength, int32 MiddleStrength, int32 EndStrength, const EControllerHand& Hand, bool KeepEffect, float Frequency) = 0;
 	/**
 	 * Configures continuous resistance for a gamepad trigger at a specific position
 	 * with a defined level of strength for a given controller hand.

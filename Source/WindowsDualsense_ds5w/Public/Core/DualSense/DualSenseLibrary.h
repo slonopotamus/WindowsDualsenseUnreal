@@ -463,7 +463,7 @@ public:
 	 * haptic experience. This method is particularly useful for implementing haptic feedback in shooting mechanics.
 	 */
 	virtual void SetAutomaticGun(int32 BeginStrength, int32 MiddleStrength, int32 EndStrength,
-	                             const EControllerHand& Hand, bool KeepEffect);
+	                             const EControllerHand& Hand, bool KeepEffect, float Frequency) override;
 
 	/**
 	 * Configures the adaptive trigger on a DualSense controller to apply continuous resistance.

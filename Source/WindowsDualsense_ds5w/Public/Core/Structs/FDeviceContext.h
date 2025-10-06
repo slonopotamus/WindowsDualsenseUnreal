@@ -6,19 +6,21 @@
 
 
 #if PLATFORM_WINDOWS
-	#include "Windows/AllowWindowsPlatformTypes.h"
-	#include <Windows.h>
-	#include "Windows/HideWindowsPlatformTypes.h"
-    
-	// Windows usa HANDLE
-	using FPlatformDeviceHandle = HANDLE;
+#include "Windows/AllowWindowsPlatformTypes.h"
+#include <Windows.h>
+#include "Windows/HideWindowsPlatformTypes.h"
+
+// Windows usa HANDLE
+using FPlatformDeviceHandle = HANDLE;
 #define INVALID_PLATFORM_HANDLE INVALID_HANDLE_VALUE
-    
 #elif PLATFORM_LINUX
 #include <hidapi.h>
 using FPlatformDeviceHandle = hid_device*;
 #define INVALID_PLATFORM_HANDLE nullptr
-    
+#elif PLATFORM_MAC
+#include <hidapi.h>
+using FPlatformDeviceHandle = hid_device*;
+#define INVALID_PLATFORM_HANDLE nullptr
 #else
 using FPlatformDeviceHandle = void*;
 #define INVALID_PLATFORM_HANDLE nullptr
@@ -60,6 +62,15 @@ struct FDeviceContext
 	 */
 	FPlatformDeviceHandle Handle;
 
+	/**
+	 * @brief Represents a file or resource path in the context of device management.
+	 *
+	 * This variable is used to store the location or identifier of a specific resource,
+	 * configuration file, or executable path associated with the device or system operation.
+	 *
+	 * It plays a critical role in ensuring proper file system referencing and resource
+	 * allocation within the management system.
+	 */
 	FString Path;
 	/**
 	 * @brief Internal data buffer for device communication.

@@ -580,7 +580,7 @@ void UDualSenseLibrary::SetTriggers(const FInputDeviceProperty* Values)
 }
 
 void UDualSenseLibrary::SetAutomaticGun(int32 BeginStrength, int32 MiddleStrength, int32 EndStrength,
-                                        const EControllerHand& Hand, bool KeepEffect)
+                                        const EControllerHand& Hand, bool KeepEffect, float Frequency)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	unsigned char PositionalAmplitudes[10];
@@ -618,7 +618,7 @@ void UDualSenseLibrary::SetAutomaticGun(int32 BeginStrength, int32 MiddleStrengt
 		HidOutput->LeftTrigger.Mode = 0x26;
 		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
 		HidOutput->LeftTrigger.Strengths.StrengthZones = StrengthZones;
-		HidOutput->LeftTrigger.Frequency = FValidateHelpers::To255(0.05f);
+		HidOutput->LeftTrigger.Frequency = FValidateHelpers::To255(Frequency);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
@@ -626,7 +626,7 @@ void UDualSenseLibrary::SetAutomaticGun(int32 BeginStrength, int32 MiddleStrengt
 		HidOutput->RightTrigger.Mode = 0x26;
 		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
 		HidOutput->RightTrigger.Strengths.StrengthZones = StrengthZones;
-		HidOutput->RightTrigger.Frequency = FValidateHelpers::To255(0.05f);
+		HidOutput->RightTrigger.Frequency = FValidateHelpers::To255(Frequency);
 	}
 
 	SendOut();

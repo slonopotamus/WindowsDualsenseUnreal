@@ -17,6 +17,13 @@
 #include "../../Interfaces/PlatformHardwareInfoInterface.h"
 #include "../../Structs/FDeviceContext.h"
 
+/**
+ * @brief Enumerates the possible outcomes of a polling operation in HID device communication.
+ *
+ * This enum is used to represent the results of data polling when interacting with HID devices.
+ * It provides status indicators for successful reads, lack of data in the current tick,
+ * transient errors, or disconnected devices.
+ */
 enum class EPollResult {
 	ReadOk,
 	NoIoThisTick,

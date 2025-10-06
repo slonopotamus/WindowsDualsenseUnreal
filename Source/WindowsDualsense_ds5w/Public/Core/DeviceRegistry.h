@@ -51,7 +51,7 @@ public:
 	 * library instance for the given controller is returned, enabling interaction with
 	 * the corresponding input device.
 	 *
-	 * @param ControllerId The unique identifier of the Sony gamepad controller for which
+	 * @param DeviceId The unique identifier of the Sony gamepad controller for which
 	 *                     the library instance is to be retrieved.
 	 * @return A pointer to the ISonyGamepadInterface instance corresponding to the specified
 	 *         controller ID, or nullptr if no matching instance exists.

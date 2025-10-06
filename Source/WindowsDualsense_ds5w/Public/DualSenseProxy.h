@@ -69,14 +69,19 @@ public:
 	);
 
 	/**
-	 * Triggers a haptic feedback effect for an automatic gun using the DualSense controller.
+	 * @brief Activates an automatic gun effect on a specified DualSense controller.
+	 *
+	 * Simulates the behavior of an automatic firearm by adjusting trigger tension
+	 * dynamically based on the provided strength parameters, hand specification,
+	 * and other effect controls.
 	 *
 	 * @param ControllerId The ID of the controller to apply the effect on.
-	 * @param BeginStrength The starting vibration strength of the trigger effect. If invalid, a default value of 8 is used.
-	 * @param MiddleStrength The middle vibration strength of the trigger effect. If invalid, a default value of 8 is used.
-	 * @param EndStrength The ending vibration strength of the trigger effect. If invalid, a default value of 8 is used.
-	 * @param Hand The controller hand (left or right) to which the effect is applied.
-	 * @param KeepEffect Whether to keep the effect active continuously.
+	 * @param BeginStrength The initial strength of the trigger effect. Ranges from 0 to 8.
+	 * @param MiddleStrength The middle strength level of the trigger effect. Ranges from 0 to 8.
+	 * @param EndStrength The final strength of the trigger effect. Ranges from 0 to 8.
+	 * @param Hand The hand (left or right) to which the effect is applied.
+	 * @param KeepEffect If true, maintains the effect even after the input stops; otherwise, stops once input ceases.
+	 * @param Frequency The rate or frequency of the automatic gun effect.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
 	static void AutomaticGun(
@@ -88,7 +93,8 @@ public:
 		UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 EndStrength,
 		EControllerHand Hand,
-		bool KeepEffect
+		bool KeepEffect,
+		float Frequency = 0.05f
 	);
 
 	/**

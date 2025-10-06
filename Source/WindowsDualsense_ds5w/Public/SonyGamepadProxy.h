@@ -14,9 +14,11 @@
 #include "SonyGamepadProxy.generated.h"
 
 
-
 /**
- * 
+ * Proxy class for interacting with Sony gamepad devices such as DualSense or DualShock controllers.
+ * This class provides static methods to handle various functionalities, including device status,
+ * connection type, battery levels, LED effects, motion sensor calibration, touch capabilities,
+ * and deprecation of certain methods.
  */
 UCLASS(Blueprintable, BlueprintType)
 class WINDOWSDUALSENSE_DS5W_API USonyGamepadProxy : public UObject
