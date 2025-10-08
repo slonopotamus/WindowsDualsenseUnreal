@@ -4,8 +4,9 @@
 
 #pragma once
 
+#if PLATFORM_WINDOWS
+#else
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
-
 class FCommonsDeviceInfo : public IPlatformHardwareInfoInterface 
 {
 	/**
@@ -78,3 +79,4 @@ public:
 	 */
 	virtual void InvalidateHandle(FDeviceContext* Context) override;
 };
+#endif

@@ -17,9 +17,9 @@
 #include "Runtime/Launch/Resources/Version.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 
-#if PLATFORM_WINDOWS
-#include "Windows/WindowsApplication.h"
-#endif
+// #if PLATFORM_WINDOWS
+// #include "Windows/WindowsApplication.h"
+// #endif
 
 TSharedPtr<FDeviceRegistry> FDeviceRegistry::Instance;
 TMap<FString, FInputDeviceId> FDeviceRegistry::KnownDevicePaths;

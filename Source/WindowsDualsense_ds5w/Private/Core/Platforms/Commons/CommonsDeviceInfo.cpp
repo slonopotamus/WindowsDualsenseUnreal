@@ -3,6 +3,9 @@
 // Planned Release Year: 2025
 
 #include "../../../../Public/Core/Platforms/Commons/CommonsDeviceInfo.h"
+
+#if PLATFORM_WINDOWS
+#else
 #include "SDL_hidapi.h"
 
 static const uint16 SONY_VENDOR_ID = 0x054C;
@@ -157,3 +160,4 @@ void FCommonsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		memset(Context->BufferOutput, 0, sizeof(Context->BufferOutput));
 	}
 }
+#endif

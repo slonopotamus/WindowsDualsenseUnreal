@@ -4,7 +4,9 @@
 
 #include "../../../Public/Core/Interfaces/PlatformHardwareInfoInterface.h"
 
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#if PLATFORM_WINDOWS
+#include "Core/Platforms/Windows/WindowsDeviceInfo.h"
+#elif PLATFORM_MAC || PLATFORM_LINUX
 #include "Core/Platforms/Commons/CommonsDeviceInfo.h"
 #elif PLATFORM_SONY
 #include "Core/Platforms/Sony/FNullHardwareInterface.h"
@@ -37,7 +39,9 @@ IPlatformHardwareInfoInterface& IPlatformHardwareInfoInterface::Get()
 		// - PLATFORM_LINUX: Reserved for future Linux implementation using hidapi
 		// - PLATFORM_SONY: Reserved for future PlayStation implementation
 		//
-#if PLATFORM_WINDOWS || PLATFORM_MAC || PLATFORM_LINUX
+#if PLATFORM_WINDOWS
+		PlatformInfoInstance = MakeUnique<FWindowsDeviceInfo>();
+#elif PLATFORM_MAC || PLATFORM_LINUX
 		PlatformInfoInstance = MakeUnique<FCommonsDeviceInfo>();
 #elif PLATFORM_SONY
 		// Note: PLATFORM_SONY implementation is reserved for licensed PlayStation developers only

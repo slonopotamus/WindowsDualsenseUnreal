@@ -6,20 +6,16 @@
 
 
 #if PLATFORM_WINDOWS
+
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include <Windows.h>
 #include "Windows/HideWindowsPlatformTypes.h"
-
-// Windows usa HANDLE
 using FPlatformDeviceHandle = HANDLE;
 #define INVALID_PLATFORM_HANDLE INVALID_HANDLE_VALUE
-#elif PLATFORM_LINUX
+
+#elif PLATFORM_MAC || PLATFORM_LINUX
 #include "SDL_hidapi.h"
 using FPlatformDeviceHandle = SDL_hid_device*;
-#define INVALID_PLATFORM_HANDLE nullptr
-#elif PLATFORM_MAC
-#include <hidapi.h>
-using FPlatformDeviceHandle = hid_device*;
 #define INVALID_PLATFORM_HANDLE nullptr
 #else
 using FPlatformDeviceHandle = void*;

@@ -12,7 +12,17 @@ public class WindowsDualsense_ds5w : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
  		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "ApplicationCore", "InputCore", "InputDevice",  "AudioMixer" });
-	    PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" , "SDL2"});
+	    PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 	    bEnableExceptions = true;
+	    
+	    if (Target.Platform == UnrealTargetPlatform.Win64)
+	    {
+	        PublicAdditionalLibraries.Add("hid.lib");
+	    }
+	    
+	    if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.Mac)
+	    {
+		    PrivateDependencyModuleNames.AddRange(new string[] { "SDL2" });
+	    }
 	}
 }
