@@ -2,15 +2,12 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-
 #include "../../../Public/Core/Interfaces/PlatformHardwareInfoInterface.h"
 
 #if PLATFORM_WINDOWS
 #include "Core/Platforms/Windows/WindowsDeviceInfo.h"
-#elif PLATFORM_MAC
-#include "Core/Platforms/Mac/FNullHardwareInterface.h"
-#elif PLATFORM_LINUX
-#include "Core/Platforms/Linux/LinuxDeviceInfo.h"
+#elif PLATFORM_MAC || PLATFORM_LINUX
+#include "Core/Platforms/Commons/CommonsDeviceInfo.h"
 #elif PLATFORM_SONY
 #include "Core/Platforms/Sony/FNullHardwareInterface.h"
 #endif
@@ -37,17 +34,15 @@ IPlatformHardwareInfoInterface& IPlatformHardwareInfoInterface::Get()
 		// Other platforms: Currently not supported (returns nullptr)
 		//
 		// Usage:
-		// - PLATFORM_WINDOWS: Windows-specific implementation using HID
-		// - PLATFORM_MAC: Reserved for future macOS implementation
-		// - PLATFORM_LINUX: Reserved for future Linux implementation
+		// - PLATFORM_WINDOWS: Windows-specific implementation using hidapi
+		// - PLATFORM_MAC: Reserved for future macOS implementation using hidapi
+		// - PLATFORM_LINUX: Reserved for future Linux implementation using hidapi
 		// - PLATFORM_SONY: Reserved for future PlayStation implementation
 		//
 #if PLATFORM_WINDOWS
 		PlatformInfoInstance = MakeUnique<FWindowsDeviceInfo>();
-#elif PLATFORM_MAC
-		PlatformInfoInstance = nullptr;
-#elif PLATFORM_LINUX
-		PlatformInfoInstance = MakeUnique<FLinuxDeviceInfo>();
+#elif PLATFORM_MAC || PLATFORM_LINUX
+		PlatformInfoInstance = MakeUnique<FCommonsDeviceInfo>();
 #elif PLATFORM_SONY
 		// Note: PLATFORM_SONY implementation is reserved for licensed PlayStation developers only
 		// Example:
@@ -56,7 +51,7 @@ IPlatformHardwareInfoInterface& IPlatformHardwareInfoInterface::Get()
 		// {
 		//	// Implement required interface methods
 		// };
-		PlatformInfoInstance = nullptr;
+		PlatformInfoInstance = MakeUnique<FPlayStationDeviceInfo>();
 #endif
 	}
 	return *PlatformInfoInstance;

@@ -4,14 +4,14 @@
 
 
 #include "WindowsDualsense_ds5w/Public/WindowsDualsense_ds5w.h"
-
+#if PLATFORM_LINUX || PLATFORM_MAC
+#include "SDL.h"
+#include "Subsystems/FSonyInputProcessor.h"
+#include "Framework/Application/SlateApplication.h"
+#endif
 #include "InputCoreTypes.h"
 #include "Misc/Paths.h"
 #include "DeviceManager.h"
-#if PLATFORM_WINDOWS
-#include "Microsoft/AllowMicrosoftPlatformTypes.h"
-#include <stdio.h>
-#endif
 
 #define LOCTEXT_NAMESPACE "FWindowsDualsense_ds5wModule"
 
@@ -19,16 +19,39 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 {
 	IModularFeatures::Get().RegisterModularFeature(IInputDeviceModule::GetModularFeatureName(), this);
 	RegisterCustomKeys();
+
+#if PLATFORM_LINUX || PLATFORM_MAC
+	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to initialize subsystems of SDL: %s"), UTF8_TO_TCHAR(SDL_GetError()));
+	}
+
+	if (FSlateApplication::IsInitialized())
+	{
+		SonyInputProcessor = MakeShared<FSonyInputProcessor>();
+		FSlateApplication::Get().RegisterInputPreProcessor(SonyInputProcessor);
+	}
+#endif
+	
 }
 
 void FWindowsDualsense_ds5wModule::ShutdownModule()
 {
+#if PLATFORM_LINUX || PLATFORM_MAC
+	SDL_Quit();
+
+	if (FSlateApplication::IsInitialized())
+	{
+		FSlateApplication::Get().UnregisterInputPreProcessor(SonyInputProcessor);
+	}
+#endif
+	
 }
 
 TSharedPtr<IInputDevice> FWindowsDualsense_ds5wModule::CreateInputDevice(
 	const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler)
 {
-	return MakeShareable(new DeviceManager(InCustomMessageHandler, false));
+	return MakeShareable(new DeviceManager(InCustomMessageHandler));
 }
 
 void FWindowsDualsense_ds5wModule::RegisterCustomKeys()

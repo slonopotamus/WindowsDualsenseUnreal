@@ -180,9 +180,6 @@ void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGy
 	{
 		return;
 	}
-
-	
-
 	Gamepad->EnableMotionSensor(bEnableGyroscope);
 }
 

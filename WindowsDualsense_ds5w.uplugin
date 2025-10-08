@@ -1,8 +1,8 @@
 {
 	"FileVersion": 3,
-	"VersionName": "1.2.18",
+	"VersionName": "1.2.19",
 	"FriendlyName": "WindowsDualsense_ds5w",
-	"Description": "DualSense & DualShock 4 devices for Windows platforms. Supports settings of triggers, force feedback, vibrations, leds, battery level, microphone",
+	"Description": "DualSense & DualShock 4 devices for Unreal Engine platforms. Supports settings of triggers, force feedback, vibrations, leds, battery level, microphone",
 	"Category": "Input Devices",
 	"CreatedBy": "Rafael Valoto",
 	"CreatedByURL": "https://github.com/rafaelvaloto",
@@ -21,8 +21,7 @@
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault",
 			"PlatformAllowList": [
-				"Win64",
-                "Linux"
+				"Win64"
 			]
 		}
 	]
