@@ -13,10 +13,8 @@
 #include "Windows/WindowsApplication.h"
 #endif
 
-DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-                             bool Lazily): MessageHandler(InMessageHandler)
+DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler): MessageHandler(InMessageHandler)
 {
-	LazyLoading  = Lazily;
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
 }
 
@@ -73,7 +71,7 @@ void DeviceManager::Tick(float DeltaTime)
 
 void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProperty* Property)
 {
-	if (LazyLoading || !Property) return;
+	if (!Property) return;
 
 	if (Property->Name == "InputDeviceLightColor")
 	{
@@ -100,8 +98,6 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 
 void DeviceManager::SetHapticFeedbackValues(const int32 ControllerId, const int32 Hand, const FHapticFeedbackValues& Values)
 {
-	if (LazyLoading) return;
-
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
 	{
@@ -119,8 +115,6 @@ void DeviceManager::SetHapticFeedbackValues(const int32 ControllerId, const int3
 
 void DeviceManager::SetChannelValues(int32 ControllerId, const FForceFeedbackValues& Values)
 {
-	if (LazyLoading) return;
-
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
 	{
@@ -138,8 +132,6 @@ void DeviceManager::SetChannelValues(int32 ControllerId, const FForceFeedbackVal
 
 void DeviceManager::SetLightColor(const int32 ControllerId, const FColor Color)
 {
-	if (LazyLoading) return;
-
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
 	{
@@ -157,8 +149,6 @@ void DeviceManager::SetLightColor(const int32 ControllerId, const FColor Color)
 
 void DeviceManager::ResetLightColor(const int32 ControllerId)
 {
-	if (LazyLoading) return;
-
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
 	{
@@ -187,10 +177,6 @@ void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 
 		{
 			IPlatformInputDeviceMapper::Get().Internal_MapInputDeviceToUser(DeviceId, PlatformUserId, EInputDeviceConnectionState::Disconnected);
 		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("DualSense: DeviceManager User %d logged in."), UserId);
 	}
 }
 

@@ -12,19 +12,7 @@ public class WindowsDualsense_ds5w : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
  		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "ApplicationCore", "InputCore", "InputDevice",  "AudioMixer" });
-	    PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+	    PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" , "SDL2"});
 	    bEnableExceptions = true;
-	    if (Target.Platform == UnrealTargetPlatform.Win64)
-	    {
-		    PublicSystemLibraries.Add("hid.lib");
-	    }
-	    
-	    
-	    if (Target.Platform == UnrealTargetPlatform.Linux)
-	    {
-		    PublicAdditionalLibraries.Add("/usr/lib/x86_64-linux-gnu/libhidapi-hidraw.so");
-		    PublicIncludePaths.Add("/usr/include/hidapi");
-	    }
 	}
-
 }

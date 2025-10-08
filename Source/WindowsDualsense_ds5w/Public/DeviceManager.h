@@ -26,7 +26,7 @@ public:
 	 * @param InMessageHandler Message handler for input events
 	 * @param Lazily Whether to initialize the device in lazy loading mode
 	 */
-	explicit DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler, bool Lazily);
+	explicit DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler);
 	/**
 	 * Called every frame to update controller state
 	 * @param DeltaTime Time elapsed since last tick
@@ -83,7 +83,7 @@ public:
 	 * @param Ar The output device to log execution results or messages.
 	 * @return True if the command was successfully executed, otherwise false.
 	 */
-	virtual bool Exec(UWorld* InWorld, const TCHAR* Cmd, FOutputDevice& Ar) override { return true; }
+	virtual bool Exec(UWorld* InWorld, const TCHAR* Cmd, FOutputDevice& Ar) override { return false; }
 	/**
 	 * Sets the haptic feedback values for a specific controller and hand.
 	 * This function updates the haptic feedback values for the specified controller using the supplied values structure.
@@ -123,14 +123,6 @@ public:
 	 */
 	virtual bool IsGamepadAttached() const override { return true; }
 	/**
-	 * Sets lazy loading mode for the device
-	 * @param IsLazy Whether to enable lazy loading
-	 */
-	void SetLazyLoading(const bool IsLazy)
-	{
-		LazyLoading = IsLazy;
-	}
-	/**
 	 * Handles user login state changes
 	 * @param bLoggedIn Whether user is logged in
 	 * @param UserId Platform-specific user identifier
@@ -165,13 +157,6 @@ public:
 
 private:
 	FInputDeviceId GetGamepadInterface(int32 ControllerId);
-	/**
-	 * Determines whether resources or data are loaded on demand rather than
-	 * during the initial application startup or initialization phase.
-	 * When enabled, this feature can improve application performance by
-	 * deferring resource loading until required.
-	 */
-	bool LazyLoading = false;
 	/**
 	 * Tracks the accumulated time or events between periodic polling operations.
 	 * This variable is typically used to manage timing or frequency of polling processes.

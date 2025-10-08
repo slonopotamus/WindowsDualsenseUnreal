@@ -8,6 +8,7 @@
 #include "DeviceManager.h"
 #include "IInputDeviceModule.h"
 #include "InputCoreTypes.h"
+#include "Framework/Application/SlateApplication.h"
 
 
 /**
@@ -76,4 +77,13 @@ private:
 	 * compatible controllers.
 	 */
 	static void RegisterCustomKeys();
+	/**
+	 * A shared pointer to an instance of an input processor for handling custom input logic.
+	 *
+	 * SonyInputProcessor is used to manage additional input processing, such as handling
+	 * specific events or logic related to PlayStation controllers. It operates independently
+	 * or in conjunction with the main input device to provide enhanced input functionality
+	 * for the DualSense controller.
+	 */
+	TSharedPtr<IInputProcessor> SonyInputProcessor;
 };
