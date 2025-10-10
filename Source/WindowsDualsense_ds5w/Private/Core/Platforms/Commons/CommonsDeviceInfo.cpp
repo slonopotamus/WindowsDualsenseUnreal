@@ -82,7 +82,6 @@ void FCommonsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	SDL_hid_device_info* Devs = SDL_hid_enumerate(SONY_VENDOR_ID, 0);
 	if (!Devs)
 	{
-		UE_LOG(LogTemp, Log, TEXT("hid_api: Failed to enumerate devices."));
 		return;
 	}
 	
@@ -137,7 +136,6 @@ bool FCommonsDeviceInfo::CreateHandle(FDeviceContext* Context)
 
 	if (Handle == INVALID_PLATFORM_HANDLE)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("hid_api: Failed to open device handle for the DualSense."));
 		return false;
 	}
 	
