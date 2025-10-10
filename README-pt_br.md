@@ -153,7 +153,7 @@ Para desenvolvedores licenciados, estender o plugin envolve os seguintes passos:
 1.  **Criar uma nova classe de implementação**: Crie uma nova classe C++ que herde de `IPlatformHardwareInfoInterface` e implemente seus métodos virtuais utilizando as funções do SDK específico da plataforma.
 2.  **Modificar o Singleton**: No arquivo `IPlatformHardwareInfoInterface.cpp`, inclua o cabeçalho da sua nova classe e instancie-a dentro do bloco de compilação condicional apropriado.
 
-> ➡️ **Para um guia detalhado e passo a passo sobre como adicionar suporte a uma nova plataforma, [consulte nosso tutorial na Wiki](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8C%90-Extending-the-Plugin-for-Other-Platforms).**
+> ➡️ **Para um guia detalhado e passo a passo sobre como adicionar suporte a uma nova plataforma, [consulte nosso tutorial na Wiki](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/🎮-Extending-the-Plugin-for-Other-Platforms).**
 
 ## 🤝 Como Contribuir
 
