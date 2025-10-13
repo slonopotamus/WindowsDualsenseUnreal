@@ -111,6 +111,20 @@ You can download the *Parrot Game Sample* with the DualSense integration directl
 - [**Download the example project for the editor here**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
 - [**Download the compiled version of the example project here**](https://drive.google.com/file/d/144hM71xZufBe29UzpTNQ1rRe0AYWC-Ka/view?usp=drive_link)
 
+## 🎮 Example Project: Audio-Based Vibration
+
+This project demonstrates the Advanced Audio Vibration, a native feature of the DualSense controller. It serves as a simple playlist to showcase how music, footsteps, and other sound effects can be translated directly into high-fidelity haptics when the controller is connected via USB.
+
+### Implemented Features
+
+Native Haptic Generation: This example uses the advanced internal capabilities of the DualSense to generate vibrations directly from a sound source.
+
+Simple Activation: The feature is easily enabled through the Device Settings node by setting the VibrationMode to Audio based vibration. This requires a USB connection to function.
+
+Advanced Practice: For even more detailed effects, the underlying audio classes in Unreal Engine allow you to apply Low-Pass and High-Pass filters. This technique can isolate bass frequencies (for rumbles) from high-frequency sounds (for sharp textures), providing a more granular and immersive haptic experience.
+
+- [**Download the example project for the editor here**](https://drive.google.com/file/d/1D4g_A78xBMdLyDy0xHdr1TbSuHdSuHGn/view?usp=drive_link)
+
 ## 🚀 Getting Started
 
 ### Prerequisites
