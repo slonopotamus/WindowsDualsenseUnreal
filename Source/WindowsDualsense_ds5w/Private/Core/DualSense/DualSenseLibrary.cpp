@@ -122,7 +122,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	{
 		IPlatformHardwareInfoInterface::Get().Read(NewContext);
 	});
-
+UE_LOG(LogTemp, Warning, TEXT("buff, %02X"), HIDDeviceContexts.Buffer[0]);
 	const size_t Padding = HIDDeviceContexts.ConnectionType == Bluetooth ? 2 : 1;
 	const unsigned char* HIDInput = &HIDDeviceContexts.Buffer[Padding];
 
@@ -930,44 +930,26 @@ bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 }
 
 
-
+TArray<uint8> AudioData;
+int8 ReportCount = 0;
 void UDualSenseLibrary::AudioHapticUpdate(const float AverageEnvelopeValue,
 const float MaxEnvelopeValue,
 const int32 NumWaveInstances)
 {
-	TArray<uint8> AudioData;
 	constexpr int8 Report = 64;
 	AudioData.SetNumUninitialized(Report);
+	
+	const float Scaled = AverageEnvelopeValue * MaxEnvelopeValue * 127;
+	AudioData[ReportCount] = Scaled * 255;
+	ReportCount++;
 
-	// Intensidade 0..1
-	const float Intensity = FMath::Clamp(MaxEnvelopeValue, 0.0f, 1.0f);
-
-	// Escolha UM dos padrões abaixo:
-
-	// 1) Onda quadrada forte (0x00 / 0x7F)
-	// for (int32 i = 0; i < Report; ++i)
-	// {
-	// 	AudioData[i] = (i & 1) ? 0x7F : 0x00;
-	// }
-
-	// 2) Seno 64 amostras (0..127), escalado pela intensidade
-	for (int32 i = 0; i < Report; ++i)
+	if (ReportCount == Report)
 	{
-		const float s01 = 0.5f * (1.0f + FMath::Sin(2.f * PI * (float)i / (float)Report)); // 0..1
-		const float scaled = s01 * NumWaveInstances; // 0..1
-		AudioData[i] = static_cast<uint8>(FMath::Clamp(scaled * 127.f, 0.f, 128.f));
+		FDeviceContext* Context = &HIDDeviceContexts;
+		FPlayStationOutputComposer::SendAudioHapticAdvanced(Context, AudioData);
+		ReportCount = 0;
 	}
-
-	// 3) Ruído (descomente para testar ruído)
-	// for (int32 i = 0; i < Report; ++i)
-	// {
-	// 	const float r01 = FMath::FRand(); // 0..1
-	// 	const float scaled = r01 * Intensity;
-	// 	AudioData[i] = static_cast<uint8>(FMath::Clamp(scaled * 127.f, 0.f, 127.f));
-	// }
-
-	FDeviceContext* Context = &HIDDeviceContexts;
-	FPlayStationOutputComposer::SendAudioHapticAdvanced(Context, AudioData);
+	
 	// AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context), AudioData]()
 	// {
 	// 	
