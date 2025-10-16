@@ -7,7 +7,6 @@
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/Structs/FDeviceContext.h"
 
-
 const uint32 FPlayStationOutputComposer::CRCSeed = 0xeada2d49;
 
 void FPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
@@ -70,18 +69,15 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 
 	FOutputContext* HidOut = &DeviceContext->Output;
 	unsigned char*  Output = &DeviceContext->BufferOutput[Padding];
-	Output[0] = HidOut->Feature.VibrationMode;
-	Output[1] = HidOut->Feature.FeatureMode;
+	Output[0] = 0xFF; // HidOut->Feature.VibrationMode;
+	Output[1] = 0xF7; //HidOut->Feature.FeatureMode;
 	Output[2] = HidOut->Rumbles.Left;
 	Output[3] = HidOut->Rumbles.Right;
-	if (Padding == 1)
-	{
-		Output[4] = HidOut->Audio.HeadsetVolume;
-		Output[5] = HidOut->Audio.SpeakerVolume;
-		Output[6] = HidOut->Audio.MicVolume;
-		Output[7] = HidOut->Audio.Mode;
-		Output[9] = HidOut->Audio.MicStatus;
-	}
+	// Output[4] = HidOut->Audio.HeadsetVolume;
+	Output[5] = HidOut->Audio.SpeakerVolume;
+	// Output[6] = HidOut->Audio.MicVolume;
+	Output[7] = HidOut->Audio.Mode;
+	Output[9] = HidOut->Audio.MicStatus;
 	Output[8] = HidOut->MicLight.Mode;
 	Output[36] = (HidOut->Feature.TriggerSoftnessLevel << 4) | (HidOut->Feature.SoftRumbleReduce & 0x0F);
 	Output[38] ^= (1 << 0);
@@ -193,6 +189,44 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 	}
 }
 
+void FPlayStationOutputComposer::SendAudioHapticAdvanced(FDeviceContext* DeviceContext, const TArray<uint8>& AudioData)
+{
+	
+	if (!DeviceContext || !DeviceContext->IsConnected) return;
+	
+	uint8* Report = DeviceContext->BufferAudio;
+	Report[0] = 0x32;
+	const int8 Seq = (DeviceContext->AudioVibrationSequence & 0x0F);
+	constexpr int8 Tag = 0;
+	Report[1] = static_cast<int8>((Tag << 4) | Seq);
+	uint8* Data = &Report[2];
+
+	Data[0] = 0x11;
+	Data[1] = 7;
+	Data[2] = 0b11111110;
+	Data[3] = 0;
+	Data[4] = 0;
+	Data[5] = 0;
+	Data[6] = 0;
+	Data[7] = 0xFF;
+	Data[8] = Seq;
+
+	uint8* Pkt12 = &Data[9];
+	Pkt12[0] = 0x12;
+	Pkt12[1] = 64;
+
+	const size_t BytesToCopy = FMath::Min(static_cast<size_t>(AudioData.Num()), SAMPLE_SIZE);
+	if (BytesToCopy == SAMPLE_SIZE) return;
+	
+	FMemory::Memcpy(&Pkt12[2], AudioData.GetData(), BytesToCopy);
+	DeviceContext->AudioVibrationSequence++;
+
+	const uint32 Crc = ComputeAudio(Pkt12, sizeof(uint32_t));
+	FMemory::Memcpy(Report, &Crc, sizeof(uint32_t));
+	IPlatformHardwareInfoInterface::Get().WriteAudio(DeviceContext);
+	
+}
+
 const uint32 FPlayStationOutputComposer::HashTable[256] = {
 	0xd202ef8d, 0xa505df1b, 0x3c0c8ea1, 0x4b0bbe37, 0xd56f2b94, 0xa2681b02, 0x3b614ab8, 0x4c667a2e,
 	0xdcd967bf, 0xabde5729, 0x32d70693, 0x45d03605, 0xdbb4a3a6, 0xacb39330, 0x35bac28a, 0x42bdf21c,
@@ -236,4 +270,19 @@ uint32 FPlayStationOutputComposer::Compute(const unsigned char* Buffer, const si
 		Result = HashTable[static_cast<unsigned char>(Result) ^ static_cast<unsigned char>(Buffer[i])] ^ (Result >> 8);
 	}
 	return Result;
+}
+
+uint32 FPlayStationOutputComposer::ComputeAudio(const unsigned char* Buffer, const size_t Len)
+{
+	uint32 crc = ~0xEADA2D49u; // init =~seed
+	for (size_t i = 0; i < Len; ++i)
+	{
+		crc ^= Buffer[i];
+		for (unsigned j = 0; j < 8; ++j)
+		{
+			const uint32 mask = -(crc & 1u);
+			crc = (crc >> 1) ^ (0xEDB88320u & mask);
+		}
+	}
+	return ~crc;
 }

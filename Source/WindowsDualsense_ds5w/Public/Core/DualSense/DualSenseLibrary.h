@@ -724,6 +724,11 @@ public:
 	 * @return True if the calibration status was successfully retrieved, false otherwise.
 	 */
 	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override;
+	
+
+	virtual void AudioHapticUpdate(const float AverageEnvelopeValue,
+const float MaxEnvelopeValue,
+const int32 NumWaveInstances) override;
 	/**
 	 * Represents the unique identifier assigned to a specific DualSense controller.
 	 *

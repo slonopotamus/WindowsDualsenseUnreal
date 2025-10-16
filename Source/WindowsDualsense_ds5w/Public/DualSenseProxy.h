@@ -56,16 +56,7 @@ public:
 		const int32 ControllerId,
 		const float AverageEnvelopeValue,
 		const float MaxEnvelopeValue,
-		const int32 NumWaveInstances,
-		UPARAM(meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
-		const float EnvelopeToVibrationMultiplier = 0.5,
-		UPARAM(meta = (ClampMin = "0.0", ClampMax = "3.0", UIMin = "0.0", UIMax = "3.0"))
-		const float PeakToVibrationMultiplier = 0.8,
-		UPARAM(meta = (ClampMin = "0.015", ClampMax = "0.1", UIMin = "0.015", UIMax = "0.1"))
-		const float Threshold = 0.015f,
-		UPARAM(meta = (ClampMin = "0.0", ClampMax = "5.0", UIMin = "0.0", UIMax = "5.0"))
-		const float ExponentCurve = 2.f,
-		const float BaseMultiplier = 1.5f
+		const int32 NumWaveInstances
 	);
 
 	/**

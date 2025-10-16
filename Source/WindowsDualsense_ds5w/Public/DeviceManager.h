@@ -8,7 +8,7 @@
 #include "IHapticDevice.h"
 #include "IInputDevice.h"
 #include "InputCoreTypes.h"
-
+#include "Subsystems/AudioHapticsListener.h"
 
 
 /**
@@ -20,13 +20,16 @@ class WINDOWSDUALSENSE_DS5W_API DeviceManager final : public IInputDevice, publi
 {
 public:
 	virtual ~DeviceManager() override;
-	
-	/** 
-	 * Creates a new DualSense input device instance
-	 * @param InMessageHandler Message handler for input events
-	 * @param Lazily Whether to initialize the device in lazy loading mode
+
+	/**
+	 * Constructs a DeviceManager instance, initializing it with a message handler for input events
+	 * and an audio haptics listener for processing audio-based haptic feedback.
+	 *
+	 * @param InMessageHandler The message handler responsible for capturing and processing input events.
 	 */
-	explicit DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler);
+	explicit DeviceManager(
+		const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler
+		);
 	/**
 	 * Called every frame to update controller state
 	 * @param DeltaTime Time elapsed since last tick
@@ -182,4 +185,10 @@ private:
 	 * within the application.
 	 */
 	const TSharedRef<FGenericApplicationMessageHandler>& MessageHandler;
+	// /**
+	//  * Represents a shared reference to the audio haptics listener, used for managing
+	//  * audio-driven haptic feedback functionality. This reference allows reactive haptic
+	//  * responses synchronized with audio events or signals.
+	//  */
+	// const TSharedRef<FAudioHapticsListener>& AudioHapticsListener;
 };

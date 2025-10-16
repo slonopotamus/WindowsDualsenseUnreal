@@ -128,6 +128,9 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 }
 
 
+void FWindowsDeviceInfo::WriteAudio(FDeviceContext* Context)
+{
+}
 
 void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 {

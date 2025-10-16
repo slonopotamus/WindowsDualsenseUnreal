@@ -10,6 +10,7 @@
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Structs/FOutputContext.h"
+#include "Subsystems/AudioHapticsListener.h"
 
 bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
@@ -430,25 +431,25 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 			Acc.X = FinalAccelValueX;
 			Acc.Y = FinalAccelValueY;
 			Acc.Z = FinalAccelValueZ;
-
-			FRotator GyroDelta(
+		}
+		
+		FRotator GyroDelta(
 			Gyro.X * Delta,
 				Gyro.Z * Delta,
 				Gyro.Y * Delta
 			);
-			FQuat GyroBasedOrientation = FusedOrientation * GyroDelta.Quaternion();
-			FVector AccelDirection = FVector(Acc.X ,  Acc.Z, Acc.Y).GetSafeNormal();
-			FQuat AccelBasedOrientation = AccelDirection.ToOrientationQuat();
-			FusedOrientation = FQuat::Slerp(AccelBasedOrientation, GyroBasedOrientation,  0.98f);
-			const FRotator FusedOrientationRotator = FusedOrientation.Rotator();
-			const FVector Tilt = FVector( FusedOrientationRotator.Pitch, FusedOrientationRotator.Yaw, FusedOrientationRotator.Roll);
+		FQuat GyroBasedOrientation = FusedOrientation * GyroDelta.Quaternion();
+		FVector AccelDirection = FVector(Acc.X ,  Acc.Z, Acc.Y).GetSafeNormal();
+		FQuat AccelBasedOrientation = AccelDirection.ToOrientationQuat();
+		FusedOrientation = FQuat::Slerp(AccelBasedOrientation, GyroBasedOrientation,  0.98f);
+		const FRotator FusedOrientationRotator = FusedOrientation.Rotator();
+		const FVector Tilt = FVector( FusedOrientationRotator.Pitch, FusedOrientationRotator.Yaw, FusedOrientationRotator.Roll);
 			
-			const FVector Gyroscope = FVector(Gyro.X, Gyro.Z, Gyro.Y);
-			const FVector Accelerometer = FVector(Acc.X, Acc.Z, Acc.Y);
-			const float GravityMagnitude = FVector(Acc.X, Acc.Z, Acc.Y).Size();
-			const FVector Gravity = (FVector(Acc.X, Acc.Z, Acc.Y) / GravityMagnitude) * 9.81f;
-			InMessageHandler.Get().OnMotionDetected(Tilt, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
-		}
+		const FVector Gyroscope = FVector(Gyro.X, Gyro.Z, Gyro.Y);
+		const FVector Accelerometer = FVector(Acc.X, Acc.Z, Acc.Y);
+		const float GravityMagnitude = FVector(Acc.X, Acc.Z, Acc.Y).Size();
+		const FVector Gravity = (FVector(Acc.X, Acc.Z, Acc.Y) / GravityMagnitude) * 9.81f;
+		InMessageHandler.Get().OnMotionDetected(Tilt, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
 	}
 
 	SetHasPhoneConnected(HIDInput[0x35] & 0x01);
@@ -820,8 +821,8 @@ void UDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
 void UDualSenseLibrary::StopAll()
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	HidOutput->Feature.VibrationMode = 0xFF;
-	HidOutput->Feature.FeatureMode = 0xF7;
+	HidOutput->Feature.VibrationMode = 0xFC;
+	HidOutput->Feature.FeatureMode = 0xD7;
 	if (
 		HidOutput->Lightbar.A == 0 &&
 		HidOutput->Lightbar.B == 0 &&
@@ -926,6 +927,51 @@ bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 	}
 
 	return true;
+}
+
+
+
+void UDualSenseLibrary::AudioHapticUpdate(const float AverageEnvelopeValue,
+const float MaxEnvelopeValue,
+const int32 NumWaveInstances)
+{
+	TArray<uint8> AudioData;
+	constexpr int8 Report = 64;
+	AudioData.SetNumUninitialized(Report);
+
+	// Intensidade 0..1
+	const float Intensity = FMath::Clamp(MaxEnvelopeValue, 0.0f, 1.0f);
+
+	// Escolha UM dos padrões abaixo:
+
+	// 1) Onda quadrada forte (0x00 / 0x7F)
+	// for (int32 i = 0; i < Report; ++i)
+	// {
+	// 	AudioData[i] = (i & 1) ? 0x7F : 0x00;
+	// }
+
+	// 2) Seno 64 amostras (0..127), escalado pela intensidade
+	for (int32 i = 0; i < Report; ++i)
+	{
+		const float s01 = 0.5f * (1.0f + FMath::Sin(2.f * PI * (float)i / (float)Report)); // 0..1
+		const float scaled = s01 * NumWaveInstances; // 0..1
+		AudioData[i] = static_cast<uint8>(FMath::Clamp(scaled * 127.f, 0.f, 128.f));
+	}
+
+	// 3) Ruído (descomente para testar ruído)
+	// for (int32 i = 0; i < Report; ++i)
+	// {
+	// 	const float r01 = FMath::FRand(); // 0..1
+	// 	const float scaled = r01 * Intensity;
+	// 	AudioData[i] = static_cast<uint8>(FMath::Clamp(scaled * 127.f, 0.f, 127.f));
+	// }
+
+	FDeviceContext* Context = &HIDDeviceContexts;
+	FPlayStationOutputComposer::SendAudioHapticAdvanced(Context, AudioData);
+	// AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context), AudioData]()
+	// {
+	// 	
+	// });
 }
 
 void UDualSenseLibrary::StartMotionSensorCalibration(float Duration, float DeadZone)

@@ -21,6 +21,7 @@ class FCommonsDeviceInfo : public IPlatformHardwareInfoInterface
 	 */
 public:
 	virtual ~FCommonsDeviceInfo() override {};
+	virtual void WriteAudio(FDeviceContext* Context) override;
 	/**
 	 * Reads device information using the provided device context.
 	 *

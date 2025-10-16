@@ -40,6 +40,7 @@ class IPlatformHardwareInfoInterface
 	 */
 public:
 	static IPlatformHardwareInfoInterface& Get();
+	virtual void WriteAudio(FDeviceContext* Context) = 0;
 	/**
 	 * Virtual destructor for the IPlatformHardwareInfoInterface.
 	 *

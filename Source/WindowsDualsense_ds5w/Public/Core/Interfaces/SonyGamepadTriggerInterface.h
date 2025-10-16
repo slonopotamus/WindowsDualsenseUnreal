@@ -5,6 +5,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Subsystems/AudioHapticsListener.h"
 #include "UObject/Interface.h"
 #include "Templates/SharedPointer.h"
 #include "SonyGamepadTriggerInterface.generated.h"
@@ -128,4 +129,7 @@ public:
 	 * @param BaseMultiplier A multiplier applied to the vibration intensity base level. Default is 1.5f.
 	 */
 	virtual void SetVibrationAudioBased(const FForceFeedbackValues& Vibration, const float Threshold = 0.015f, const float ExponentCurve = 2.f, const float BaseMultiplier = 1.5f) = 0;
+	virtual void AudioHapticUpdate(const float AverageEnvelopeValue,
+	const float MaxEnvelopeValue,
+	const int32 NumWaveInstances) = 0;
 };

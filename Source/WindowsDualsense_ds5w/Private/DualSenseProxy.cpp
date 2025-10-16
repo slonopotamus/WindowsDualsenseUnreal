@@ -54,12 +54,7 @@ void UDualSenseProxy::SetVibrationFromAudio(
 	const int32 ControllerId,
 	const float AverageEnvelopeValue,
 	const float MaxEnvelopeValue,
-	const int32 NumWaveInstances,
-	const float EnvelopeToVibrationMultiplier,
-	const float PeakToVibrationMultiplier,
-	const float Threshold,
-	const float ExponentCurve,
-	const float BaseMultiplier
+	const int32 NumWaveInstances
 )
 {
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
@@ -73,14 +68,8 @@ void UDualSenseProxy::SetVibrationFromAudio(
 	{
 		return;
 	}
-
-	const float VibrationLeft = FMath::Clamp(AverageEnvelopeValue * EnvelopeToVibrationMultiplier * NumWaveInstances,0.0f, 1.0f);
-	const float VibrationRight = FMath::Clamp(MaxEnvelopeValue * PeakToVibrationMultiplier * NumWaveInstances, 0.0f,1.0f);
-
-	FForceFeedbackValues FeedbackValues;
-	FeedbackValues.LeftLarge = VibrationLeft;
-	FeedbackValues.RightLarge = VibrationRight;
-	Gamepad->SetVibrationAudioBased(FeedbackValues, Threshold, ExponentCurve, BaseMultiplier);
+	
+	Gamepad->AudioHapticUpdate(AverageEnvelopeValue, MaxEnvelopeValue, NumWaveInstances);
 }
 
 void UDualSenseProxy::SetFeedback(int32 ControllerId, int32 BeginStrength,

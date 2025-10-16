@@ -50,6 +50,30 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 	}
 }
 
+void FCommonsDeviceInfo::WriteAudio(FDeviceContext* Context)
+{
+	if (!Context || !Context->Handle)
+	{
+		return;
+	}
+
+	FString Hex;
+	Hex.Reserve(3 * UE_ARRAY_COUNT(Context->BufferAudio)); // "FF " por byte
+	for (size_t i = 0; i < UE_ARRAY_COUNT(Context->BufferAudio); ++i)
+	{
+		const uint8 b = Context->BufferAudio[i];
+		Hex += FString::Printf(TEXT("%02X "), b);
+	}
+	UE_LOG(LogTemp, Log, TEXT("Audio buffer (%d bytes): %s"), (int32)UE_ARRAY_COUNT(Context->BufferAudio), *Hex);
+	
+	int BytesWritten = SDL_hid_write(Context->Handle, Context->BufferAudio, sizeof(Context->BufferAudio));
+	if (BytesWritten < 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("hid_api: Failed to write audio device"));
+		InvalidateHandle(Context);
+	}
+}
+
 void FCommonsDeviceInfo::Write(FDeviceContext* Context)
 {
 	if (!Context || !Context->Handle)
@@ -156,6 +180,7 @@ void FCommonsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		memset(Context->Buffer, 0, sizeof(Context->Buffer));
 		memset(Context->BufferDS4, 0, sizeof(Context->BufferDS4));
 		memset(Context->BufferOutput, 0, sizeof(Context->BufferOutput));
+		memset(Context->BufferAudio, 0, sizeof(Context->BufferAudio));
 	}
 }
 #endif

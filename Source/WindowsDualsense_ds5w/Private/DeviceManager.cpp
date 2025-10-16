@@ -13,9 +13,13 @@
 #include "Windows/WindowsApplication.h"
 #endif
 
-DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler): MessageHandler(InMessageHandler)
+DeviceManager::DeviceManager(
+	const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler
+	): MessageHandler(InMessageHandler)
 {
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
+
+	
 }
 
 DeviceManager::~DeviceManager()

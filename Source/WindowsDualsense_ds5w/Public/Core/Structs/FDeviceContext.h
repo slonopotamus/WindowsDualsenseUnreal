@@ -57,7 +57,6 @@ struct FDeviceContext
 	 * For instance, it may hold `INVALID_HANDLE_VALUE` when invalid or disconnected.
 	 */
 	FPlatformDeviceHandle Handle;
-
 	/**
 	 * @brief Represents a file or resource path in the context of device management.
 	 *
@@ -109,6 +108,18 @@ struct FDeviceContext
 	 *       data handling capabilities.
 	 */
 	unsigned char BufferOutput[78];
+	/**
+	 * @brief Buffer used for audio data storage and processing.
+	 *
+	 * This array is designed to temporarily hold audio data during
+	 * operations such as transmission, processing, or playback.
+	 * It is fundamental for managing audio-related tasks efficiently
+	 * within the system.
+	 *
+	 * The size of the buffer supports maintaining a consistent flow
+	 * of audio data while minimizing processing latency.
+	 */
+	uint8 BufferAudio[141];
 	/**
 	 * Indicates whether the device is connected.
 	 *
@@ -172,6 +183,14 @@ struct FDeviceContext
 	 * enabling seamless interaction and device-specific operations.
 	 */
 	FInputDeviceId UniqueInputDeviceId;
+	/**
+	 * @brief Represents the sequence index for audio vibration feedback.
+	 *
+	 * Used to manage and track the current step in an audio-based vibration sequence
+	 * within the device. This sequence enables precise synchronization of vibration
+	 * effects with audio playback.
+	 */
+	uint8 AudioVibrationSequence = 0;
 
 	FDeviceContext(): Path{}, Buffer{}, BufferDS4{}, BufferOutput{}, IsConnected(false),
 	                  ConnectionType(), DeviceType(),
