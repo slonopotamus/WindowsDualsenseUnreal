@@ -57,20 +57,23 @@ void FCommonsDeviceInfo::WriteAudio(FDeviceContext* Context)
 		return;
 	}
 
-	FString Hex;
-	Hex.Reserve(3 * UE_ARRAY_COUNT(Context->BufferAudio)); // "FF " por byte
-	for (size_t i = 0; i < UE_ARRAY_COUNT(Context->BufferAudio); ++i)
-	{
-		const uint8 b = Context->BufferAudio[i];
-		Hex += FString::Printf(TEXT("%02X "), b);
-	}
-	UE_LOG(LogTemp, Log, TEXT("Audio buffer (%d bytes): %s"), (int32)UE_ARRAY_COUNT(Context->BufferAudio), *Hex);
-	
-	int BytesWritten = SDL_hid_write(Context->Handle, Context->BufferAudio, sizeof(Context->BufferAudio));
+	constexpr size_t Report = 142;
+	int BytesWritten = SDL_hid_write(Context->Handle, Context->BufferAudio, Report);
 	if (BytesWritten < 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("hid_api: Failed to write audio device"));
 		InvalidateHandle(Context);
+	}
+
+	FString Line;
+	for (int32 i = 0; i < 142; ++i)
+	{
+		Line += FString::Printf(TEXT("%02X "), Context->Buffer[i]);
+		if ((i % 16) == 15 || i == 64 - 1)
+		{
+			UE_LOG(LogTemp, Log, TEXT("%s"), *Line);
+			Line.Reset();
+		}
 	}
 }
 
