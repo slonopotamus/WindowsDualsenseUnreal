@@ -108,11 +108,11 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 							DevicePath.Contains(TEXT("bth")) ||
 							DevicePath.Contains(TEXT("BTHENUM")))
 						{
-							unsigned char FeatureBuffer[78];
-							FeatureBuffer[0] = 0x05;
-							if (!HidD_GetFeature(TempDeviceHandle, FeatureBuffer, 78)) {
-								UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to HidD_GetFeature."));
-							}
+							// unsigned char FeatureBuffer[64];
+							// FeatureBuffer[0] = 0x05;
+							// if (!HidD_GetFeature(TempDeviceHandle, FeatureBuffer, 64)) {
+							// 	UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to HidD_GetFeature."));
+							// }
 							Context.ConnectionType = Bluetooth;
 						}
 						Devices.Add(Context);
@@ -130,6 +130,26 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 
 void FWindowsDeviceInfo::WriteAudio(FDeviceContext* Context)
 {
+	if (!Context || !Context->Handle)
+	{
+		return;
+	}
+
+	FString Hex;
+	for (size_t i = 0; i < 114; ++i)
+	{
+		const uint8 b = Context->BufferAudio[i];
+		Hex += FString::Printf(TEXT("%02X "), b);
+	}
+	UE_LOG(LogTemp, Log, TEXT("Audio buffer (%d bytes): %s"), *Context->BufferAudio, *Hex);
+
+	DWORD BytesWritten = 0;
+	if (!WriteFile(Context->Handle, Context->BufferAudio, sizeof(Context->BufferAudio), &BytesWritten, nullptr))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed DualShock to write output data to device. report %llu error Code: %d"),
+			sizeof(Context->BufferAudio), GetLastError());
+		InvalidateHandle(Context);
+	}
 }
 
 void FWindowsDeviceInfo::Read(FDeviceContext* Context)
@@ -173,12 +193,12 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 		return;
 	}
 
-	const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 78 : 64;
-	if (sizeof(Context->Buffer) < InputReportLength)
-	{
-		InvalidateHandle(Context);
-		return;
-	}
+	const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 547 : 64;
+	// if (sizeof(Context->Buffer) < InputReportLength)
+	// {
+	// 	InvalidateHandle(Context);
+	// 	return;
+	// }
 
 	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputReportLength, BytesRead);
 	if (Response == EPollResult::Disconnected)
