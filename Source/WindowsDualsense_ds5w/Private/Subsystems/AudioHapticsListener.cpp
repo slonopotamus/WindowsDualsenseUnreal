@@ -4,7 +4,10 @@
 
 #include "../../Public/Subsystems/AudioHapticsListener.h"
 
-FAudioHapticsListener::FAudioHapticsListener()
+#include "Core/DeviceRegistry.h"
+#include "Core/Interfaces/SonyGamepadTriggerInterface.h"
+
+FAudioHapticsListener::FAudioHapticsListener(const FInputDeviceId InDeviceId): DeviceId(InDeviceId), LastUpdateTime(0.0)
 {
 }
 
@@ -12,49 +15,60 @@ FAudioHapticsListener::~FAudioHapticsListener()
 {
 }
 
-void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples,
-                                              int32 NumChannels, const int32 SampleRate, double AudioClock)
+void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock)
 {
-	UE_LOG(LogTemp, Log, TEXT("OnNewSubmixBuffer"));
-	// TArray<uint8> ConvertedChunk;
-	// ConvertAndResampleAudio(AudioData, NumSamples, NumChannels, SampleRate, ConvertedChunk);
- //    
-	// if (ConvertedChunk.Num() == 64)
-	// {
-	// 	ConvertedAudioQueue.Enqueue(ConvertedChunk);
-	// }
-}
-void FAudioHapticsListener::ConvertAndResampleAudio(const float* InAudioData, int32 InNumSamples, int32 InNumChannels, 
-												  int32 InSampleRate, TArray<uint8>& OutBuffer)
-{
-	constexpr int32 TargetSampleRate = 3000;
-	constexpr int32 NumOutputSamples = 64;
-	const float SampleRatio = static_cast<float>(InSampleRate) / TargetSampleRate;
+	UE_LOG(LogTemp, Log, TEXT("AudioHapticsListener::OnNewSubmixBuffer %s"), *OwningSubmix->GetName());
+	UE_LOG(LogTemp, Log, TEXT("AudioHapticsListener::Params %f, %d, %d, %d, %f"), AudioData[0], NumSamples, NumChannels, SampleRate, AudioClock);
 
-	OutBuffer.Reset();
-	OutBuffer.Reserve(NumOutputSamples);
+	// Para ver o endereço do buffer
+	UE_LOG(LogTemp, Log, TEXT("AudioData buffer address: %p"), AudioData);
 
-	for (int32 i = 0; i < NumOutputSamples; ++i)
-	{
-		const float InputSampleIndexFloat = (i * SampleRatio) + ResampleCarryOver;
+    const double CurrentTime = AudioClock;
+    const double MinUpdateInterval = 1.0 / 60.0;
 
-		if (const int32 InputSampleIndex = FMath::FloorToInt(InputSampleIndexFloat); (InputSampleIndex + 1) * InNumChannels <= InNumSamples)
-		{
-			float MonoSampleValue = 0.f;
-			for (int32 c = 0; c < InNumChannels; ++c)
-			{
-				MonoSampleValue += InAudioData[(InputSampleIndex * InNumChannels) + c];
-			}
-			MonoSampleValue /= InNumChannels;
-			const int8 ConvertedSample = static_cast<int8>(FMath::Clamp(MonoSampleValue * 127.f, -128.f, 127.f));
-			OutBuffer.Add(static_cast<uint8>(ConvertedSample));
-		}
-		else
-		{
-			OutBuffer.Add(0);
-		}
-	}
+    if (CurrentTime - LastUpdateTime < MinUpdateInterval)
+    {
+        return;
+    }
+
+    TArray<uint8> ProcessedAudio;
+    ProcessedAudio.SetNum(64);
+
+    // Simplificar o processamento e aumentar a sensibilidade
+    const float AmplitudeMultiplier = 127.0f; // Aumentar a sensibilidade
+    const int32 SamplesPerOutput = (NumSamples * NumChannels) / 64;
     
-	ResampleCarryOver = FMath::Frac(NumOutputSamples * SampleRatio + ResampleCarryOver);
+    for (int32 i = 0; i < 64; ++i)
+    {
+        float MaxAmplitude = 0.0f;
+        const int32 StartSample = i * SamplesPerOutput;
+        const int32 EndSample = FMath::Min(StartSample + SamplesPerOutput, NumSamples * NumChannels);
+        
+        // Pegar o valor máximo para este segmento
+        for (int32 j = StartSample; j < EndSample; j++)
+        {
+            MaxAmplitude = FMath::Max(MaxAmplitude, FMath::Abs(AudioData[j]));
+        }
+        
+        // Aplicar multiplicador e converter para byte
+        float ScaledAmplitude = FMath::Clamp(MaxAmplitude * AmplitudeMultiplier, 0.0f, 1.0f);
+        ProcessedAudio[i] = static_cast<uint8>(ScaledAmplitude * 255.0f);
+    }
+
+    if (ISonyGamepadTriggerInterface* DualSense = Cast<ISonyGamepadTriggerInterface>(
+        FDeviceRegistry::Get()->GetLibraryInstance(DeviceId)))
+    {
+        // const uint8 AudioPattern[64] = ;
+
+        // TArray<uint8> NewDateProcess;
+        // NewDateProcess.SetNum(64);
+        // for (int i = 0; i < 64; i++)
+        // {
+        //     NewDateProcess.Add(AudioPattern[i]);
+        // }
+        FPlatformProcess::Sleep(0.016f);
+        DualSense->AudioHapticUpdate(ProcessedAudio);
+        LastUpdateTime = CurrentTime;
+    }
 }
 

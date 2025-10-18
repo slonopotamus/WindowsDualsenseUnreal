@@ -108,11 +108,11 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 							DevicePath.Contains(TEXT("bth")) ||
 							DevicePath.Contains(TEXT("BTHENUM")))
 						{
-							// unsigned char FeatureBuffer[64];
-							// FeatureBuffer[0] = 0x05;
-							// if (!HidD_GetFeature(TempDeviceHandle, FeatureBuffer, 64)) {
-							// 	UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to HidD_GetFeature."));
-							// }
+							unsigned char FeatureBuffer[78];
+							FeatureBuffer[0] = 0x05;
+							if (!HidD_GetFeature(TempDeviceHandle, FeatureBuffer, 78)) {
+								UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to HidD_GetFeature."));
+							}
 							Context.ConnectionType = Bluetooth;
 						}
 						Devices.Add(Context);
@@ -132,23 +132,37 @@ void FWindowsDeviceInfo::WriteAudio(FDeviceContext* Context)
 {
 	if (!Context || !Context->Handle)
 	{
+		UE_LOG(LogTemp, Error, TEXT("Context nto found!"));
 		return;
 	}
 
-	FString Hex;
-	for (size_t i = 0; i < 114; ++i)
+	FString Line;
+	for (int32 i = 0; i < 142; ++i)
 	{
-		const uint8 b = Context->BufferAudio[i];
-		Hex += FString::Printf(TEXT("%02X "), b);
+		Line += FString::Printf(TEXT("%02X "), Context->BufferAudio[i]);
 	}
-	UE_LOG(LogTemp, Log, TEXT("Audio buffer (%d bytes): %s"), *Context->BufferAudio, *Hex);
+	UE_LOG(LogTemp, Log, TEXT("DualSense Audio Size %llu Buffer %s"), sizeof(Context->BufferAudio), *Line);
 
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferAudio, sizeof(Context->BufferAudio), &BytesWritten, nullptr))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed DualShock to write output data to device. report %llu error Code: %d"),
-			sizeof(Context->BufferAudio), GetLastError());
+		DWORD Error = 0;
+		Error = GetLastError();
+		if (Error == ERROR_INVALID_PARAMETER || Error == ERROR_IO_PENDING)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DualSense write temporary error (expected for BT). Error: %d"), Error);
+			return;
+		}
+    
+		UE_LOG(LogTemp, Error, TEXT("Failed DualSense write. Error: %d"), Error);
 		InvalidateHandle(Context);
+		return;
+	}
+
+	if (BytesWritten < sizeof(Context->BufferAudio))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Partial write to DualSense (%lu of %llu bytes)"), 
+			BytesWritten, sizeof(Context->BufferAudio));
 	}
 }
 
@@ -193,12 +207,12 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 		return;
 	}
 
-	const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 547 : 64;
-	// if (sizeof(Context->Buffer) < InputReportLength)
-	// {
-	// 	InvalidateHandle(Context);
-	// 	return;
-	// }
+	const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 78 : 64;
+	if (sizeof(Context->Buffer) < InputReportLength)
+	{
+		InvalidateHandle(Context);
+		return;
+	}
 
 	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputReportLength, BytesRead);
 	if (Response == EPollResult::Disconnected)
@@ -215,12 +229,12 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	}
 	
 	size_t InReportLength = Context->DeviceType == DualShock4 ? 32 : 74;
-	size_t OutputReportLength = Context->ConnectionType == Bluetooth ? 78 : InReportLength;
+	size_t OutputReportLength = Context->ConnectionType == Bluetooth ? 142 : InReportLength;
 
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed DualShock to write output data to device. report %llu error Code: %d"),
+		UE_LOG(LogTemp, Error, TEXT("Failed to write output report 0x02 data to device. report %llu error Code: %d"),
 			OutputReportLength, GetLastError());
 		InvalidateHandle(Context);
 	}
@@ -262,6 +276,7 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
 		ZeroMemory(Context->BufferDS4, sizeof(Context->BufferDS4));
 		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
+		ZeroMemory(Context->BufferAudio, sizeof(Context->BufferAudio));
 		UE_LOG(LogTemp, Log, TEXT("HIDManager: Invalidate Handle."));
 	}
 }

@@ -10,7 +10,6 @@
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Structs/FOutputContext.h"
-#include "Subsystems/AudioHapticsListener.h"
 
 bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
@@ -122,7 +121,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	{
 		IPlatformHardwareInfoInterface::Get().Read(NewContext);
 	});
-UE_LOG(LogTemp, Warning, TEXT("buff, %02X"), HIDDeviceContexts.Buffer[0]);
+	// UE_LOG(LogTemp, Warning, TEXT("buff, %02X"), HIDDeviceContexts.Buffer[0]);
 	const size_t Padding = HIDDeviceContexts.ConnectionType == Bluetooth ? 2 : 1;
 	const unsigned char* HIDInput = &HIDDeviceContexts.Buffer[Padding];
 
@@ -297,7 +296,6 @@ UE_LOG(LogTemp, Warning, TEXT("buff, %02X"), HIDDeviceContexts.Buffer[0]);
 
 		bWasTouch1Down = bIsTouchDown;
 
-		// // Evaluate touch state 2
 		FTouchPoint2 Touch2;
 		const int32 Touchpad2Raw = *reinterpret_cast<const int32*>(&HIDInput[0x24]);
 		Touch2.Y = (Touchpad2Raw & 0xFFF00000) >> 20;
@@ -930,27 +928,16 @@ bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 }
 
 
-TArray<uint8> AudioData;
-int8 ReportCount = 0;
-void UDualSenseLibrary::AudioHapticUpdate(const float AverageEnvelopeValue,
-const float MaxEnvelopeValue,
-const int32 NumWaveInstances)
+void UDualSenseLibrary::AudioHapticUpdate(TArray<uint8>& AudioHapticsData)
 {
-	constexpr int8 Report = 64;
-	AudioData.SetNumUninitialized(Report);
-	
-	const float Scaled = AverageEnvelopeValue * MaxEnvelopeValue * 127;
-	AudioData[ReportCount] = Scaled * 255;
-	ReportCount++;
-
-	if (ReportCount == Report)
+	FDeviceContext* Context = &HIDDeviceContexts;
+	if (!Context || !Context->IsConnected)
 	{
-		FDeviceContext* Context = &HIDDeviceContexts;
-		FPlayStationOutputComposer::SendAudioHapticAdvanced(Context, AudioData);
-		ReportCount = 0;
+		return;
 	}
-	
-	// AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context), AudioData]()
+
+	FPlayStationOutputComposer::SendAudioHapticAdvanced(Context, AudioHapticsData);
+	// AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context), Samples = MoveTemp(AudioHapticsData)]()
 	// {
 	// 	
 	// });

@@ -9,6 +9,7 @@
 #include "UObject/Object.h"
 #include "InputCoreTypes.h"
 #include "SonyGamepadProxy.h"
+#include "Core/HapticsRegistry.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Structs/FDualSenseFeatureReport.h"
@@ -39,26 +40,16 @@ public:
 	static void DeviceSettings(int32 ControllerId, FDualSenseFeatureReport Settings);
 
 	/**
-	 * Sets the vibration for a DualSense controller based on audio envelopes and other parameters.
+	 * @brief Registers a specific audio submix for a DualSense controller.
 	 *
-	 * @param ControllerId The ID of the controller to apply the vibration to.
-	 * @param AverageEnvelopeValue The average audio envelope value, used to calculate the left vibration intensity.
-	 * @param MaxEnvelopeValue The maximum audio envelope value, used to calculate the right vibration intensity.
-	 * @param NumWaveInstances The number of wave instances contributing to the audio signal, affecting the overall vibration strength.
-	 * @param EnvelopeToVibrationMultiplier Multiplier to scale the average envelope value to vibration intensity.
-	 * @param PeakToVibrationMultiplier Multiplier to scale the maximum envelope value to vibration intensity.
-	 * @param Threshold The minimum vibration level threshold for activation.
-	 * @param ExponentCurve The exponent curve used to shape the vibration scaling.
-	 * @param BaseMultiplier A base multiplier applied to vibration for additional scaling.
+	 * Links a given sound submix to a connected PlayStation DualSense controller, identified by ControllerId.
+	 * Enables audio haptics functionality to synchronize sound experiences with the controller's haptics capability.
+	 *
+	 * @param ControllerId The identifier for the connected DualSense controller.
+	 * @param Submix The audio submix to be registered for haptic feedback on the controller.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Audio Vibration")
-	static void SetVibrationFromAudio(
-		const int32 ControllerId,
-		const float AverageEnvelopeValue,
-		const float MaxEnvelopeValue,
-		const int32 NumWaveInstances
-	);
-
+	UFUNCTION(BlueprintCallable, Category = "DualSense|Audio", meta = (DisplayName = "Register Submix"))
+	static void RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix);
 	/**
 	 * @brief Activates an automatic gun effect on a specified DualSense controller.
 	 *
@@ -560,6 +551,38 @@ public:
 		Galloping(ControllerId, StartPosition, EndPosition, BeginStrength, EndStrength, Frequency, Hand);
 	}
 
+	
+
+	/**
+	 * Sets the vibration for a DualSense controller based on audio envelopes and other parameters.
+	 *
+	 * @param ControllerId The ID of the controller to apply the vibration to.
+	 * @param AverageEnvelopeValue The average audio envelope value, used to calculate the left vibration intensity.
+	 * @param MaxEnvelopeValue The maximum audio envelope value, used to calculate the right vibration intensity.
+	 * @param NumWaveInstances The number of wave instances contributing to the audio signal, affecting the overall vibration strength.
+	 * @param EnvelopeToVibrationMultiplier Multiplier to scale the average envelope value to vibration intensity.
+	 * @param PeakToVibrationMultiplier Multiplier to scale the maximum envelope value to vibration intensity.
+	 * @param Threshold The minimum vibration level threshold for activation.
+	 * @param ExponentCurve The exponent curve used to shape the vibration scaling.
+	 * @param BaseMultiplier A base multiplier applied to vibration for additional scaling.
+	 */
+	UE_DEPRECATED(
+		5.1, "Methods refactored and deprecated as of plugin version v1.2.18. Use RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix).")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Audio Vibration", meta=(DeprecatedFunction, DeprecationMessage="Use RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix)"))
+	void SetVibrationFromAudio(
+		const int32 ControllerId,
+		const float AverageEnvelopeValue,
+		const float MaxEnvelopeValue,
+		const int32 NumWaveInstances,
+		float EnvelopeToVibrationMultiplier,
+		float PeakToVibrationMultiplier,
+		float Threshold,
+		float ExponentCurve,
+		float BaseMultiplier
+	)
+	{
+	}
+
 	/**
 	 * Retrieves the strength of the right trigger feedback for the specified controller.
 	 *
@@ -583,5 +606,7 @@ public:
 	{
 		return 0;
 	}
+
+	
 	
 };

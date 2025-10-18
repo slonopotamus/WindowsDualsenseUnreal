@@ -116,5 +116,4 @@ public:
 	 * @return The computed CRC32 hash value.
 	 */
 	static uint32 Compute(const unsigned char* Buffer, size_t Len);
-	static uint32 ComputeAudio(const uint8_t* data, size_t size);
 };

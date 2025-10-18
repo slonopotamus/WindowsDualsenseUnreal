@@ -69,8 +69,8 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 
 	FOutputContext* HidOut = &DeviceContext->Output;
 	unsigned char*  Output = &DeviceContext->BufferOutput[Padding];
-	Output[0] = 0xFF; // HidOut->Feature.VibrationMode;
-	Output[1] = 0xF7; //HidOut->Feature.FeatureMode;
+	Output[0] = HidOut->Feature.VibrationMode;
+	Output[1] = HidOut->Feature.FeatureMode;
 	Output[2] = HidOut->Rumbles.Left;
 	Output[3] = HidOut->Rumbles.Right;
 	// Output[4] = HidOut->Audio.HeadsetVolume;
@@ -189,36 +189,56 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 	}
 }
 
-uint8 Seq = 0; 
+
 void FPlayStationOutputComposer::SendAudioHapticAdvanced(FDeviceContext* DeviceContext, const TArray<uint8>& AudioData)
 {
-	if (!DeviceContext || !DeviceContext->IsConnected) return;
-	
-	memset(DeviceContext->BufferAudio, 0, 142);
+	if (!DeviceContext) return;
+
+	if (!DeviceContext || AudioData.Num() == 0) return;
+
+	FMemory::Memset(&DeviceContext->BufferAudio, 0, sizeof(DeviceContext->BufferAudio));
 	
 	DeviceContext->BufferAudio[0] = 0x32;
-	DeviceContext->BufferAudio[9] = Seq;
-	unsigned char* AudioBuffer = &DeviceContext->BufferAudio[10];
-	AudioBuffer[0] = 0x92;
+    DeviceContext->BufferAudio[1] = 0x00;
+    DeviceContext->BufferAudio[2] = 0x91;
+    DeviceContext->BufferAudio[3] = 0x07;
+    DeviceContext->BufferAudio[4] = 0xFE;
+    DeviceContext->BufferAudio[5] = 0x00;
+    DeviceContext->BufferAudio[9] = 0xFF;
+    DeviceContext->BufferAudio[10] = 0x00;
+	DeviceContext->BufferAudio[11] = DeviceContext->AudioVibrationSequence++;
+    
 
-	constexpr size_t SampleSize = 64;
-	const size_t ToCopy = FMath::Min(static_cast<size_t>(AudioData.Num()), SampleSize);
-	FMemory::Memcpy(&AudioBuffer[1], AudioData.GetData(), ToCopy);
+    DeviceContext->BufferAudio[12] = 0x92;
+    DeviceContext->BufferAudio[13] = 0x00;
+    
+	const int32 BytesToCopy = FMath::Min(AudioData.Num(), 64);
+	const int32 BytesToCopy2[64] = {
+		0x8E, 0x95, 0x98, 0x9A, 0xA1, 0xA5, 0xA3, 0xA9,
+		0xAD, 0xAC, 0xB8, 0xB2, 0xC0, 0xBA, 0xC9, 0xC5,
+		0xD3, 0xD0, 0xE5, 0xE1, 0xF4, 0xF1, 0xF4, 0xF8,
+		0xFA, 0x02, 0x0C, 0x0D, 0x18, 0x18, 0x1F, 0x1F,
+		0x2F, 0x29, 0x3C, 0x39, 0x49, 0x47, 0x59, 0x57,
+		0x60, 0x60, 0x6B, 0x66, 0x72, 0x6E, 0x71, 0x74,
+		0x76, 0x77, 0x7C, 0x75, 0x7B, 0x77, 0x74, 0x78,
+		0x77, 0x7A, 0x76, 0x79, 0x00, 0x00, 0x00, 0x00
+	};
+	FMemory::Memcpy(&DeviceContext->BufferAudio[14], &BytesToCopy2, 64);
 
-	const uint32 CrcChecksum = Compute(AudioBuffer, 138);
-	AudioBuffer[0x8A] = static_cast<unsigned char>((CrcChecksum >> 0)  & 0xFF);
-	AudioBuffer[0x8B] = static_cast<unsigned char>((CrcChecksum >> 8)  & 0xFF);
-	AudioBuffer[0x8C] = static_cast<unsigned char>((CrcChecksum >> 16) & 0xFF);
-	AudioBuffer[0x8D] = static_cast<unsigned char>((CrcChecksum >> 24) & 0xFF);
+	constexpr size_t CrcOffset = 138;
+    const uint32 CrcChecksum = Compute(DeviceContext->BufferAudio + 1, CrcOffset);
+    DeviceContext->BufferAudio[CrcOffset + 0] = static_cast<uint8>((CrcChecksum >> 0)  & 0xFF);
+    DeviceContext->BufferAudio[CrcOffset + 1] = static_cast<uint8>((CrcChecksum >> 8)  & 0xFF);
+    DeviceContext->BufferAudio[CrcOffset + 2] = static_cast<uint8>((CrcChecksum >> 16) & 0xFF);
+    DeviceContext->BufferAudio[CrcOffset + 3] = static_cast<uint8>((CrcChecksum >> 24) & 0xFF);
 
-	if (Seq == 0xFF)
+	if (DeviceContext->AudioVibrationSequence == 255)
 	{
-		Seq = 0;
+		DeviceContext->AudioVibrationSequence = 0;
 	}
-	Seq++;
-	
-	UE_LOG(LogTemp, Warning, TEXT("ff, %02X, %02X, %02X, %02X"), AudioBuffer[0x8A], AudioBuffer[0x8B], AudioBuffer[0x8C], AudioBuffer[0x8D]);
-	IPlatformHardwareInfoInterface::Get().WriteAudio(DeviceContext);
+
+	UE_LOG(LogTemp, Log, TEXT("Sequence: %d CrcChecksum, 0x%02X, 0x%02X, 0x%02X, 0x%02X"), DeviceContext->BufferAudio[11], DeviceContext->BufferAudio[CrcOffset + 0], DeviceContext->BufferAudio[CrcOffset + 1], DeviceContext->BufferAudio[CrcOffset + 2], DeviceContext->BufferAudio[CrcOffset + 3]);
+    IPlatformHardwareInfoInterface::Get().WriteAudio(DeviceContext);
 }
 
 const uint32 FPlayStationOutputComposer::HashTable[256] = {
@@ -264,16 +284,4 @@ uint32 FPlayStationOutputComposer::Compute(const unsigned char* Buffer, const si
 		Result = HashTable[static_cast<unsigned char>(Result) ^ static_cast<unsigned char>(Buffer[i])] ^ (Result >> 8);
 	}
 	return Result;
-}
-
-
-uint32 FPlayStationOutputComposer::ComputeAudio(const uint8_t* data, size_t size)
-{
-	uint32_t crc = ~0xEADA2D49;  // 0xA2 seed
-	while (size--) {
-		crc ^= *data++;
-		for (unsigned i = 0; i < 8; i++)
-			crc = ((crc >> 1) ^ (0xEDB88320 & -(crc & 1)));
-	}
-	return ~crc;
 }

@@ -119,7 +119,7 @@ struct FDeviceContext
 	 * The size of the buffer supports maintaining a consistent flow
 	 * of audio data while minimizing processing latency.
 	 */
-	unsigned char BufferAudio[142];
+	uint8 BufferAudio[142];
 	/**
 	 * Indicates whether the device is connected.
 	 *
