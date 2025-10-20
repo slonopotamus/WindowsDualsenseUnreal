@@ -108,11 +108,6 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 							DevicePath.Contains(TEXT("bth")) ||
 							DevicePath.Contains(TEXT("BTHENUM")))
 						{
-							unsigned char FeatureBuffer[78];
-							FeatureBuffer[0] = 0x05;
-							if (!HidD_GetFeature(TempDeviceHandle, FeatureBuffer, 78)) {
-								UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to HidD_GetFeature."));
-							}
 							Context.ConnectionType = Bluetooth;
 						}
 						Devices.Add(Context);
@@ -127,27 +122,20 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	SetupDiDestroyDeviceInfoList(DeviceInfoSet);
 }
 
-
-void FWindowsDeviceInfo::WriteAudio(FDeviceContext* Context)
+void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context, FDualSenseHapictBuffer* AudioData)
 {
 	if (!Context || !Context->Handle)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Context nto found!"));
+		UE_LOG(LogTemp, Error, TEXT("Context not found!"));
 		return;
 	}
 
-	FString Line;
-	for (int32 i = 0; i < 142; ++i)
-	{
-		Line += FString::Printf(TEXT("%02X "), Context->BufferAudio[i]);
-	}
-	UE_LOG(LogTemp, Log, TEXT("DualSense Audio Size %llu Buffer %s"), sizeof(Context->BufferAudio), *Line);
-
+	
+	
 	DWORD BytesWritten = 0;
-	if (!WriteFile(Context->Handle, Context->BufferAudio, sizeof(Context->BufferAudio), &BytesWritten, nullptr))
+	if (!WriteFile(Context->Handle, &AudioData->report, sizeof(AudioData->report), &BytesWritten, nullptr))
 	{
-		DWORD Error = 0;
-		Error = GetLastError();
+		DWORD Error = GetLastError();
 		if (Error == ERROR_INVALID_PARAMETER || Error == ERROR_IO_PENDING)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("DualSense write temporary error (expected for BT). Error: %d"), Error);
@@ -159,11 +147,57 @@ void FWindowsDeviceInfo::WriteAudio(FDeviceContext* Context)
 		return;
 	}
 
-	if (BytesWritten < sizeof(Context->BufferAudio))
+	FString Line;
+	Line += TEXT("\nPKT12 AFTER WRITE: ");
+	Line += FString::Printf(TEXT("tag:%02X prefix:%02X id:%02X size:%02X "), 
+		AudioData->report.pkt12.tag,
+		AudioData->report.pkt12.prefix,
+		AudioData->report.pkt12.id,
+		AudioData->report.pkt12.size);
+
+	Line += TEXT("data: ");
+	for (int32 i = 0; i < sizeof(AudioData->report.pkt12.data); ++i)
+	{
+		Line += FString::Printf(TEXT("%02X "), AudioData->report.pkt12.data[i]);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Line: %s"), *Line);
+
+	size_t InputReportLength = sizeof(AudioData->raw);
+	UE_LOG(LogTemp, Log, TEXT("DualSense Audio Buffer [%llu bytes]:\n%s"), 
+		InputReportLength, *Line);
+
+	if (BytesWritten < sizeof(AudioData->raw))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Partial write to DualSense (%lu of %llu bytes)"), 
-			BytesWritten, sizeof(Context->BufferAudio));
+			BytesWritten, sizeof(AudioData->raw));
 	}
+	
+	uint8_t responseBuffer[142];
+	DWORD BytesRead = 0;
+
+	if (!ReadFile(Context->Handle, 
+				  responseBuffer,
+				  sizeof(responseBuffer),
+				  &BytesRead,
+				  nullptr))
+	{
+		DWORD Error = GetLastError();
+		if (Error == ERROR_INVALID_PARAMETER || Error == ERROR_IO_PENDING)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DualSense read temporary error (expected for BT). Error: %d"), Error);
+			return;
+		}
+   
+		UE_LOG(LogTemp, Error, TEXT("Failed DualSense read. Error: %d"), Error);
+	}
+
+	// Se a leitura foi bem sucedida, copiamos os dados para a estrutura
+	if (BytesRead == sizeof(responseBuffer))
+	{
+		FMemory::Memcpy(&AudioData->raw, responseBuffer, sizeof(responseBuffer));
+	}
+
 }
 
 void FWindowsDeviceInfo::Read(FDeviceContext* Context)
@@ -186,35 +220,11 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 		UE_LOG(LogTemp, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
 		return;
 	}
+	Context->Buffer.ExpandForAudio(547);
 	
 	HidD_FlushQueue(Context->Handle);
-	
 	DWORD BytesRead = 0;
-	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
-	{
-		const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 547 : 64;
-		if (sizeof(Context->BufferDS4) < InputReportLength)
-		{
-			InvalidateHandle(Context);
-			return;
-		}
-		
-		const EPollResult Response = PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
-		if (Response == EPollResult::Disconnected)
-		{
-			InvalidateHandle(Context);
-		}
-		return;
-	}
-
-	const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 78 : 64;
-	if (sizeof(Context->Buffer) < InputReportLength)
-	{
-		InvalidateHandle(Context);
-		return;
-	}
-
-	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputReportLength, BytesRead);
+	const EPollResult Response = PollTick(Context->Handle, Context->Buffer.GetData(), Context->Buffer.GetSize(), BytesRead);
 	if (Response == EPollResult::Disconnected)
 	{
 		InvalidateHandle(Context);
@@ -272,9 +282,8 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		Context->Handle = INVALID_HANDLE_VALUE;
 		Context->IsConnected = false;
 		Context->Path = nullptr;
-		
-		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
-		ZeroMemory(Context->BufferDS4, sizeof(Context->BufferDS4));
+
+		Context->Buffer.ResetToNormal();
 		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
 		ZeroMemory(Context->BufferAudio, sizeof(Context->BufferAudio));
 		UE_LOG(LogTemp, Log, TEXT("HIDManager: Invalidate Handle."));

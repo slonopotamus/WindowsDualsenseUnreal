@@ -9,10 +9,12 @@ TSharedPtr<FHapticsRegistry> FHapticsRegistry::Instance;
 
 FHapticsRegistry::~FHapticsRegistry()
 {
-	for (auto& Pair : ControllerListeners)
-	{
-		RemoveListenerForDevice(Pair.Key);
-	}
+	RemoveAllListeners();
+}
+
+bool FHapticsRegistry::HasListenerForDevice(const FInputDeviceId& DeviceId) const
+{
+	return ControllerListeners.Contains(DeviceId);
 }
 
 TSharedPtr<FHapticsRegistry> FHapticsRegistry::Get()
@@ -35,7 +37,7 @@ void FHapticsRegistry::CreateListenerForDevice(const FInputDeviceId& DeviceId, U
 	const TSharedPtr<FAudioHapticsListener> Listener = MakeShared<FAudioHapticsListener>(DeviceId);
 
 	UE_LOG(LogTemp, Log, TEXT("Enabled Registering listener for device"));
-	if (FAudioDevice* AudioDevice = GEngine->GetMainAudioDeviceRaw())
+	if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
 	{
 		AudioDevice->RegisterSubmixBufferListener(Listener.Get(), Submix);
 		ControllerListeners.Add(DeviceId, Listener);
@@ -43,10 +45,30 @@ void FHapticsRegistry::CreateListenerForDevice(const FInputDeviceId& DeviceId, U
 	}
 }
 
+
+void FHapticsRegistry::RemoveAllListeners()
+{
+	if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
+	{
+		for (auto& Pair : ControllerListeners)
+		{
+			AudioDevice->UnregisterSubmixBufferListener(Pair.Value.Get());
+		}
+	}
+	ControllerListeners.Empty();
+}
+
 void FHapticsRegistry::RemoveListenerForDevice(const FInputDeviceId& DeviceId)
 {
-	if (TSharedPtr<FAudioHapticsListener>* Listener = ControllerListeners.Find(DeviceId))
+	if (const TSharedPtr<FAudioHapticsListener>* ExistingListener = ControllerListeners.Find(DeviceId))
 	{
+		if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
+		{
+			// Desregistra o listener do AudioDevice
+			AudioDevice->UnregisterSubmixBufferListener(ExistingListener->Get());
+			UE_LOG(LogTemp, Log, TEXT("Unregistered haptics listener for device %d"), DeviceId.GetId());
+		}
+		// Remove da lista de listeners
 		ControllerListeners.Remove(DeviceId);
 	}
 }

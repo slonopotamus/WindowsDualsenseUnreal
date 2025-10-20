@@ -52,6 +52,10 @@ public:
      * de-allocated in a safe and orderly manner, avoiding resource leaks or dangling listeners.
      */
     virtual ~FHapticsRegistry();
+	bool HasListenerForDevice(const FInputDeviceId& DeviceId) const;
+	void RemoveAllListeners();
+
+
     /**
      * Holds the singleton instance of FHapticsRegistry.
      *

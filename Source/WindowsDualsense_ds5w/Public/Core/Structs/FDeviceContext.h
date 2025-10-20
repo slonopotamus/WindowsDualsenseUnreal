@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include <vector>
 
 
 #if PLATFORM_WINDOWS
@@ -26,6 +27,102 @@ using FPlatformDeviceHandle = void*;
 #include "FOutputContext.h"
 #include "Core/Enums/EDeviceConnection.h"
 #include "FDeviceContext.generated.h"
+
+struct FDynamicInputBuffer {
+	std::vector<uint8_t> Buffer;
+    
+	// Construtor com tamanho inicial padrão para leitura normal
+	explicit FDynamicInputBuffer(size_t InitialSize = 64) { // 0x40 bytes inicial
+		Buffer.resize(InitialSize);
+	}
+    
+	// Expande o buffer quando necessário (por exemplo, quando o microfone é ativado)
+	void ExpandForAudio(size_t NewSize = 547) { // 0x223 bytes para áudio
+		if (Buffer.size() < NewSize) {
+			Buffer.resize(NewSize);
+		}
+	}
+    
+	// Retorna ao tamanho normal quando o microfone é desativado
+	void ResetToNormal(size_t NormalSize = 64) { // 0x40 bytes
+		Buffer.resize(NormalSize);
+	}
+    
+	// Obter ponteiro para os dados
+	uint8_t* GetData() {
+		return Buffer.data();
+	}
+    
+	// Obter tamanho atual do buffer
+	size_t GetSize() const {
+		return Buffer.size();
+	}
+};
+
+
+struct FDualSenseHapictBuffer {
+	static constexpr uint8 REPORT_ID_0x12 = 0x12;
+	static constexpr uint8 REPORT_ID_HAPTIC = 0x32;
+
+#pragma pack(push, 1)
+	struct PacketHeader {
+		uint8 report_id;      // 0x32
+		uint8 tag_seq;        // tag (4 bits) + seq (4 bits)
+	};
+    
+	struct Packet0x11 {
+		uint8_t prefix;       // 0x01
+		uint8_t id;          // 0x8E
+		uint8_t tag;         // 0x11
+		uint8_t length;      // 0x00
+		uint8_t data[4];     // 01 07 FE 00
+		uint8_t flags[2];    // FF 8X (onde X é incrementado)
+	};
+    
+	struct Packet0x12 {
+		uint8_t tag;         // 0x12
+		uint8_t prefix;      // 0x00
+		uint8_t id;          // 0x01
+		uint8_t size;        // 0x40
+		uint8_t data[124];   // Dados completos (haptic + sensores)
+		uint32_t crc;        // Checksum final
+	};
+
+
+	union {
+		struct {
+			PacketHeader header;
+			Packet0x11 pkt11;
+			Packet0x12 pkt12;
+		} report;
+		uint8_t raw[142];  // Acesso aos bytes brutos para CRC
+	};
+
+#pragma pack(pop)
+
+	// Helpers para acessar tag e seq
+	uint8_t get_tag() const { return (report.header.tag_seq >> 4) & 0x0F; }
+	uint8_t get_seq() const { return report.header.tag_seq & 0x0F; }
+	void set_tag(uint8_t t) { report.header.tag_seq = (t << 4) | get_seq(); }
+	void set_seq(uint8_t s) { report.header.tag_seq = (get_tag() << 4) | (s & 0x0F); }
+
+	FDualSenseHapictBuffer() {
+		FMemory::Memzero(this, sizeof(FDualSenseHapictBuffer));
+		report.header.report_id = REPORT_ID_HAPTIC;
+        
+		// Setup pkt11
+		report.pkt11.prefix = 0x01;
+		report.pkt11.id = 0x8E;
+		report.pkt11.tag = 0x11;
+		report.pkt11.data[0] = 0xFE;
+		report.pkt11.flags[0] = 0xFF;
+        
+		// Setup pkt12
+		report.pkt12.tag = 0x12;
+		report.pkt12.id = 0x01;
+		report.pkt12.size = 0x40;
+	}
+};
 
 /**
  * @brief Represents the context and state of a connected device.
@@ -77,7 +174,7 @@ struct FDeviceContext
 	 * The size of the buffer is designed to accommodate the expected data payload
 	 * during these communications, ensuring efficient handling of device protocols.
 	 */
-	unsigned char Buffer[78];
+	FDynamicInputBuffer Buffer;
 	/**
 	 * @brief Internal data buffer for DualShock 4 Bluetooth communication.
 	 *

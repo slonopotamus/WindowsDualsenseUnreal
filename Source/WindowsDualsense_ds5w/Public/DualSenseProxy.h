@@ -50,6 +50,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense|Audio", meta = (DisplayName = "Register Submix"))
 	static void RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix);
+	UFUNCTION(BlueprintCallable, Category = "DualSense|Audio", meta = (DisplayName = "Unregister Submix"))
+	static void UnregisterSubmixForDevice(int32 ControllerId);
 	/**
 	 * @brief Activates an automatic gun effect on a specified DualSense controller.
 	 *

@@ -40,7 +40,7 @@ class IPlatformHardwareInfoInterface
 	 */
 public:
 	static IPlatformHardwareInfoInterface& Get();
-	virtual void WriteAudio(FDeviceContext* Context) = 0;
+	virtual void ProcessAudioHapitc(FDeviceContext* Context, FDualSenseHapictBuffer* AudioData) = 0;
 	/**
 	 * Virtual destructor for the IPlatformHardwareInfoInterface.
 	 *

@@ -24,6 +24,8 @@ static constexpr uint8 PID_AUDIO = 0x12;
  */
 class WINDOWSDUALSENSE_DS5W_API FPlayStationOutputComposer
 {
+	
+public:
 	/**
 	 * @var FPlayStationOutputComposer::CRCSeed
 	 *
@@ -49,7 +51,6 @@ class WINDOWSDUALSENSE_DS5W_API FPlayStationOutputComposer
 	 * making it integral to performance-critical systems where such operations are frequent.
 	 */
 	const static uint32 HashTable[256];
-public:
 	/**
 	 * @fn FPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
 	 *
@@ -106,7 +107,7 @@ public:
 	 * @param AudioData Array of audio data bytes representing the vibration samples. The size
 	 * of this data determines how much audio signal will be included in the payload buffer.
 	 */
-	static void SendAudioHapticAdvanced(FDeviceContext* DeviceContext, const TArray<uint8>& AudioData);
+	static void SendAudioHapticAdvanced(FDeviceContext* DeviceContext, FDualSenseHapictBuffer* HapictBuffer);
 	/**
 	 * Computes the CRC32 hash for the given buffer using a predefined hash table and seed value.
 	 * The function iterates through each byte of the input buffer to calculate the resulting hash.

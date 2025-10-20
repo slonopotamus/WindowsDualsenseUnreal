@@ -41,7 +41,7 @@ class FWindowsDeviceInfo final : public IPlatformHardwareInfoInterface
 {
 	
 public:
-	virtual void WriteAudio(FDeviceContext* Context) override;
+	virtual void ProcessAudioHapitc(FDeviceContext* Context, FDualSenseHapictBuffer* AudioData) override;
 	/**
 	 * @brief Reads data from the specified HID device context.
 	 *

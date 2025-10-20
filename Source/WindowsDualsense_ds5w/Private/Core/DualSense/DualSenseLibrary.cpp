@@ -123,7 +123,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	});
 	// UE_LOG(LogTemp, Warning, TEXT("buff, %02X"), HIDDeviceContexts.Buffer[0]);
 	const size_t Padding = HIDDeviceContexts.ConnectionType == Bluetooth ? 2 : 1;
-	const unsigned char* HIDInput = &HIDDeviceContexts.Buffer[Padding];
+	const unsigned char* HIDInput = &HIDDeviceContexts.Buffer.GetData()[Padding];
 
 	const float LeftAnalogX = static_cast<char>(static_cast<short>(HIDInput[0x00] - 128));
 	const float LeftAnalogY = static_cast<char>(static_cast<short>(HIDInput[0x01] - 127) * -1);
@@ -928,7 +928,7 @@ bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 }
 
 
-void UDualSenseLibrary::AudioHapticUpdate(TArray<uint8>& AudioHapticsData)
+void UDualSenseLibrary::AudioHapticUpdate(FDualSenseHapictBuffer* HapictBuffer)
 {
 	FDeviceContext* Context = &HIDDeviceContexts;
 	if (!Context || !Context->IsConnected)
@@ -936,11 +936,14 @@ void UDualSenseLibrary::AudioHapticUpdate(TArray<uint8>& AudioHapticsData)
 		return;
 	}
 
-	FPlayStationOutputComposer::SendAudioHapticAdvanced(Context, AudioHapticsData);
-	// AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context), Samples = MoveTemp(AudioHapticsData)]()
-	// {
-	// 	
-	// });
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context), HapictBuffer]()
+	{
+		if (NewContext && NewContext->IsConnected)
+		{
+			FPlayStationOutputComposer::SendAudioHapticAdvanced(NewContext, HapictBuffer);
+			FPlatformProcess::Sleep(0.016f);
+		}
+	});
 }
 
 void UDualSenseLibrary::StartMotionSensorCalibration(float Duration, float DeadZone)

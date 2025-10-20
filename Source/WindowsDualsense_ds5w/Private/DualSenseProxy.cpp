@@ -44,6 +44,17 @@ void UDualSenseProxy::RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* 
 	FHapticsRegistry::Get()->CreateListenerForDevice(DeviceId, Submix);
 }
 
+void UDualSenseProxy::UnregisterSubmixForDevice(int32 ControllerId)
+{
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+	
+	FHapticsRegistry::Get()->RemoveAllListeners();
+}
+
 void UDualSenseProxy::LedPlayerEffects(int32 ControllerId, ELedPlayerEnum Value, ELedBrightnessEnum Brightness)
 {
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);

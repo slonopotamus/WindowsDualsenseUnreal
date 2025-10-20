@@ -726,7 +726,7 @@ public:
 	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override;
 	
 
-	virtual void AudioHapticUpdate(TArray<uint8>& AudioHapticsData) override;
+	virtual void AudioHapticUpdate(FDualSenseHapictBuffer* HapictBuffer) override;
 	/**
 	 * Represents the unique identifier assigned to a specific DualSense controller.
 	 *

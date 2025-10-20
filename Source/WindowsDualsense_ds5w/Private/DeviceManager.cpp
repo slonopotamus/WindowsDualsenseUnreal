@@ -18,8 +18,6 @@ DeviceManager::DeviceManager(
 	): MessageHandler(InMessageHandler)
 {
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
-
-	
 }
 
 DeviceManager::~DeviceManager()
