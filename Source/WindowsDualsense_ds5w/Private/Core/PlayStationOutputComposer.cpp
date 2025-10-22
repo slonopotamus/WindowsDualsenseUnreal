@@ -189,11 +189,18 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 	}
 }
 
-void FPlayStationOutputComposer::SendAudioHapticAdvanced(FDeviceContext* DeviceContext, FDualSenseHapictBuffer* HapictBuffer)
+void FPlayStationOutputComposer::SendAudioHapticAdvanced(FDeviceContext* DeviceContext)
 {
 	if (!DeviceContext) return;
+
+	constexpr size_t CrcOffset = 138;
+	const int32 CrcChecksum = Compute(DeviceContext->BufferAudio.Raw, CrcOffset);
+	DeviceContext->BufferAudio.Raw[CrcOffset + 0] = static_cast<unsigned char>((CrcChecksum & 0x000000FF) >> 0UL);
+	DeviceContext->BufferAudio.Raw[CrcOffset + 1] = static_cast<unsigned char>((CrcChecksum & 0x0000FF00) >> 8UL);
+	DeviceContext->BufferAudio.Raw[CrcOffset + 2] = static_cast<unsigned char>((CrcChecksum & 0x00FF0000) >> 16UL);
+	DeviceContext->BufferAudio.Raw[CrcOffset + 3] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
 	
-    IPlatformHardwareInfoInterface::Get().ProcessAudioHapitc(DeviceContext, HapictBuffer);
+	IPlatformHardwareInfoInterface::Get().ProcessAudioHapitc(DeviceContext);
 }
 
 const uint32 FPlayStationOutputComposer::HashTable[256] = {

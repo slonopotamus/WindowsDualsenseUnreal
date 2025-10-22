@@ -72,18 +72,18 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		FDeviceContext* Context = &HIDDeviceContexts;
 		AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
 		{
-				IPlatformHardwareInfoInterface::Get().Read(NewContext);
+			IPlatformHardwareInfoInterface::Get().Read(NewContext);
 		});
 		
 		const unsigned char* HIDInput;
 	
 		if (HIDDeviceContexts.ConnectionType == Bluetooth)
 		{
-			HIDInput = &HIDDeviceContexts.Buffer.GetData()[3];
+			HIDInput = &HIDDeviceContexts.Buffer[3];
 		}
 		else
 		{
-			HIDInput = &HIDDeviceContexts.Buffer.GetData()[1];
+			HIDInput = &HIDDeviceContexts.Buffer[1];
 		}
 	
 		// Triggers

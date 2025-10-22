@@ -6,12 +6,18 @@
 
 
 #include "Core/Platforms/Windows/WindowsDeviceInfo.h"
-
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
-
 #include <hidsdi.h>
 #include <setupapi.h>
+
+#include <iostream>
+#include <ks.h>
+#include <winsock2.h>
+#include <ws2bth.h>
+#include <string>
+
+#pragma comment(lib, "ws2_32.lib")
 
 void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 {
@@ -109,6 +115,10 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 							DevicePath.Contains(TEXT("BTHENUM")))
 						{
 							Context.ConnectionType = Bluetooth;
+							if (!ConfigureBluetoothFeatures(TempDeviceHandle))
+							{
+								UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to configure Bluetooth features."));
+							}
 						}
 						Devices.Add(Context);
 					}
@@ -122,7 +132,30 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	SetupDiDestroyDeviceInfoList(DeviceInfoSet);
 }
 
-void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context, FDualSenseHapictBuffer* AudioData)
+bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
+{
+	// Feature Report 0x05 - Enables advanced Bluetooth features
+	unsigned char FeatureBuffer[41];
+	FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
+	FeatureBuffer[0] = 0x05;
+	if (!HidD_GetFeature(DeviceHandle, FeatureBuffer, 41))
+	{
+		const DWORD Error = GetLastError();
+		UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
+		return false;
+	}
+
+	// CloseHandle(DeviceHandle);
+	// UE_LOG(LogTemp, Log, TEXT("HIDManager: Feature 0x05 read successfully, %02x"), FeatureBuffer[1]);
+	return true;
+}
+
+bool FWindowsDeviceInfo::CreateAudioSocket()
+{
+	return true;
+}
+
+void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 {
 	if (!Context || !Context->Handle)
 	{
@@ -130,75 +163,35 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context, FDualSenseH
 		return;
 	}
 
-	
-	
-	DWORD BytesWritten = 0;
-	if (!WriteFile(Context->Handle, &AudioData->report, sizeof(AudioData->report), &BytesWritten, nullptr))
+	if (Context->Handle == INVALID_HANDLE_VALUE)
 	{
-		DWORD Error = GetLastError();
-		if (Error == ERROR_INVALID_PARAMETER || Error == ERROR_IO_PENDING)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("DualSense write temporary error (expected for BT). Error: %d"), Error);
-			return;
-		}
-    
-		UE_LOG(LogTemp, Error, TEXT("Failed DualSense write. Error: %d"), Error);
-		InvalidateHandle(Context);
+		UE_LOG(LogTemp, Error, TEXT("Invalid device handle before attempting to read"));
 		return;
 	}
 
-	FString Line;
-	Line += TEXT("\nPKT12 AFTER WRITE: ");
-	Line += FString::Printf(TEXT("tag:%02X prefix:%02X id:%02X size:%02X "), 
-		AudioData->report.pkt12.tag,
-		AudioData->report.pkt12.prefix,
-		AudioData->report.pkt12.id,
-		AudioData->report.pkt12.size);
-
-	Line += TEXT("data: ");
-	for (int32 i = 0; i < sizeof(AudioData->report.pkt12.data); ++i)
+	if (Context->ConnectionType != Bluetooth)
 	{
-		Line += FString::Printf(TEXT("%02X "), AudioData->report.pkt12.data[i]);
+		UE_LOG(LogTemp, Warning, TEXT("Audio haptics only supported over Bluetooth"));
+		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Line: %s"), *Line);
-
-	size_t InputReportLength = sizeof(AudioData->raw);
-	UE_LOG(LogTemp, Log, TEXT("DualSense Audio Buffer [%llu bytes]:\n%s"), 
-		InputReportLength, *Line);
-
-	if (BytesWritten < sizeof(AudioData->raw))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Partial write to DualSense (%lu of %llu bytes)"), 
-			BytesWritten, sizeof(AudioData->raw));
-	}
+	HidD_FlushQueue(Context->Handle);
 	
-	uint8_t responseBuffer[142];
-	DWORD BytesRead = 0;
-
-	if (!ReadFile(Context->Handle, 
-				  responseBuffer,
-				  sizeof(responseBuffer),
-				  &BytesRead,
-				  nullptr))
+	constexpr size_t BufferSize = 142;
+	DebugDumpAudioBuffer(Context->BufferAudio);
+	
+	DWORD BytesWritten = 0;
+	if (!WriteFile(Context->Handle, Context->BufferAudio.Raw, BufferSize, &BytesWritten, nullptr))
 	{
-		DWORD Error = GetLastError();
-		if (Error == ERROR_INVALID_PARAMETER || Error == ERROR_IO_PENDING)
+		const DWORD Error = GetLastError();
+		if (Error != ERROR_IO_PENDING)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("DualSense read temporary error (expected for BT). Error: %d"), Error);
-			return;
+			UE_LOG(LogTemp, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
 		}
-   
-		UE_LOG(LogTemp, Error, TEXT("Failed DualSense read. Error: %d"), Error);
 	}
-
-	// Se a leitura foi bem sucedida, copiamos os dados para a estrutura
-	if (BytesRead == sizeof(responseBuffer))
-	{
-		FMemory::Memcpy(&AudioData->raw, responseBuffer, sizeof(responseBuffer));
-	}
-
 }
+
+
 
 void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 {
@@ -220,11 +213,15 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 		UE_LOG(LogTemp, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
 		return;
 	}
-	Context->Buffer.ExpandForAudio(547);
+
+	// USB: Report 0x01 = 64 bytes
+	// Bluetooth: Report 0x31 = 78 bytes (input)
+	const size_t InputBufferSize = Context->ConnectionType == Bluetooth ? 78 : 64;
+	
 	
 	HidD_FlushQueue(Context->Handle);
 	DWORD BytesRead = 0;
-	const EPollResult Response = PollTick(Context->Handle, Context->Buffer.GetData(), Context->Buffer.GetSize(), BytesRead);
+	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
 	if (Response == EPollResult::Disconnected)
 	{
 		InvalidateHandle(Context);
@@ -239,12 +236,14 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	}
 	
 	size_t InReportLength = Context->DeviceType == DualShock4 ? 32 : 74;
-	size_t OutputReportLength = Context->ConnectionType == Bluetooth ? 142 : InReportLength;
+	size_t OutputReportLength = Context->ConnectionType == Bluetooth ? 78 : InReportLength;
 
+	// Bluetooth DualSense:
+	// Report 0x31 (78 bytes) - Triggers, LEDs, Rumble
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to write output report 0x02 data to device. report %llu error Code: %d"),
+		UE_LOG(LogTemp, Error, TEXT("Failed to write output report 0x02/0x31 data to device. report %llu error Code: %d"),
 			OutputReportLength, GetLastError());
 		InvalidateHandle(Context);
 	}
@@ -252,6 +251,12 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 
 bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 {
+	if (DeviceContext->Handle != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(DeviceContext->Handle);
+		DeviceContext->Handle = INVALID_HANDLE_VALUE;
+	}
+
 	const HANDLE DeviceHandle = CreateFileW(
 			*DeviceContext->Path,
 			GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
@@ -263,6 +268,15 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 		UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to open device handle for the DualSense."));
 		return false;
 	}
+	
+
+	if (CreateAudioSocket())
+	{
+		UE_LOG(LogTemp, Log, TEXT("HIDManager: Audio socket created successfully."));	
+	}
+	
+	
+	
 	
 	DeviceContext->Handle = DeviceHandle;
 	return true;
@@ -283,10 +297,15 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		Context->IsConnected = false;
 		Context->Path = nullptr;
 
-		Context->Buffer.ResetToNormal();
 		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
-		ZeroMemory(Context->BufferAudio, sizeof(Context->BufferAudio));
-		UE_LOG(LogTemp, Log, TEXT("HIDManager: Invalidate Handle."));
+		ZeroMemory(Context->BufferAudio.Raw, sizeof(Context->BufferAudio.Raw));
+		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
+	}
+
+	if (Context->AudioHandle != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(Context->AudioHandle);
+		Context->AudioHandle = INVALID_HANDLE_VALUE;
 	}
 }
 
@@ -319,7 +338,6 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, i
 	return EPollResult::ReadOk;
 }
 
-
 bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, int32* OutLastError)
 {
 	FILE_STANDARD_INFO Info{};
@@ -330,4 +348,102 @@ bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, int32* OutLastError)
 	}
 	if (OutLastError) *OutLastError = ERROR_SUCCESS;
 	return true;
+}
+
+void FWindowsDeviceInfo::DebugDumpAudioBuffer(const FDualSenseHapticBuffer& AudioData)
+{
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
+	UE_LOG(LogTemp, Warning, TEXT("=== BUFFER DUMP BEFORE SENDING ==="));
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
+	
+	UE_LOG(LogTemp, Warning, TEXT("--- BUFFER ---"));
+	UE_LOG(LogTemp, Warning, TEXT("Total size: 142 bytes"));
+	UE_LOG(LogTemp, Warning, TEXT("Payload size: 137 bytes"));
+	UE_LOG(LogTemp, Warning, TEXT("CRC size: 4 bytes"));
+	UE_LOG(LogTemp, Warning, TEXT(""));
+
+	// Header
+	UE_LOG(LogTemp, Warning, TEXT("Offset | Byte | Description"));
+	UE_LOG(LogTemp, Warning, TEXT("-------|------|------------------------------------------"));
+	UE_LOG(LogTemp, Warning, TEXT("0x0000 | 0x%02X | Report ID (expected: 0x32)"), AudioData.Report.Header.Report_ID);
+	UE_LOG(LogTemp, Warning, TEXT("0x0001 | 0x%02X | Tag=0x%X, Seq=0x%X"), 
+		AudioData.Report.Header.Tag_Seq,
+		(AudioData.Report.Header.Tag_Seq >> 4) & 0x0F,
+		AudioData.Report.Header.Tag_Seq & 0x0F);
+	
+	// Packet 0x11
+	UE_LOG(LogTemp, Warning, TEXT(""));
+	UE_LOG(LogTemp, Warning, TEXT("--- Packet 0x11 (offset 0x0002) ---"));
+	UE_LOG(LogTemp, Warning, TEXT("0x0002 | 0x%02X | pid=0x%02X, unk=%d, sized=%d (expected: 0x91)"), 
+		AudioData.Report.Pkt11.PID,
+		AudioData.Report.Pkt11.Length & 0x7F,
+		(AudioData.Report.Pkt11.bUnk >> 7) & 1,
+		(AudioData.Report.Pkt11.bSized >> 7) & 1);
+	UE_LOG(LogTemp, Warning, TEXT("0x0003 | 0x%02X | length=%d (expected: 7)"), 
+		AudioData.Report.Pkt11.Length, AudioData.Report.Pkt11.Length);
+	
+	for (int i = 0; i < 7; i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("0x%04X | 0x%02X | data[%d]%s"), 
+			0x0004 + i, 
+			AudioData.Report.Pkt11.Data[i], 
+			i,
+			i == 6 ? TEXT(" <- counter (ii)") : TEXT(""));
+	}
+	
+	// Packet 0x12
+	UE_LOG(LogTemp, Warning, TEXT(""));
+	UE_LOG(LogTemp, Warning, TEXT("--- Packet 0x12 (offset 0x000B) ---"));
+	UE_LOG(LogTemp, Warning, TEXT("0x000B | 0x%02X | pid=0x%02X, unk=%d, sized=%d (expected: 0x92)"), 
+		AudioData.Report.Pkt12.PID,
+		AudioData.Report.Pkt12.Length & 0x7F,
+		(AudioData.Report.Pkt12.bUnk >> 7) & 1,
+		(AudioData.Report.Pkt12.bSized >> 7) & 1);
+	UE_LOG(LogTemp, Warning, TEXT("0x000C | 0x%02X | length=%d (expected: 64)"), 
+		AudioData.Report.Pkt12.Length, AudioData.Report.Pkt12.Length);
+	
+	// Audio samples (64 bytes) 
+	UE_LOG(LogTemp, Warning, TEXT(""));
+	UE_LOG(LogTemp, Warning, TEXT("--- Audio samples (64 bytes) ---"));
+	for (int line = 0; line < 4; line++)
+	{
+		FString HexLine;
+		for (int col = 0; col < 16; col++)
+		{
+			int idx = line * 16 + col;
+			HexLine += FString::Printf(TEXT("%02X "), AudioData.Report.Pkt12.Data[idx]);
+		}
+		UE_LOG(LogTemp, Warning, TEXT("0x%04X | %s"), 0x000D + (line * 16), *HexLine);
+	}
+	
+	// Padding (61 bytes)
+	UE_LOG(LogTemp, Warning, TEXT(""));
+	UE_LOG(LogTemp, Warning, TEXT("--- Padding (61 bytes) ---"));
+	int paddingStart = 0x004D;
+	for (int line = 0; line < 4; line++)
+	{
+		FString HexLine;
+		int bytesToShow = (line == 3) ? 13 : 16; // Última linha tem apenas 13 bytes
+		for (int col = 0; col < bytesToShow; col++)
+		{
+			int idx = line * 16 + col;
+			if (idx < 61)
+			{
+				HexLine += FString::Printf(TEXT("%02X "), AudioData.Raw[idx]);
+			}
+		}
+		UE_LOG(LogTemp, Warning, TEXT("0x%04X | %s"), paddingStart + (line * 16), *HexLine);
+	}
+	
+	// CRC (4 bytes)
+	UE_LOG(LogTemp, Warning, TEXT(""));
+	UE_LOG(LogTemp, Warning, TEXT("--- CRC (4 bytes at offset 0x008A) ---"));
+	UE_LOG(LogTemp, Warning, TEXT("0x008A | %02X %02X %02X %02X"), 
+		AudioData.Raw[138],
+		AudioData.Raw[139],
+		AudioData.Raw[140],
+		AudioData.Raw[141]);
+	
+	UE_LOG(LogTemp, Warning, TEXT(""));
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
 }

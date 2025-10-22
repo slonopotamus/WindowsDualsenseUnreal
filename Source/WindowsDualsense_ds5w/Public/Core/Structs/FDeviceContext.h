@@ -28,99 +28,109 @@ using FPlatformDeviceHandle = void*;
 #include "Core/Enums/EDeviceConnection.h"
 #include "FDeviceContext.generated.h"
 
-struct FDynamicInputBuffer {
-	std::vector<uint8_t> Buffer;
-    
-	// Construtor com tamanho inicial padrão para leitura normal
-	explicit FDynamicInputBuffer(size_t InitialSize = 64) { // 0x40 bytes inicial
-		Buffer.resize(InitialSize);
-	}
-    
-	// Expande o buffer quando necessário (por exemplo, quando o microfone é ativado)
-	void ExpandForAudio(size_t NewSize = 547) { // 0x223 bytes para áudio
-		if (Buffer.size() < NewSize) {
-			Buffer.resize(NewSize);
-		}
-	}
-    
-	// Retorna ao tamanho normal quando o microfone é desativado
-	void ResetToNormal(size_t NormalSize = 64) { // 0x40 bytes
-		Buffer.resize(NormalSize);
-	}
-    
-	// Obter ponteiro para os dados
-	uint8_t* GetData() {
-		return Buffer.data();
-	}
-    
-	// Obter tamanho atual do buffer
-	size_t GetSize() const {
-		return Buffer.size();
-	}
-};
-
-
-struct FDualSenseHapictBuffer {
-	static constexpr uint8 REPORT_ID_0x12 = 0x12;
-	static constexpr uint8 REPORT_ID_HAPTIC = 0x32;
-
+/**
+ * @brief Represents a haptic feedback data structure for DualSense devices.
+ *
+ * This structure is designed to form and manage the data packets required
+ * for sending advanced haptic feedback commands to DualSense controllers.
+ * It includes substructures that define the format and content of the
+ * necessary packet headers and payloads for haptic vibration transmission.
+ *
+ * The primary purpose is to enable precise and efficient configuration
+ * of haptic features such as audio-based vibration feedback by organizing
+ * data into specific packets (e.g., 0x11 and 0x12) for internal controller
+ * processing.
+ *
+ * Features:
+ * - Contains a union for raw and formatted data representation.
+ * - Automatically initializes packets with default values for ease of use.
+ * - Aligns properly for hardware-level communication to ensure correct
+ *   data transfers to the device.
+ */
+struct FDualSenseHapticBuffer {
 #pragma pack(push, 1)
-	struct PacketHeader {
-		uint8 report_id;      // 0x32
-		uint8 tag_seq;        // tag (4 bits) + seq (4 bits)
-	};
-    
-	struct Packet0x11 {
-		uint8_t prefix;       // 0x01
-		uint8_t id;          // 0x8E
-		uint8_t tag;         // 0x11
-		uint8_t length;      // 0x00
-		uint8_t data[4];     // 01 07 FE 00
-		uint8_t flags[2];    // FF 8X (onde X é incrementado)
-	};
-    
-	struct Packet0x12 {
-		uint8_t tag;         // 0x12
-		uint8_t prefix;      // 0x00
-		uint8_t id;          // 0x01
-		uint8_t size;        // 0x40
-		uint8_t data[124];   // Dados completos (haptic + sensores)
-		uint32_t crc;        // Checksum final
+	/**
+	 * @brief Represents the header structure for a DualSense haptic feedback packet.
+	 *
+	 * This structure defines the format of the packet header used in constructing
+	 * haptic feedback data for DualSense devices. It includes essential fields
+	 * necessary for identifying and sequencing individual packets sent to the
+	 * controller.
+	 *
+	 * Features:
+	 * - The Report_ID field uniquely identifies the type of the report being sent.
+	 * - The Tag_Seq field is used to manage sequence control and tag information
+	 *   across transmitted packets.
+	 *
+	 * This structure is specifically designed to align with the communication
+	 * protocol requirements of DualSense devices, ensuring accurate and efficient
+	 * data transmission.
+	 */
+	struct FPacketHeader {
+		uint8 Report_ID;
+		uint8 Tag_Seq;
 	};
 
+	/**
+	 * @brief Represents the structure of packet 0x11 used in haptic feedback for DualSense devices.
+	 *
+	 * This structure defines the format and content of the data packet identified as 0x11 in the
+	 * communication protocol with DualSense controllers. It includes fields required to properly
+	 * structure the packet headers and payload for device processing.
+	 *
+	 * Features:
+	 * - Contains a 6-bit packet identifier (PID) for recognizing the packet type.
+	 * - Includes metadata flags for additional control (bUnk and bSized).
+	 * - Supports a fixed data payload of 7 bytes to store the actual haptic feedback data.
+	 * - Provides a field for specifying the total length of the packet.
+	 *
+	 * The structure is tightly packed for alignment with the hardware protocol, ensuring the
+	 * efficient transmission of haptic commands.
+	 */
+	struct FPacket0X11 {
+		uint8 PID :6;
+		bool bUnk :1;
+		uint8 bSized :1;
+		uint8 Length;
+		uint8_t Data[7];
+	};
+
+	/**
+	 * @brief Represents the structure of packet 0x12 used in haptic feedback for DualSense devices.
+	 *
+	 * This structure is designed to define the format and content of the data packet identified as
+	 * 0x12 in the communication protocol with DualSense controllers. It provides essential fields
+	 * for the proper construction and transmission of haptic feedback commands.
+	 *
+	 * Features:
+	 * - Includes a 6-bit packet identifier (PID) to recognize the packet type.
+	 * - Contains control flags (bUnk and bSized) for indicating metadata about the packet.
+	 * - Provides a field to specify the total length of the packet (Length).
+	 * - Supports a fixed-size payload of 64 bytes to store the actual haptic feedback data.
+	 *
+	 * This structure is specifically aligned for compatibility with hardware-level communication
+	 * protocols, ensuring accurate and efficient data transmission to the controller.
+	 */
+	struct FPacket0X12 {
+		uint8 PID :6;
+		bool bUnk :1;
+		uint8 bSized :1;
+		uint8 Length;
+		uint8_t Data[64];
+	};
 
 	union {
 		struct {
-			PacketHeader header;
-			Packet0x11 pkt11;
-			Packet0x12 pkt12;
-		} report;
-		uint8_t raw[142];  // Acesso aos bytes brutos para CRC
+			FPacketHeader Header;
+			FPacket0X11 Pkt11;
+			FPacket0X12 Pkt12;
+		} Report;
+		uint8_t Raw[142];
 	};
 
 #pragma pack(pop)
-
-	// Helpers para acessar tag e seq
-	uint8_t get_tag() const { return (report.header.tag_seq >> 4) & 0x0F; }
-	uint8_t get_seq() const { return report.header.tag_seq & 0x0F; }
-	void set_tag(uint8_t t) { report.header.tag_seq = (t << 4) | get_seq(); }
-	void set_seq(uint8_t s) { report.header.tag_seq = (get_tag() << 4) | (s & 0x0F); }
-
-	FDualSenseHapictBuffer() {
-		FMemory::Memzero(this, sizeof(FDualSenseHapictBuffer));
-		report.header.report_id = REPORT_ID_HAPTIC;
-        
-		// Setup pkt11
-		report.pkt11.prefix = 0x01;
-		report.pkt11.id = 0x8E;
-		report.pkt11.tag = 0x11;
-		report.pkt11.data[0] = 0xFE;
-		report.pkt11.flags[0] = 0xFF;
-        
-		// Setup pkt12
-		report.pkt12.tag = 0x12;
-		report.pkt12.id = 0x01;
-		report.pkt12.size = 0x40;
+	FDualSenseHapticBuffer() {
+		FMemory::Memzero(this, 142);
 	}
 };
 
@@ -155,6 +165,25 @@ struct FDeviceContext
 	 */
 	FPlatformDeviceHandle Handle;
 	/**
+	 * @brief A platform-specific handle to manage interaction with audio devices.
+	 *
+	 * The AudioHandle variable represents a low-level handle for accessing
+	 * and controlling audio hardware or audio-related platform resources.
+	 * It provides an interface for abstracting platform-specific
+	 * audio device interactions, allowing for unified handling across different systems.
+	 *
+	 * Key Points:
+	 * - Allows communication and control of audio devices within the platform's ecosystem.
+	 * - Encapsulates platform-dependent details for audio resource management.
+	 * - Plays a crucial role in integrating platform audio capabilities into applications.
+	 * - Used as a part of the audio subsystem to ensure efficient and seamless
+	 *   interaction with the underlying hardware.
+	 *
+	 * This handle is specifically tailored to align with platform constraints and
+	 * capabilities to ensure broad support for audio functionalities.
+	 */
+	FPlatformDeviceHandle AudioHandle;
+	/**
 	 * @brief Represents a file or resource path in the context of device management.
 	 *
 	 * This variable is used to store the location or identifier of a specific resource,
@@ -174,23 +203,15 @@ struct FDeviceContext
 	 * The size of the buffer is designed to accommodate the expected data payload
 	 * during these communications, ensuring efficient handling of device protocols.
 	 */
-	FDynamicInputBuffer Buffer;
+	unsigned char Buffer[78];
 	/**
-	 * @brief Internal data buffer for DualShock 4 Bluetooth communication.
+	 * @brief Stores the haptic audio data for DualSense devices.
 	 *
-	 * This buffer is specifically allocated for handling input and output data
-	 * when communicating with DualShock 4 controllers connected via Bluetooth.
-	 * It is used in the context of parsing and building device reports during
-	 * Bluetooth transfers, ensuring compliance with the expected report format
-	 * and size required by the DualShock 4 HID protocol.
-	 *
-	 * The buffer size of 547 bytes matches the standard payload requirements
-	 * for DualShock 4 devices in Bluetooth communication scenarios.
-	 *
-	 * @note This buffer is not intended for DualSense controllers or USB connections;
-	 *       for those, use Buffer[78] instead.
+	 * This buffer is used to handle and transfer haptic feedback audio data
+	 * to a connected DualSense device, enabling advanced vibration and
+	 * feedback mechanisms driven by audio signals.
 	 */
-	unsigned char BufferDS4[547];
+	FDualSenseHapticBuffer BufferAudio;
 	/**
 	 * A fixed-size buffer for storing input or output data associated with a device context.
 	 * This buffer is utilized for reading device input reports or for other data
@@ -205,18 +226,6 @@ struct FDeviceContext
 	 *       data handling capabilities.
 	 */
 	unsigned char BufferOutput[78];
-	/**
-	 * @brief Buffer used for audio data storage and processing.
-	 *
-	 * This array is designed to temporarily hold audio data during
-	 * operations such as transmission, processing, or playback.
-	 * It is fundamental for managing audio-related tasks efficiently
-	 * within the system.
-	 *
-	 * The size of the buffer supports maintaining a consistent flow
-	 * of audio data while minimizing processing latency.
-	 */
-	uint8 BufferAudio[142];
 	/**
 	 * Indicates whether the device is connected.
 	 *
@@ -289,9 +298,10 @@ struct FDeviceContext
 	 */
 	uint8 AudioVibrationSequence = 0;
 
-	FDeviceContext(): Path{}, Buffer{}, BufferDS4{}, BufferOutput{}, IsConnected(false),
-	                  ConnectionType(), DeviceType(),
-	                  UniqueInputDeviceId()
+	FDeviceContext() : Handle(nullptr), AudioHandle(nullptr), Path{}, Buffer{}, BufferOutput{}, BufferAudio{},
+	                   IsConnected(false),
+	                   ConnectionType(), DeviceType(),
+	                   UniqueInputDeviceId()
 	{
 	}
 };

@@ -10,25 +10,37 @@
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Structs/FOutputContext.h"
-
 bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
 	HIDDeviceContexts = Context;
 	if (HIDDeviceContexts.ConnectionType == Bluetooth)
 	{
 		FOutputContext* EnableReport = &HIDDeviceContexts.Output; // Create a clean/empty report
-
+	
 		// HidOutput->Feature.FeatureMode = 0x1 | 0x2 | 0x4 | 0x8 | 0x10 | 0x40;
 		// Set flags to enable control over the lightbar, player LEDs, etc.
 		EnableReport->Feature.FeatureMode = 0x04 | 0x08;
-
+	
 		// Important: Keep the data fields at their default (e.g., lights off)
 		EnableReport->Lightbar = {0, 0, 0};
 		EnableReport->PlayerLed.Brightness = 0x00;
-
+	
 		SendOut();
+		
 		// Small delay here is sometimes needed, but often not.
 		FPlatformProcess::Sleep(0.01f);
+
+		FDeviceContext* NewContext = &HIDDeviceContexts;
+		NewContext->BufferAudio.Report.Header.Report_ID = 0x32;
+		NewContext->BufferAudio.Report.Header.Tag_Seq = 0;
+		NewContext->BufferAudio.Report.Pkt11.PID = 0x91;
+		NewContext->BufferAudio.Report.Pkt11.bSized = true;
+		NewContext->BufferAudio.Report.Pkt11.bUnk = 0;
+		NewContext->BufferAudio.Report.Pkt11.Length = 7;
+		NewContext->BufferAudio.Report.Pkt11.Data[0] = 0xFE;
+		NewContext->BufferAudio.Report.Pkt11.Data[5] = 0xFF;
+		NewContext->BufferAudio.Report.Pkt11.Data[6] = 0;
+		FPlayStationOutputComposer::OutputDualSense(NewContext);
 	}
 
 	StopAll();
@@ -121,9 +133,9 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	{
 		IPlatformHardwareInfoInterface::Get().Read(NewContext);
 	});
-	// UE_LOG(LogTemp, Warning, TEXT("buff, %02X"), HIDDeviceContexts.Buffer[0]);
+	// FValidateHelpers::PrintBufferAsHex(HIDDeviceContexts.Buffer, 78, TEXT(""));
 	const size_t Padding = HIDDeviceContexts.ConnectionType == Bluetooth ? 2 : 1;
-	const unsigned char* HIDInput = &HIDDeviceContexts.Buffer.GetData()[Padding];
+	const unsigned char* HIDInput = &HIDDeviceContexts.Buffer[Padding];
 
 	const float LeftAnalogX = static_cast<char>(static_cast<short>(HIDInput[0x00] - 128));
 	const float LeftAnalogY = static_cast<char>(static_cast<short>(HIDInput[0x01] - 127) * -1);
@@ -928,7 +940,7 @@ bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 }
 
 
-void UDualSenseLibrary::AudioHapticUpdate(FDualSenseHapictBuffer* HapictBuffer)
+void UDualSenseLibrary::AudioHapticUpdate(float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock)
 {
 	FDeviceContext* Context = &HIDDeviceContexts;
 	if (!Context || !Context->IsConnected)
@@ -936,12 +948,46 @@ void UDualSenseLibrary::AudioHapticUpdate(FDualSenseHapictBuffer* HapictBuffer)
 		return;
 	}
 
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context), HapictBuffer]()
+	FDualSenseHapticBuffer* ProcessedAudio = &Context->BufferAudio;
+    
+    ProcessedAudio->Report.Header.Report_ID = 0x32;
+	ProcessedAudio->Report.Pkt11.Data[6] = (AudioVibrationSequence++) & 0xFF;
+	ProcessedAudio->Report.Pkt12.PID = 0x92;
+	ProcessedAudio->Report.Pkt12.bUnk = 0;
+	ProcessedAudio->Report.Pkt12.bSized = true;
+	ProcessedAudio->Report.Pkt12.Length = 64;
+	TArray<float> MonoBuffer;
+	int32 MonoSamples = NumSamples;
+    
+	if (NumChannels > 1)
+	{
+		MonoSamples = NumSamples / NumChannels;
+		MonoBuffer.SetNum(MonoSamples);
+        
+		for (int32 i = 0; i < MonoSamples; i++)
+		{
+			float Sum = 0.0f;
+			for (int32 ch = 0; ch < NumChannels; ch++)
+			{
+				Sum += AudioData[i * NumChannels + ch];
+			}
+			MonoBuffer[i] = Sum / NumChannels;
+		}
+	}
+	else
+	{
+		MonoBuffer.Append(AudioData, NumSamples);
+	}
+    
+	int32 SamplesToConvert = FMath::Min(MonoSamples, 64);
+	FMemory::Memcpy(ProcessedAudio->Report.Pkt12.Data, AudioData, SamplesToConvert);
+
+	// Incrementar apenas de 0-15, depois volta para 0
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
 	{
 		if (NewContext && NewContext->IsConnected)
 		{
-			FPlayStationOutputComposer::SendAudioHapticAdvanced(NewContext, HapictBuffer);
-			FPlatformProcess::Sleep(0.016f);
+			FPlayStationOutputComposer::SendAudioHapticAdvanced(NewContext);
 		}
 	});
 }

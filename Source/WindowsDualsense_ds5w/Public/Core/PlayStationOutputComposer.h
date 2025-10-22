@@ -107,7 +107,7 @@ public:
 	 * @param AudioData Array of audio data bytes representing the vibration samples. The size
 	 * of this data determines how much audio signal will be included in the payload buffer.
 	 */
-	static void SendAudioHapticAdvanced(FDeviceContext* DeviceContext, FDualSenseHapictBuffer* HapictBuffer);
+	static void SendAudioHapticAdvanced(FDeviceContext* DeviceContext);
 	/**
 	 * Computes the CRC32 hash for the given buffer using a predefined hash table and seed value.
 	 * The function iterates through each byte of the input buffer to calculate the resulting hash.

@@ -129,5 +129,5 @@ public:
 	 * @param BaseMultiplier A multiplier applied to the vibration intensity base level. Default is 1.5f.
 	 */
 	virtual void SetVibrationAudioBased(const FForceFeedbackValues& Vibration, const float Threshold = 0.015f, const float ExponentCurve = 2.f, const float BaseMultiplier = 1.5f) = 0;
-	virtual void AudioHapticUpdate(FDualSenseHapictBuffer* HapictBuffer) = 0;
+	virtual void AudioHapticUpdate(float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock) = 0;
 };

@@ -724,9 +724,20 @@ public:
 	 * @return True if the calibration status was successfully retrieved, false otherwise.
 	 */
 	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override;
-	
-
-	virtual void AudioHapticUpdate(FDualSenseHapictBuffer* HapictBuffer) override;
+	/**
+	 * @brief Updates the haptic feedback system using audio data.
+	 *
+	 * This method utilizes the provided audio data to generate haptic feedback. It is primarily
+	 * used in systems where audio-based haptics are supported, enabling dynamic haptic responses
+	 * synchronized with audio playback.
+	 *
+	 * @param AudioData Pointer to the buffer containing audio sample data.
+	 * @param NumSamples The total number of audio samples in the buffer.
+	 * @param NumChannels The number of channels in the audio data (e.g., mono or stereo).
+	 * @param SampleRate The sample rate of the audio data in Hz.
+	 * @param AudioClock The current position of the audio playback clock, in seconds.
+	 */
+	virtual void AudioHapticUpdate(float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock) override;
 	/**
 	 * Represents the unique identifier assigned to a specific DualSense controller.
 	 *
@@ -975,6 +986,20 @@ private:
 	 * initialization or recalibration during operation.
 	 */
 	int32 CalibrationSampleCount;
+	/**
+	 * @variable AudioVibrationSequence
+	 * @brief Represents the identifier for a sequence of audio-guided vibrations.
+	 *
+	 * This variable is typically used to define or handle a specific pattern of vibrations
+	 * that correspond to audio feedback. It serves as a reference to a predefined or dynamically
+	 * generated vibration sequence that can synchronize with audio events for immersive experiences.
+	 *
+	 * @details The value stored in this variable is used to index or differentiate between multiple
+	 * vibration sequences. It allows systems to execute specific vibration patterns that align
+	 * with corresponding audio playback, enhancing features such as haptic feedback in interactive
+	 * environments or devices.
+	 */
+	uint8 AudioVibrationSequence;
 	/**
 	 * @brief Represents the context of a Human Interface Device (HID) used by DualSense controllers.
 	 *
