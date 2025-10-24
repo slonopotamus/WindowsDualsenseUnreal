@@ -16,6 +16,8 @@
 #include "Core/Structs/FDeviceContext.h"
 #include "Core/Structs/FDeviceSettings.h"
 #include "Core/Structs/FDualSenseFeatureReport.h"
+#include "Containers/Queue.h"
+#include "HAL/ThreadSafeBool.h"
 #include "DualSenseLibrary.generated.h"
 
 /**
@@ -306,6 +308,8 @@ class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISony
 	GENERATED_BODY()
 	
 public:
+	virtual void StartAudioHapticConsumer() override {};
+	virtual void StopAudioHapticConsumer() override {};
 	/**
 	 * @brief Configures device settings for a connected device.
 	 *

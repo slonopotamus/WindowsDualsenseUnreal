@@ -88,11 +88,11 @@ struct FDualSenseHapticBuffer {
 	 * efficient transmission of haptic commands.
 	 */
 	struct FPacket0X11 {
-		uint8 PID :6;
-		bool bUnk :1;
-		uint8 bSized :1;
-		uint8 Length;
-		uint8_t Data[7];
+		uint8 pid:6;
+		bool unk :1;
+		bool sized :1;
+		uint8 length;
+		uint8 data[64];
 	};
 
 	/**
@@ -112,11 +112,11 @@ struct FDualSenseHapticBuffer {
 	 * protocols, ensuring accurate and efficient data transmission to the controller.
 	 */
 	struct FPacket0X12 {
-		uint8 PID :6;
-		bool bUnk :1;
-		uint8 bSized :1;
-		uint8 Length;
-		uint8_t Data[64];
+		uint8 pid :6;
+		bool unk :1;
+		bool sized :1;
+		uint8_t length;
+		uint8_t data[64];
 	};
 
 	union {
@@ -129,8 +129,8 @@ struct FDualSenseHapticBuffer {
 	};
 
 #pragma pack(pop)
-	FDualSenseHapticBuffer() {
-		FMemory::Memzero(this, 142);
+	FDualSenseHapticBuffer() : Report(), Raw{}
+	{
 	}
 };
 
@@ -298,7 +298,8 @@ struct FDeviceContext
 	 */
 	uint8 AudioVibrationSequence = 0;
 
-	FDeviceContext() : Handle(nullptr), AudioHandle(nullptr), Path{}, Buffer{}, BufferOutput{}, BufferAudio{},
+	FDeviceContext() : Handle(nullptr), AudioHandle(nullptr), Path{}, Buffer{}, BufferAudio{},
+	                   BufferOutput{},
 	                   IsConnected(false),
 	                   ConnectionType(), DeviceType(),
 	                   UniqueInputDeviceId()

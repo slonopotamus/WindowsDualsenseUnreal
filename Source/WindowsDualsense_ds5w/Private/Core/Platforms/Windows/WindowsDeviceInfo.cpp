@@ -2,22 +2,11 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-
-
-
 #include "Core/Platforms/Windows/WindowsDeviceInfo.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 #include <hidsdi.h>
 #include <setupapi.h>
-
-#include <iostream>
-#include <ks.h>
-#include <winsock2.h>
-#include <ws2bth.h>
-#include <string>
-
-#pragma comment(lib, "ws2_32.lib")
 
 void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 {
@@ -144,54 +133,8 @@ bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
 		UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
 		return false;
 	}
-
-	// CloseHandle(DeviceHandle);
-	// UE_LOG(LogTemp, Log, TEXT("HIDManager: Feature 0x05 read successfully, %02x"), FeatureBuffer[1]);
 	return true;
 }
-
-bool FWindowsDeviceInfo::CreateAudioSocket()
-{
-	return true;
-}
-
-void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
-{
-	if (!Context || !Context->Handle)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Context not found!"));
-		return;
-	}
-
-	if (Context->Handle == INVALID_HANDLE_VALUE)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Invalid device handle before attempting to read"));
-		return;
-	}
-
-	if (Context->ConnectionType != Bluetooth)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Audio haptics only supported over Bluetooth"));
-		return;
-	}
-
-	HidD_FlushQueue(Context->Handle);
-	
-	constexpr size_t BufferSize = 142;
-	DebugDumpAudioBuffer(Context->BufferAudio);
-	
-	DWORD BytesWritten = 0;
-	if (!WriteFile(Context->Handle, Context->BufferAudio.Raw, BufferSize, &BytesWritten, nullptr))
-	{
-		const DWORD Error = GetLastError();
-		if (Error != ERROR_IO_PENDING)
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
-		}
-	}
-}
-
-
 
 void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 {
@@ -217,8 +160,6 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 	// USB: Report 0x01 = 64 bytes
 	// Bluetooth: Report 0x31 = 78 bytes (input)
 	const size_t InputBufferSize = Context->ConnectionType == Bluetooth ? 78 : 64;
-	
-	
 	HidD_FlushQueue(Context->Handle);
 	DWORD BytesRead = 0;
 	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
@@ -268,15 +209,6 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 		UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to open device handle for the DualSense."));
 		return false;
 	}
-	
-
-	if (CreateAudioSocket())
-	{
-		UE_LOG(LogTemp, Log, TEXT("HIDManager: Audio socket created successfully."));	
-	}
-	
-	
-	
 	
 	DeviceContext->Handle = DeviceHandle;
 	return true;
@@ -350,6 +282,40 @@ bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, int32* OutLastError)
 	return true;
 }
 
+void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
+{
+	if (!Context || !Context->Handle)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Context not found!"));
+		return;
+	}
+
+	if (Context->Handle == INVALID_HANDLE_VALUE)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid device handle before attempting to read"));
+		return;
+	}
+	//
+	// if (Context->ConnectionType != Bluetooth)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Audio haptics only supported over Bluetooth"));
+	// 	return;
+	// }
+	//
+	constexpr size_t BufferSize = 142;
+	DebugDumpAudioBuffer(Context->BufferAudio);
+	
+	DWORD BytesWritten = 0;
+	if (!WriteFile(Context->Handle, Context->BufferAudio.Raw, BufferSize, &BytesWritten, nullptr))
+	{
+		const DWORD Error = GetLastError();
+		if (Error != ERROR_IO_PENDING)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
+		}
+	}
+}
+
 void FWindowsDeviceInfo::DebugDumpAudioBuffer(const FDualSenseHapticBuffer& AudioData)
 {
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));
@@ -375,18 +341,18 @@ void FWindowsDeviceInfo::DebugDumpAudioBuffer(const FDualSenseHapticBuffer& Audi
 	UE_LOG(LogTemp, Warning, TEXT(""));
 	UE_LOG(LogTemp, Warning, TEXT("--- Packet 0x11 (offset 0x0002) ---"));
 	UE_LOG(LogTemp, Warning, TEXT("0x0002 | 0x%02X | pid=0x%02X, unk=%d, sized=%d (expected: 0x91)"), 
-		AudioData.Report.Pkt11.PID,
-		AudioData.Report.Pkt11.Length & 0x7F,
-		(AudioData.Report.Pkt11.bUnk >> 7) & 1,
-		(AudioData.Report.Pkt11.bSized >> 7) & 1);
+		AudioData.Report.Pkt11.pid,
+		AudioData.Report.Pkt11.pid & 0x7F,
+		(AudioData.Report.Pkt11.unk >> 0x7) & 1,       // Bit 7 (MSB de um uint8)
+		(AudioData.Report.Pkt11.sized >> 0x7) & 1);
 	UE_LOG(LogTemp, Warning, TEXT("0x0003 | 0x%02X | length=%d (expected: 7)"), 
-		AudioData.Report.Pkt11.Length, AudioData.Report.Pkt11.Length);
+		AudioData.Report.Pkt11.length, AudioData.Report.Pkt11.length);
 	
 	for (int i = 0; i < 7; i++)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("0x%04X | 0x%02X | data[%d]%s"), 
 			0x0004 + i, 
-			AudioData.Report.Pkt11.Data[i], 
+			AudioData.Report.Pkt11.data[i], 
 			i,
 			i == 6 ? TEXT(" <- counter (ii)") : TEXT(""));
 	}
@@ -395,12 +361,12 @@ void FWindowsDeviceInfo::DebugDumpAudioBuffer(const FDualSenseHapticBuffer& Audi
 	UE_LOG(LogTemp, Warning, TEXT(""));
 	UE_LOG(LogTemp, Warning, TEXT("--- Packet 0x12 (offset 0x000B) ---"));
 	UE_LOG(LogTemp, Warning, TEXT("0x000B | 0x%02X | pid=0x%02X, unk=%d, sized=%d (expected: 0x92)"), 
-		AudioData.Report.Pkt12.PID,
-		AudioData.Report.Pkt12.Length & 0x7F,
-		(AudioData.Report.Pkt12.bUnk >> 7) & 1,
-		(AudioData.Report.Pkt12.bSized >> 7) & 1);
+		AudioData.Report.Pkt12.pid,
+		AudioData.Report.Pkt12.pid & 0x7F,
+		(AudioData.Report.Pkt12.unk >> 0x7) & 1,       // Bit 7 (MSB de um uint8)
+		(AudioData.Report.Pkt12.sized >> 0x7) & 1); 
 	UE_LOG(LogTemp, Warning, TEXT("0x000C | 0x%02X | length=%d (expected: 64)"), 
-		AudioData.Report.Pkt12.Length, AudioData.Report.Pkt12.Length);
+		AudioData.Report.Pkt12.length, AudioData.Report.Pkt12.length);
 	
 	// Audio samples (64 bytes) 
 	UE_LOG(LogTemp, Warning, TEXT(""));
@@ -411,7 +377,7 @@ void FWindowsDeviceInfo::DebugDumpAudioBuffer(const FDualSenseHapticBuffer& Audi
 		for (int col = 0; col < 16; col++)
 		{
 			int idx = line * 16 + col;
-			HexLine += FString::Printf(TEXT("%02X "), AudioData.Report.Pkt12.Data[idx]);
+			HexLine += FString::Printf(TEXT("%02X "), AudioData.Report.Pkt12.data[idx]);
 		}
 		UE_LOG(LogTemp, Warning, TEXT("0x%04X | %s"), 0x000D + (line * 16), *HexLine);
 	}

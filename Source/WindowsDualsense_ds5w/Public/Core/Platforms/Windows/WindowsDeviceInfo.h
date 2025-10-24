@@ -43,7 +43,6 @@ public:
 	virtual void ProcessAudioHapitc(FDeviceContext* Context) override;
 	static void DebugDumpAudioBuffer(const FDualSenseHapticBuffer& AudioData);
 	static bool ConfigureBluetoothFeatures(HANDLE DeviceHandle);
-	static bool CreateAudioSocket();
 	/**
 	 * @brief Reads data from the specified HID device context.
 	 *

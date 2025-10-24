@@ -23,6 +23,19 @@ class FAudioHapticsListener final : public ISubmixBufferListener
 public:
 	explicit FAudioHapticsListener(FInputDeviceId InDeviceId);
 	virtual ~FAudioHapticsListener() override;
+
+	/**
+	 Called when the associated submix buffer listener ends its lifecycle, signaling the end of audio data processing
+	 for haptic feedback systems.
+	 
+	 This method is responsible for stopping ongoing audio-haptic interactions for the associated device. It interfaces
+	 with the ISonyGamepadTriggerInterface to halt haptic audio consumer functions when the submix rendering pipeline
+	 ceases operation.
+	 
+	 Implementation ensures that the haptic feedback system is gracefully terminated, preventing unexpected behavior or
+	 resource usage after the submix lifecycle concludes.
+	 */
+	void OnSubmixEnded() const;
 	
 	/**
 	Called when a new buffer has been rendered for a given submix
@@ -36,5 +49,4 @@ public:
 	virtual void OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock) override;
 private:
 	FInputDeviceId DeviceId;
-	double LastUpdateTime;
 };
