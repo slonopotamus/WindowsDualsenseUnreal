@@ -8,6 +8,8 @@
 #include <hidsdi.h>
 #include <setupapi.h>
 
+#include "Core/PlayStationOutputComposer.h"
+
 void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 {
 	GUID HidGuid;
@@ -121,20 +123,7 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	SetupDiDestroyDeviceInfoList(DeviceInfoSet);
 }
 
-bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
-{
-	// Feature Report 0x05 - Enables advanced Bluetooth features
-	unsigned char FeatureBuffer[41];
-	FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
-	FeatureBuffer[0] = 0x05;
-	if (!HidD_GetFeature(DeviceHandle, FeatureBuffer, 41))
-	{
-		const DWORD Error = GetLastError();
-		UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
-		return false;
-	}
-	return true;
-}
+
 
 void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 {
@@ -230,15 +219,15 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		Context->Path = nullptr;
 
 		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
-		ZeroMemory(Context->BufferAudio.Raw, sizeof(Context->BufferAudio.Raw));
+		ZeroMemory(Context->BufferAudio, sizeof(Context->BufferAudio));
 		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
 	}
-
-	if (Context->AudioHandle != INVALID_HANDLE_VALUE)
-	{
-		CloseHandle(Context->AudioHandle);
-		Context->AudioHandle = INVALID_HANDLE_VALUE;
-	}
+	//
+	// if (Context->AudioHandle != INVALID_HANDLE_VALUE)
+	// {
+	// 	CloseHandle(Context->AudioHandle);
+	// 	Context->AudioHandle = INVALID_HANDLE_VALUE;
+	// }
 }
 
 void FWindowsDeviceInfo::InvalidateHandle(HANDLE Handle)
@@ -295,18 +284,25 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		UE_LOG(LogTemp, Error, TEXT("Invalid device handle before attempting to read"));
 		return;
 	}
-	//
-	// if (Context->ConnectionType != Bluetooth)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Audio haptics only supported over Bluetooth"));
-	// 	return;
-	// }
-	//
+	
+	if (Context->ConnectionType != Bluetooth)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Audio haptics only supported over Bluetooth"));
+		return;
+	}
+	
 	constexpr size_t BufferSize = 142;
 	DebugDumpAudioBuffer(Context->BufferAudio);
 	
 	DWORD BytesWritten = 0;
-	if (!WriteFile(Context->Handle, Context->BufferAudio.Raw, BufferSize, &BytesWritten, nullptr))
+		
+	// if (!HidD_SetOutputReport(Context->Handle, Context->BufferAudio, sizeof(BufferSize)))
+	// {
+	// 	UE_LOG(LogTemp, Error, TEXT("HIDManager: aaaaaaaaaaaaaaaaaaaaaa Success to SET Feature 0x02"));
+	// 	// ... lidar com erro ...
+	// 	
+	// }
+	if (!WriteFile(Context->Handle, Context->BufferAudio, BufferSize, &BytesWritten, nullptr))
 	{
 		const DWORD Error = GetLastError();
 		if (Error != ERROR_IO_PENDING)
@@ -316,7 +312,60 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 	}
 }
 
-void FWindowsDeviceInfo::DebugDumpAudioBuffer(const FDualSenseHapticBuffer& AudioData)
+bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
+{
+	// Feature Report 0x05 - Enables advanced Bluetooth features
+	// unsigned char FeatureBuffer[41];
+	// FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
+	// FeatureBuffer[0] = 0x05;
+	// if (!HidD_GetFeature(DeviceHandle, FeatureBuffer, 41))
+	// {
+	// 	const DWORD Error = GetLastError();
+	// 	UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
+	// 	return false;
+	// }
+
+	unsigned char OutputReport[78];
+	OutputReport[0] = 0x31;
+
+	// Byte 1: valid_flag0
+	// Precisamos setar DS_OUTPUT_VALID_FLAG0_HAPTICS_SELECT (0x04)
+	// E DS_OUTPUT_VALID_FLAG0_COMPATIBLE_VIBRATION (0x01)
+	OutputReport[1] = 0x04; // (0x04 | 0x01)
+	OutputReport[43] = 0x01; // (0x04 | 0x01)
+
+
+	// Byte 45: valid_flag2
+	// Se você usar a v1 (acima), pode deixar 0x00.
+	// Se quisesse usar a v2, você setaria OutputReport[1] = 0x04
+	// e OutputReport[45] = 0x01 (DS_OUTPUT_VALID_FLAG2_COMPATIBLE_VIBRATION2)
+	const uint32 CrcChecksum = FPlayStationOutputComposer::Compute(OutputReport, 74);
+	OutputReport[0x4A] = static_cast<unsigned char>((CrcChecksum & 0x000000FF) >> 0UL);
+	OutputReport[0x4B] = static_cast<unsigned char>((CrcChecksum & 0x0000FF00) >> 8UL);
+	OutputReport[0x4C] = static_cast<unsigned char>((CrcChecksum & 0x00FF0000) >> 16UL);
+	OutputReport[0x4D] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
+
+	
+
+	// ... preencha o resto do report se necessário ...
+
+	// Bytes 74-77: CRC32
+	// Você DEVE calcular um CRC32 dos 74 bytes anteriores
+	// e colocá-lo aqui se estiver usando o Report ID 0x31.
+	// (Se você mudar o Report ID para 0x11, pode pular o CRC32)
+
+	// Envie o report
+	if (!HidD_SetOutputReport(DeviceHandle, OutputReport, sizeof(OutputReport)))
+	{
+		UE_LOG(LogTemp, Error, TEXT("HIDManager: Success to SET Feature 0x02"));
+		// ... lidar com erro ...
+		return false;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("HIDManager: Success to SET Feature 0x02"));
+	return true;
+}
+
+void FWindowsDeviceInfo::DebugDumpAudioBuffer(unsigned char* AudioData)
 {
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));
 	UE_LOG(LogTemp, Warning, TEXT("=== BUFFER DUMP BEFORE SENDING ==="));
@@ -328,87 +377,25 @@ void FWindowsDeviceInfo::DebugDumpAudioBuffer(const FDualSenseHapticBuffer& Audi
 	UE_LOG(LogTemp, Warning, TEXT("CRC size: 4 bytes"));
 	UE_LOG(LogTemp, Warning, TEXT(""));
 
-	// Header
-	UE_LOG(LogTemp, Warning, TEXT("Offset | Byte | Description"));
-	UE_LOG(LogTemp, Warning, TEXT("-------|------|------------------------------------------"));
-	UE_LOG(LogTemp, Warning, TEXT("0x0000 | 0x%02X | Report ID (expected: 0x32)"), AudioData.Report.Header.Report_ID);
-	UE_LOG(LogTemp, Warning, TEXT("0x0001 | 0x%02X | Tag=0x%X, Seq=0x%X"), 
-		AudioData.Report.Header.Tag_Seq,
-		(AudioData.Report.Header.Tag_Seq >> 4) & 0x0F,
-		AudioData.Report.Header.Tag_Seq & 0x0F);
-	
-	// Packet 0x11
-	UE_LOG(LogTemp, Warning, TEXT(""));
-	UE_LOG(LogTemp, Warning, TEXT("--- Packet 0x11 (offset 0x0002) ---"));
-	UE_LOG(LogTemp, Warning, TEXT("0x0002 | 0x%02X | pid=0x%02X, unk=%d, sized=%d (expected: 0x91)"), 
-		AudioData.Report.Pkt11.pid,
-		AudioData.Report.Pkt11.pid & 0x7F,
-		(AudioData.Report.Pkt11.unk >> 0x7) & 1,       // Bit 7 (MSB de um uint8)
-		(AudioData.Report.Pkt11.sized >> 0x7) & 1);
-	UE_LOG(LogTemp, Warning, TEXT("0x0003 | 0x%02X | length=%d (expected: 7)"), 
-		AudioData.Report.Pkt11.length, AudioData.Report.Pkt11.length);
-	
-	for (int i = 0; i < 7; i++)
+	for (int i = 0; i < 13; i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("0x%04X | 0x%02X | data[%d]%s"), 
-			0x0004 + i, 
-			AudioData.Report.Pkt11.data[i], 
-			i,
-			i == 6 ? TEXT(" <- counter (ii)") : TEXT(""));
+		UE_LOG(LogTemp, Warning, TEXT("0x%04X | 0x%02X | data[%d]%s"), 0x0004 + i, AudioData[i], i, i == 10 ? TEXT(" <- counter (ii)") : TEXT(""));
 	}
-	
-	// Packet 0x12
-	UE_LOG(LogTemp, Warning, TEXT(""));
-	UE_LOG(LogTemp, Warning, TEXT("--- Packet 0x12 (offset 0x000B) ---"));
-	UE_LOG(LogTemp, Warning, TEXT("0x000B | 0x%02X | pid=0x%02X, unk=%d, sized=%d (expected: 0x92)"), 
-		AudioData.Report.Pkt12.pid,
-		AudioData.Report.Pkt12.pid & 0x7F,
-		(AudioData.Report.Pkt12.unk >> 0x7) & 1,       // Bit 7 (MSB de um uint8)
-		(AudioData.Report.Pkt12.sized >> 0x7) & 1); 
-	UE_LOG(LogTemp, Warning, TEXT("0x000C | 0x%02X | length=%d (expected: 64)"), 
-		AudioData.Report.Pkt12.length, AudioData.Report.Pkt12.length);
-	
-	// Audio samples (64 bytes) 
-	UE_LOG(LogTemp, Warning, TEXT(""));
-	UE_LOG(LogTemp, Warning, TEXT("--- Audio samples (64 bytes) ---"));
-	for (int line = 0; line < 4; line++)
+
+	FString BufferString = TEXT("AudioData Buffer [12-141]: ");
+	for (int i = 13; i < 138; i++)
 	{
-		FString HexLine;
-		for (int col = 0; col < 16; col++)
-		{
-			int idx = line * 16 + col;
-			HexLine += FString::Printf(TEXT("%02X "), AudioData.Report.Pkt12.data[idx]);
-		}
-		UE_LOG(LogTemp, Warning, TEXT("0x%04X | %s"), 0x000D + (line * 16), *HexLine);
+		BufferString += FString::Printf(TEXT("0x%02X "), AudioData[i]);
 	}
-	
-	// Padding (61 bytes)
-	UE_LOG(LogTemp, Warning, TEXT(""));
-	UE_LOG(LogTemp, Warning, TEXT("--- Padding (61 bytes) ---"));
-	int paddingStart = 0x004D;
-	for (int line = 0; line < 4; line++)
-	{
-		FString HexLine;
-		int bytesToShow = (line == 3) ? 13 : 16; // Última linha tem apenas 13 bytes
-		for (int col = 0; col < bytesToShow; col++)
-		{
-			int idx = line * 16 + col;
-			if (idx < 61)
-			{
-				HexLine += FString::Printf(TEXT("%02X "), AudioData.Raw[idx]);
-			}
-		}
-		UE_LOG(LogTemp, Warning, TEXT("0x%04X | %s"), paddingStart + (line * 16), *HexLine);
-	}
-	
-	// CRC (4 bytes)
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *BufferString);
+
 	UE_LOG(LogTemp, Warning, TEXT(""));
 	UE_LOG(LogTemp, Warning, TEXT("--- CRC (4 bytes at offset 0x008A) ---"));
 	UE_LOG(LogTemp, Warning, TEXT("0x008A | %02X %02X %02X %02X"), 
-		AudioData.Raw[138],
-		AudioData.Raw[139],
-		AudioData.Raw[140],
-		AudioData.Raw[141]);
+		AudioData[138],
+		AudioData[139],
+		AudioData[140],
+		AudioData[141]);
 	
 	UE_LOG(LogTemp, Warning, TEXT(""));
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));

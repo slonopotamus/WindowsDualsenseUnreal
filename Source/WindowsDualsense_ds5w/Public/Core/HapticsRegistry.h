@@ -5,7 +5,7 @@
 #pragma once
 #include "Subsystems/AudioHapticsListener.h"
 
-class FHapticsRegistry final : public TSharedFromThis<FHapticsRegistry>
+class FHapticsRegistry final : public TSharedFromThis<FHapticsRegistry>, public FNoncopyable
 {
     /**
      * Retrieves the singleton instance of the FHapticsRegistry.

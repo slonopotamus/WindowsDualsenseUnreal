@@ -47,53 +47,52 @@ using FPlatformDeviceHandle = void*;
  * - Aligns properly for hardware-level communication to ensure correct
  *   data transfers to the device.
  */
+USTRUCT()
 struct FDualSenseHapticBuffer {
-#pragma pack(push, 1)
-	/**
-	 * @brief Represents the header structure for a DualSense haptic feedback packet.
-	 *
-	 * This structure defines the format of the packet header used in constructing
-	 * haptic feedback data for DualSense devices. It includes essential fields
-	 * necessary for identifying and sequencing individual packets sent to the
-	 * controller.
-	 *
-	 * Features:
-	 * - The Report_ID field uniquely identifies the type of the report being sent.
-	 * - The Tag_Seq field is used to manage sequence control and tag information
-	 *   across transmitted packets.
-	 *
-	 * This structure is specifically designed to align with the communication
-	 * protocol requirements of DualSense devices, ensuring accurate and efficient
-	 * data transmission.
-	 */
-	struct FPacketHeader {
-		uint8 Report_ID;
-		uint8 Tag_Seq;
-	};
-
-	/**
-	 * @brief Represents the structure of packet 0x11 used in haptic feedback for DualSense devices.
-	 *
-	 * This structure defines the format and content of the data packet identified as 0x11 in the
-	 * communication protocol with DualSense controllers. It includes fields required to properly
-	 * structure the packet headers and payload for device processing.
-	 *
-	 * Features:
-	 * - Contains a 6-bit packet identifier (PID) for recognizing the packet type.
-	 * - Includes metadata flags for additional control (bUnk and bSized).
-	 * - Supports a fixed data payload of 7 bytes to store the actual haptic feedback data.
-	 * - Provides a field for specifying the total length of the packet.
-	 *
-	 * The structure is tightly packed for alignment with the hardware protocol, ensuring the
-	 * efficient transmission of haptic commands.
-	 */
-	struct FPacket0X11 {
-		uint8 pid:6;
-		bool unk :1;
-		bool sized :1;
-		uint8 length;
-		uint8 data[64];
-	};
+	GENERATED_BODY()
+	// /**
+	//  * @brief Represents the header structure for a DualSense haptic feedback packet.
+	//  *
+	//  * This structure defines the format of the packet header used in constructing
+	//  * haptic feedback data for DualSense devices. It includes essential fields
+	//  * necessary for identifying and sequencing individual packets sent to the
+	//  * controller.
+	//  *
+	//  * Features:
+	//  * - The Report_ID field uniquely identifies the type of the report being sent.
+	//  * - The Tag_Seq field is used to manage sequence control and tag information
+	//  *   across transmitted packets.
+	//  *
+	//  * This structure is specifically designed to align with the communication
+	//  * protocol requirements of DualSense devices, ensuring accurate and efficient
+	//  * data transmission.
+	//  */
+	// struct FPacketHeader {
+	// 	uint8 Report_ID;
+	// 	uint8 Tag_Seq;
+	// };
+	//
+	// /**
+	//  * @brief Represents the structure of packet 0x11 used in haptic feedback for DualSense devices.
+	//  *
+	//  * This structure defines the format and content of the data packet identified as 0x11 in the
+	//  * communication protocol with DualSense controllers. It includes fields required to properly
+	//  * structure the packet headers and payload for device processing.
+	//  *
+	//  * Features:
+	//  * - Contains a 6-bit packet identifier (PID) for recognizing the packet type.
+	//  * - Includes metadata flags for additional control (bUnk and bSized).
+	//  * - Supports a fixed data payload of 7 bytes to store the actual haptic feedback data.
+	//  * - Provides a field for specifying the total length of the packet.
+	//  *
+	//  * The structure is tightly packed for alignment with the hardware protocol, ensuring the
+	//  * efficient transmission of haptic commands.
+	//  */
+	// struct FPacket0X11 {
+	// 	uint8 pid:6;
+	// 	uint8 length;
+	// 	uint8 data[64];
+	// };
 
 	/**
 	 * @brief Represents the structure of packet 0x12 used in haptic feedback for DualSense devices.
@@ -111,27 +110,15 @@ struct FDualSenseHapticBuffer {
 	 * This structure is specifically aligned for compatibility with hardware-level communication
 	 * protocols, ensuring accurate and efficient data transmission to the controller.
 	 */
-	struct FPacket0X12 {
-		uint8 pid :6;
-		bool unk :1;
-		bool sized :1;
-		uint8_t length;
-		uint8_t data[64];
-	};
+	// struct FPacket0X12 {
+	// 	uint8 pid :6;
+	// 	bool unk :1;
+	// 	bool sized :1;
+	// 	uint8 length;
+	// 	uint8 data[64];
+	// };
 
-	union {
-		struct {
-			FPacketHeader Header;
-			FPacket0X11 Pkt11;
-			FPacket0X12 Pkt12;
-		} Report;
-		uint8_t Raw[142];
-	};
-
-#pragma pack(pop)
-	FDualSenseHapticBuffer() : Report(), Raw{}
-	{
-	}
+	uint8 Raw[142];
 };
 
 /**
@@ -211,7 +198,7 @@ struct FDeviceContext
 	 * to a connected DualSense device, enabling advanced vibration and
 	 * feedback mechanisms driven by audio signals.
 	 */
-	FDualSenseHapticBuffer BufferAudio;
+	uint8 BufferAudio[142];
 	/**
 	 * A fixed-size buffer for storing input or output data associated with a device context.
 	 * This buffer is utilized for reading device input reports or for other data

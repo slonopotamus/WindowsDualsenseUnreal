@@ -18,32 +18,51 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 	HIDDeviceContexts = Context;
 	if (HIDDeviceContexts.ConnectionType == Bluetooth)
 	{
+		HIDDeviceContexts.BufferAudio[0] = 0x32;
+		HIDDeviceContexts.BufferAudio[1] = 0x00;
+		HIDDeviceContexts.BufferAudio[2] = 0x91;
+		HIDDeviceContexts.BufferAudio[3] = 0x7;
+		HIDDeviceContexts.BufferAudio[4] = 0b11111110;
+		HIDDeviceContexts.BufferAudio[5] = 0b00001000;
+		HIDDeviceContexts.BufferAudio[6] = 0b00001000;
+		HIDDeviceContexts.BufferAudio[7] = 0x0;
+		HIDDeviceContexts.BufferAudio[8] = 0x0;
+		HIDDeviceContexts.BufferAudio[9] = 0b01001000;
+		HIDDeviceContexts.BufferAudio[10] = 0x00;
+		
 		FOutputContext* EnableReport = &HIDDeviceContexts.Output; // Create a clean/empty report
 	
 		// HidOutput->Feature.FeatureMode = 0x1 | 0x2 | 0x4 | 0x8 | 0x10 | 0x40;
 		// Set flags to enable control over the lightbar, player LEDs
-		EnableReport->Feature.FeatureMode = 0x1 | 0x2 | 0x4;
+		EnableReport->Feature.FeatureMode = 0x1 | 0x2 | 0x4 | 0x8;
 	
 		// Important: Keep the data fields at their default (e.g., lights off)
-		EnableReport->Lightbar = {0, 0, 0};
-		EnableReport->PlayerLed.Brightness = 0x00;
-	
-		SendOut();
+		// EnableReport->Lightbar = {0, 0, 0};
+		// EnableReport->PlayerLed.Brightness = 0x00;
 
-		// FDeviceContext* NewContext = &HIDDeviceContexts;
-		// NewContext->BufferAudio.Report.Header.Report_ID = 0x32;
-		// NewContext->BufferAudio.Report.Header.Tag_Seq = 0;
-		// FPlayStationOutputComposer::SendAudioHapticAdvanced(NewContext);
+		//Settings.VibrationMode == EDualSenseDeviceFeatureReport::Off
+		//? 0xFF
+		//: static_cast<uint8_t>(Settings.VibrationMode);
+		// EnableReport->Feature.SoftRumbleReduce = 0x0F;
+		// EnableReport->Feature.TriggerSoftnessLevel = 0x0;
+
+		// EnableReport->Audio.MicStatus = static_cast<uint8_t>(0x00);
+		// EnableReport->Audio.MicVolume = static_cast<uint8_t>(64);
+		// EnableReport->Audio.HeadsetVolume = static_cast<uint8_t>(64);
+		// EnableReport->Audio.SpeakerVolume = static_cast<uint8_t>(64);
+		SendOut();
+		
+		
 	}
 
-	StopAll();
+	//StopAll();
 	return true;
 }
 
 void UDualSenseLibrary::ShutdownLibrary()
 {
 	ButtonStates.Reset();
-	StopAudioHapticConsumer();
+	// StopAudioHapticConsumer();
 	FPlayStationOutputComposer::FreeContext(&HIDDeviceContexts);
 }
 
@@ -70,7 +89,7 @@ void UDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	HidOutput->Feature.VibrationMode = 0xFC;
-	HidOutput->Feature.FeatureMode = 0xF7;
+	HidOutput->Feature.FeatureMode = 0xD7;
 
 	//Settings.VibrationMode == EDualSenseDeviceFeatureReport::Off
 	//? 0xFF
@@ -78,23 +97,25 @@ void UDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 	HidOutput->Feature.SoftRumbleReduce = static_cast<uint8_t>(Settings.SoftRumbleReduce);
 	HidOutput->Feature.TriggerSoftnessLevel = static_cast<uint8_t>(Settings.TriggerSoftnessLevel);
 
-	HidOutput->Audio.MicStatus = static_cast<uint8_t>(0x10);
-	HidOutput->Audio.MicVolume = static_cast<uint8_t>(0);
+	HidOutput->Audio.MicStatus = static_cast<uint8_t>(0x00);
+	HidOutput->Audio.MicVolume = static_cast<uint8_t>(80);
 	HidOutput->Audio.HeadsetVolume = static_cast<uint8_t>(80);
 	HidOutput->Audio.SpeakerVolume = static_cast<uint8_t>(100);
 
-	HidOutput->Audio.Mode = 0x21;
-	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::On && Settings.AudioSpeaker ==
-		EDualSenseAudioFeatureReport::Off)
-	{
-		HidOutput->Audio.Mode = 0x05;
-	}
+	// HidOutput->Audio.Mode = 0x21;
+	// if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::On && Settings.AudioSpeaker ==
+	// 	EDualSenseAudioFeatureReport::Off)
+	// {
+	// 	HidOutput->Audio.Mode = 0x05;
+	// }
+	//
+	// if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::Off && Settings.AudioSpeaker ==
+	// 	EDualSenseAudioFeatureReport::On)
+	// {
+	// 	
+	// }
 
-	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::Off && Settings.AudioSpeaker ==
-		EDualSenseAudioFeatureReport::On)
-	{
-		HidOutput->Audio.Mode = 0x31;
-	}
+	HidOutput->Audio.Mode = 0x31;
 	
 	SendOut();
 }
@@ -932,85 +953,65 @@ bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 }
 void UDualSenseLibrary::AudioHapticUpdate(float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock)
 {
-
 	FDeviceContext* Context = &HIDDeviceContexts;
 	if (!Context || !Context->IsConnected || !AudioData || NumSamples <= 0)
 	{
 		return;
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("Num Sample Unreal %d, Smple Rate %d"), NumSamples, SampleRate);
 	
-	// if (!bIsAudioConsumerRunning.AtomicSet(true))
-	// {
-	// 	StartAudioHapticConsumer();
-	// }
-
-
-	UE_LOG(LogTemp, Log, TEXT("Num Sample Unreal %d"), NumSamples);
-
-	// CurrentSampleRate = SampleRate;
-
-	constexpr int32 TargetSamples = 64;
-	const int32 SamplesPerBucket = NumSamples / TargetSamples;
-
-	TArray<uint8> AudioDataBuffer;
-	AudioDataBuffer.SetNumUninitialized(64);
-	for (int32 i = 0; i < TargetSamples; i++)
+	const int32 NumFrames = NumSamples / NumChannels;
+	TArray<uint8_t> LeftChannelPCM, RightChannelPCM;
+	LeftChannelPCM.Reserve(NumFrames * 2);
+	for (int32 i = 0; i < NumFrames; ++i)
 	{
-		float SumSquared = 0.0f;
-		
-		for (int32 j = 0; j < SamplesPerBucket; j++)
-		{
-			int32 SampleIndex = (i * SamplesPerBucket + j) * NumChannels;
-			float Sample = AudioData[SampleIndex];
-			SumSquared += Sample * Sample;
-		}
-
-		float RMS = FMath::Sqrt(SumSquared / SamplesPerBucket);
-		RMS = FMath::Clamp(RMS, 0.0f, 1.0f);
-		uint8 CompactedSample = static_cast<uint8>(RMS * 255.0f);
-		AudioDataBuffer[i] = CompactedSample;
+		const float LeftSample = AudioData[i * 2];
+		LeftChannelPCM.Add(static_cast<uint8_t>((LeftSample * 127.5)));
 	}
 
-	
-	
-	// constexpr double MillisecondsPerPacket = 1000.0 * SamplesPerPacket / 6000.0;
+	constexpr int32 SamplesPerPacket = 64;
+	const int32 NumPackets = LeftChannelPCM.Num() / SamplesPerPacket;
 
-	FDualSenseHapticBuffer* ProcessedAudio = &Context->BufferAudio;
-	
-	ProcessedAudio->Report.Header.Report_ID = 0x32;
-	ProcessedAudio->Report.Header.Tag_Seq = 0x00;
-		
-	// Pkt11 setup
-	ProcessedAudio->Report.Pkt11.pid = 0x11;
-	ProcessedAudio->Report.Pkt11.sized = true;
-	ProcessedAudio->Report.Pkt11.length = 7;
-		
-	// Pkt12 setup
-	ProcessedAudio->Report.Pkt12.pid = 0x12;
-	ProcessedAudio->Report.Pkt12.sized = true;
-	ProcessedAudio->Report.Pkt12.length = TargetSamples;
+	UE_LOG(LogTemp, Log, TEXT("Num pack %d"), NumPackets);
+	uint8* ProcessedAudio = &HIDDeviceContexts.BufferAudio[10];
+	int32 AudioPack = 1;
+	for (int32 i = 0; i < NumPackets; ++i)
+	{
+	    const int32 DataOffset = i * 32;
+	    const uint8* LeftDataPtr = LeftChannelPCM.GetData() + DataOffset;
+	    // const uint8* RightDataPtr = RightChannelPCM.GetData() + DataOffset;
 
-	UE_LOG(LogTemp, Error, TEXT("Num samples %d"), 	AudioDataBuffer.Num());
-	ProcessedAudio->Report.Pkt11.data[6] = (++AudioVibrationSequence) & 0xFF;
-	FMemory::Memcpy(ProcessedAudio->Report.Pkt12.data, AudioDataBuffer.GetData(), TargetSamples);
-	FPlayStationOutputComposer::SendAudioHapticAdvanced(Context);
-	constexpr double SecondsPerPacket = 64.0 / 6000.0;
-	FPlatformProcess::SleepNoStats(SecondsPerPacket);
-	
-	// FPlatformProcess::SleepNoStats(0.06f);
-	
-	// if (AudioHapticsQueue.Dequeue(AudioData))
-	// {
-	// 	
-	// }
-		
-	// while (bIsAudioConsumerRunning && NewContext)
-	// {
-	// 	
-	// }
-	// bIsAudioConsumerRunning = false;
+		FString AudioDataString;
+		for (uint8 l = 1; l < sizeof(LeftDataPtr); l++)
+		{
+			AudioDataString += FString::Printf(TEXT("%02X"), LeftDataPtr[l]);
+		}
 
-	// AudioHapticsQueue.Enqueue(AudioDataBuffer);
+		// for (uint8 r = 1; r < sizeof(RightDataPtr); r++)
+		// {
+		// 	AudioDataString += FString::Printf(TEXT("%02X"), RightDataPtr[r]);
+		// }
+		UE_LOG(LogTemp, Log, TEXT("Audio Data Package %d String: %s"), i, *AudioDataString);
+
+		FMemory::Memcpy(ProcessedAudio, LeftDataPtr, SamplesPerPacket);
+		// FMemory::Memcpy(ProcessedAudio, RightDataPtr, SamplesPerPacket);
+
+		if (AudioPack % 4 == 0)
+		{
+			ProcessedAudio[0] = (AudioVibrationSequence++) & 0xFF;
+			ProcessedAudio[1] = 0b10010010;
+			ProcessedAudio[2] = SamplesPerPacket;
+			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask,[Context = MoveTemp(Context)]()
+			{
+			   FPlayStationOutputComposer::SendAudioHapticAdvanced(Context);
+			});
+			Sleep(1);
+			UE_LOG(LogTemp, Log, TEXT("Send Audio Data Packages %d size %llu"), AudioPack, sizeof(LeftDataPtr) * 4);
+		}
+		AudioPack++;
+	}
+	
 }
 
 void UDualSenseLibrary::StartMotionSensorCalibration(float Duration, float DeadZone)

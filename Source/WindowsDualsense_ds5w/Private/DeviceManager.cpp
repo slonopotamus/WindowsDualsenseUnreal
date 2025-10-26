@@ -100,6 +100,7 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 
 void DeviceManager::SetHapticFeedbackValues(const int32 ControllerId, const int32 Hand, const FHapticFeedbackValues& Values)
 {
+	UE_LOG(LogTemp, Warning, TEXT("SetHapticFeedbackValues"));
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
 	{

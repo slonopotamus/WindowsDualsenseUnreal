@@ -12,30 +12,13 @@ FAudioHapticsListener::FAudioHapticsListener(const FInputDeviceId InDeviceId) : 
 {
 }
 
-FAudioHapticsListener::~FAudioHapticsListener()
-{
-}
-
-void FAudioHapticsListener::OnSubmixEnded() const
-{
-	// if (ISonyGamepadTriggerInterface* DualSense = Cast<ISonyGamepadTriggerInterface>(
-	// 	FDeviceRegistry::Get()->GetLibraryInstance(DeviceId)))
-	// {
-	// 	DualSense->StopAudioHapticConsumer();
-	// }
-}
-
 void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples,
                                               int32 NumChannels, const int32 SampleRate, double AudioClock)
 {
+
+	UE_LOG(LogTemp, Warning, TEXT("AudioHapticsListener::OnNewSubmixBuffer %f"), AudioClock);
 	if (!OwningSubmix)
 	{
-		if (ISonyGamepadTriggerInterface* DualSense = Cast<ISonyGamepadTriggerInterface>(
-			FDeviceRegistry::Get()->GetLibraryInstance(DeviceId)))
-		{
-			DualSense->StopAudioHapticConsumer();
-		}
-
 		UE_LOG(LogTemp, Error, TEXT("Submix is NULL! Cannot create listener"));
 		return;
 	}

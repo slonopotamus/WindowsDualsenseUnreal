@@ -93,7 +93,6 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 					if (!Manager->KnownDevicePaths.Contains(Context.Path))
 					{
 						Context.Output = FOutputContext();
-						Context.BufferAudio = FDualSenseHapticBuffer();
 						if (!IPlatformHardwareInfoInterface::Get().CreateHandle(&Context))
 						{
 							UE_LOG(LogTemp, Log, TEXT("DualSense: DeviceManager Failed to create handle for device %s."), *Context.Path);
