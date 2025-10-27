@@ -8,14 +8,17 @@
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "Core/Structs/FDualSenseFeatureReport.h"
 
-FAudioHapticsListener::FAudioHapticsListener(const FInputDeviceId InDeviceId) : DeviceId(InDeviceId)
+
+FAudioHapticsListener::FAudioHapticsListener(FInputDeviceId InDeviceId) : QueueMutex(nullptr), AudioQueue(nullptr),
+                                                                          Lock(nullptr),
+                                                                          DeviceId(InDeviceId)
 {
 }
+
 
 void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples,
                                               int32 NumChannels, const int32 SampleRate, double AudioClock)
 {
-
 	UE_LOG(LogTemp, Warning, TEXT("AudioHapticsListener::OnNewSubmixBuffer %f"), AudioClock);
 	if (!OwningSubmix)
 	{
@@ -23,9 +26,13 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 		return;
 	}
 
-	if (ISonyGamepadTriggerInterface* DualSense = Cast<ISonyGamepadTriggerInterface>(
-		FDeviceRegistry::Get()->GetLibraryInstance(DeviceId)))
+
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [=]()
 	{
-		DualSense->AudioHapticUpdate(AudioData, NumSamples, NumChannels, SampleRate, AudioClock);
-	}
+		if (ISonyGamepadTriggerInterface* DualSense = Cast<ISonyGamepadTriggerInterface>(
+		FDeviceRegistry::Get()->GetLibraryInstance(DeviceId)))
+		{
+			DualSense->AudioHapticUpdate(AudioData, NumSamples, NumChannels, SampleRate, AudioClock);
+		}
+	});
 }

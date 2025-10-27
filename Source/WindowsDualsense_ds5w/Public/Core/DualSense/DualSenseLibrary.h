@@ -17,6 +17,8 @@
 #include "Core/Structs/FDeviceSettings.h"
 #include "Core/Structs/FDualSenseFeatureReport.h"
 #include "Containers/Queue.h"
+#include "Core/PlayStationOutputComposer.h"
+#include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "HAL/ThreadSafeBool.h"
 #include "DualSenseLibrary.generated.h"
 

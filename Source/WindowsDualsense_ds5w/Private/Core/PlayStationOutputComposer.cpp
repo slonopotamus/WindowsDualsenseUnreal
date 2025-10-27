@@ -69,7 +69,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 
 	FOutputContext* HidOut = &DeviceContext->Output;
 	unsigned char*  Output = &DeviceContext->BufferOutput[Padding];
-	Output[0] = 0xFF; // HidOut->Feature.VibrationMode;
+	Output[0] = 0xFC; // HidOut->Feature.VibrationMode;
 	Output[1] = 0xF7;
 	 Output[2] = HidOut->Rumbles.Left;
 	 Output[3] = HidOut->Rumbles.Right;
@@ -80,7 +80,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 	 Output[9] = HidOut->Audio.MicStatus;
 	 Output[8] = HidOut->MicLight.Mode;
 	Output[36] = (HidOut->Feature.TriggerSoftnessLevel << 4) | (HidOut->Feature.SoftRumbleReduce & 0x0F);
-	Output[36] = (0 << 4) | 0xF;
+	Output[36] = 0x00;
 	Output[38] ^= (1 << 0);
 	Output[38] ^= (1 << 2);
 	Output[42] = HidOut->PlayerLed.Brightness;
@@ -193,8 +193,8 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 void FPlayStationOutputComposer::SendAudioHapticAdvanced(FDeviceContext* DeviceContext)
 {
 	if (!DeviceContext) return;
-
-	constexpr size_t CrcOffset = 138;
+	
+	constexpr size_t CrcOffset = 272;
 	const int32 CrcChecksum = Compute(DeviceContext->BufferAudio, CrcOffset);
 	DeviceContext->BufferAudio[CrcOffset + 0] = static_cast<unsigned char>((CrcChecksum & 0x000000FF) >> 0UL);
 	DeviceContext->BufferAudio[CrcOffset + 1] = static_cast<unsigned char>((CrcChecksum & 0x0000FF00) >> 8UL);

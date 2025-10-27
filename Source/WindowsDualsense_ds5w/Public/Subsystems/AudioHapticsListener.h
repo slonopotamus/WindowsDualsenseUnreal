@@ -27,7 +27,10 @@ public:
 	{
 		return true;
 	}
-	
+
+	FScopeLock* QueueMutex;
+	TQueue<int16>* AudioQueue;
+	FScopeLock* Lock; 
 	/**
 	Called when a new buffer has been rendered for a given submix
 	@param OwningSubmix	The submix object which has rendered a new buffer
@@ -39,5 +42,6 @@ public:
 	*/
 	virtual void OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock) override;
 private:
+	
 	FInputDeviceId DeviceId;
 };

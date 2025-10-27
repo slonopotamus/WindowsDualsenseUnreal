@@ -291,17 +291,9 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		return;
 	}
 	
-	constexpr size_t BufferSize = 142;
+	constexpr size_t BufferSize = 276;
 	DebugDumpAudioBuffer(Context->BufferAudio);
-	
 	DWORD BytesWritten = 0;
-		
-	// if (!HidD_SetOutputReport(Context->Handle, Context->BufferAudio, sizeof(BufferSize)))
-	// {
-	// 	UE_LOG(LogTemp, Error, TEXT("HIDManager: aaaaaaaaaaaaaaaaaaaaaa Success to SET Feature 0x02"));
-	// 	// ... lidar com erro ...
-	// 	
-	// }
 	if (!WriteFile(Context->Handle, Context->BufferAudio, BufferSize, &BytesWritten, nullptr))
 	{
 		const DWORD Error = GetLastError();
@@ -309,6 +301,8 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
 		}
+
+		UE_LOG(LogTemp, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
 	}
 }
 
@@ -325,26 +319,32 @@ bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
 	// 	return false;
 	// }
 
-	unsigned char OutputReport[78];
-	OutputReport[0] = 0x31;
-
-	// Byte 1: valid_flag0
-	// Precisamos setar DS_OUTPUT_VALID_FLAG0_HAPTICS_SELECT (0x04)
-	// E DS_OUTPUT_VALID_FLAG0_COMPATIBLE_VIBRATION (0x01)
-	OutputReport[1] = 0x04; // (0x04 | 0x01)
-	OutputReport[43] = 0x01; // (0x04 | 0x01)
-
-
-	// Byte 45: valid_flag2
-	// Se você usar a v1 (acima), pode deixar 0x00.
-	// Se quisesse usar a v2, você setaria OutputReport[1] = 0x04
-	// e OutputReport[45] = 0x01 (DS_OUTPUT_VALID_FLAG2_COMPATIBLE_VIBRATION2)
-	const uint32 CrcChecksum = FPlayStationOutputComposer::Compute(OutputReport, 74);
-	OutputReport[0x4A] = static_cast<unsigned char>((CrcChecksum & 0x000000FF) >> 0UL);
-	OutputReport[0x4B] = static_cast<unsigned char>((CrcChecksum & 0x0000FF00) >> 8UL);
-	OutputReport[0x4C] = static_cast<unsigned char>((CrcChecksum & 0x00FF0000) >> 16UL);
-	OutputReport[0x4D] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
-
+	// unsigned char OutputReport[272];
+	// OutputReport[0] = 0x32;
+	// OutputReport[1] = 0x00;
+	// OutputReport[2] = 0b10010010;
+	// OutputReport[3] = 0x08;
+	// OutputReport[4] = 0x00;
+	// OutputReport[5] = 0x00;
+	// OutputReport[6] = 0x00;
+	// OutputReport[7] = 0x00;
+	// OutputReport[8] = 0x00;
+	// OutputReport[9] = 0x00;
+	// // Byte 1: valid_flag0
+	// // Precisamos setar DS_OUTPUT_VALID_FLAG0_HAPTICS_SELECT (0x04)
+	// // E DS_OUTPUT_VALID_FLAG0_COMPATIBLE_VIBRATION (0x01)
+	//
+	//
+	// // Byte 45: valid_flag2
+	// // Se você usar a v1 (acima), pode deixar 0x00.
+	// // Se quisesse usar a v2, você setaria OutputReport[1] = 0x04
+	// // e OutputReport[45] = 0x01 (DS_OUTPUT_VALID_FLAG2_COMPATIBLE_VIBRATION2)
+	// const uint32 CrcChecksum = FPlayStationOutputComposer::Compute(OutputReport, 543);
+	// OutputReport[0x4A] = static_cast<unsigned char>((CrcChecksum & 0x000000FF) >> 0UL);
+	// OutputReport[0x4B] = static_cast<unsigned char>((CrcChecksum & 0x0000FF00) >> 8UL);
+	// OutputReport[0x4C] = static_cast<unsigned char>((CrcChecksum & 0x00FF0000) >> 16UL);
+	// OutputReport[0x4D] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
+	return true;
 	
 
 	// ... preencha o resto do report se necessário ...
@@ -355,48 +355,53 @@ bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
 	// (Se você mudar o Report ID para 0x11, pode pular o CRC32)
 
 	// Envie o report
-	if (!HidD_SetOutputReport(DeviceHandle, OutputReport, sizeof(OutputReport)))
-	{
-		UE_LOG(LogTemp, Error, TEXT("HIDManager: Success to SET Feature 0x02"));
-		// ... lidar com erro ...
-		return false;
-	}
-	UE_LOG(LogTemp, Warning, TEXT("HIDManager: Success to SET Feature 0x02"));
-	return true;
+	// if (!HidD_SetOutputReport(DeviceHandle, OutputReport, sizeof(OutputReport)))
+	// {
+	// 	UE_LOG(LogTemp, Error, TEXT("HIDManager: Success to SET Feature 0x02"));
+	// 	// ... lidar com erro ...
+	// 	return false;
+	// }
+	// UE_LOG(LogTemp, Warning, TEXT("HIDManager: Success to SET Feature 0x02"));
+	// return true;
 }
 
 void FWindowsDeviceInfo::DebugDumpAudioBuffer(unsigned char* AudioData)
 {
+	const int32 PacketPayloadSize = 272;
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));
 	UE_LOG(LogTemp, Warning, TEXT("=== BUFFER DUMP BEFORE SENDING ==="));
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));
-	
+
 	UE_LOG(LogTemp, Warning, TEXT("--- BUFFER ---"));
-	UE_LOG(LogTemp, Warning, TEXT("Total size: 142 bytes"));
-	UE_LOG(LogTemp, Warning, TEXT("Payload size: 137 bytes"));
-	UE_LOG(LogTemp, Warning, TEXT("CRC size: 4 bytes"));
-	UE_LOG(LogTemp, Warning, TEXT(""));
+	UE_LOG(LogTemp, Warning, TEXT("Actual Payload Size: %d bytes"), PacketPayloadSize);
+	UE_LOG(LogTemp, Warning, TEXT("Total size from sizeof(): %llu bytes"), sizeof(AudioData)); // Apenas para depurar
 
-	for (int i = 0; i < 13; i++)
+	UE_LOG(LogTemp, Warning, TEXT("--- Header (Bytes 0-15) ---"));
+	for (int i = 0; i < 16; i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("0x%04X | 0x%02X | data[%d]%s"), 0x0004 + i, AudioData[i], i, i == 10 ? TEXT(" <- counter (ii)") : TEXT(""));
+	    FString Note = TEXT("");
+	    if (i == 2)  Note = TEXT(" <- Buffer ID (deve ser 0x92)");
+	    if (i == 3)  Note = TEXT(" <- Sample Rate (deve ser 0x08)");
+	    if (i == 10) Note = TEXT(" <- Sequence Counter");
+	    if (i == 12) Note = TEXT(" <- Sample Count (deve ser 0x40)");
+	    if (i == 15) Note = TEXT(" <- Fim do Header");
+	    
+	    UE_LOG(LogTemp, Warning, TEXT("0x%04X | 0x%02X | data[%d]%s"), 0x0004 + i, AudioData[i], i, *Note);
 	}
 
-	FString BufferString = TEXT("AudioData Buffer [12-141]: ");
-	for (int i = 13; i < 138; i++)
+	UE_LOG(LogTemp, Warning, TEXT("--- Audio Data (Bytes 16 a %d) ---"), PacketPayloadSize - 1);
+	FString BufferString = TEXT("AudioData: ");
+	for (int i = 16; i < PacketPayloadSize; i++)
 	{
-		BufferString += FString::Printf(TEXT("0x%02X "), AudioData[i]);
+	    BufferString += FString::Printf(TEXT("0x%02X "), AudioData[i]);
 	}
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *BufferString);
 
-	UE_LOG(LogTemp, Warning, TEXT(""));
-	UE_LOG(LogTemp, Warning, TEXT("--- CRC (4 bytes at offset 0x008A) ---"));
-	UE_LOG(LogTemp, Warning, TEXT("0x008A | %02X %02X %02X %02X"), 
-		AudioData[138],
-		AudioData[139],
-		AudioData[140],
-		AudioData[141]);
-	
-	UE_LOG(LogTemp, Warning, TEXT(""));
+	UE_LOG(LogTemp, Warning, TEXT("--- Payload: \r \n--- %s"), *BufferString);
+
+	// --- CRC ---
+	// O CRC é (provavelmente) calculado e adicionado pela biblioteca HID (hidapi)
+	// DEPOIS do seu payload de 272 bytes.
+	UE_LOG(LogTemp, Warning, TEXT("--- CRC ---"));
+	UE_LOG(LogTemp, Warning, TEXT("%02X,%02X,%02X,%02X "), AudioData[272], AudioData[273], AudioData[274], AudioData[275]);
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));
 }
