@@ -20,6 +20,11 @@
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "HAL/ThreadSafeBool.h"
+// extra headers for queue/worker primitives
+#include "HAL/CriticalSection.h"
+#include "HAL/Event.h"
+#include "Async/Future.h"
+#include <atomic>
 #include "DualSenseLibrary.generated.h"
 
 /**
@@ -310,8 +315,6 @@ class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISony
 	GENERATED_BODY()
 	
 public:
-	virtual void StartAudioHapticConsumer() override {};
-	virtual void StopAudioHapticConsumer() override {};
 	/**
 	 * @brief Configures device settings for a connected device.
 	 *
@@ -730,20 +733,8 @@ public:
 	 * @return True if the calibration status was successfully retrieved, false otherwise.
 	 */
 	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override;
-	/**
-	 * @brief Updates the haptic feedback system using audio data.
-	 *
-	 * This method utilizes the provided audio data to generate haptic feedback. It is primarily
-	 * used in systems where audio-based haptics are supported, enabling dynamic haptic responses
-	 * synchronized with audio playback.
-	 *
-	 * @param AudioData Pointer to the buffer containing audio sample data.
-	 * @param NumSamples The total number of audio samples in the buffer.
-	 * @param NumChannels The number of channels in the audio data (e.g., mono or stereo).
-	 * @param SampleRate The sample rate of the audio data in Hz.
-	 * @param AudioClock The current position of the audio playback clock, in seconds.
-	 */
-	virtual void AudioHapticUpdate(float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock) override;
+
+	virtual void AudioHapticUpdate(TArray<int8> Data) override;
 	/**
 	 * Represents the unique identifier assigned to a specific DualSense controller.
 	 *

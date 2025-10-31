@@ -4,6 +4,7 @@
 
 
 #include "WindowsDualsense_ds5w/Public/WindowsDualsense_ds5w.h"
+
 #if PLATFORM_LINUX || PLATFORM_MAC
 #include "SDL.h"
 #include "Subsystems/FSonyInputProcessor.h"
@@ -19,7 +20,6 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 {
 	IModularFeatures::Get().RegisterModularFeature(IInputDeviceModule::GetModularFeatureName(), this);
 	RegisterCustomKeys();
-
 #if PLATFORM_LINUX || PLATFORM_MAC
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
 	{

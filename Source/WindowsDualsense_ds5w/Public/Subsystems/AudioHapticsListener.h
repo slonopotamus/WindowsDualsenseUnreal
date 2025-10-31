@@ -5,9 +5,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AudioResampler.h"
 #include "ISubmixBufferListener.h"
-#include "Sound/SoundSubmix.h"
-#include "Containers/Queue.h"
 #include "Core/Structs/FDeviceContext.h"
 
 /**
@@ -28,9 +27,8 @@ public:
 		return true;
 	}
 
-	FScopeLock* QueueMutex;
-	TQueue<int16>* AudioQueue;
-	FScopeLock* Lock; 
+	TUniquePtr<Audio::FResampler> ResamplerImpl;
+	
 	/**
 	Called when a new buffer has been rendered for a given submix
 	@param OwningSubmix	The submix object which has rendered a new buffer
@@ -42,6 +40,7 @@ public:
 	*/
 	virtual void OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock) override;
 private:
-	
+	TArray<float> ResampledAudioBuffer;
+	TArray<float> MonoMixBuffer;
 	FInputDeviceId DeviceId;
 };

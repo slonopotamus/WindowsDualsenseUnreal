@@ -27,7 +27,6 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	DeviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
 	TMap<int32, FString> DevicePaths;
-	DevicePaths.Empty();
 	for (int32 DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
 	                                                        &DeviceInterfaceData); DeviceIndex++)
 	{
@@ -222,12 +221,6 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		ZeroMemory(Context->BufferAudio, sizeof(Context->BufferAudio));
 		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
 	}
-	//
-	// if (Context->AudioHandle != INVALID_HANDLE_VALUE)
-	// {
-	// 	CloseHandle(Context->AudioHandle);
-	// 	Context->AudioHandle = INVALID_HANDLE_VALUE;
-	// }
 }
 
 void FWindowsDeviceInfo::InvalidateHandle(HANDLE Handle)
@@ -290,9 +283,9 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		UE_LOG(LogTemp, Warning, TEXT("Audio haptics only supported over Bluetooth"));
 		return;
 	}
+	// DebugDumpAudioBuffer(Context->BufferAudio);
 	
-	constexpr size_t BufferSize = 276;
-	DebugDumpAudioBuffer(Context->BufferAudio);
+	constexpr size_t BufferSize = 142;
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferAudio, BufferSize, &BytesWritten, nullptr))
 	{
@@ -309,65 +302,22 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
 {
 	// Feature Report 0x05 - Enables advanced Bluetooth features
-	// unsigned char FeatureBuffer[41];
-	// FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
-	// FeatureBuffer[0] = 0x05;
-	// if (!HidD_GetFeature(DeviceHandle, FeatureBuffer, 41))
-	// {
-	// 	const DWORD Error = GetLastError();
-	// 	UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
-	// 	return false;
-	// }
+	unsigned char FeatureBuffer[41];
+	FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
+	FeatureBuffer[0] = 0x05;
+	if (!HidD_GetFeature(DeviceHandle, FeatureBuffer, 41))
+	{
+		const DWORD Error = GetLastError();
+		UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
+		return false;
+	}
 
-	// unsigned char OutputReport[272];
-	// OutputReport[0] = 0x32;
-	// OutputReport[1] = 0x00;
-	// OutputReport[2] = 0b10010010;
-	// OutputReport[3] = 0x08;
-	// OutputReport[4] = 0x00;
-	// OutputReport[5] = 0x00;
-	// OutputReport[6] = 0x00;
-	// OutputReport[7] = 0x00;
-	// OutputReport[8] = 0x00;
-	// OutputReport[9] = 0x00;
-	// // Byte 1: valid_flag0
-	// // Precisamos setar DS_OUTPUT_VALID_FLAG0_HAPTICS_SELECT (0x04)
-	// // E DS_OUTPUT_VALID_FLAG0_COMPATIBLE_VIBRATION (0x01)
-	//
-	//
-	// // Byte 45: valid_flag2
-	// // Se você usar a v1 (acima), pode deixar 0x00.
-	// // Se quisesse usar a v2, você setaria OutputReport[1] = 0x04
-	// // e OutputReport[45] = 0x01 (DS_OUTPUT_VALID_FLAG2_COMPATIBLE_VIBRATION2)
-	// const uint32 CrcChecksum = FPlayStationOutputComposer::Compute(OutputReport, 543);
-	// OutputReport[0x4A] = static_cast<unsigned char>((CrcChecksum & 0x000000FF) >> 0UL);
-	// OutputReport[0x4B] = static_cast<unsigned char>((CrcChecksum & 0x0000FF00) >> 8UL);
-	// OutputReport[0x4C] = static_cast<unsigned char>((CrcChecksum & 0x00FF0000) >> 16UL);
-	// OutputReport[0x4D] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
 	return true;
-	
-
-	// ... preencha o resto do report se necessário ...
-
-	// Bytes 74-77: CRC32
-	// Você DEVE calcular um CRC32 dos 74 bytes anteriores
-	// e colocá-lo aqui se estiver usando o Report ID 0x31.
-	// (Se você mudar o Report ID para 0x11, pode pular o CRC32)
-
-	// Envie o report
-	// if (!HidD_SetOutputReport(DeviceHandle, OutputReport, sizeof(OutputReport)))
-	// {
-	// 	UE_LOG(LogTemp, Error, TEXT("HIDManager: Success to SET Feature 0x02"));
-	// 	// ... lidar com erro ...
-	// 	return false;
-	// }
-	// UE_LOG(LogTemp, Warning, TEXT("HIDManager: Success to SET Feature 0x02"));
-	// return true;
 }
 
 void FWindowsDeviceInfo::DebugDumpAudioBuffer(unsigned char* AudioData)
 {
-	const int32 PacketPayloadSize = 272;
+	const int32 PacketPayloadSize = 142;
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));
 	UE_LOG(LogTemp, Warning, TEXT("=== BUFFER DUMP BEFORE SENDING ==="));
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));
@@ -402,6 +352,6 @@ void FWindowsDeviceInfo::DebugDumpAudioBuffer(unsigned char* AudioData)
 	// O CRC é (provavelmente) calculado e adicionado pela biblioteca HID (hidapi)
 	// DEPOIS do seu payload de 272 bytes.
 	UE_LOG(LogTemp, Warning, TEXT("--- CRC ---"));
-	UE_LOG(LogTemp, Warning, TEXT("%02X,%02X,%02X,%02X "), AudioData[272], AudioData[273], AudioData[274], AudioData[275]);
+	UE_LOG(LogTemp, Warning, TEXT("%02X,%02X,%02X,%02X "), AudioData[138], AudioData[139], AudioData[140], AudioData[141]);
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));
 }
