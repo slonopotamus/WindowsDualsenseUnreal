@@ -144,9 +144,7 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 		UE_LOG(LogTemp, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
 		return;
 	}
-
-	// USB: Report 0x01 = 64 bytes
-	// Bluetooth: Report 0x31 = 78 bytes (input)
+	
 	const size_t InputBufferSize = Context->ConnectionType == Bluetooth ? 78 : 64;
 	HidD_FlushQueue(Context->Handle);
 	DWORD BytesRead = 0;
@@ -167,8 +165,6 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	size_t InReportLength = Context->DeviceType == DualShock4 ? 32 : 74;
 	size_t OutputReportLength = Context->ConnectionType == Bluetooth ? 78 : InReportLength;
 
-	// Bluetooth DualSense:
-	// Report 0x31 (78 bytes) - Triggers, LEDs, Rumble
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
 	{
@@ -220,6 +216,7 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
 		ZeroMemory(Context->BufferAudio, sizeof(Context->BufferAudio));
 		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
+		ZeroMemory(Context->BufferDS4, sizeof(Context->BufferDS4));
 	}
 }
 
@@ -280,10 +277,9 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 	{
 		return;
 	}
-	// DebugDumpAudioBuffer(Context->BufferAudio);
 	
-	constexpr size_t BufferSize = 142;
 	DWORD BytesWritten = 0;
+	constexpr size_t BufferSize = 142;
 	if (!WriteFile(Context->Handle, Context->BufferAudio, BufferSize, &BytesWritten, nullptr))
 	{
 		const DWORD Error = GetLastError();
@@ -308,45 +304,4 @@ bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
 	}
 
 	return true;
-}
-
-void FWindowsDeviceInfo::DebugDumpAudioBuffer(unsigned char* AudioData)
-{
-	const int32 PacketPayloadSize = 142;
-	UE_LOG(LogTemp, Warning, TEXT("========================================"));
-	UE_LOG(LogTemp, Warning, TEXT("=== BUFFER DUMP BEFORE SENDING ==="));
-	UE_LOG(LogTemp, Warning, TEXT("========================================"));
-
-	UE_LOG(LogTemp, Warning, TEXT("--- BUFFER ---"));
-	UE_LOG(LogTemp, Warning, TEXT("Actual Payload Size: %d bytes"), PacketPayloadSize);
-	UE_LOG(LogTemp, Warning, TEXT("Total size from sizeof(): %llu bytes"), sizeof(AudioData)); // Apenas para depurar
-
-	UE_LOG(LogTemp, Warning, TEXT("--- Header (Bytes 0-15) ---"));
-	for (int i = 0; i < 16; i++)
-	{
-	    FString Note = TEXT("");
-	    if (i == 2)  Note = TEXT(" <- Buffer ID (deve ser 0x92)");
-	    if (i == 3)  Note = TEXT(" <- Sample Rate (deve ser 0x08)");
-	    if (i == 10) Note = TEXT(" <- Sequence Counter");
-	    if (i == 12) Note = TEXT(" <- Sample Count (deve ser 0x40)");
-	    if (i == 15) Note = TEXT(" <- Fim do Header");
-	    
-	    UE_LOG(LogTemp, Warning, TEXT("0x%04X | 0x%02X | data[%d]%s"), 0x0004 + i, AudioData[i], i, *Note);
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("--- Audio Data (Bytes 16 a %d) ---"), PacketPayloadSize - 1);
-	FString BufferString = TEXT("AudioData: ");
-	for (int i = 16; i < PacketPayloadSize; i++)
-	{
-	    BufferString += FString::Printf(TEXT("0x%02X "), AudioData[i]);
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("--- Payload: \r \n--- %s"), *BufferString);
-
-	// --- CRC ---
-	// O CRC é (provavelmente) calculado e adicionado pela biblioteca HID (hidapi)
-	// DEPOIS do seu payload de 272 bytes.
-	UE_LOG(LogTemp, Warning, TEXT("--- CRC ---"));
-	UE_LOG(LogTemp, Warning, TEXT("%02X,%02X,%02X,%02X "), AudioData[138], AudioData[139], AudioData[140], AudioData[141]);
-	UE_LOG(LogTemp, Warning, TEXT("========================================"));
 }

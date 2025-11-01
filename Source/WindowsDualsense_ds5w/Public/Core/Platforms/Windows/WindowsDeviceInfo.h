@@ -41,7 +41,6 @@ class FWindowsDeviceInfo final : public IPlatformHardwareInfoInterface
 	
 public:
 	virtual void ProcessAudioHapitc(FDeviceContext* Context) override;
-	static void DebugDumpAudioBuffer(unsigned char* AudioData);
 	static bool ConfigureBluetoothFeatures(HANDLE DeviceHandle);
 	/**
 	 * @brief Reads data from the specified HID device context.

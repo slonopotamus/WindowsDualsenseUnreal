@@ -17,47 +17,27 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 {
     if (!ResamplerImpl.IsValid())
     {
-        float InputSampleRate = (float)SampleRate;
-        float OutputSampleRate = 3000.0f;
-        float Ratio = OutputSampleRate / InputSampleRate;
-        const int32 ResamplerChannels = 1;
-
+        const float Ratio = 3000.0f / SampleRate;
         ResamplerImpl = MakeUnique<Audio::FResampler>();
         ResamplerImpl->Init(
             Audio::EResamplingMethod::Linear,
             Ratio,
-            ResamplerChannels
+            NumChannels
         );
     }
-    int32 NumInputFrames = NumSamples / NumChannels;
-    MonoMixBuffer.SetNumUninitialized(NumInputFrames);
-    if (NumChannels == 2)
-    {
-        for (int32 i = 0; i < NumInputFrames; ++i)
-        {
-            float LeftSample = AudioData[i * 2];
-            float RightSample = AudioData[i * 2 + 1];
-            MonoMixBuffer[i] = (LeftSample + RightSample) * 0.5f;
-        }
-    }
-    else
-    {
-        for (int32 i = 0; i < NumInputFrames; ++i)
-        {
-            MonoMixBuffer[i] = AudioData[i * NumChannels];
-        }
-    }
+    const int32 NumInputFrames = NumSamples / NumChannels; // (2048 samples / 2 channels = 1024 frames)
 
-    int32 ExpectedOutputFrames = FMath::CeilToInt((float)NumInputFrames * 2);
-    ResampledAudioBuffer.SetNumUninitialized(ExpectedOutputFrames + 32);
+    // (1024 frames * (3000/48000)) = 64 frames.
+    const int32 ExpectedOutputFrames = FMath::CeilToInt(static_cast<float>(NumInputFrames) * (3000.0f / SampleRate));
+    ResampledAudioBuffer.SetNumUninitialized((ExpectedOutputFrames + 32) * NumChannels);
 
     int32 OutputFramesWritten = 0;
     ResamplerImpl->ProcessAudio(
-        MonoMixBuffer.GetData(),
+        AudioData,
         NumInputFrames,
         false,
         ResampledAudioBuffer.GetData(),
-        ResampledAudioBuffer.Num(),
+        ResampledAudioBuffer.Num() / NumChannels,
         OutputFramesWritten
     );
 
@@ -66,25 +46,42 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
         UE_LOG(LogTemp, Warning, TEXT("OutputFramesWritten not 64 bytes! (%d)"), OutputFramesWritten);
         return;
     }
-    
-    float* ResampledData = ResampledAudioBuffer.GetData();
 
+    const float* ResampledData = ResampledAudioBuffer.GetData();
     TArray<int8> Packet1, Packet2;
     Packet1.SetNumUninitialized(64);
     Packet2.SetNumUninitialized(64);
 
     for (int32 i = 0; i < 32; ++i)
     {
-        int8 SampleInt8 = (int8)FMath::Clamp(FMath::RoundToInt(ResampledData[i] * 127.0f), -128, 127);
-        Packet1[i * 2]     = SampleInt8;
-        Packet1[i * 2 + 1] = SampleInt8;
+        const int32 DataIndex = i * 2;
+        
+        const float LeftSample  = ResampledData[DataIndex]; // L
+        const float RightSample = ResampledData[DataIndex + 1]; // R
+
+        const int8 LeftSampleInt8  = static_cast<int8>(FMath::Clamp(FMath::RoundToInt(LeftSample * 127.0f), -128, 127));
+        const int8 RightSampleInt8 = static_cast<int8>(FMath::Clamp(FMath::RoundToInt(RightSample * 127.0f), -128, 127));
+
+        Packet1[DataIndex]     = LeftSampleInt8;  // L
+        Packet1[DataIndex + 1] = RightSampleInt8; // R
     }
     
+    // (Frames 32-63)
     for (int32 i = 0; i < 32; ++i)
     {
-        int8 SampleInt8 = (int8)FMath::Clamp(FMath::RoundToInt(ResampledData[i + 32] * 127.0f), -128, 127);
-        Packet2[i * 2]     = SampleInt8;
-        Packet2[i * 2 + 1] = SampleInt8;
+        // Freame 32 (i + 32) * 2
+        const int32 DataIndex = (i + 32) * 2; // ResampledData (64, 66, 68...)
+        
+        const float LeftSample  = ResampledData[DataIndex];
+        const float RightSample = ResampledData[DataIndex + 1];
+
+        const int8 LeftSampleInt8  = static_cast<int8>(FMath::Clamp(FMath::RoundToInt(LeftSample * 127.0f), -128, 127));
+        const int8 RightSampleInt8 = static_cast<int8>(FMath::Clamp(FMath::RoundToInt(RightSample * 127.0f), -128, 127));
+
+        // Index *Packet 2* (Packet2)
+        const int32 PacketIndex = i * 2; // (0, 2, 4...)
+        Packet2[PacketIndex]     = LeftSampleInt8;  // L
+        Packet2[PacketIndex + 1] = RightSampleInt8; // R
     }
 
     if (ISonyGamepadTriggerInterface* DualSense = Cast<ISonyGamepadTriggerInterface>(
