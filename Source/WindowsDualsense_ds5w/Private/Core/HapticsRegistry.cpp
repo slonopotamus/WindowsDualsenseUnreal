@@ -3,6 +3,8 @@
 // Planned Release Year: 2025
 
 #include "../../Public/Core/HapticsRegistry.h"
+#include "Misc/App.h"
+#include "Runtime/Launch/Resources/Version.h"
 #include "AudioDevice.h"
 
 TSharedPtr<FHapticsRegistry> FHapticsRegistry::Instance;

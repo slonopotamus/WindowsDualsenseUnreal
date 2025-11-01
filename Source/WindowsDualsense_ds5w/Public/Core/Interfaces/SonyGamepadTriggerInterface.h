@@ -5,7 +5,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/AudioHapticsListener.h"
 #include "UObject/Interface.h"
 #include "Templates/SharedPointer.h"
 #include "SonyGamepadTriggerInterface.generated.h"

@@ -4,6 +4,11 @@
 
 #pragma once
 #include "Containers/Ticker.h"
+#include "CoreMinimal.h"
+#include "Misc/CoreDelegates.h"
+#include "Misc/Guid.h"
+#include "Templates/SharedPointer.h"
+#include "Engine/Engine.h"
 #include "Subsystems/AudioHapticsListener.h"
 
 class FHapticsRegistry final : public TSharedFromThis<FHapticsRegistry>, public FNoncopyable
