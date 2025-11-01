@@ -7,7 +7,6 @@
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/Structs/FDeviceContext.h"
 
-
 const uint32 FPlayStationOutputComposer::CRCSeed = 0xeada2d49;
 
 void FPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
@@ -65,23 +64,20 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 	DeviceContext->BufferOutput[0] = DeviceContext->ConnectionType == Bluetooth ? 0x31 : 0x02;
 	if (DeviceContext->ConnectionType == Bluetooth)
 	{
-		DeviceContext->BufferOutput[1] = 0x02;
+		DeviceContext->BufferOutput[1] = 0x05;
 	}
 
 	FOutputContext* HidOut = &DeviceContext->Output;
 	unsigned char*  Output = &DeviceContext->BufferOutput[Padding];
 	Output[0] = HidOut->Feature.VibrationMode;
-	Output[1] = HidOut->Feature.FeatureMode;
+	Output[1] = 0xF7;
 	Output[2] = HidOut->Rumbles.Left;
 	Output[3] = HidOut->Rumbles.Right;
-	if (Padding == 1)
-	{
-		Output[4] = HidOut->Audio.HeadsetVolume;
-		Output[5] = HidOut->Audio.SpeakerVolume;
-		Output[6] = HidOut->Audio.MicVolume;
-		Output[7] = HidOut->Audio.Mode;
-		Output[9] = HidOut->Audio.MicStatus;
-	}
+	Output[4] = HidOut->Audio.HeadsetVolume;
+	Output[5] = HidOut->Audio.SpeakerVolume;
+	Output[6] = HidOut->Audio.MicVolume;
+	Output[7] = HidOut->Audio.Mode;
+	Output[9] = HidOut->Audio.MicStatus;
 	Output[8] = HidOut->MicLight.Mode;
 	Output[36] = (HidOut->Feature.TriggerSoftnessLevel << 4) | (HidOut->Feature.SoftRumbleReduce & 0x0F);
 	Output[38] ^= (1 << 0);
@@ -191,6 +187,20 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x8] = 0x0;
 		Trigger[0x9] = 0x0;
 	}
+}
+
+void FPlayStationOutputComposer::SendAudioHapticAdvanced(FDeviceContext* DeviceContext)
+{
+	if (!DeviceContext) return;
+	
+	constexpr size_t CrcOffset = 138;
+	const int32 CrcChecksum = Compute(DeviceContext->BufferAudio, CrcOffset);
+	DeviceContext->BufferAudio[CrcOffset + 0] = static_cast<unsigned char>((CrcChecksum & 0x000000FF) >> 0UL);
+	DeviceContext->BufferAudio[CrcOffset + 1] = static_cast<unsigned char>((CrcChecksum & 0x0000FF00) >> 8UL);
+	DeviceContext->BufferAudio[CrcOffset + 2] = static_cast<unsigned char>((CrcChecksum & 0x00FF0000) >> 16UL);
+	DeviceContext->BufferAudio[CrcOffset + 3] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
+	
+	IPlatformHardwareInfoInterface::Get().ProcessAudioHapitc(DeviceContext);
 }
 
 const uint32 FPlayStationOutputComposer::HashTable[256] = {

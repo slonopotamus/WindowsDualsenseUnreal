@@ -50,6 +50,21 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 	}
 }
 
+void FCommonsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
+{
+	if (!Context || !Context->Handle)
+	{
+		return;
+	}
+
+	constexpr size_t Report = 142;
+	int BytesWritten = SDL_hid_write(Context->Handle, Context->BufferAudio, Report);
+	if (BytesWritten < 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("hid_api: Failed to write audio device"));
+	}
+}
+
 void FCommonsDeviceInfo::Write(FDeviceContext* Context)
 {
 	if (!Context || !Context->Handle)
@@ -133,7 +148,6 @@ bool FCommonsDeviceInfo::CreateHandle(FDeviceContext* Context)
   
 	const FTCHARToUTF8 PathConverter(*Context->Path);
 	const FPlatformDeviceHandle Handle =  SDL_hid_open_path(PathConverter.Get(), true);
-
 	if (Handle == INVALID_PLATFORM_HANDLE)
 	{
 		return false;
@@ -156,6 +170,7 @@ void FCommonsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		memset(Context->Buffer, 0, sizeof(Context->Buffer));
 		memset(Context->BufferDS4, 0, sizeof(Context->BufferDS4));
 		memset(Context->BufferOutput, 0, sizeof(Context->BufferOutput));
+		memset(Context->BufferAudio, 0, sizeof(Context->BufferAudio));
 	}
 }
 #endif

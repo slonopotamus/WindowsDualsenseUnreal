@@ -10,7 +10,6 @@
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include <Windows.h>
 #include "Windows/HideWindowsPlatformTypes.h"
-#include <chrono>
 #endif
 
 #include "CoreMinimal.h"
@@ -41,6 +40,8 @@ class FWindowsDeviceInfo final : public IPlatformHardwareInfoInterface
 {
 	
 public:
+	virtual void ProcessAudioHapitc(FDeviceContext* Context) override;
+	static bool ConfigureBluetoothFeatures(HANDLE DeviceHandle);
 	/**
 	 * @brief Reads data from the specified HID device context.
 	 *

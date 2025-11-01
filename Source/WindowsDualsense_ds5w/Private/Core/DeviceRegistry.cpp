@@ -190,11 +190,6 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
 		IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
 
-	for (const FInputDeviceId& DeviceId : Devices)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("DualSense Device: %d"), DeviceId.GetId());
-	}
-
 	bool AllocateDeviceToDefaultUser = false;
 	if (Devices.Num() <= 1)
 	{

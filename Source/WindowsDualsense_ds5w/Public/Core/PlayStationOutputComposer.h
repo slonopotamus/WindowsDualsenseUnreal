@@ -7,6 +7,11 @@
 #include "CoreMinimal.h"
 #include "Core/Structs/FDeviceContext.h"
 
+static constexpr uint8 REPORT_ID = 0x32;
+static constexpr size_t SAMPLE_SIZE = 64; // 64
+static constexpr uint8 PID_HDR = 0x11;
+static constexpr uint8 PID_AUDIO = 0x12;
+
 /**
  * @class FPlayStationOutputComposer
  *
@@ -19,6 +24,8 @@
  */
 class WINDOWSDUALSENSE_DS5W_API FPlayStationOutputComposer
 {
+	
+public:
 	/**
 	 * @var FPlayStationOutputComposer::CRCSeed
 	 *
@@ -44,7 +51,6 @@ class WINDOWSDUALSENSE_DS5W_API FPlayStationOutputComposer
 	 * making it integral to performance-critical systems where such operations are frequent.
 	 */
 	const static uint32 HashTable[256];
-public:
 	/**
 	 * @fn FPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
 	 *
@@ -89,6 +95,19 @@ public:
 	 *               and additional properties for defining the behavior of the trigger.
 	 */
 	static void SetTriggerEffects(unsigned char* Trigger, FHapticTriggers& Effect);
+	/**
+	 * Sets the audio vibration data to be sent to the PlayStation controller.
+	 * This method prepares and formats the output report, including audio vibration
+	 * parameters, sequence tagging, and CRC32 checksum calculation, and sends it
+	 * to the specified device context. It ensures proper signal integrity and behavior
+	 * for audio-based haptic feedback on PlayStation devices.
+	 *
+	 * @param DeviceContext Pointer to the device context associated with the PlayStation
+	 * controller. This must be a valid and connected device.
+	 * @param AudioData Array of audio data bytes representing the vibration samples. The size
+	 * of this data determines how much audio signal will be included in the payload buffer.
+	 */
+	static void SendAudioHapticAdvanced(FDeviceContext* DeviceContext);
 	/**
 	 * Computes the CRC32 hash for the given buffer using a predefined hash table and seed value.
 	 * The function iterates through each byte of the input buffer to calculate the resulting hash.

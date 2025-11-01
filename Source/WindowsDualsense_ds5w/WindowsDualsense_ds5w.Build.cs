@@ -11,18 +11,20 @@ public class WindowsDualsense_ds5w : ModuleRules
 	public WindowsDualsense_ds5w(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
- 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "ApplicationCore", "InputCore", "InputDevice",  "AudioMixer" });
-	    PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-	    bEnableExceptions = true;
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "ApplicationCore", "InputCore", "InputDevice"});
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore"});
+		PrivateDependencyModuleNames.AddRange(new string[] {   "AudioMixer", "SignalProcessing", "AudioExtensions", "AudioPlatformConfiguration" });
+		bEnableExceptions = true;
 	    
-	    if (Target.Platform == UnrealTargetPlatform.Win64)
-	    {
-	        PublicAdditionalLibraries.Add("hid.lib");
-	    }
+		
+		if (Target.Platform == UnrealTargetPlatform.Win64)
+		{
+		    PublicAdditionalLibraries.Add("hid.lib");
+		}
 	    
-	    if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.Mac)
-	    {
-		    PrivateDependencyModuleNames.AddRange(new string[] { "SDL2" });
-	    }
+		if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			PrivateDependencyModuleNames.AddRange(new string[] { "SDL2" });
+		}
 	}
 }

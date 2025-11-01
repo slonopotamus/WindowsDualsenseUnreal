@@ -2,16 +2,13 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-
-
-
 #include "Core/Platforms/Windows/WindowsDeviceInfo.h"
-
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
-
 #include <hidsdi.h>
 #include <setupapi.h>
+
+#include "Core/PlayStationOutputComposer.h"
 
 void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 {
@@ -30,7 +27,6 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	DeviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
 	TMap<int32, FString> DevicePaths;
-	DevicePaths.Empty();
 	for (int32 DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
 	                                                        &DeviceInterfaceData); DeviceIndex++)
 	{
@@ -108,12 +104,11 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 							DevicePath.Contains(TEXT("bth")) ||
 							DevicePath.Contains(TEXT("BTHENUM")))
 						{
-							unsigned char FeatureBuffer[78];
-							FeatureBuffer[0] = 0x05;
-							if (!HidD_GetFeature(TempDeviceHandle, FeatureBuffer, 78)) {
-								UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to HidD_GetFeature."));
-							}
 							Context.ConnectionType = Bluetooth;
+							if (!ConfigureBluetoothFeatures(TempDeviceHandle))
+							{
+								UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to configure Bluetooth features."));
+							}
 						}
 						Devices.Add(Context);
 					}
@@ -150,34 +145,10 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 		return;
 	}
 	
+	const size_t InputBufferSize = Context->ConnectionType == Bluetooth ? 78 : 64;
 	HidD_FlushQueue(Context->Handle);
-	
 	DWORD BytesRead = 0;
-	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
-	{
-		const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 547 : 64;
-		if (sizeof(Context->BufferDS4) < InputReportLength)
-		{
-			InvalidateHandle(Context);
-			return;
-		}
-		
-		const EPollResult Response = PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
-		if (Response == EPollResult::Disconnected)
-		{
-			InvalidateHandle(Context);
-		}
-		return;
-	}
-
-	const size_t InputReportLength = Context->ConnectionType == Bluetooth ? 78 : 64;
-	if (sizeof(Context->Buffer) < InputReportLength)
-	{
-		InvalidateHandle(Context);
-		return;
-	}
-
-	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputReportLength, BytesRead);
+	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
 	if (Response == EPollResult::Disconnected)
 	{
 		InvalidateHandle(Context);
@@ -197,7 +168,7 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed DualShock to write output data to device. report %llu error Code: %d"),
+		UE_LOG(LogTemp, Error, TEXT("Failed to write output report 0x02/0x31 data to device. report %llu error Code: %d"),
 			OutputReportLength, GetLastError());
 		InvalidateHandle(Context);
 	}
@@ -205,6 +176,12 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 
 bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 {
+	if (DeviceContext->Handle != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(DeviceContext->Handle);
+		DeviceContext->Handle = INVALID_HANDLE_VALUE;
+	}
+
 	const HANDLE DeviceHandle = CreateFileW(
 			*DeviceContext->Path,
 			GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
@@ -235,11 +212,11 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		Context->Handle = INVALID_HANDLE_VALUE;
 		Context->IsConnected = false;
 		Context->Path = nullptr;
-		
+
+		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
+		ZeroMemory(Context->BufferAudio, sizeof(Context->BufferAudio));
 		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
 		ZeroMemory(Context->BufferDS4, sizeof(Context->BufferDS4));
-		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
-		UE_LOG(LogTemp, Log, TEXT("HIDManager: Invalidate Handle."));
 	}
 }
 
@@ -272,7 +249,6 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, i
 	return EPollResult::ReadOk;
 }
 
-
 bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, int32* OutLastError)
 {
 	FILE_STANDARD_INFO Info{};
@@ -282,5 +258,50 @@ bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, int32* OutLastError)
 		return false;
 	}
 	if (OutLastError) *OutLastError = ERROR_SUCCESS;
+	return true;
+}
+
+void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
+{
+	if (!Context || !Context->Handle)
+	{
+		return;
+	}
+
+	if (Context->Handle == INVALID_HANDLE_VALUE)
+	{
+		return;
+	}
+	
+	if (Context->ConnectionType != Bluetooth)
+	{
+		return;
+	}
+	
+	DWORD BytesWritten = 0;
+	constexpr size_t BufferSize = 142;
+	if (!WriteFile(Context->Handle, Context->BufferAudio, BufferSize, &BytesWritten, nullptr))
+	{
+		const DWORD Error = GetLastError();
+		if (Error != ERROR_IO_PENDING)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
+		}
+	}
+}
+
+bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
+{
+	// Feature Report 0x05 - Enables advanced Bluetooth features
+	unsigned char FeatureBuffer[41];
+	FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
+	FeatureBuffer[0] = 0x05;
+	if (!HidD_GetFeature(DeviceHandle, FeatureBuffer, 41))
+	{
+		const DWORD Error = GetLastError();
+		UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
+		return false;
+	}
+
 	return true;
 }

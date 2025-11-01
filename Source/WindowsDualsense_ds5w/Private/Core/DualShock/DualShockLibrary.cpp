@@ -72,7 +72,7 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		FDeviceContext* Context = &HIDDeviceContexts;
 		AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
 		{
-				IPlatformHardwareInfoInterface::Get().Read(NewContext);
+			IPlatformHardwareInfoInterface::Get().Read(NewContext);
 		});
 		
 		const unsigned char* HIDInput;
@@ -82,7 +82,7 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		}
 		else
 		{
-			HIDInput = &HIDDeviceContexts.Buffer[1];
+			HIDInput = &HIDDeviceContexts.BufferDS4[1];
 		}
 	
 		// Triggers

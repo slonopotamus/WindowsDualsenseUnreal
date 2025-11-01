@@ -33,6 +33,27 @@ void UDualSenseProxy::DeviceSettings(int32 ControllerId, FDualSenseFeatureReport
 	DualSenseInstance->Settings(Settings);
 }
 
+void UDualSenseProxy::RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix)
+{
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+	
+	FHapticsRegistry::Get()->CreateListenerForDevice(DeviceId, Submix);
+}
+
+void UDualSenseProxy::UnregisterSubmixForDevice(int32 ControllerId)
+{
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+	FHapticsRegistry::Get()->RemoveListenerForDevice(DeviceId);
+}
+
 void UDualSenseProxy::LedPlayerEffects(int32 ControllerId, ELedPlayerEnum Value, ELedBrightnessEnum Brightness)
 {
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
@@ -50,38 +71,7 @@ void UDualSenseProxy::LedPlayerEffects(int32 ControllerId, ELedPlayerEnum Value,
 	Gamepad->SetPlayerLed(Value, Brightness);
 }
 
-void UDualSenseProxy::SetVibrationFromAudio(
-	const int32 ControllerId,
-	const float AverageEnvelopeValue,
-	const float MaxEnvelopeValue,
-	const int32 NumWaveInstances,
-	const float EnvelopeToVibrationMultiplier,
-	const float PeakToVibrationMultiplier,
-	const float Threshold,
-	const float ExponentCurve,
-	const float BaseMultiplier
-)
-{
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-	
-	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-	if (!Gamepad)
-	{
-		return;
-	}
 
-	const float VibrationLeft = FMath::Clamp(AverageEnvelopeValue * EnvelopeToVibrationMultiplier * NumWaveInstances,0.0f, 1.0f);
-	const float VibrationRight = FMath::Clamp(MaxEnvelopeValue * PeakToVibrationMultiplier * NumWaveInstances, 0.0f,1.0f);
-
-	FForceFeedbackValues FeedbackValues;
-	FeedbackValues.LeftLarge = VibrationLeft;
-	FeedbackValues.RightLarge = VibrationRight;
-	Gamepad->SetVibrationAudioBased(FeedbackValues, Threshold, ExponentCurve, BaseMultiplier);
-}
 
 void UDualSenseProxy::SetFeedback(int32 ControllerId, int32 BeginStrength,
                                   int32 MiddleStrength, int32 EndStrength, EControllerHand Hand)

@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include <vector>
 
 
 #if PLATFORM_WINDOWS
@@ -57,7 +58,25 @@ struct FDeviceContext
 	 * For instance, it may hold `INVALID_HANDLE_VALUE` when invalid or disconnected.
 	 */
 	FPlatformDeviceHandle Handle;
-
+	/**
+	 * @brief A platform-specific handle to manage interaction with audio devices.
+	 *
+	 * The AudioHandle variable represents a low-level handle for accessing
+	 * and controlling audio hardware or audio-related platform resources.
+	 * It provides an interface for abstracting platform-specific
+	 * audio device interactions, allowing for unified handling across different systems.
+	 *
+	 * Key Points:
+	 * - Allows communication and control of audio devices within the platform's ecosystem.
+	 * - Encapsulates platform-dependent details for audio resource management.
+	 * - Plays a crucial role in integrating platform audio capabilities into applications.
+	 * - Used as a part of the audio subsystem to ensure efficient and seamless
+	 *   interaction with the underlying hardware.
+	 *
+	 * This handle is specifically tailored to align with platform constraints and
+	 * capabilities to ensure broad support for audio functionalities.
+	 */
+	FPlatformDeviceHandle AudioHandle;
 	/**
 	 * @brief Represents a file or resource path in the context of device management.
 	 *
@@ -95,6 +114,14 @@ struct FDeviceContext
 	 *       for those, use Buffer[78] instead.
 	 */
 	unsigned char BufferDS4[547];
+	/**
+	 * @brief Stores the haptic audio data for DualSense devices.
+	 *
+	 * This buffer is used to handle and transfer haptic feedback audio data
+	 * to a connected DualSense device, enabling advanced vibration and
+	 * feedback mechanisms driven by audio signals.
+	 */
+	unsigned char BufferAudio[142];
 	/**
 	 * A fixed-size buffer for storing input or output data associated with a device context.
 	 * This buffer is utilized for reading device input reports or for other data
@@ -172,10 +199,20 @@ struct FDeviceContext
 	 * enabling seamless interaction and device-specific operations.
 	 */
 	FInputDeviceId UniqueInputDeviceId;
+	/**
+	 * @brief Represents the sequence index for audio vibration feedback.
+	 *
+	 * Used to manage and track the current step in an audio-based vibration sequence
+	 * within the device. This sequence enables precise synchronization of vibration
+	 * effects with audio playback.
+	 */
+	uint8 AudioVibrationSequence = 0;
 
-	FDeviceContext(): Path{}, Buffer{}, BufferDS4{}, BufferOutput{}, IsConnected(false),
-	                  ConnectionType(), DeviceType(),
-	                  UniqueInputDeviceId()
+	FDeviceContext() : Handle(nullptr), AudioHandle(nullptr), Path{}, Buffer{}, BufferAudio{},
+	                   BufferOutput{},
+	                   IsConnected(false),
+	                   ConnectionType(), DeviceType(),
+	                   UniqueInputDeviceId()
 	{
 	}
 };
