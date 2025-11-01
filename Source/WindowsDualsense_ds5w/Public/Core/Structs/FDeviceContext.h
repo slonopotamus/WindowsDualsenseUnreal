@@ -29,99 +29,6 @@ using FPlatformDeviceHandle = void*;
 #include "FDeviceContext.generated.h"
 
 /**
- * @brief Represents a haptic feedback data structure for DualSense devices.
- *
- * This structure is designed to form and manage the data packets required
- * for sending advanced haptic feedback commands to DualSense controllers.
- * It includes substructures that define the format and content of the
- * necessary packet headers and payloads for haptic vibration transmission.
- *
- * The primary purpose is to enable precise and efficient configuration
- * of haptic features such as audio-based vibration feedback by organizing
- * data into specific packets (e.g., 0x11 and 0x12) for internal controller
- * processing.
- *
- * Features:
- * - Contains a union for raw and formatted data representation.
- * - Automatically initializes packets with default values for ease of use.
- * - Aligns properly for hardware-level communication to ensure correct
- *   data transfers to the device.
- */
-USTRUCT()
-struct FDualSenseHapticBuffer {
-	GENERATED_BODY()
-	// /**
-	//  * @brief Represents the header structure for a DualSense haptic feedback packet.
-	//  *
-	//  * This structure defines the format of the packet header used in constructing
-	//  * haptic feedback data for DualSense devices. It includes essential fields
-	//  * necessary for identifying and sequencing individual packets sent to the
-	//  * controller.
-	//  *
-	//  * Features:
-	//  * - The Report_ID field uniquely identifies the type of the report being sent.
-	//  * - The Tag_Seq field is used to manage sequence control and tag information
-	//  *   across transmitted packets.
-	//  *
-	//  * This structure is specifically designed to align with the communication
-	//  * protocol requirements of DualSense devices, ensuring accurate and efficient
-	//  * data transmission.
-	//  */
-	// struct FPacketHeader {
-	// 	uint8 Report_ID;
-	// 	uint8 Tag_Seq;
-	// };
-	//
-	// /**
-	//  * @brief Represents the structure of packet 0x11 used in haptic feedback for DualSense devices.
-	//  *
-	//  * This structure defines the format and content of the data packet identified as 0x11 in the
-	//  * communication protocol with DualSense controllers. It includes fields required to properly
-	//  * structure the packet headers and payload for device processing.
-	//  *
-	//  * Features:
-	//  * - Contains a 6-bit packet identifier (PID) for recognizing the packet type.
-	//  * - Includes metadata flags for additional control (bUnk and bSized).
-	//  * - Supports a fixed data payload of 7 bytes to store the actual haptic feedback data.
-	//  * - Provides a field for specifying the total length of the packet.
-	//  *
-	//  * The structure is tightly packed for alignment with the hardware protocol, ensuring the
-	//  * efficient transmission of haptic commands.
-	//  */
-	// struct FPacket0X11 {
-	// 	uint8 pid:6;
-	// 	uint8 length;
-	// 	uint8 data[64];
-	// };
-
-	/**
-	 * @brief Represents the structure of packet 0x12 used in haptic feedback for DualSense devices.
-	 *
-	 * This structure is designed to define the format and content of the data packet identified as
-	 * 0x12 in the communication protocol with DualSense controllers. It provides essential fields
-	 * for the proper construction and transmission of haptic feedback commands.
-	 *
-	 * Features:
-	 * - Includes a 6-bit packet identifier (PID) to recognize the packet type.
-	 * - Contains control flags (bUnk and bSized) for indicating metadata about the packet.
-	 * - Provides a field to specify the total length of the packet (Length).
-	 * - Supports a fixed-size payload of 64 bytes to store the actual haptic feedback data.
-	 *
-	 * This structure is specifically aligned for compatibility with hardware-level communication
-	 * protocols, ensuring accurate and efficient data transmission to the controller.
-	 */
-	// struct FPacket0X12 {
-	// 	uint8 pid :6;
-	// 	bool unk :1;
-	// 	bool sized :1;
-	// 	uint8 length;
-	// 	uint8 data[64];
-	// };
-
-	uint8 Raw[142];
-};
-
-/**
  * @brief Represents the context and state of a connected device.
  *
  * This class is primarily used for managing the connection, data buffer, and
@@ -191,6 +98,22 @@ struct FDeviceContext
 	 * during these communications, ensuring efficient handling of device protocols.
 	 */
 	unsigned char Buffer[78];
+	/**
+	 * @brief Internal data buffer for DualShock 4 Bluetooth communication.
+	 *
+	 * This buffer is specifically allocated for handling input and output data
+	 * when communicating with DualShock 4 controllers connected via Bluetooth.
+	 * It is used in the context of parsing and building device reports during
+	 * Bluetooth transfers, ensuring compliance with the expected report format
+	 * and size required by the DualShock 4 HID protocol.
+	 *
+	 * The buffer size of 547 bytes matches the standard payload requirements
+	 * for DualShock 4 devices in Bluetooth communication scenarios.
+	 *
+	 * @note This buffer is not intended for DualSense controllers or USB connections;
+	 *       for those, use Buffer[78] instead.
+	 */
+	unsigned char BufferDS4[547];
 	/**
 	 * @brief Stores the haptic audio data for DualSense devices.
 	 *

@@ -19,15 +19,44 @@
  */
 class FAudioHapticsListener : public ISubmixBufferListener
 {
+	/**
+	 Constructor for the FAudioHapticsListener class, initializing the listener with the given input device ID
+	 and audio submix reference.
+	 
+	 @param InDeviceId The identifier for the input device associated with this haptics listener.
+	 @param InSubmix Pointer to the USoundSubmix object that this listener processes audio data from.
+	 @return An instance of FAudioHapticsListener initialized with the provided input device ID and submix reference.
+	 */
 public:
-	FAudioHapticsListener(FInputDeviceId InDeviceId);
+	FAudioHapticsListener(FInputDeviceId InDeviceId, USoundSubmix* InSubmix);
 
+	/**
+	 Determines if the audio processing system is actively rendering audio.
+	 
+	 This method indicates whether the audio data rendering pipeline is currently active.
+	 It is used to verify the state of the audio system and ensure that audio buffers
+	 are being processed and rendered correctly.
+	 
+	 @return True if the system is rendering audio; otherwise, false.
+	 */
 	virtual bool IsRenderingAudio() const override
 	{
 		return true;
 	}
 
-	TUniquePtr<Audio::FResampler> ResamplerImpl;
+	/**
+	 Returns the associated audio submix instance.
+	 
+	 This method retrieves the `USoundSubmix` object associated with the audio processing pipeline.
+	 The submix serves as a source of mixed audio data, which is utilized in various processing
+	 stages, including resampling and preparation for haptic feedback systems.
+	 
+	 @return The `USoundSubmix` instance associated with the haptic feedback audio processing system.
+	 */
+	USoundSubmix* GetSubmix() const
+	{
+		return Submix;
+	}
 	
 	/**
 	Called when a new buffer has been rendered for a given submix
@@ -39,8 +68,51 @@ public:
 	@param AudioClock		Double audio clock value, from start of audio rendering.
 	*/
 	virtual void OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock) override;
+	/**
+	 A dynamically managed array used to store mono-mixed audio frames.
+	 
+	 MonoMixBuffer is utilized within the audio processing pipeline to temporarily store audio frames after being
+	 mixed down to a single channel (mono). This buffer is primarily used as an intermediate step before further
+	 processing, such as resampling or sending audio data to haptic feedback systems. Its size and content are
+	 adjusted dynamically based on the number of input audio samples and channels.
+	 */
 private:
-	TArray<float> ResampledAudioBuffer;
 	TArray<float> MonoMixBuffer;
+	/**
+	 A buffer used to store audio data that has been resampled for haptic feedback systems.
+	 
+	 ResampledAudioBuffer is a temporary storage array that holds audio frames after being processed
+	 and converted to a target sample rate using the resampling pipeline. Its size is dynamically
+	 adjusted based on input and output requirements during the resampling operation. This buffer serves
+	 as the intermediate location for resampled audio data, which is subsequently converted into formats
+	 compatible with haptic devices.
+	 */
+	TArray<float> ResampledAudioBuffer;
+	/**
+	 A unique pointer to an FResampler instance used for processing and resampling audio data within the haptic feedback pipeline.
+	 
+	 ResamplerImpl manages the audio resampling required to match the desired sample rate for haptic feedback systems.
+	 The resampling process ensures that audio data is appropriately converted from its original rate to a lower haptic-compatible rate.
+	 It supports initializing the resampling method, processing the mono audio data, and writing the resampled output for further use.
+	 */
+	TUniquePtr<Audio::FResampler> ResamplerImpl;
+
+	/**
+	 A reference to a USoundSubmix instance used within the audio processing pipeline.
+	 
+	 Submix is a core component that represents an audio submix, allowing for the mixing of multiple audio sources
+	 into a single stream. Within the context of the haptic feedback system, this reference is used to monitor and
+	 access generated audio buffers. The submix provides the necessary audio data for subsequent processing, such as
+	 resampling or conversion, enabling it to be used for tactile feedback in haptic devices.
+	 */
+	USoundSubmix* Submix;
+	/**
+	 A unique identifier representing an input device.
+	 
+	 DeviceId is used to reliably reference and interact with a specific input device
+	 within the system, such as game controllers or other haptics-enabled peripherals.
+	 It provides a consistent and unique mechanism for identifying devices, enabling
+	 their integration into various systems, including haptic feedback and input processing pipelines.
+	 */
 	FInputDeviceId DeviceId;
 };

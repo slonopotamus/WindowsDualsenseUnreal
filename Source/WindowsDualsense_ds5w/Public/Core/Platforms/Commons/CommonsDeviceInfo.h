@@ -21,7 +21,20 @@ class FCommonsDeviceInfo : public IPlatformHardwareInfoInterface
 	 */
 public:
 	virtual ~FCommonsDeviceInfo() override {};
-	virtual void WriteAudio(FDeviceContext* Context) override;
+	/**
+	 * Processes audio haptic feedback using the given device context.
+	 *
+	 * This method is responsible for handling and generating audio-based
+	 * haptic feedback through the provided device context. It leverages
+	 * the context to access or manage the required resources for delivering
+	 * the haptic feedback.
+	 *
+	 * @param Context A pointer to the FDeviceContext object, which provides
+	 *                the necessary interface and data for processing audio
+	 *                haptic feedback. Must be a valid, properly initialized
+	 *                pointer.
+	 */
+	virtual void ProcessAudioHapitc(FDeviceContext* Context) override;
 	/**
 	 * Reads device information using the provided device context.
 	 *

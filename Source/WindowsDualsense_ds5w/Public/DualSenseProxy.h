@@ -38,7 +38,6 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Settings")
 	static void DeviceSettings(int32 ControllerId, FDualSenseFeatureReport Settings);
-
 	/**
 	 * @brief Registers a specific audio submix for a DualSense controller.
 	 *
@@ -50,6 +49,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense|Audio", meta = (DisplayName = "Register Submix"))
 	static void RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix);
+	/**
+	 * @brief Unregisters a submix listener associated with the specified DualSense controller device.
+	 *
+	 * This function removes the haptics listener for the specified controller ID, ensuring
+	 * that any previously registered submix for audio or haptic feedback is no longer active.
+	 *
+	 * @param ControllerId The ID of the DualSense controller for which the submix listener will be unregistered.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense|Audio", meta = (DisplayName = "Unregister Submix"))
 	static void UnregisterSubmixForDevice(int32 ControllerId);
 	/**
@@ -252,15 +259,6 @@ public:
 		EControllerHand Hand
 	);
 
-	// /**
-	//  * Updates the LED color effects on a DualSense controller using the specified color.
-	//  *
-	//  * @param ControllerId The identifier of the controller whose LED color will be updated.
-	//  * @param Color The color to set on the controller's LED.
-	//  */
-	// UFUNCTION(BlueprintCallable, Category = "DualSense Led Effects")
-	// static void LedColorEffects(int32 ControllerId, FColor Color);
-
 	/**
 	 * Controls the LED player light effects on the DualSense controller.
 	 *
@@ -270,46 +268,6 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Led Effects")
 	static void LedPlayerEffects(int32 ControllerId, ELedPlayerEnum Value, ELedBrightnessEnum Brightness);
-
-	// /**
-	//  * Controls the LED and microphone visual effects on a DualSense controller.
-	//  *
-	//  * @param ControllerId The ID of the DualSense controller to be affected.
-	//  * @param Value The desired LED and microphone effect to apply, represented as an ELedMicEnum value.
-	//  */
-	// UFUNCTION(BlueprintCallable, Category = "DualSense Led Effects")
-	// static void LedMicEffects(int32 ControllerId, ELedMicEnum Value);
-
-	// /**
-	//  * Enables or disables the touch functionality on a specified DualSense controller.
-	//  *
-	//  * @param ControllerId The identifier of the controller for which the touch functionality should be enabled or disabled.
-	//  * @param bEnableTouch A boolean indicating whether to enable (true) or disable (false) the touch functionality.
-	//  */
-	// UFUNCTION(BlueprintCallable, Category = "DualSense Touch, Gyroscope and Accelerometer")
-	// static void EnableTouch(int32 ControllerId, bool bEnableTouch);
-	//
-	// /**
-	//  * Enables or disables accelerometer values for the specified controller.
-	//  *
-	//  * This method allows toggling the accelerometer functionality for a given
-	//  * controller ID. If the DualSense instance for the specified controller ID
-	//  * is not available, the function will return without performing any actions.
-	//  *
-	//  * @param ControllerId The ID of the controller for which the accelerometer values will be enabled or disabled.
-	//  * @param bEnableAccelerometer A boolean value that determines whether to enable or disable accelerometer values.
-	//  */
-	// UFUNCTION(BlueprintCallable, Category = "DualSense Touch, Gyroscope and Accelerometer")
-	// static void EnableAccelerometerValues(int32 ControllerId, bool bEnableAccelerometer);
-	//
-	// /**
-	//  * Enables or disables the gyroscope functionality for a specified DualSense controller.
-	//  *
-	//  * @param ControllerId The ID of the controller for which the gyroscope functionality is to be modified.
-	//  * @param bEnableGyroscope Set to true to enable the gyroscope, or false to disable it.
-	//  */
-	// UFUNCTION(BlueprintCallable, Category = "DualSense Touch, Gyroscope and Accelerometer")
-	// static void EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope);
 
 	/**
 	 * Disables the resistance effect for the specified controller and hand.

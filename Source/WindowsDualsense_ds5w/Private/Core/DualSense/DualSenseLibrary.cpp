@@ -12,9 +12,117 @@
 #include "Core/Structs/FOutputContext.h"
 #include "HAL/IConsoleManager.h"
 
+// --- Runtime console helpers for tweaking DualSense audio haptics bytes ---
+// Allow changing HIDDeviceContexts.BufferAudio[0..9] at runtime via the in-game console.
+// Primary use: experimenting with indices 5..9 (left/right channel configs) with values 0..255.
+
+// Forward declarations (declared below)
+static void DS_HandleSetAudioByte(const TArray<FString>& Args);
+static void DS_HandleSetAudioLR(const TArray<FString>& Args);
+static void DS_HandleDumpAudioBytes(const TArray<FString>& Args);
+
+// Keep a pointer to the active device context to be used by console commands.
+// It is set in UDualSenseLibrary::InitializeLibrary and cleared in ShutdownLibrary.
+static FDeviceContext* GDS_AudioCtx = nullptr;
+
+// Console commands
+static FAutoConsoleCommand GDS_CmdSetAudioByte(
+	TEXT("ds.SetAudioByte"),
+	TEXT("Set audio haptics byte. Usage: ds.SetAudioByte <Index 0-9> <Value 0-255>"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleSetAudioByte)
+);
+
+static FAutoConsoleCommand GDS_CmdSetAudioLR(
+	TEXT("ds.SetAudioLR"),
+	TEXT("Set bytes [5..9] quickly. Usage: ds.SetAudioLR <L1> <L2> <R1> <R2> <Master> (each 0-255)"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleSetAudioLR)
+);
+
+static FAutoConsoleCommand GDS_CmdDumpAudioBytes(
+	TEXT("ds.DumpAudioBytes"),
+	TEXT("Log current audio haptics bytes [0..9]"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleDumpAudioBytes)
+);
+
+static uint8 DS_ClampByte(int32 V)
+{
+	return static_cast<uint8>(FMath::Clamp(V, 0, 255));
+}
+
+static void DS_HandleSetAudioByte(const TArray<FString>& Args)
+{
+	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[ds.SetAudioByte] Device not ready/connected"));
+		return;
+	}
+	if (Args.Num() < 2)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Usage: ds.SetAudioByte <Index 0-9> <Value 0-255>"));
+		return;
+	}
+	int32 Index = FCString::Atoi(*Args[0]);
+	int32 Value = FCString::Atoi(*Args[1]);
+	if (Index < 0 || Index > 9)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Index out of range: %d (expected 0..9)"), Index);
+		return;
+	}
+	GDS_AudioCtx->BufferAudio[Index] = DS_ClampByte(Value);
+	UE_LOG(LogTemp, Log, TEXT("Audio byte[%d] = %d"), Index, (int32)GDS_AudioCtx->BufferAudio[Index]);
+	FPlayStationOutputComposer::OutputDualSense(GDS_AudioCtx);
+}
+
+static void DS_HandleSetAudioLR(const TArray<FString>& Args)
+{
+	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[ds.SetAudioLR] Device not ready/connected"));
+		return;
+	}
+	if (Args.Num() < 5)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Usage: ds.SetAudioLR <L1> <L2> <R1> <R2> <Master> (each 0-255)"));
+		return;
+	}
+	const int32 L1 = FCString::Atoi(*Args[0]);
+	const int32 L2 = FCString::Atoi(*Args[1]);
+	const int32 R1 = FCString::Atoi(*Args[2]);
+	const int32 R2 = FCString::Atoi(*Args[3]);
+	const int32 X  = FCString::Atoi(*Args[4]);
+
+	GDS_AudioCtx->BufferAudio[5] = DS_ClampByte(L1);
+	GDS_AudioCtx->BufferAudio[6] = DS_ClampByte(L2);
+	GDS_AudioCtx->BufferAudio[7] = DS_ClampByte(R1);
+	GDS_AudioCtx->BufferAudio[8] = DS_ClampByte(R2);
+	GDS_AudioCtx->BufferAudio[9] = DS_ClampByte(X);
+
+	UE_LOG(LogTemp, Log, TEXT("Audio bytes[5..9] = %d, %d, %d, %d, %d"),
+		(int32)GDS_AudioCtx->BufferAudio[5], (int32)GDS_AudioCtx->BufferAudio[6],
+		(int32)GDS_AudioCtx->BufferAudio[7], (int32)GDS_AudioCtx->BufferAudio[8],
+		(int32)GDS_AudioCtx->BufferAudio[9]);
+
+	FPlayStationOutputComposer::OutputDualSense(GDS_AudioCtx);
+}
+
+static void DS_HandleDumpAudioBytes(const TArray<FString>& Args)
+{
+	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[ds.DumpAudioBytes] Device not ready/connected"));
+		return;
+	}
+	for (int32 i = 0; i <= 9; ++i)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Audio byte[%d] = %d"), i, (int32)GDS_AudioCtx->BufferAudio[i]);
+	}
+}
+
 bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
 	HIDDeviceContexts = Context;
+	// Expose the current context to console commands
+	GDS_AudioCtx = &HIDDeviceContexts;
 	if (HIDDeviceContexts.ConnectionType == Bluetooth)
 	{
 		FOutputContext* EnableReport = &HIDDeviceContexts.Output;
@@ -28,22 +136,27 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 		
 		EnableReport->Audio.MicStatus = static_cast<uint8_t>(0x10);
 		EnableReport->Audio.MicVolume = static_cast<uint8_t>(64);
-		EnableReport->Audio.HeadsetVolume = static_cast<uint8_t>(100);
-		EnableReport->Audio.SpeakerVolume = static_cast<uint8_t>(100);
+		EnableReport->Audio.HeadsetVolume = static_cast<uint8_t>(0);
+		EnableReport->Audio.SpeakerVolume = static_cast<uint8_t>(0);
 		SendOut();
-		Sleep(1);
-		
+
+		FPlatformProcess::Sleep(0.01f);
 		HIDDeviceContexts.BufferAudio[0]  = 0x32;
 		HIDDeviceContexts.BufferAudio[1]  = 0x00;
 		HIDDeviceContexts.BufferAudio[2]  = 0x91;
 		HIDDeviceContexts.BufferAudio[3]  = 0x07;
 		HIDDeviceContexts.BufferAudio[4]  = 0xFE;
-		HIDDeviceContexts.BufferAudio[5]  = 0x80;
-		HIDDeviceContexts.BufferAudio[6]  = 0x80;
-		HIDDeviceContexts.BufferAudio[7]  = 0x80;
-		HIDDeviceContexts.BufferAudio[8]  = 0x80;
-		HIDDeviceContexts.BufferAudio[9]  = 0x8C;
+		HIDDeviceContexts.BufferAudio[5]  = 15;
+		HIDDeviceContexts.BufferAudio[6]  = 15;
+		HIDDeviceContexts.BufferAudio[7]  = 50;
+		HIDDeviceContexts.BufferAudio[8]  = 50;
+		HIDDeviceContexts.BufferAudio[9]  = 255;
+		for (int i = 0; i < 10; i++)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Log config haptic byte[%d]%02X,"),  i, HIDDeviceContexts.BufferAudio[i]);
+		}
 	}
+	
 
 	StopAll();
 	return true;
@@ -53,6 +166,8 @@ void UDualSenseLibrary::ShutdownLibrary()
 {
 	ButtonStates.Reset();
 	FPlayStationOutputComposer::FreeContext(&HIDDeviceContexts);
+	// Stop exposing the context to console commands
+	GDS_AudioCtx = nullptr;
 }
 
 bool UDualSenseLibrary::IsConnected()
@@ -77,14 +192,17 @@ void UDualSenseLibrary::Settings(const FSettings<FFeatureReport>& Settings)
 void UDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	Settings.VibrationMode == EDualSenseDeviceFeatureReport::Off ? 0xFF : static_cast<uint8_t>(Settings.VibrationMode);
-	HidOutput->Feature.SoftRumbleReduce = static_cast<uint8_t>(Settings.SoftRumbleReduce);
-	HidOutput->Feature.TriggerSoftnessLevel = static_cast<uint8_t>(Settings.TriggerSoftnessLevel);
-
-	HidOutput->Audio.MicStatus = static_cast<uint8_t>(Settings.MicStatus);
-	HidOutput->Audio.MicVolume = static_cast<uint8_t>(Settings.MicVolume);
-	HidOutput->Audio.HeadsetVolume = static_cast<uint8_t>(Settings.AudioVolume);
-	HidOutput->Audio.SpeakerVolume = static_cast<uint8_t>(Settings.AudioVolume);
+	if (Settings.VibrationMode == EDualSenseDeviceFeatureReport::Off)
+	{
+		HidOutput->Feature.VibrationMode = 0xFF;
+	}
+	
+	HidOutput->Feature.SoftRumbleReduce = static_cast<uint8>(Settings.SoftRumbleReduce);
+	HidOutput->Feature.TriggerSoftnessLevel = static_cast<uint8>(Settings.TriggerSoftnessLevel);
+	HidOutput->Audio.MicStatus = static_cast<uint8>(Settings.MicStatus);
+	HidOutput->Audio.MicVolume = static_cast<uint8>(Settings.MicVolume);
+	HidOutput->Audio.HeadsetVolume = static_cast<uint8>(Settings.AudioVolume);
+	HidOutput->Audio.SpeakerVolume = static_cast<uint8>(Settings.AudioVolume);
 	HidOutput->Audio.Mode = 0x31;
 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::On && Settings.AudioSpeaker ==
 		EDualSenseAudioFeatureReport::Off)
@@ -473,38 +591,6 @@ void UDualSenseLibrary::SetVibration(const FForceFeedbackValues& Vibration)
 		HidOutput->Rumbles = {OutputLeft, OutputRight};
 		SendOut();
 	}
-}
-
-void UDualSenseLibrary::SetVibrationAudioBased(
-	const FForceFeedbackValues& Vibration,
-	const float Threshold = 0.015f,
-	const float ExponentCurve = 2.f,
-	const float BaseMultiplier = 1.5f
-)
-{
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	const float InputLeft = FMath::Max(Vibration.LeftLarge, Vibration.LeftSmall);
-	const float InputRight = FMath::Max(Vibration.RightLarge, Vibration.RightSmall);
-
-	float IntensityLeftRumble = 0.0f;
-	if (InputLeft >= Threshold)
-	{
-		IntensityLeftRumble = BaseMultiplier *
-			FMath::Pow((InputLeft - Threshold) / (1.0f - Threshold), ExponentCurve);
-	}
-
-	float IntensityRightRumble = 0.0f;
-	if (InputRight >= Threshold)
-	{
-		IntensityRightRumble = BaseMultiplier *
-			FMath::Pow((InputRight - Threshold) / (1.0f - Threshold), ExponentCurve);
-	}
-
-	const unsigned char OutputLeft = static_cast<unsigned char>(FValidateHelpers::To255(IntensityLeftRumble));
-	const unsigned char OutputRight = static_cast<unsigned char>(FValidateHelpers::To255(IntensityRightRumble));
-	HidOutput->Rumbles = {OutputLeft, OutputRight};
-
-	SendOut();
 }
 
 void UDualSenseLibrary::SetHapticFeedback(int32 Hand, const FHapticFeedbackValues* Values)

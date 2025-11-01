@@ -121,13 +121,10 @@ public:
 	 */
 	virtual void StopTrigger(const EControllerHand& Hand) = 0;
 	/**
-	 * Configures the gamepad vibration based on audio feedback parameters.
+	 * Updates the haptic feedback on a gamepad's triggers using audio waveform data.
 	 *
-	 * @param Vibration A reference to an FForceFeedbackValues structure containing the force feedback values for each motor.
-	 * @param Threshold The minimum amplitude of the audio envelope that triggers vibration. Default is 0.015f.
-	 * @param ExponentCurve The exponent applied to shape the vibration curve. Default is 2.f.
-	 * @param BaseMultiplier A multiplier applied to the vibration intensity base level. Default is 1.5f.
+	 * @param AudioData An array of integer values representing the audio waveform data
+	 *                  used to drive the haptic feedback effects on the triggers.
 	 */
-	virtual void SetVibrationAudioBased(const FForceFeedbackValues& Vibration, const float Threshold = 0.015f, const float ExponentCurve = 2.f, const float BaseMultiplier = 1.5f) = 0;
 	virtual void AudioHapticUpdate(TArray<int8> AudioData) = 0;
 };

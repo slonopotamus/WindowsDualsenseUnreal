@@ -17,8 +17,6 @@
 #include "Core/Structs/FDeviceSettings.h"
 #include "Core/Structs/FDualSenseFeatureReport.h"
 #include "Containers/Queue.h"
-#include "Core/PlayStationOutputComposer.h"
-#include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "HAL/ThreadSafeBool.h"
 // extra headers for queue/worker primitives
 #include "HAL/CriticalSection.h"
@@ -600,28 +598,6 @@ public:
 	 */
 	virtual void SetVibration(const FForceFeedbackValues& Vibration) override;
 	/**
-	 * @brief Configures controller vibration intensity based on audio feedback values.
-	 *
-	 * This method calculates vibration intensity for a DualSense controller, using input
-	 * force feedback values and specified parameters such as threshold, exponent curve,
-	 * and base multiplier. The vibrations are applied separately to the left and right
-	 * motors of the controller.
-	 *
-	 * @param Vibration A structure containing the left and right force feedback values,
-	 *                  which represent the input intensities for computing vibration levels.
-	 * @param Threshold The minimum input intensity required for vibration to be triggered.
-	 *                  Inputs below this value will produce no output. Defaults to 0.015f.
-	 * @param ExponentCurve The exponential factor applied to calculate the curve of the
-	 *                      vibration intensity. This modifies how the input intensity
-	 *                      maps to the output intensity. Defaults to 2.f.
-	 * @param BaseMultiplier A scaling factor applied to the computed intensity, allowing
-	 *                       for fine-tuned control over the overall vibration strength.
-	 *                       Defaults to 1.5f.
-	 */
-	void SetVibrationAudioBased(const FForceFeedbackValues& Vibration, float Threshold, float ExponentCurve,
-	                            float BaseMultiplier);
-
-	/**
 	 * Sets the connection state of a phone.
 	 *
 	 * @param HasConnected Indicates whether the phone is connected (true) or not (false).
@@ -733,7 +709,24 @@ public:
 	 * @return True if the calibration status was successfully retrieved, false otherwise.
 	 */
 	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override;
-
+	/**
+	 * @brief Updates the haptic feedback system of the DualSense controller with audio data.
+	 *
+	 * The AudioHapticUpdate method sends audio-based haptic feedback data to the DualSense controller.
+	 * It handles encoding and transmitting audio data to produce haptic vibration effects
+	 * on the controller hardware.
+	 *
+	 * @param Data A byte array containing the audio haptic data to be transmitted.
+	 * The method processes up to a maximum of 64 bytes of this data.
+	 *
+	 * @details This function interacts with the device context to check if the controller is connected,
+	 * processes the provided audio data into the appropriate format, and forwards it to the
+	 * DualSense hardware. The method ensures memory-safe data handling and integrates with
+	 * advanced communication protocols to achieve synchronized haptic feedback.
+	 *
+	 * This functionality is typically implemented in systems that aim to provide immersive
+	 * feedback during audio playback or gaming scenarios that utilize DualSense controllers.
+	 */
 	virtual void AudioHapticUpdate(TArray<int8> Data) override;
 	/**
 	 * Represents the unique identifier assigned to a specific DualSense controller.

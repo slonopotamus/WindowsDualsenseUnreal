@@ -268,19 +268,16 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 {
 	if (!Context || !Context->Handle)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Context not found!"));
 		return;
 	}
 
 	if (Context->Handle == INVALID_HANDLE_VALUE)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Invalid device handle before attempting to read"));
 		return;
 	}
 	
 	if (Context->ConnectionType != Bluetooth)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Audio haptics only supported over Bluetooth"));
 		return;
 	}
 	// DebugDumpAudioBuffer(Context->BufferAudio);
@@ -294,8 +291,6 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
 		}
-
-		UE_LOG(LogTemp, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
 	}
 }
 

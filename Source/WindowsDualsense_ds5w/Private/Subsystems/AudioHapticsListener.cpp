@@ -7,11 +7,10 @@
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "Core/Structs/FDualSenseFeatureReport.h"
 
-FAudioHapticsListener::FAudioHapticsListener(FInputDeviceId InDeviceId) : DeviceId(InDeviceId)
+FAudioHapticsListener::FAudioHapticsListener(FInputDeviceId InDeviceId, USoundSubmix* InSubmix) : Submix(InSubmix), DeviceId(InDeviceId)
 {
 	ResampledAudioBuffer.SetNumUninitialized(64);
 }
-
 
 void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples,
                                               int32 NumChannels, const int32 SampleRate, double AudioClock)
@@ -25,15 +24,13 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 
         ResamplerImpl = MakeUnique<Audio::FResampler>();
         ResamplerImpl->Init(
-            Audio::EResamplingMethod::Linear, 
-            Ratio, 
-            ResamplerChannels 
+            Audio::EResamplingMethod::Linear,
+            Ratio,
+            ResamplerChannels
         );
-
     }
     int32 NumInputFrames = NumSamples / NumChannels;
     MonoMixBuffer.SetNumUninitialized(NumInputFrames);
-
     if (NumChannels == 2)
     {
         for (int32 i = 0; i < NumInputFrames; ++i)

@@ -50,7 +50,7 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 	}
 }
 
-void FCommonsDeviceInfo::WriteAudio(FDeviceContext* Context)
+void FCommonsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 {
 	if (!Context || !Context->Handle)
 	{
@@ -62,18 +62,6 @@ void FCommonsDeviceInfo::WriteAudio(FDeviceContext* Context)
 	if (BytesWritten < 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("hid_api: Failed to write audio device"));
-		InvalidateHandle(Context);
-	}
-
-	FString Line;
-	for (int32 i = 0; i < 142; ++i)
-	{
-		Line += FString::Printf(TEXT("%02X "), Context->Buffer[i]);
-		if ((i % 16) == 15 || i == 64 - 1)
-		{
-			UE_LOG(LogTemp, Log, TEXT("%s"), *Line);
-			Line.Reset();
-		}
 	}
 }
 
@@ -160,7 +148,6 @@ bool FCommonsDeviceInfo::CreateHandle(FDeviceContext* Context)
   
 	const FTCHARToUTF8 PathConverter(*Context->Path);
 	const FPlatformDeviceHandle Handle =  SDL_hid_open_path(PathConverter.Get(), true);
-
 	if (Handle == INVALID_PLATFORM_HANDLE)
 	{
 		return false;

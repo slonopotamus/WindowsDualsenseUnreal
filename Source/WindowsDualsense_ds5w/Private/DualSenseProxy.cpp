@@ -51,8 +51,7 @@ void UDualSenseProxy::UnregisterSubmixForDevice(int32 ControllerId)
 	{
 		return;
 	}
-	
-	FHapticsRegistry::Get()->RemoveAllListeners();
+	FHapticsRegistry::Get()->RemoveListenerForDevice(DeviceId);
 }
 
 void UDualSenseProxy::LedPlayerEffects(int32 ControllerId, ELedPlayerEnum Value, ELedBrightnessEnum Brightness)

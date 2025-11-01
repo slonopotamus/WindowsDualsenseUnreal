@@ -76,14 +76,13 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		});
 		
 		const unsigned char* HIDInput;
-	
 		if (HIDDeviceContexts.ConnectionType == Bluetooth)
 		{
-			HIDInput = &HIDDeviceContexts.Buffer[3];
+			HIDInput = &HIDDeviceContexts.BufferDS4[3];
 		}
 		else
 		{
-			HIDInput = &HIDDeviceContexts.Buffer[1];
+			HIDInput = &HIDDeviceContexts.BufferDS4[1];
 		}
 	
 		// Triggers
