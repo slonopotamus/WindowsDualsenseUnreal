@@ -7,6 +7,7 @@
 #include "CoreMinimal.h"
 #include "AudioResampler.h"
 #include "ISubmixBufferListener.h"
+#include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "Core/Structs/FDeviceContext.h"
 
 /**
@@ -45,6 +46,18 @@ public:
 	}
 
 	/**
+	 Processes and consumes the current audio data in the haptics queue, sending it to the appropriate haptic feedback interface.
+	 
+	 This method retrieves audio packets from the internal queue and forwards them to a supported haptic feedback system, such as
+	 the Sony DualSense gamepad, through the relevant interface. Packets that could not be processed are discarded after the final
+	 flush of the queue.
+	 
+	 It integrates with device-specific haptic systems using interfaces like ISonyGamepadTriggerInterface to achieve real-time
+	 audio-haptic feedback conversion.
+	 */
+	void ConsumeHapticsQueue();
+
+	/**
 	 Returns the associated audio submix instance.
 	 
 	 This method retrieves the `USoundSubmix` object associated with the audio processing pipeline.
@@ -69,15 +82,16 @@ public:
 	*/
 	virtual void OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock) override;
 	/**
-	 A dynamically managed array used to store mono-mixed audio frames.
+	 A thread-safe queue used for storing audio packets to be processed within the audio rendering pipeline.
 	 
-	 MonoMixBuffer is utilized within the audio processing pipeline to temporarily store audio frames after being
-	 mixed down to a single channel (mono). This buffer is primarily used as an intermediate step before further
-	 processing, such as resampling or sending audio data to haptic feedback systems. Its size and content are
-	 adjusted dynamically based on the number of input audio samples and channels.
+	 AudioPacketQueue is implemented as a multiple-producer single-consumer (MPSC) queue, allowing audio packets
+	 to be enqueued by multiple threads and dequeued by a single consumer thread. This design is optimized for
+	 high-performance, concurrent audio processing workflows. The queue holds arrays of int8, which represent
+	 raw audio data packets. These packets can be used for real-time processing, such as resampling or formatting
+	 for haptic feedback systems.
 	 */
 private:
-	TArray<float> MonoMixBuffer;
+	TQueue<TArray<int8>, EQueueMode::Spsc> AudioPacketQueue;
 	/**
 	 A buffer used to store audio data that has been resampled for haptic feedback systems.
 	 

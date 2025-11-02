@@ -84,10 +84,20 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
         Packet2[PacketIndex + 1] = RightSampleInt8; // R
     }
 
-    if (ISonyGamepadTriggerInterface* DualSense = Cast<ISonyGamepadTriggerInterface>(
-            FDeviceRegistry::Get()->GetLibraryInstance(DeviceId)))
+    AudioPacketQueue.Enqueue(Packet1);
+    AudioPacketQueue.Enqueue(Packet2);
+}
+
+void FAudioHapticsListener::ConsumeHapticsQueue()
+{
+    ISonyGamepadTriggerInterface* DualSenseInterface = Cast<ISonyGamepadTriggerInterface>(
+        FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
+    TArray<int8> PacketToProcess;
+    while (AudioPacketQueue.Dequeue(PacketToProcess))
     {
-        DualSense->AudioHapticUpdate(Packet1);
-        DualSense->AudioHapticUpdate(Packet2);
+        if (DualSenseInterface)
+        {
+            DualSenseInterface->AudioHapticUpdate(PacketToProcess);
+        }
     }
 }

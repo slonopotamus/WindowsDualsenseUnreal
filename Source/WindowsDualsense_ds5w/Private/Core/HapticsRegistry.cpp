@@ -10,6 +10,10 @@ TSharedPtr<FHapticsRegistry> FHapticsRegistry::Instance;
 FHapticsRegistry::~FHapticsRegistry()
 {
 	RemoveAllListeners();
+	if (Instance->GameThreadTickerHandle.IsValid())
+	{
+		FTSTicker::GetCoreTicker().RemoveTicker(Instance->GameThreadTickerHandle);
+	}
 }
 
 bool FHapticsRegistry::HasListenerForDevice(const FInputDeviceId& DeviceId) const
@@ -23,6 +27,10 @@ TSharedPtr<FHapticsRegistry> FHapticsRegistry::Get()
 	{
 		check(IsInGameThread());
 		Instance = MakeShared<FHapticsRegistry>();
+
+		Instance->GameThreadTickerHandle = FTSTicker::GetCoreTicker().AddTicker(
+		   FTickerDelegate::CreateSP(Instance.Get(), &FHapticsRegistry::Tick)
+	    );
 	}
 	return Instance;
 }
@@ -67,6 +75,18 @@ void FHapticsRegistry::RemoveAllListeners()
 		}
 	}
 	ControllerListeners.Empty();
+}
+
+bool FHapticsRegistry::Tick(float DeltaTime)
+{
+	for (auto& Pair : ControllerListeners)
+	{
+		if (Pair.Value.IsValid())
+		{
+			Pair.Value->ConsumeHapticsQueue();
+		}
+	}
+	return true;
 }
 
 void FHapticsRegistry::RemoveListenerForDevice(const FInputDeviceId& DeviceId)

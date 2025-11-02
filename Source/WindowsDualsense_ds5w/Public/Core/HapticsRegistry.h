@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include "Containers/Ticker.h"
 #include "Subsystems/AudioHapticsListener.h"
 
 class FHapticsRegistry final : public TSharedFromThis<FHapticsRegistry>, public FNoncopyable
@@ -52,9 +53,51 @@ public:
      * de-allocated in a safe and orderly manner, avoiding resource leaks or dangling listeners.
      */
     virtual ~FHapticsRegistry();
-	bool HasListenerForDevice(const FInputDeviceId& DeviceId) const;
-	void RemoveAllListeners();
+    /**
+     * Checks whether there is a registered listener for the specified input device.
+     *
+     * This method determines if an input device, identified by the provided device ID,
+     * has an associated registered listener within the haptics registry.
+     *
+     * @param DeviceId The unique identifier of the input device to check for a listener.
+     * @return True if a listener is registered for the specified device, otherwise false.
+     */
+    bool HasListenerForDevice(const FInputDeviceId& DeviceId) const;
+    /**
+     * Removes all haptics listeners from the registry and unregisters them from the audio device.
+     *
+     * This method iterates through all registered controller listeners, unregisters each from the
+     * audio subsystem, and clears the internal map storing the listeners. It ensures that no
+     * haptics listeners remain after execution and cleans up resources related to submix buffer
+     * listeners when applicable. Compatibility checks are included based on the engine version
+     * to ensure proper handling.
+     */
+    void RemoveAllListeners();
 
+    /**
+     * Executes the haptics tick for all registered haptics listeners.
+     *
+     * This method iterates through the map of registered ControllerListeners,
+     * invokes the `ConsumeHapticsQueue` method on valid listeners, and processes
+     * the pending haptic feedback actions. It ensures that haptics data
+     * gets consumed in a timely manner during the game's update cycle.
+     *
+     * @param DeltaTime The time elapsed since the last tick, in seconds.
+     *                  This parameter is generally used for time-based updates.
+     *
+     * @return Always returns true to indicate the tick was successful.
+     */
+    bool Tick(float DeltaTime);
+
+	/**
+	 * Handle for a delegate registered to the game thread ticker.
+	 *
+	 * This variable is used to manage the life cycle of the delegate associated with
+	 * the game thread ticker. It enables the removal or replacement of the registered
+	 * delegate when necessary and ensures proper handling of tasks scheduled on the
+	 * game thread over time.
+	 */
+	FTSTicker::FDelegateHandle GameThreadTickerHandle;
 
     /**
      * Holds the singleton instance of FHapticsRegistry.

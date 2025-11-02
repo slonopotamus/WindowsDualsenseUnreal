@@ -151,12 +151,7 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 		HIDDeviceContexts.BufferAudio[7]  = 50;
 		HIDDeviceContexts.BufferAudio[8]  = 50;
 		HIDDeviceContexts.BufferAudio[9]  = 255;
-		for (int i = 0; i < 10; i++)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Log config haptic byte[%d]%02X,"),  i, HIDDeviceContexts.BufferAudio[i]);
-		}
 	}
-	
 
 	StopAll();
 	return true;
