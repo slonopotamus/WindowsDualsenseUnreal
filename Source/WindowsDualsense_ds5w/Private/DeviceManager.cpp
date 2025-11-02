@@ -9,10 +9,6 @@
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "Misc/CoreDelegates.h"
 
-#if PLATFORM_WINDOWS
-#include "Windows/WindowsApplication.h"
-#endif
-
 DeviceManager::DeviceManager(
 	const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler
 	): MessageHandler(InMessageHandler)

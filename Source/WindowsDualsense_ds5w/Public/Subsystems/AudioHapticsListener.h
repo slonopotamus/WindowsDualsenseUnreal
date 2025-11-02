@@ -7,7 +7,7 @@
 #include "CoreMinimal.h"
 #include "AudioResampler.h"
 #include "ISubmixBufferListener.h"
-#include "Core/Interfaces/SonyGamepadTriggerInterface.h"
+#include "Containers/Queue.h"
 #include "Core/Structs/FDeviceContext.h"
 
 /**
