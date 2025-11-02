@@ -3,6 +3,9 @@
 // Planned Release Year: 2025
 
 #include "Core/DualSense/DualSenseLibrary.h"
+
+#include <algorithm>
+
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "InputCoreTypes.h"
@@ -139,18 +142,18 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 		EnableReport->Audio.HeadsetVolume = static_cast<uint8_t>(0);
 		EnableReport->Audio.SpeakerVolume = static_cast<uint8_t>(0);
 		SendOut();
-
 		FPlatformProcess::Sleep(0.01f);
+		
 		HIDDeviceContexts.BufferAudio[0]  = 0x32;
 		HIDDeviceContexts.BufferAudio[1]  = 0x00;
 		HIDDeviceContexts.BufferAudio[2]  = 0x91;
 		HIDDeviceContexts.BufferAudio[3]  = 0x07;
 		HIDDeviceContexts.BufferAudio[4]  = 0xFE;
-		HIDDeviceContexts.BufferAudio[5]  = 15;
-		HIDDeviceContexts.BufferAudio[6]  = 15;
+		HIDDeviceContexts.BufferAudio[5]  = 50;
+		HIDDeviceContexts.BufferAudio[6]  = 50;
 		HIDDeviceContexts.BufferAudio[7]  = 50;
 		HIDDeviceContexts.BufferAudio[8]  = 50;
-		HIDDeviceContexts.BufferAudio[9]  = 255;
+		HIDDeviceContexts.BufferAudio[9]  = 80;
 	}
 
 	StopAll();
@@ -570,7 +573,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	}
 
 	SetHasPhoneConnected(HIDInput[0x35] & 0x01);
-	SetLevelBattery(((HIDInput[0x34] & 0x0F) * 100) / 8, (HIDInput[0x35] & 0x00), (HIDInput[0x36] & 0x20));
+	SetLevelBattery(((HIDInput[0x34] & 0x0F) / 10.0)*100, (HIDInput[0x35] & 0x00), (HIDInput[0x36] & 0x20));
 }
 
 void UDualSenseLibrary::SetVibration(const FForceFeedbackValues& Vibration)
@@ -1052,5 +1055,10 @@ void UDualSenseLibrary::SetHasPhoneConnected(const bool HasConnected)
 
 void UDualSenseLibrary::SetLevelBattery(const float Level, bool FullyCharged, bool Charging)
 {
+	if (Level > 100.f)
+	{
+		LevelBattery = 100.f;
+		return;
+	}
 	LevelBattery = Level;
 }
