@@ -24,6 +24,12 @@ static void DS_HandleSetAudioByte(const TArray<FString>& Args);
 static void DS_HandleSetAudioLR(const TArray<FString>& Args);
 static void DS_HandleDumpAudioBytes(const TArray<FString>& Args);
 
+// New: trigger raw bytes overrides [10..20] and [21..31]
+static void DS_HandleSetTrigR(const TArray<FString>& Args);
+static void DS_HandleSetTrigL(const TArray<FString>& Args);
+static void DS_HandleDumpTrig(const TArray<FString>& Args);
+static void DS_HandleClearTrig(const TArray<FString>& Args);
+
 // Keep a pointer to the active device context to be used by console commands.
 // It is set in UDualSenseLibrary::InitializeLibrary and cleared in ShutdownLibrary.
 static FDeviceContext* GDS_AudioCtx = nullptr;
@@ -47,9 +53,64 @@ static FAutoConsoleCommand GDS_CmdDumpAudioBytes(
 	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleDumpAudioBytes)
 );
 
+// New: commands for trigger bytes overrides
+static FAutoConsoleCommand GDS_CmdSetTrigR(
+	TEXT("ds.SetTrigR"),
+	TEXT("Define bytes HEX do gatilho direito [10..20]. Uso: ds.SetTrigR <até 10 bytes hex>  Ex.: ds.SetTrigR 22 3F 08 01"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleSetTrigR)
+);
+static FAutoConsoleCommand GDS_CmdSetTrigL(
+	TEXT("ds.SetTrigL"),
+	TEXT("Define bytes HEX do gatilho esquerdo [21..31]. Uso: ds.SetTrigL <até 10 bytes hex>  Ex.: ds.SetTrigL 22 3F 08 01"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleSetTrigL)
+);
+static FAutoConsoleCommand GDS_CmdDumpTrig(
+	TEXT("ds.DumpTrig"),
+	TEXT("Dump current trigger bytes override or built values for [10..20] and [21..31]"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleDumpTrig)
+);
+static FAutoConsoleCommand GDS_CmdClearTrig(
+	TEXT("ds.ClearTrig"),
+	TEXT("Disable trigger bytes override and return to SetTriggerEffects"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleClearTrig)
+);
+
 static uint8 DS_ClampByte(int32 V)
 {
 	return static_cast<uint8>(FMath::Clamp(V, 0, 255));
+}
+
+// Parses a hex token into a byte. Accepts formats like "AA", "aa", or "0xAA".
+static bool DS_ParseHexByte(const FString& Token, uint8& OutByte)
+{
+	FString S = Token.TrimStartAndEnd();
+	if (S.StartsWith(TEXT("0x"), ESearchCase::IgnoreCase))
+	{
+		S.RightChopInline(2);
+	}
+	if (S.IsEmpty()) { OutByte = 0; return false; }
+	// Validate characters are hex
+	for (int32 i = 0; i < S.Len(); ++i)
+	{
+		TCHAR C = S[i];
+		if (!((C >= '0' && C <= '9') || (C >= 'a' && C <= 'f') || (C >= 'A' && C <= 'F')))
+		{
+			OutByte = 0; return false;
+		}
+	}
+	// Manual hex parse
+	int32 Value = 0;
+	for (int32 i = 0; i < S.Len(); ++i)
+	{
+		TCHAR C = S[i];
+		int32 Nibble = 0;
+		if (C >= '0' && C <= '9') Nibble = C - '0';
+		else if (C >= 'a' && C <= 'f') Nibble = 10 + (C - 'a');
+		else if (C >= 'A' && C <= 'F') Nibble = 10 + (C - 'A');
+		Value = (Value << 4) | Nibble;
+	}
+	OutByte = DS_ClampByte(Value);
+	return true;
 }
 
 static void DS_HandleSetAudioByte(const TArray<FString>& Args)
@@ -121,29 +182,115 @@ static void DS_HandleDumpAudioBytes(const TArray<FString>& Args)
 	}
 }
 
+static void DS_HandleSetTrigR(const TArray<FString>& Args)
+{
+	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[ds.SetTrigR] Device not ready/connected"));
+		return;
+	}
+	if (Args.Num() < 1 || Args.Num() > 10)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Uso: ds.SetTrigR <1..10 bytes HEX>  Ex.: ds.SetTrigR 22 3F 08 01"));
+		return;
+	}
+	// Zero-fill then write provided bytes
+	FMemory::Memset(GDS_AudioCtx->OverrideTriggerRight, 0, 10);
+	for (int32 i = 0; i < Args.Num() && i < 10; ++i)
+	{
+		uint8 B = 0;
+		if (!DS_ParseHexByte(Args[i], B))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Token inválido (não-HEX): %s"), *Args[i]);
+			continue;
+		}
+		GDS_AudioCtx->OverrideTriggerRight[i] = B;
+	}
+	UE_LOG(LogTemp, Log, TEXT("Right trigger override [10..20] atualizado (HEX)."));
+	GDS_AudioCtx->bOverrideTriggerBytes = true;
+	FPlayStationOutputComposer::OutputDualSense(GDS_AudioCtx);
+}
+
+static void DS_HandleSetTrigL(const TArray<FString>& Args)
+{
+	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[ds.SetTrigL] Device not ready/connected"));
+		return;
+	}
+	if (Args.Num() < 1 || Args.Num() > 10)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Uso: ds.SetTrigL <1..10 bytes HEX>  Ex.: ds.SetTrigL 22 3F 08 01"));
+		return;
+	}
+	FMemory::Memset(GDS_AudioCtx->OverrideTriggerLeft, 0, 10);
+	for (int32 i = 0; i < Args.Num() && i < 10; ++i)
+	{
+		uint8 B = 0;
+		if (!DS_ParseHexByte(Args[i], B))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Token inválido (não-HEX): %s"), *Args[i]);
+			continue;
+		}
+		GDS_AudioCtx->OverrideTriggerLeft[i] = B;
+	}
+	GDS_AudioCtx->bOverrideTriggerBytes = true;
+	UE_LOG(LogTemp, Log, TEXT("Left trigger override [21..31] atualizado (HEX)."));
+	FPlayStationOutputComposer::OutputDualSense(GDS_AudioCtx);
+}
+
+static void DS_HandleDumpTrig(const TArray<FString>& Args)
+{
+	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[ds.DumpTrig] Device not ready/connected"));
+		return;
+	}
+	uint8 R[10] = {0};
+	uint8 L[10] = {0};
+	FMemory::Memcpy(R, GDS_AudioCtx->OverrideTriggerRight, 10);
+	FMemory::Memcpy(L, GDS_AudioCtx->OverrideTriggerLeft, 10);
+	UE_LOG(LogTemp, Log, TEXT("Dumping OVERRIDE trigger bytes (HEX):"));
+	
+	FString RStr, LStr;
+	for (int32 i = 0; i < 10; ++i)
+	{
+		RStr += FString::Printf(TEXT("%02X "), (uint8)R[i]);
+		LStr += FString::Printf(TEXT("%02X "), (uint8)L[i]);
+	}
+	UE_LOG(LogTemp, Log, TEXT("R[10..19]: %s"), *RStr);
+	UE_LOG(LogTemp, Log, TEXT("L[21..30]: %s"), *LStr);
+}
+
+static void DS_HandleClearTrig(const TArray<FString>& Args)
+{
+	if (!GDS_AudioCtx)
+	{
+		return;
+	}
+	GDS_AudioCtx->bOverrideTriggerBytes = false;
+	FMemory::Memset(GDS_AudioCtx->OverrideTriggerRight, 0, 10);
+	FMemory::Memset(GDS_AudioCtx->OverrideTriggerLeft, 0, 10);
+	UE_LOG(LogTemp, Log, TEXT("Trigger overrides cleared."));
+	if (GDS_AudioCtx->IsConnected)
+	{
+		FPlayStationOutputComposer::OutputDualSense(GDS_AudioCtx);
+	}
+}
+
 bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
 	HIDDeviceContexts = Context;
-	// Expose the current context to console commands
 	GDS_AudioCtx = &HIDDeviceContexts;
 	if (HIDDeviceContexts.ConnectionType == Bluetooth)
 	{
 		FOutputContext* EnableReport = &HIDDeviceContexts.Output;
-		
-		// Set flags to enable control over the lightbar, player LEDs
-		EnableReport->Feature.FeatureMode = 0x1 | 0x2  | 0x4;
-		
-		// Important: Keep the data fields at their default (e.g., lights off)
+		EnableReport->Feature.FeatureMode = 0x1 | 0x2  | 0x4 | 0x8;
 		EnableReport->Lightbar = {0, 0, 0};
 		EnableReport->PlayerLed.Brightness = 0x00;
-		
-		EnableReport->Audio.MicStatus = static_cast<uint8_t>(0x10);
-		EnableReport->Audio.MicVolume = static_cast<uint8_t>(64);
-		EnableReport->Audio.HeadsetVolume = static_cast<uint8_t>(0);
-		EnableReport->Audio.SpeakerVolume = static_cast<uint8_t>(0);
 		SendOut();
+
 		FPlatformProcess::Sleep(0.01f);
-		
 		HIDDeviceContexts.BufferAudio[0]  = 0x32;
 		HIDDeviceContexts.BufferAudio[1]  = 0x00;
 		HIDDeviceContexts.BufferAudio[2]  = 0x91;
@@ -154,6 +301,7 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 		HIDDeviceContexts.BufferAudio[7]  = 50;
 		HIDDeviceContexts.BufferAudio[8]  = 50;
 		HIDDeviceContexts.BufferAudio[9]  = 80;
+		return true;
 	}
 
 	StopAll();

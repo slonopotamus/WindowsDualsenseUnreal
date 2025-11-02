@@ -199,16 +199,14 @@ struct FDeviceContext
 	 * enabling seamless interaction and device-specific operations.
 	 */
 	FInputDeviceId UniqueInputDeviceId;
-	/**
-	 * @brief Represents the sequence index for audio vibration feedback.
-	 *
-	 * Used to manage and track the current step in an audio-based vibration sequence
-	 * within the device. This sequence enables precise synchronization of vibration
-	 * effects with audio playback.
-	 */
-	uint8 AudioVibrationSequence = 0;
 
-	FDeviceContext() : Handle(nullptr), AudioHandle(nullptr), Path{}, Buffer{}, BufferAudio{},
+	// Runtime override for trigger bytes [10..20] (Right) and [21..31] (Left) in the DualSense output buffer.
+	// When enabled via console commands, these arrays are copied verbatim into the HID report.
+	bool bOverrideTriggerBytes = false;
+	unsigned char OverrideTriggerRight[10] = {0};
+	unsigned char OverrideTriggerLeft[10]  = {0};
+	
+	FDeviceContext() : Handle(nullptr), AudioHandle(nullptr), Path{}, Buffer{}, BufferDS4{}, BufferAudio{},
 	                   BufferOutput{},
 	                   IsConnected(false),
 	                   ConnectionType(), DeviceType(),
