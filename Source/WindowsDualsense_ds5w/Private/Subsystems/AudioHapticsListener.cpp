@@ -92,12 +92,14 @@ void FAudioHapticsListener::ConsumeHapticsQueue()
 {
     ISonyGamepadTriggerInterface* DualSenseInterface = Cast<ISonyGamepadTriggerInterface>(
         FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-    TArray<int8> PacketToProcess;
-    while (AudioPacketQueue.Dequeue(PacketToProcess))
-    {
-        if (DualSenseInterface)
-        {
-            DualSenseInterface->AudioHapticUpdate(PacketToProcess);
-        }
-    }
+    if (DualSenseInterface)
+	{
+		TArray<int8> PacketToProcess;
+	    while (AudioPacketQueue.Dequeue(PacketToProcess))
+	    {
+	        DualSenseInterface->AudioHapticUpdate(PacketToProcess);
+	    }
+    	return;
+	}
+	AudioPacketQueue.Empty();
 }

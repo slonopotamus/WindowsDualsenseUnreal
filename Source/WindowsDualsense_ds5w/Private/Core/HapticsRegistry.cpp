@@ -51,13 +51,14 @@ void FHapticsRegistry::CreateListenerForDevice(const FInputDeviceId& DeviceId, U
 	if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
 	{
 #if ENGINE_MINOR_VERSION >= 4 && ENGINE_MAJOR_VERSION < 7
-		TSharedRef<FAudioHapticsListener, ESPMode::ThreadSafe> ListenerRef = Listener.ToSharedRef();
-		AudioDevice->RegisterSubmixBufferListener(ListenerRef, *Submix);
+		AudioDevice->RegisterSubmixBufferListener(Listener.ToSharedRef(), *Submix);
 #else
 		AudioDevice->RegisterSubmixBufferListener(Listener.Get(), Submix);
 		ControllerListeners.Add(DeviceId, Listener);
 #endif
 		UE_LOG(LogTemp, Log, TEXT("Registering listener for device %d num %d"), DeviceId.GetId(), ControllerListeners.Num());
+
+		ControllerListeners.Add(DeviceId, Listener);
 	}
 }
 
@@ -69,8 +70,7 @@ void FHapticsRegistry::RemoveAllListeners()
 		for (auto& Pair : ControllerListeners)
 		{
 #if ENGINE_MINOR_VERSION >= 4 && ENGINE_MAJOR_VERSION < 7
-			TSharedRef<FAudioHapticsListener, ESPMode::ThreadSafe> ListenerRef = Pair.Value.ToSharedRef();
-			AudioDevice->UnregisterSubmixBufferListener(ListenerRef, *ListenerRef->GetSubmix());
+			AudioDevice->UnregisterSubmixBufferListener(Pair.Value.ToSharedRef(), *Pair.Value.ToSharedRef()->GetSubmix());
 #else
 			AudioDevice->UnregisterSubmixBufferListener(Pair.Value.Get());
 #endif
@@ -85,7 +85,11 @@ bool FHapticsRegistry::Tick(float DeltaTime)
 	{
 		if (Pair.Value.IsValid())
 		{
-			Pair.Value->ConsumeHapticsQueue();
+			TSharedPtr<FAudioHapticsListener> Context = Pair.Value;
+			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
+			{
+				NewContext->ConsumeHapticsQueue();
+			});
 		}
 	}
 	return true;
@@ -98,8 +102,7 @@ void FHapticsRegistry::RemoveListenerForDevice(const FInputDeviceId& DeviceId)
 		if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
 		{
 #if ENGINE_MINOR_VERSION >= 4 && ENGINE_MAJOR_VERSION < 7
-			TSharedRef<FAudioHapticsListener, ESPMode::ThreadSafe> ListenerRef = ExistingListener->ToSharedRef();
-			AudioDevice->UnregisterSubmixBufferListener(ListenerRef, *ListenerRef->GetSubmix());
+			AudioDevice->UnregisterSubmixBufferListener(ExistingListener->ToSharedRef(), *ExistingListener->ToSharedRef()->GetSubmix());
 #else
 			AudioDevice->UnregisterSubmixBufferListener(ExistingListener->Get());
 #endif

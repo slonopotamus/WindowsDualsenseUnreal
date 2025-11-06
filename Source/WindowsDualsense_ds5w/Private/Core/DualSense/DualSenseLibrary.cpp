@@ -296,11 +296,11 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 		HIDDeviceContexts.BufferAudio[2]  = 0x91;
 		HIDDeviceContexts.BufferAudio[3]  = 0x07;
 		HIDDeviceContexts.BufferAudio[4]  = 0xFE;
-		HIDDeviceContexts.BufferAudio[5]  = 50;
-		HIDDeviceContexts.BufferAudio[6]  = 50;
-		HIDDeviceContexts.BufferAudio[7]  = 50;
-		HIDDeviceContexts.BufferAudio[8]  = 50;
-		HIDDeviceContexts.BufferAudio[9]  = 80;
+		HIDDeviceContexts.BufferAudio[5]  = 20;
+		HIDDeviceContexts.BufferAudio[6]  = 20;
+		HIDDeviceContexts.BufferAudio[7]  = 180;
+		HIDDeviceContexts.BufferAudio[8]  = 180;
+		HIDDeviceContexts.BufferAudio[9]  = 50;
 		return true;
 	}
 

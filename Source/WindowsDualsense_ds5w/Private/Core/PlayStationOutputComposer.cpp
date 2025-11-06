@@ -70,7 +70,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 	FOutputContext* HidOut = &DeviceContext->Output;
 	unsigned char*  Output = &DeviceContext->BufferOutput[Padding];
 	Output[0] = HidOut->Feature.VibrationMode;
-	Output[1] = 0xF7;
+	Output[1] = 0x53;
 	Output[2] = HidOut->Rumbles.Left;
 	Output[3] = HidOut->Rumbles.Right;
 	Output[4] = HidOut->Audio.HeadsetVolume;
@@ -80,10 +80,10 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 	Output[9] = HidOut->Audio.MicStatus;
 	Output[8] = HidOut->MicLight.Mode;
 	Output[36] = (HidOut->Feature.TriggerSoftnessLevel << 4) | (HidOut->Feature.SoftRumbleReduce & 0x0F);
-	Output[38] ^= (1 << 0);
-    Output[38] ^= (1 << 2);
-	//Output[38] = 0x07;
-	//Output[41] = 0x02;
+	//Output[38] ^= (1 << 0);
+    //Output[38] ^= (1 << 2);
+	Output[38] = 0x07;
+	Output[41] = 0x02;
 	Output[42] = HidOut->PlayerLed.Brightness;
 	Output[43] = HidOut->PlayerLed.Led;
 	Output[44] = HidOut->Lightbar.R;
