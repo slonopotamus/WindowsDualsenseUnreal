@@ -45,8 +45,8 @@ Designed to bridge the gap left by generic controller support, this asset empowe
 * 🔌 **Dynamic Connection (Hot-Swap)**: Automatically detects controller connection and disconnection, even during gameplay.
 * ⚡ **Optimized for Multiplayer**: High-performance architecture with minimal impact on network games.
 * 🎮 **Seamless Input Integration**: Coexists perfectly with Unreal Engine's native input managers (like Enhanced Input) and other gamepad plugins, preventing conflicts between devices.
+* 🎧 **Audio Haptics (USB & Wireless)**: Haptic feedback based on in-game audio.
 * 🎯 **Adaptive Triggers**: Full control over resistance, effect, and vibration on R2/L2 triggers.
-* 🔊 **Audio-Based Vibration**: Synchronize the controller's haptic feedback with any in-game audio source.
 * 💡 **Lightbar Control**: Dynamically change the controller's LED color.
 * 🎤 **Microphone and Audio**: Manage the mute button LED, speaker volume, and headset audio.
 * ⚙️ **Force Feedback**: Native integration with Unreal Engine's Force Feedback system for standard motor vibration.
@@ -111,19 +111,31 @@ You can download the *Parrot Game Sample* with the DualSense integration directl
 - [**Download the example project for the editor here**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
 - [**Download the compiled version of the example project here**](https://drive.google.com/file/d/144hM71xZufBe29UzpTNQ1rRe0AYWC-Ka/view?usp=drive_link)
 
-## 🎮 Example Project: Audio-Based Vibration
+## 🎮 Example Project: Audio Haptics (USB & Wireless)
 
-This project demonstrates the Advanced Audio Vibration, a native feature of the DualSense controller. It serves as a simple playlist to showcase how music, footsteps, and other sound effects can be translated directly into high-fidelity haptics when the controller is connected via USB.
+Take your immersion to the next level! This update enhances the advanced Audio Haptics feature, allowing it to work seamlessly via both USB and wirelessly via Bluetooth (previously USB-only). This new example project demonstrates how to harness this power, featuring a complete implementation for real-time haptic feedback based on in-game audio.
+
+![Audio Haptics (USB & Wireless)](Images/audio-haptics-bluetooth-and-usb-ds.png)
 
 ### Implemented Features
 
-Native Haptic Generation: This example uses the advanced internal capabilities of the DualSense to generate vibrations directly from a sound source.
+This sample project serves as a practical guide and includes:
 
-Simple Activation: The feature is easily enabled through the Device Settings node by setting the VibrationMode to Audio based vibration. This requires a USB connection to function.
+* **🎧 Flexible Submix Listener:** Learn how to register a listener (RegisterSubmixForDevice) on an Unreal Engine Sound Submix that processes audio for both wired and wireless connections.
 
-Advanced Practice: For even more detailed effects, the underlying audio classes in Unreal Engine allow you to apply Low-Pass and High-Pass filters. This technique can isolate bass frequencies (for rumbles) from high-frequency sounds (for sharp textures), providing a more granular and immersive haptic experience.
+* **⚡️ Real-time Audio Processing:** We capture the audio data directly from the submix, resample it, and send it to the DualSense controller over your active connection (USB or Bluetooth) in real-time.
 
-- [**Download the example project for the editor here**](https://drive.google.com/file/d/1D4g_A78xBMdLyDy0xHdr1TbSuHdSuHGn/view?usp=drive_link)
+* **🎛️ Haptic FX Menu Widget:** A new sample UI (UMG Widget) is provided that allows you to:
+
+Select different Sound Classes to be routed to the haptics system.
+
+Play various "playback albums" (sets of Sound Cues) to test and feel a wide variety of haptic effects based on different sounds.
+
+🛠️ New Developer/Debug Tools: For advanced users, new console commands have been added to test and fine-tune trigger vibrations and frequencies directly over wireless and wired connections (e.g., ds.SetAudioLR). 
+
+➡️ Check out the full tutorial on the Wiki to implement this in your own project!
+
+- [**Download the example project for the editor here**](https://drive.google.com/file/d/1Dxj8403_tIeJECtE8rrZDrBXcnS2LaCW/view?usp=drive_link)
 
 ## 🚀 Getting Started
 
