@@ -5,7 +5,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Core/Enums/EDeviceCommons.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 #include "FDualShockFeatureReport.generated.h"
 

@@ -5,16 +5,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Templates/SharedPointer.h"
-#include "UObject/Object.h"
 #include "InputCoreTypes.h"
 #include "SonyGamepadProxy.h"
 #include "Core/HapticsRegistry.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Structs/FDualSenseFeatureReport.h"
-#include "Core/Interfaces/SonyGamepadInterface.h"
-#include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "DualSenseProxy.generated.h"
 
 /**
@@ -263,7 +258,7 @@ public:
 	 * Controls the LED player light effects on the DualSense controller.
 	 *
 	 * @param ControllerId The identifier for the target controller.
-	 * @param Value The LED pattern enum specifying the LED configuration for the player indicator (e.g., Off, Player One, Player Two, etc.).
+	 * @param Value The LED pattern enum specifying the LED configuration for the player indicator (e.g., Off, Player One, Player Two).
 	 * @param Brightness The brightness level of the LED lights specified by an enum (e.g., Low, Medium, High).
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Led Effects")
@@ -323,7 +318,7 @@ public:
 	}
 
 	/**
-	 * Sets a trigger haptic feedback effect for the DualSense controller. Deprecated as of plugin version v1.2.1. Use AutomaticGun instead.
+	 * Sets a trigger haptic feedback effect for the DualSense controller. Deprecated as of a plugin version v1.2.1. Use AutomaticGun instead.
 	 *
 	 * @param ControllerId The ID of the controller to apply the effect to.
 	 * @param StartPosition The starting position of the trigger effect (deprecated, not utilized in the replacement method AutomaticGun).

@@ -3,12 +3,13 @@
 // Planned Release Year: 2025
 
 #include "DualSenseProxy.h"
+
+#include "AudioDevice.h"
 #include "Core/DeviceRegistry.h"
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "Helpers/ValidateHelpers.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 
 
 void UDualSenseProxy::DeviceSettings(int32 ControllerId, FDualSenseFeatureReport Settings)

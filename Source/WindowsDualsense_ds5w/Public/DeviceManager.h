@@ -7,7 +7,6 @@
 #include "CoreMinimal.h"
 #include "IHapticDevice.h"
 #include "IInputDevice.h"
-#include "InputCoreTypes.h"
 #include "Subsystems/AudioHapticsListener.h"
 
 
@@ -31,8 +30,9 @@ public:
 		const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler
 		);
 	/**
-	 * Called every frame to update controller state
-	 * @param DeltaTime Time elapsed since last tick
+	 * Called every frame to update Controller-State
+	 * 
+	 * @param DeltaTime Time
 	 */
 	virtual void Tick(float DeltaTime) override;
 	/**
@@ -127,7 +127,7 @@ public:
 	virtual bool IsGamepadAttached() const override { return true; }
 	/**
 	 * Handles user login state changes
-	 * @param bLoggedIn Whether user is logged in
+	 * @param bLoggedIn Whether a User is logged in
 	 * @param UserId Platform-specific user identifier
 	 * @param UserIndex Index of the user
 	 */
@@ -152,7 +152,7 @@ public:
 	 *
 	 * @param ControllerId The unique identifier of the controller to set the channel value for.
 	 * @param ChannelType The type of the feedback channel to update (e.g., left motor, right motor).
-	 * @param Value The intensity of the feedback, typically ranging from 0.0 (no feedback) to 1.0 (maximum feedback).
+	 * @param Value The intensity of the feedback typically ranging from 0.0 (no feedback) to 1.0 (maximum feedback).
 	 */
 	virtual void SetChannelValue(int32 ControllerId, FForceFeedbackChannelType ChannelType, float Value) override
 	{

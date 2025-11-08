@@ -6,7 +6,6 @@
 
 #include "CoreMinimal.h"
 #include "HAL/PlatformProcess.h"
-#include "HAL/RunnableThread.h"
 
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsApplication.h"

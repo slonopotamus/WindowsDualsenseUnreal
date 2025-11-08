@@ -6,7 +6,6 @@
 #include "Containers/Ticker.h"
 #include "CoreMinimal.h"
 #include "Misc/CoreDelegates.h"
-#include "Misc/Guid.h"
 #include "Templates/SharedPointer.h"
 #include "Engine/Engine.h"
 #include "Subsystems/AudioHapticsListener.h"
@@ -57,7 +56,7 @@ public:
      * This method guarantees that the resources used for managing haptics-related listeners are
      * de-allocated in a safe and orderly manner, avoiding resource leaks or dangling listeners.
      */
-    virtual ~FHapticsRegistry();
+    ~FHapticsRegistry();
     /**
      * Checks whether there is a registered listener for the specified input device.
      *

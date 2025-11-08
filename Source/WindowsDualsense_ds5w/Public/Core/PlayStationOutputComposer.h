@@ -96,16 +96,14 @@ public:
 	 */
 	static void SetTriggerEffects(unsigned char* Trigger, FHapticTriggers& Effect);
 	/**
-	 * Sets the audio vibration data to be sent to the PlayStation controller.
-	 * This method prepares and formats the output report, including audio vibration
-	 * parameters, sequence tagging, and CRC32 checksum calculation, and sends it
-	 * to the specified device context. It ensures proper signal integrity and behavior
-	 * for audio-based haptic feedback on PlayStation devices.
+	 * Sends advanced audio haptic feedback data to a specified device context.
+	 * This method prepares, formats, and processes audio haptic data, including
+	 * the calculation of a CRC32 checksum for integrity purposes, and sends it
+	 * to the device if the connection type is Bluetooth.
 	 *
-	 * @param DeviceContext Pointer to the device context associated with the PlayStation
-	 * controller. This must be a valid and connected device.
-	 * @param AudioData Array of audio data bytes representing the vibration samples. The size
-	 * of this data determines how much audio signal will be included in the payload buffer.
+	 * @param DeviceContext Pointer to the device context representing the target PlayStation device.
+	 *                      If the connection type is Bluetooth, audio haptic data is processed and
+	 *                      sent to the device.
 	 */
 	static void SendAudioHapticAdvanced(FDeviceContext* DeviceContext);
 	/**

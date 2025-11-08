@@ -4,8 +4,6 @@
 
 #include "Core/DualSense/DualSenseLibrary.h"
 
-#include <algorithm>
-
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "InputCoreTypes.h"
@@ -285,7 +283,7 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 	if (HIDDeviceContexts.ConnectionType == Bluetooth)
 	{
 		FOutputContext* EnableReport = &HIDDeviceContexts.Output;
-		EnableReport->Feature.FeatureMode = 0x1 | 0x2  | 0x4 | 0x8;
+		EnableReport->Feature.FeatureMode = 0b11110010;
 		EnableReport->Lightbar = {0, 0, 0};
 		EnableReport->PlayerLed.Brightness = 0x00;
 		SendOut();
@@ -296,11 +294,13 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 		HIDDeviceContexts.BufferAudio[2]  = 0x91;
 		HIDDeviceContexts.BufferAudio[3]  = 0x07;
 		HIDDeviceContexts.BufferAudio[4]  = 0xFE;
-		HIDDeviceContexts.BufferAudio[5]  = 20;
-		HIDDeviceContexts.BufferAudio[6]  = 20;
-		HIDDeviceContexts.BufferAudio[7]  = 180;
-		HIDDeviceContexts.BufferAudio[8]  = 180;
+		HIDDeviceContexts.BufferAudio[5]  = 55;
+		HIDDeviceContexts.BufferAudio[6]  = 55;
+		HIDDeviceContexts.BufferAudio[7]  = 15;
+		HIDDeviceContexts.BufferAudio[8]  = 50;
 		HIDDeviceContexts.BufferAudio[9]  = 50;
+
+		StopAll();
 		return true;
 	}
 
@@ -340,7 +340,7 @@ void UDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	if (Settings.VibrationMode == EDualSenseDeviceFeatureReport::Off)
 	{
-		HidOutput->Feature.VibrationMode = 0xFF;
+		HidOutput->Feature.VibrationMode = 0xFC;
 	}
 	
 	HidOutput->Feature.SoftRumbleReduce = static_cast<uint8>(Settings.SoftRumbleReduce);
@@ -349,17 +349,17 @@ void UDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 	HidOutput->Audio.MicVolume = static_cast<uint8>(Settings.MicVolume);
 	HidOutput->Audio.HeadsetVolume = static_cast<uint8>(Settings.AudioVolume);
 	HidOutput->Audio.SpeakerVolume = static_cast<uint8>(Settings.AudioVolume);
-	HidOutput->Audio.Mode = 0x31;
+	HidOutput->Audio.Mode = 0x05;
 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::On && Settings.AudioSpeaker ==
 		EDualSenseAudioFeatureReport::Off)
 	{
-		HidOutput->Audio.Mode = 0x05;
+		HidOutput->Audio.Mode = 0x31;
 	}
 	
 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::Off && Settings.AudioSpeaker ==
 		EDualSenseAudioFeatureReport::On)
 	{
-		HidOutput->Audio.Mode = 0x21;		
+		HidOutput->Audio.Mode = 0x21;
 	}
 	SendOut();
 }
@@ -1057,8 +1057,6 @@ void UDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
 void UDualSenseLibrary::StopAll()
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	HidOutput->Feature.VibrationMode = 0xFC;
-	HidOutput->Feature.FeatureMode = 0xF7;
 	if (
 		HidOutput->Lightbar.A == 0 &&
 		HidOutput->Lightbar.B == 0 &&

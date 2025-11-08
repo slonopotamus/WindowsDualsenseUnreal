@@ -41,7 +41,7 @@ struct FAudioConfig
 	 * Usage of this variable may influence the overall behavior, decision-making,
 	 * or output of the system it is a part of.
 	 */
-	uint8_t Mode = 0x31;
+	uint8_t Mode = 0x05;
 	/**
 	 * Represents the audio volume level for the connected headset.
 	 *
@@ -64,11 +64,11 @@ struct FAudioConfig
 	 * Default Value: 0x7C (124 in decimal), which indicates an initial medium volume level.
 	 *
 	 * It is part of the `FAudioConfig` struct, which groups all the audio-related
-	 * configurations for the device, and is applied along with other features during
-	 * HID report communication.
+	 * configurations for the Devices and is applied along with other features during
+	 * HID report communication
 	 *
 	 * Usage:
-	 * Used during DualSense device configuration and in HID report processing to
+	 * Used during DualSense Devices configuration and in HID report processing to
 	 * adjust the speaker's output level.
 	 */
 	uint8_t SpeakerVolume = 0x7C;
@@ -77,7 +77,7 @@ struct FAudioConfig
 	 * in an audio configuration. It is primarily used within the DualSense controller
 	 * audio settings system to configure and control the microphone's output level.
 	 *
-	 * Default Value: 0x7C (124 in decimal), which is assumed to be a mid-to-high level
+	 * Default Value: 0x7C (124 in decimal), which is assumed to be a mid-to-high-level
 	 * microphone volume setting.
 	 *
 	 * Usage Context:
@@ -166,7 +166,7 @@ struct FFeatureConfig
 	 * This variable can be part of configurations to promote user
 	 * comfort, power consumption management, or sensitivity adjustments.
 	 */
-	uint8_t SoftRumbleReduce = 0x00;
+	uint8_t SoftRumbleReduce = 0x01;
 	/**
 	 * Represents the softness level for the trigger component of a game controller.
 	 *
@@ -180,7 +180,7 @@ struct FFeatureConfig
 	 *   of the controller's trigger mechanism.
 	 * - Often combined with other features such as vibration or rumble effects.
 	 */
-	uint8_t TriggerSoftnessLevel = 0x00;
+	uint8_t TriggerSoftnessLevel = 0x01;
 };
 
 /**
@@ -266,7 +266,7 @@ struct FPlayerLed
 	GENERATED_BODY()
 
 	/**
-	 * @brief Represents a LED (Light Emitting Diode) control object.
+	 * @brief Represents a LED (Light-Emitting Diode) control object.
 	 *
 	 * This variable is used to encapsulate the state and behavior of a LED. It can be used to
 	 * manage the LED's on/off state, brightness, color, or other properties depending on the
@@ -313,7 +313,7 @@ struct FRumbles
 	 * @brief Represents the left-hand side position or value in a given context.
 	 *
 	 * The `Left` variable is often used to denote a position, direction, or value
-	 * that is associated with or located at the left side in a specific application
+	 * that is associated with or located at the left-side in a specific application
 	 * or system. Its exact usage and meaning may vary depending on the context
 	 * within which it is used.
 	 *
@@ -628,7 +628,7 @@ struct FOutputContext
 	 * - Mode: Defines the operational mode of the right trigger.
 	 * - Strengths: Configures active and strength zones for fine-tuned trigger behavior.
 	 *
-	 * Used primarily in functions such as:
+	 * Used primarily in functions such As
 	 * - SetHapticFeedbackValues(): To modify frequency based on specific feedback values.
 	 * - SetTriggers(): To adjust the mode and strength zones for the right trigger.
 	 *

@@ -76,9 +76,9 @@ public:
 	@param OwningSubmix	The submix object which has rendered a new buffer
 	@param AudioData		Ptr to the audio buffer
 	@param NumSamples		The number of audio samples in the audio buffer
-	@param NumChannels		The number of channels of audio in the buffer (e.g. 2 for stereo, 6 for 5.1, etc)
+	@param NumChannels		The number of channels of audio in the buffer (e.g. 2 for stereo, 6 for 5.1)
 	@param SampleRate		The sample rate of the audio buffer
-	@param AudioClock		Double audio clock value, from start of audio rendering.
+	@param AudioClock		Double audio clock value, from Start of audio rendering.
 	*/
 	virtual void OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples, int32 NumChannels, const int32 SampleRate, double AudioClock) override;
 	/**
@@ -129,4 +129,21 @@ private:
 	 their integration into various systems, including haptic feedback and input processing pipelines.
 	 */
 	FInputDeviceId DeviceId;
+	/**
+	 Variable used to maintain the state of the left channel for a low-pass filter.
+	 
+	 This state is utilized in the filtering process to ensure continuity and accuracy
+	 in audio signal processing, particularly when applying a low-pass effect for the
+	 left audio channel. It is updated dynamically as the audio processing pipeline executes.
+	 */
+	float LowPassState_Left = 0.0f;
+
+	/**
+	 A floating-point variable used to maintain the internal state of the low-pass filter for the right audio channel.
+	 
+	 This variable is utilized in audio signal processing to store the current state of the filter between processing iterations,
+	 ensuring continuity and accuracy in the filtering process. It plays a role in smoothing out high-frequency components
+	 in the right channel audio signal based on the filter's cutoff frequency.
+	 */
+	float LowPassState_Right = 0.0f;
 };

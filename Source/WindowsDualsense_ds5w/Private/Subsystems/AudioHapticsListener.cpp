@@ -20,7 +20,7 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
         const float Ratio = 3000.0f / SampleRate;
         ResamplerImpl = MakeUnique<Audio::FResampler>();
         ResamplerImpl->Init(
-            Audio::EResamplingMethod::Linear,
+            Audio::EResamplingMethod::BestSinc,
             Ratio,
             NumChannels
         );
@@ -46,6 +46,31 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
         UE_LOG(LogTemp, Warning, TEXT("OutputFramesWritten not 64 bytes! (%d)"), OutputFramesWritten);
         return;
     }
+
+	const float alpha = 0.2f;
+	const float one_minus_alpha = 0.5f - alpha;
+	
+	float* Data = ResampledAudioBuffer.GetData();
+	const int32 NumFrames = OutputFramesWritten; // Serão 64 frames
+
+	for (int32 i = 0; i < NumFrames; ++i)
+	{
+		const int32 DataIndex = i * NumChannels; // (i * 2)
+  
+		const float InLeft  = Data[DataIndex];
+		const float InRight = Data[DataIndex + 1];
+		
+		// y_lp[n] = (1 - alpha) * x[n] + alpha * y_lp[n-1]
+		LowPassState_Left  = one_minus_alpha * InLeft  + alpha * LowPassState_Left;
+		LowPassState_Right = one_minus_alpha * InRight + alpha * LowPassState_Right;
+		
+		// y_hp[n] = x[n] - y_lp[n]
+		const float OutLeft  = InLeft  - LowPassState_Left;
+		const float OutRight = InRight - LowPassState_Right;
+		
+		Data[DataIndex]     = OutLeft;
+		Data[DataIndex + 1] = OutRight;
+	}
 
     const float* ResampledData = ResampledAudioBuffer.GetData();
     TArray<int8> Packet1, Packet2;
