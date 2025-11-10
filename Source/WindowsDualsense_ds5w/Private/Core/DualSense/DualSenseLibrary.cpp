@@ -10,285 +10,21 @@
 #include "Helpers/ValidateHelpers.h"
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/PlayStationOutputComposer.h"
-#include "Core/Structs/FOutputContext.h"
-#include "HAL/IConsoleManager.h"
-
-// --- Runtime console helpers for tweaking DualSense audio haptics bytes ---
-// Allow changing HIDDeviceContexts.BufferAudio[0..9] at runtime via the in-game console.
-// Primary use: experimenting with indices 5..9 (left/right channel configs) with values 0..255.
-
-// Forward declarations (declared below)
-static void DS_HandleSetAudioByte(const TArray<FString>& Args);
-static void DS_HandleSetAudioLR(const TArray<FString>& Args);
-static void DS_HandleDumpAudioBytes(const TArray<FString>& Args);
-
-// New: trigger raw bytes overrides [10..20] and [21..31]
-static void DS_HandleSetTrigR(const TArray<FString>& Args);
-static void DS_HandleSetTrigL(const TArray<FString>& Args);
-static void DS_HandleDumpTrig(const TArray<FString>& Args);
-static void DS_HandleClearTrig(const TArray<FString>& Args);
-
-// Keep a pointer to the active device context to be used by console commands.
-// It is set in UDualSenseLibrary::InitializeLibrary and cleared in ShutdownLibrary.
-static FDeviceContext* GDS_AudioCtx = nullptr;
-
-// Console commands
-static FAutoConsoleCommand GDS_CmdSetAudioByte(
-	TEXT("ds.SetAudioByte"),
-	TEXT("Set audio haptics byte. Usage: ds.SetAudioByte <Index 0-9> <Value 0-255>"),
-	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleSetAudioByte)
-);
-
-static FAutoConsoleCommand GDS_CmdSetAudioLR(
-	TEXT("ds.SetAudioLR"),
-	TEXT("Set bytes [5..9] quickly. Usage: ds.SetAudioLR <L1> <L2> <R1> <R2> <Master> (each 0-255)"),
-	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleSetAudioLR)
-);
-
-static FAutoConsoleCommand GDS_CmdDumpAudioBytes(
-	TEXT("ds.DumpAudioBytes"),
-	TEXT("Log current audio haptics bytes [0..9]"),
-	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleDumpAudioBytes)
-);
-
-// New: commands for trigger bytes overrides
-static FAutoConsoleCommand GDS_CmdSetTrigR(
-	TEXT("ds.SetTrigR"),
-	TEXT("Define bytes HEX do gatilho direito [10..20]. Uso: ds.SetTrigR <até 10 bytes hex>  Ex.: ds.SetTrigR 22 3F 08 01"),
-	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleSetTrigR)
-);
-static FAutoConsoleCommand GDS_CmdSetTrigL(
-	TEXT("ds.SetTrigL"),
-	TEXT("Define bytes HEX do gatilho esquerdo [21..31]. Uso: ds.SetTrigL <até 10 bytes hex>  Ex.: ds.SetTrigL 22 3F 08 01"),
-	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleSetTrigL)
-);
-static FAutoConsoleCommand GDS_CmdDumpTrig(
-	TEXT("ds.DumpTrig"),
-	TEXT("Dump current trigger bytes override or built values for [10..20] and [21..31]"),
-	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleDumpTrig)
-);
-static FAutoConsoleCommand GDS_CmdClearTrig(
-	TEXT("ds.ClearTrig"),
-	TEXT("Disable trigger bytes override and return to SetTriggerEffects"),
-	FConsoleCommandWithArgsDelegate::CreateStatic(&DS_HandleClearTrig)
-);
-
-static uint8 DS_ClampByte(int32 V)
-{
-	return static_cast<uint8>(FMath::Clamp(V, 0, 255));
-}
-
-// Parses a hex token into a byte. Accepts formats like "AA", "aa", or "0xAA".
-static bool DS_ParseHexByte(const FString& Token, uint8& OutByte)
-{
-	FString S = Token.TrimStartAndEnd();
-	if (S.StartsWith(TEXT("0x"), ESearchCase::IgnoreCase))
-	{
-		S.RightChopInline(2);
-	}
-	if (S.IsEmpty()) { OutByte = 0; return false; }
-	// Validate characters are hex
-	for (int32 i = 0; i < S.Len(); ++i)
-	{
-		TCHAR C = S[i];
-		if (!((C >= '0' && C <= '9') || (C >= 'a' && C <= 'f') || (C >= 'A' && C <= 'F')))
-		{
-			OutByte = 0; return false;
-		}
-	}
-	// Manual hex parse
-	int32 Value = 0;
-	for (int32 i = 0; i < S.Len(); ++i)
-	{
-		TCHAR C = S[i];
-		int32 Nibble = 0;
-		if (C >= '0' && C <= '9') Nibble = C - '0';
-		else if (C >= 'a' && C <= 'f') Nibble = 10 + (C - 'a');
-		else if (C >= 'A' && C <= 'F') Nibble = 10 + (C - 'A');
-		Value = (Value << 4) | Nibble;
-	}
-	OutByte = DS_ClampByte(Value);
-	return true;
-}
-
-static void DS_HandleSetAudioByte(const TArray<FString>& Args)
-{
-	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[ds.SetAudioByte] Device not ready/connected"));
-		return;
-	}
-	if (Args.Num() < 2)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Usage: ds.SetAudioByte <Index 0-9> <Value 0-255>"));
-		return;
-	}
-	int32 Index = FCString::Atoi(*Args[0]);
-	int32 Value = FCString::Atoi(*Args[1]);
-	if (Index < 0 || Index > 9)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Index out of range: %d (expected 0..9)"), Index);
-		return;
-	}
-	GDS_AudioCtx->BufferAudio[Index] = DS_ClampByte(Value);
-	UE_LOG(LogTemp, Log, TEXT("Audio byte[%d] = %d"), Index, (int32)GDS_AudioCtx->BufferAudio[Index]);
-	FPlayStationOutputComposer::OutputDualSense(GDS_AudioCtx);
-}
-
-static void DS_HandleSetAudioLR(const TArray<FString>& Args)
-{
-	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[ds.SetAudioLR] Device not ready/connected"));
-		return;
-	}
-	if (Args.Num() < 5)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Usage: ds.SetAudioLR <L1> <L2> <R1> <R2> <Master> (each 0-255)"));
-		return;
-	}
-	const int32 L1 = FCString::Atoi(*Args[0]);
-	const int32 L2 = FCString::Atoi(*Args[1]);
-	const int32 R1 = FCString::Atoi(*Args[2]);
-	const int32 R2 = FCString::Atoi(*Args[3]);
-	const int32 X  = FCString::Atoi(*Args[4]);
-
-	GDS_AudioCtx->BufferAudio[5] = DS_ClampByte(L1);
-	GDS_AudioCtx->BufferAudio[6] = DS_ClampByte(L2);
-	GDS_AudioCtx->BufferAudio[7] = DS_ClampByte(R1);
-	GDS_AudioCtx->BufferAudio[8] = DS_ClampByte(R2);
-	GDS_AudioCtx->BufferAudio[9] = DS_ClampByte(X);
-
-	UE_LOG(LogTemp, Log, TEXT("Audio bytes[5..9] = %d, %d, %d, %d, %d"),
-		(int32)GDS_AudioCtx->BufferAudio[5], (int32)GDS_AudioCtx->BufferAudio[6],
-		(int32)GDS_AudioCtx->BufferAudio[7], (int32)GDS_AudioCtx->BufferAudio[8],
-		(int32)GDS_AudioCtx->BufferAudio[9]);
-
-	FPlayStationOutputComposer::OutputDualSense(GDS_AudioCtx);
-}
-
-static void DS_HandleDumpAudioBytes(const TArray<FString>& Args)
-{
-	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[ds.DumpAudioBytes] Device not ready/connected"));
-		return;
-	}
-	for (int32 i = 0; i <= 9; ++i)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Audio byte[%d] = %d"), i, (int32)GDS_AudioCtx->BufferAudio[i]);
-	}
-}
-
-static void DS_HandleSetTrigR(const TArray<FString>& Args)
-{
-	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[ds.SetTrigR] Device not ready/connected"));
-		return;
-	}
-	if (Args.Num() < 1 || Args.Num() > 10)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Uso: ds.SetTrigR <1..10 bytes HEX>  Ex.: ds.SetTrigR 22 3F 08 01"));
-		return;
-	}
-	// Zero-fill then write provided bytes
-	FMemory::Memset(GDS_AudioCtx->OverrideTriggerRight, 0, 10);
-	for (int32 i = 0; i < Args.Num() && i < 10; ++i)
-	{
-		uint8 B = 0;
-		if (!DS_ParseHexByte(Args[i], B))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Token inválido (não-HEX): %s"), *Args[i]);
-			continue;
-		}
-		GDS_AudioCtx->OverrideTriggerRight[i] = B;
-	}
-	UE_LOG(LogTemp, Log, TEXT("Right trigger override [10..20] atualizado (HEX)."));
-	GDS_AudioCtx->bOverrideTriggerBytes = true;
-	FPlayStationOutputComposer::OutputDualSense(GDS_AudioCtx);
-}
-
-static void DS_HandleSetTrigL(const TArray<FString>& Args)
-{
-	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[ds.SetTrigL] Device not ready/connected"));
-		return;
-	}
-	if (Args.Num() < 1 || Args.Num() > 10)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Uso: ds.SetTrigL <1..10 bytes HEX>  Ex.: ds.SetTrigL 22 3F 08 01"));
-		return;
-	}
-	FMemory::Memset(GDS_AudioCtx->OverrideTriggerLeft, 0, 10);
-	for (int32 i = 0; i < Args.Num() && i < 10; ++i)
-	{
-		uint8 B = 0;
-		if (!DS_ParseHexByte(Args[i], B))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Token inválido (não-HEX): %s"), *Args[i]);
-			continue;
-		}
-		GDS_AudioCtx->OverrideTriggerLeft[i] = B;
-	}
-	GDS_AudioCtx->bOverrideTriggerBytes = true;
-	UE_LOG(LogTemp, Log, TEXT("Left trigger override [21..31] atualizado (HEX)."));
-	FPlayStationOutputComposer::OutputDualSense(GDS_AudioCtx);
-}
-
-static void DS_HandleDumpTrig(const TArray<FString>& Args)
-{
-	if (!GDS_AudioCtx || !GDS_AudioCtx->IsConnected)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[ds.DumpTrig] Device not ready/connected"));
-		return;
-	}
-	uint8 R[10] = {0};
-	uint8 L[10] = {0};
-	FMemory::Memcpy(R, GDS_AudioCtx->OverrideTriggerRight, 10);
-	FMemory::Memcpy(L, GDS_AudioCtx->OverrideTriggerLeft, 10);
-	UE_LOG(LogTemp, Log, TEXT("Dumping OVERRIDE trigger bytes (HEX):"));
-	
-	FString RStr, LStr;
-	for (int32 i = 0; i < 10; ++i)
-	{
-		RStr += FString::Printf(TEXT("%02X "), (uint8)R[i]);
-		LStr += FString::Printf(TEXT("%02X "), (uint8)L[i]);
-	}
-	UE_LOG(LogTemp, Log, TEXT("R[10..19]: %s"), *RStr);
-	UE_LOG(LogTemp, Log, TEXT("L[21..30]: %s"), *LStr);
-}
-
-static void DS_HandleClearTrig(const TArray<FString>& Args)
-{
-	if (!GDS_AudioCtx)
-	{
-		return;
-	}
-	GDS_AudioCtx->bOverrideTriggerBytes = false;
-	FMemory::Memset(GDS_AudioCtx->OverrideTriggerRight, 0, 10);
-	FMemory::Memset(GDS_AudioCtx->OverrideTriggerLeft, 0, 10);
-	UE_LOG(LogTemp, Log, TEXT("Trigger overrides cleared."));
-	if (GDS_AudioCtx->IsConnected)
-	{
-		FPlayStationOutputComposer::OutputDualSense(GDS_AudioCtx);
-	}
-}
+#include "Core/Structs/OutputContext.h"
 
 bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
 	HIDDeviceContexts = Context;
-	GDS_AudioCtx = &HIDDeviceContexts;
 	if (HIDDeviceContexts.ConnectionType == Bluetooth)
 	{
 		FOutputContext* EnableReport = &HIDDeviceContexts.Output;
-		EnableReport->Feature.FeatureMode = 0b11110010;
+		// Set flags to enable control over the lightbar, player LEDs
+		EnableReport->Feature.FeatureMode = 0b10000111;
 		EnableReport->Lightbar = {0, 0, 0};
 		EnableReport->PlayerLed.Brightness = 0x00;
 		SendOut();
 
-		FPlatformProcess::Sleep(0.01f);
+		FPlatformProcess::Sleep(0.1f);
 		HIDDeviceContexts.BufferAudio[0]  = 0x32;
 		HIDDeviceContexts.BufferAudio[1]  = 0x00;
 		HIDDeviceContexts.BufferAudio[2]  = 0x91;
@@ -312,8 +48,6 @@ void UDualSenseLibrary::ShutdownLibrary()
 {
 	ButtonStates.Reset();
 	FPlayStationOutputComposer::FreeContext(&HIDDeviceContexts);
-	// Stop exposing the context to console commands
-	GDS_AudioCtx = nullptr;
 }
 
 bool UDualSenseLibrary::IsConnected()
@@ -349,7 +83,7 @@ void UDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 	HidOutput->Audio.MicVolume = static_cast<uint8>(Settings.MicVolume);
 	HidOutput->Audio.HeadsetVolume = static_cast<uint8>(Settings.AudioVolume);
 	HidOutput->Audio.SpeakerVolume = static_cast<uint8>(Settings.AudioVolume);
-	HidOutput->Audio.Mode = 0x05;
+	HidOutput->Audio.Mode = 0x08;
 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::On && Settings.AudioSpeaker ==
 		EDualSenseAudioFeatureReport::Off)
 	{
@@ -869,8 +603,32 @@ void UDualSenseLibrary::SetAutomaticGun(int32 BeginStrength, int32 MiddleStrengt
 	SendOut();
 }
 
+void UDualSenseLibrary::SetGameCube ( const EControllerHand & Hand )
+{
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->LeftTrigger.Mode = 0x02;
+		HidOutput->LeftTrigger.Strengths.Compose[0] = 0x90;
+		HidOutput->LeftTrigger.Strengths.Compose[1] = 0x0a;
+		HidOutput->LeftTrigger.Strengths.Compose[2] = 0xff;
+	}
+
+	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->RightTrigger.Mode = 0x02;
+		HidOutput->RightTrigger.Strengths.Compose[0] = 0x90;
+		HidOutput->RightTrigger.Strengths.Compose[1] = 0x0a;
+		HidOutput->RightTrigger.Strengths.Compose[2] = 0xff;
+	}
+	
+	SendOut();
+}
+
 void UDualSenseLibrary::SetContinuousResistance(int32 StartPosition, int32 Strength, const EControllerHand& Hand)
 {
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
@@ -959,23 +717,39 @@ void UDualSenseLibrary::SetWeapon(int32 StartPosition, int32 EndPosition, int32 
 void UDualSenseLibrary::SetGalloping(int32 StartPosition, int32 EndPosition, int32 FirstFoot, int32 SecondFoot,
                                      float Frequency, const EControllerHand& Hand)
 {
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	const uint32_t ActiveZones = (1 << StartPosition) | (1 << EndPosition);
-	const uint32_t TimeAndRatio = (SecondFoot & 0x07) << (3 * 0) | (FirstFoot & 0x07);
+
+	const uint8 FirstFootNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((FirstFoot / 8.0f) * 15.0f), 1, 15));
+	const uint8 SecondFootNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((SecondFoot / 8.0f) * 15.0f), 1, 15));
+
+	int8 KeepEffect = 0;
+	if (EndPosition >= 8)
+	{
+		KeepEffect = 1;
+	}
+
+	if (EndPosition >= 9)
+	{
+		KeepEffect = 2;
+	}
+	
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->LeftTrigger.Mode = 0x23;
-		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
-		HidOutput->LeftTrigger.Strengths.TimeAndRatio = TimeAndRatio;
-		HidOutput->LeftTrigger.Frequency = FValidateHelpers::To255(Frequency);
+		HidOutput->LeftTrigger.Strengths.Compose[0] = (1 << StartPosition) | (1 << EndPosition);
+		HidOutput->LeftTrigger.Strengths.Compose[1] = KeepEffect;
+		HidOutput->LeftTrigger.Strengths.Compose[2] = ((FirstFootNib & 0x0F) << 4) | (SecondFootNib & 0x0F);
+		HidOutput->LeftTrigger.Strengths.Compose[3] = static_cast <uint8> (Frequency);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->RightTrigger.Mode = 0x23;
-		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
-		HidOutput->RightTrigger.Strengths.TimeAndRatio = TimeAndRatio;
-		HidOutput->RightTrigger.Frequency = FValidateHelpers::To255(Frequency);
+		HidOutput->RightTrigger.Strengths.Compose[0] = (1 << StartPosition) | (1 << EndPosition);
+		HidOutput->RightTrigger.Strengths.Compose[1] = KeepEffect;
+		HidOutput->RightTrigger.Strengths.Compose[2] = ((FirstFootNib & 0x0F) << 4) | (SecondFootNib & 0x0F);
+		HidOutput->RightTrigger.Strengths.Compose[3] = static_cast <uint8> (Frequency);
 	}
 
 	SendOut();
@@ -986,7 +760,6 @@ void UDualSenseLibrary::SetMachine(int32 StartPosition, int32 EndPosition, int32
                                    const EControllerHand& Hand)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	const uint32_t ActiveZones = ((1 << StartPosition) | (1 << EndPosition));
 	const uint32_t Strengths = (((AmplitudeBegin & 0x07) << (3 * 0)) | ((AmplitudeEnd & 0x07) << (3 * 1)));
 
 	if (Period < 0.0f || Period > 3.f)
@@ -997,7 +770,7 @@ void UDualSenseLibrary::SetMachine(int32 StartPosition, int32 EndPosition, int32
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->LeftTrigger.Mode = 0x27;
-		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
+		HidOutput->LeftTrigger.Strengths.Compose[0] = ((1 << StartPosition) | (1 << EndPosition));
 		HidOutput->LeftTrigger.Strengths.StrengthZones = Strengths;
 		HidOutput->LeftTrigger.Strengths.Period = FValidateHelpers::To255(Period);
 		HidOutput->LeftTrigger.Frequency = FValidateHelpers::To255(Frequency);
@@ -1006,7 +779,7 @@ void UDualSenseLibrary::SetMachine(int32 StartPosition, int32 EndPosition, int32
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->RightTrigger.Mode = 0x27;
-		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
+		HidOutput->RightTrigger.Strengths.Compose[0] = ((1 << StartPosition) | (1 << EndPosition));
 		HidOutput->RightTrigger.Strengths.StrengthZones = Strengths;
 		HidOutput->RightTrigger.Strengths.Period = FValidateHelpers::To255(Period);
 		HidOutput->RightTrigger.Frequency = FValidateHelpers::To255(Frequency);
@@ -1015,24 +788,27 @@ void UDualSenseLibrary::SetMachine(int32 StartPosition, int32 EndPosition, int32
 	SendOut();
 }
 
-void UDualSenseLibrary::SetBow(int32 StartPosition, int32 EndPosition, int32 BegingStrength, int32 EndStrength,
-                               const EControllerHand& Hand)
+void UDualSenseLibrary::SetBow(int32 StartPosition, int32 EndPosition, int32 BegingStrength, int32 EndStrength, const EControllerHand& Hand)
 {
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	const uint32_t ActiveZones = ((1 << StartPosition) | (1 << EndPosition));
-	const uint32_t Strengths = ((((BegingStrength - 1) & 0x07) << (3 * 0)) | (((EndStrength - 1) & 0x07) << (3 * 1)));
+
+	const uint8 ResistanceNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((BegingStrength / 8.0f) * 15.0f), 1, 15));
+	const uint8 SnapNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((EndStrength / 8.0f) * 15.0f), 1, 15));
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->LeftTrigger.Mode = 0x22;
-		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
-		HidOutput->LeftTrigger.Strengths.StrengthZones = Strengths;
+		HidOutput->LeftTrigger.Strengths.Compose[0] = (1 << StartPosition) | 0x02;
+		HidOutput->LeftTrigger.Strengths.Compose[1] = EndPosition == 8 ? 0x01 : 0x00;
+		HidOutput->LeftTrigger.Strengths.Compose[2] = (ResistanceNib & 0x0F) << 4 | (SnapNib & 0x0F);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->RightTrigger.Mode = 0x22;
-		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
-		HidOutput->RightTrigger.Strengths.StrengthZones = Strengths;
+		HidOutput->RightTrigger.Strengths.Compose[0] = (1 << StartPosition) | 0x02;
+		HidOutput->RightTrigger.Strengths.Compose[1] = EndPosition == 8 ? 0x01 : 0x00;
+		HidOutput->RightTrigger.Strengths.Compose[2] = (ResistanceNib & 0x0F) << 4 | (SnapNib & 0x0F);
 	}
 
 	SendOut();

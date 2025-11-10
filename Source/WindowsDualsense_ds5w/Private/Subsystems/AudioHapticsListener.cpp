@@ -5,7 +5,7 @@
 #include "../../Public/Subsystems/AudioHapticsListener.h"
 #include "Core/DeviceRegistry.h"
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
-#include "Core/Structs/FDualSenseFeatureReport.h"
+#include "Core/Structs/DualSenseFeatureReport.h"
 
 FAudioHapticsListener::FAudioHapticsListener(FInputDeviceId InDeviceId, USoundSubmix* InSubmix) : Submix(InSubmix), DeviceId(InDeviceId)
 {

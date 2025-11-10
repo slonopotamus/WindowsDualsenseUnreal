@@ -7,7 +7,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
-#include "Core/Structs/FDualShockFeatureReport.h"
+#include "Core/Structs/DualShockFeatureReport.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "DualShockLibrary.generated.h"
 
@@ -20,6 +20,8 @@ class WINDOWSDUALSENSE_DS5W_API UDualShockLibrary : public UObject, public ISony
 	GENERATED_BODY()
 
 public:
+	// Expose nullptr for direct buffer access (not supported on DS4)
+	virtual FDeviceContext* GetMutableDeviceContext() override { return nullptr; }
 	/**
 	 * @brief Configures device settings for a connected device.
 	 *

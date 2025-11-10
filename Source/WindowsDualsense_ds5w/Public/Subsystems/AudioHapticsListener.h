@@ -8,7 +8,7 @@
 #include "AudioResampler.h"
 #include "ISubmixBufferListener.h"
 #include "Containers/Queue.h"
-#include "Core/Structs/FDeviceContext.h"
+#include "Core/Structs/DeviceContext.h"
 
 /**
  Class responsible for handling audio submix buffers and preparing audio data for haptic feedback systems.

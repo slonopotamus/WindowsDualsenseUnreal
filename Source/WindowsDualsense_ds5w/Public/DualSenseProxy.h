@@ -9,7 +9,7 @@
 #include "SonyGamepadProxy.h"
 #include "Core/HapticsRegistry.h"
 #include "Core/Enums/EDeviceCommons.h"
-#include "Core/Structs/FDualSenseFeatureReport.h"
+#include "Core/Structs/DualSenseFeatureReport.h"
 #include "DualSenseProxy.generated.h"
 
 /**
@@ -81,6 +81,12 @@ public:
 		EControllerHand Hand,
 		bool KeepEffect,
 		float Frequency = 0.05f
+	);
+
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
+	static void GameCube(
+		int32 ControllerId,
+		EControllerHand Hand
 	);
 
 	/**
@@ -192,13 +198,13 @@ public:
 		int32 ControllerId,
 		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 StartPosition,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+		UPARAM(meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
 		int32 EndPosition,
-		UPARAM(DisplayName = "First Foot min: 2 max: 6", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+		UPARAM(DisplayName = "First Foot min: 2 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 FirstFoot,
-		UPARAM(DisplayName = "Second Foot min: (Greater FirstFoot) max: 7", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+		UPARAM(DisplayName = "Second Foot min: (Greater FirstFoot) max: 9", meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
 		int32 SecondFoot,
-		UPARAM(DisplayName = "Frequency Example: 0.015", meta = (ClampMin = "0.001", ClampMax = "1.0", UIMin = "0.001", UIMax = "1.0"))
+		UPARAM(DisplayName = "Frequency Example: 5.0", meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
 		float Frequency,
 		EControllerHand Hand
 	);

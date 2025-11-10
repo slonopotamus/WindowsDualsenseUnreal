@@ -5,7 +5,7 @@
 
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
-#include "Core/Structs/FDeviceContext.h"
+#include "Core/Structs/DeviceContext.h"
 
 const uint32 FPlayStationOutputComposer::CRCSeed = 0xeada2d49;
 
@@ -79,7 +79,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 	Output[7] = HidOut->Audio.Mode;
 	Output[9] = HidOut->Audio.MicStatus;
 	Output[8] = HidOut->MicLight.Mode;
-	Output[36] = (HidOut->Feature.TriggerSoftnessLevel << 4) | (HidOut->Feature.SoftRumbleReduce & 0x0F);
+	Output[36] = (HidOut->Feature.TriggerSoftnessLevel << 4) | HidOut->Feature.SoftRumbleReduce & 0x0F;
 	Output[38] = 0x07;
 	Output[41] = 0x02;
 	Output[42] = HidOut->PlayerLed.Brightness;
@@ -96,7 +96,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 	else
 	{
 		SetTriggerEffects(&Output[10], HidOut->RightTrigger);
-		SetTriggerEffects(&Output[21], HidOut->LeftTrigger);
+		SetTriggerEffects(&Output[21], HidOut->LeftTrigger);	
 	}
 	if (DeviceContext->ConnectionType == Bluetooth)
 	{
@@ -120,13 +120,6 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x2] = ((Effect.Strengths.StrengthZones >> 0) & 0xFF);
 	}
 	
-	if (Effect.Mode == 0x02) // Sample Bow
-	{
-		Trigger[0x1] = ((Effect.Strengths.ActiveZones >> 0) & 0xFF);
-		Trigger[0x2] = ((Effect.Strengths.ActiveZones >> 8) & 0xFF);
-		Trigger[0x3] = ((Effect.Strengths.StrengthZones >> 8) & 0xFF);
-	}
-	
 	if (Effect.Mode == 0x21) // Resistance
 	{
 		const uint64_t LeftTriggerStrengthZones = Effect.Strengths.StrengthZones;
@@ -138,20 +131,30 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x6] = ((LeftTriggerStrengthZones >> 24) & 0xFF);
 	}
 	
-	if (Effect.Mode == 0x22) // Bow
+	if (Effect.Mode == 0x22 || Effect.Mode == 0x02) // Bow
 	{
-		Trigger[0x1] = ((Effect.Strengths.ActiveZones >> 0) & 0xFF);
-		Trigger[0x2] = ((Effect.Strengths.ActiveZones >> 8) & 0xFF);
-		Trigger[0x3] = ((Effect.Strengths.StrengthZones >> 0) & 0xFF);
-		Trigger[0x4] = ((Effect.Strengths.StrengthZones >> 8) & 0xFF);
+		Trigger[0x1] = Effect.Strengths.Compose[0];
+		Trigger[0x2] = Effect.Strengths.Compose[1];
+		Trigger[0x3] = Effect.Strengths.Compose[2];
+		Trigger[0x4] = 0x0;
+		Trigger[0x5] = 0x0;
+		Trigger[0x6] = 0x0;
+		Trigger[0x7] = 0x0;
+		Trigger[0x8] = 0x0;
+		Trigger[0x9] = 0x0;
 	}
 	
 	if (Effect.Mode == 0x23) // Gallopping
 	{
-		Trigger[0x1] = (Effect.Strengths.ActiveZones >> 0) & 0xFF;
-		Trigger[0x2] = (Effect.Strengths.ActiveZones >> 8) & 0xFF;
-		Trigger[0x3] = (Effect.Strengths.TimeAndRatio) & 0xFF;
-		Trigger[0x4] = Effect.Frequency;
+		Trigger[0x1] = Effect.Strengths.Compose[0];
+		Trigger[0x2] = Effect.Strengths.Compose[1];
+		Trigger[0x3] = Effect.Strengths.Compose[2];
+		Trigger[0x4] = Effect.Strengths.Compose[3];
+		Trigger[0x5] = 0x00;
+		Trigger[0x6] = 0x00;
+		Trigger[0x7] = 0x00;
+		Trigger[0x8] = 0x00;
+		Trigger[0x9] = 0x00;
 	}
 	
 	if (Effect.Mode == 0x25) // Weapon

@@ -13,15 +13,10 @@
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Core/Enums/EDeviceCommons.h"
-#include "Core/Structs/FDeviceContext.h"
-#include "Core/Structs/FDeviceSettings.h"
-#include "Core/Structs/FDualSenseFeatureReport.h"
+#include "Core/Structs/DeviceContext.h"
+#include "Core/Structs/DeviceSettings.h"
+#include "Core/Structs/DualSenseFeatureReport.h"
 #include "Containers/Queue.h"
-#include "HAL/ThreadSafeBool.h"
-// extra headers for queue/worker primitives
-#include "HAL/CriticalSection.h"
-#include "HAL/Event.h"
-#include "Async/Future.h"
 #include <atomic>
 #include "DualSenseLibrary.generated.h"
 
@@ -313,6 +308,8 @@ class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISony
 	GENERATED_BODY()
 	
 public:
+	// Expose device context for command-line helper operations
+	virtual FDeviceContext* GetMutableDeviceContext() override { return &HIDDeviceContexts; }
 	/**
 	 * @brief Configures device settings for a connected device.
 	 *
@@ -471,6 +468,8 @@ public:
 	 */
 	virtual void SetAutomaticGun(int32 BeginStrength, int32 MiddleStrength, int32 EndStrength,
 	                             const EControllerHand& Hand, bool KeepEffect, float Frequency) override;
+
+	virtual void SetGameCube(const EControllerHand& Hand) override;
 
 	/**
 	 * Configures the adaptive trigger on a DualSense controller to apply continuous resistance.
@@ -784,7 +783,13 @@ private:
 	 * When set to false, touch input is disabled, and touch interactions are ignored.
 	 */
 	bool bEnableTouch;
+	/**
+	 *
+	 */
 	bool bWasTouch1Down;
+	/**
+	 *
+	 */
 	bool bWasTouch2Down;
 	/**
 	 * Indicates whether a phone is connected to the system.

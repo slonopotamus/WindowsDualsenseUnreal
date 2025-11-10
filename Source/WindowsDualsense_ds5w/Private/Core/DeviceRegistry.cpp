@@ -10,8 +10,8 @@
 #include "Core/DualShock/DualShockLibrary.h"
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "GameFramework/InputSettings.h"
-#include "Core/Structs/FDeviceContext.h"
-#include "Core/Structs/FOutputContext.h"
+#include "Core/Structs/DeviceContext.h"
+#include "Core/Structs/OutputContext.h"
 #include "Runtime/Launch/Resources/Version.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 

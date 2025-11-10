@@ -23,9 +23,9 @@ using FPlatformDeviceHandle = void*;
 #endif
 
 #include "CoreMinimal.h"
-#include "FOutputContext.h"
+#include "OutputContext.h"
 #include "Core/Enums/EDeviceConnection.h"
-#include "FDeviceContext.generated.h"
+#include "DeviceContext.generated.h"
 
 /**
  * @brief Represents the context and state of a connected device.

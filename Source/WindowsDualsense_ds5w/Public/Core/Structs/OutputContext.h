@@ -5,7 +5,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FOutputContext.generated.h"
+#include "OutputContext.generated.h"
 
 /**
  * @class FAudioConfig
@@ -380,6 +380,11 @@ struct FStrengths
 	 * allowing customization of haptic feedback for different trigger modes.
 	 */
 	uint64_t StrengthZones = 0;
+
+	/**
+	 *
+	 */
+	unsigned char Compose[9] = {0};
 };
 
 /**
@@ -401,7 +406,6 @@ USTRUCT()
 struct FHapticTriggers
 {
 	GENERATED_BODY()
-
 	/**
 	 * @brief This function initializes the configuration settings required for the application.
 	 *

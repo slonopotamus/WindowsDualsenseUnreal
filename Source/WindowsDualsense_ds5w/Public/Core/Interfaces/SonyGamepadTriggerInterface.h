@@ -108,11 +108,12 @@ public:
 	 *
 	 * @param StartPosition The starting position of the bow tension effect on the trigger.
 	 * @param EndPosition The ending position of the bow tension effect on the trigger.
-	 * @param BegingStrength The intensity of the bow tension effect at the starting position.
-	 * @param EndStrength The intensity of the bow tension effect at the ending position.
+	 * @param BegingStrength The intensity of the bow tension `Resistance` effect at the starting position.
+	 * @param EndStrength The intensity of the bow tension `SnapForce` effect at the ending position.
 	 * @param Hand The controller hand to which the bow effect will be applied.
 	 */
 	virtual void SetBow(int32 StartPosition, int32 EndPosition, int32 BegingStrength, int32 EndStrength, const EControllerHand& Hand) = 0;
+	virtual void SetGameCube(const EControllerHand& Hand) = 0;
 	/**
 	 * Disables the trigger effects on a gamepad for the specified controller hand.
 	 *

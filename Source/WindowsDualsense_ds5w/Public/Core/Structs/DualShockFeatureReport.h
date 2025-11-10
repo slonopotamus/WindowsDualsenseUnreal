@@ -6,7 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
-#include "FDualShockFeatureReport.generated.h"
+#include "DualShockFeatureReport.generated.h"
 
 /**
  * @brief Represents the feature report for DualShock gamepad devices using the Sony gamepad interface.

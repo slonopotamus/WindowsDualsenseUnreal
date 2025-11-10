@@ -7,8 +7,8 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Core/Enums/EDeviceCommons.h"
-#include "Core/Structs/FDeviceContext.h"
-#include "Core/Structs/FDeviceSettings.h"
+#include "Core/Structs/DeviceContext.h"
+#include "Core/Structs/DeviceSettings.h"
 #include "InputCoreTypes.h"
 #include "Misc/CoreDelegates.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
@@ -40,6 +40,11 @@ class WINDOWSDUALSENSE_DS5W_API ISonyGamepadInterface
 	GENERATED_BODY()
 
 public:
+	/**
+	 * Provides access to the underlying mutable device context for low-level operations.
+	 * Note: For advanced/console usage only. May return nullptr if not available.
+	 */
+	virtual FDeviceContext* GetMutableDeviceContext() = 0;
 	/**
 	 * Pure virtual function that checks the connection status of the gamepad.
 	 *

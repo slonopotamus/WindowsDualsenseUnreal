@@ -32,7 +32,7 @@ public:
 	 * @param Position The position value to validate.
 	 * @return True if the position is within the valid range, false otherwise.
 	 */
-	static bool ValidateMaxPosition(const int32 Position);
+	static bool ValidateMaxPosition(const int32 Positio, const int32 MaxPosition = 8, const int32 MinPosition = 1);
 
 	/**
 	 * Validates if the given frequency value is within the allowable range.

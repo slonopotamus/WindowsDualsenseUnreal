@@ -138,6 +138,22 @@ void UDualSenseProxy::AutomaticGun(int32 ControllerId, int32 BeginStrength, int3
 	Gamepad->SetAutomaticGun(BeginStrength, MiddleStrength, EndStrength, Hand, KeepEffect, Frequency);
 }
 
+void UDualSenseProxy::GameCube ( int32 ControllerId , EControllerHand Hand )
+{
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+	
+	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
+	if (!Gamepad)
+	{
+		return;
+	}
+	Gamepad->SetGameCube (Hand);
+}
+
 void UDualSenseProxy::ContinuousResistance(int32 ControllerId, int32 StartPosition, int32 Strength, EControllerHand Hand)
 {
 	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 0;
@@ -162,10 +178,10 @@ void UDualSenseProxy::Galloping(
 	int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
                                 int32 SecondFoot, float Frequency, EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 0;
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(FirstFoot)) FirstFoot = 2;
-	if (!FValidateHelpers::ValidateMaxPosition(SecondFoot)) SecondFoot = 7;
+	if (!FValidateHelpers::ValidateMaxPosition(StartPosition, 8, 1)) StartPosition = 1;
+	if (!FValidateHelpers::ValidateMaxPosition(EndPosition, 9, StartPosition+1)) EndPosition = 9;
+	if (!FValidateHelpers::ValidateMaxPosition(FirstFoot, 8)) FirstFoot = 1;
+	if (!FValidateHelpers::ValidateMaxPosition(SecondFoot, 9, FirstFoot+1)) SecondFoot = 9;
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -185,10 +201,15 @@ void UDualSenseProxy::Galloping(
 void UDualSenseProxy::Machine(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
                               int32 LasFoot, float Frequency, float Period, EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 0;
+	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 2;
+	if (StartPosition < 2)
+	{
+		StartPosition = 2;
+	}
+	
 	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 8;
 	if (!FValidateHelpers::ValidateMaxPosition(FirstFoot)) FirstFoot = 1;
-	if (!FValidateHelpers::ValidateMaxPosition(LasFoot)) LasFoot = 7;
+	if (!FValidateHelpers::ValidateMaxPosition(LasFoot)) LasFoot = 8;
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -230,9 +251,9 @@ void UDualSenseProxy::Weapon(int32 ControllerId, int32 StartPosition, int32 EndP
 void UDualSenseProxy::Bow(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 BeginStrength, int32 EndStrength,
                           EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 0;
+	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 2;
+	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength)) BeginStrength = 8;
 	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength)) BeginStrength = 0;
 	if (!FValidateHelpers::ValidateMaxPosition(EndStrength)) EndStrength = 8;
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);

@@ -5,12 +5,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Core/Structs/FDeviceContext.h"
-
-static constexpr uint8 REPORT_ID = 0x32;
-static constexpr size_t SAMPLE_SIZE = 64; // 64
-static constexpr uint8 PID_HDR = 0x11;
-static constexpr uint8 PID_AUDIO = 0x12;
+#include "Core/Structs/DeviceContext.h"
 
 /**
  * @class FPlayStationOutputComposer

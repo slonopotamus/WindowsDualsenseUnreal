@@ -7,7 +7,7 @@
 #include "CoreMinimal.h"
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
-#include "FDualSenseFeatureReport.generated.h"
+#include "DualSenseFeatureReport.generated.h"
 
 /**
  * Represents the DualSense Feature Report struct, managing various

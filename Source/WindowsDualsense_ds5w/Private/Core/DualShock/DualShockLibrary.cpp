@@ -10,7 +10,7 @@
 #include "Helpers/ValidateHelpers.h"
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
-#include "Core/Structs/FOutputContext.h"
+#include "Core/Structs/OutputContext.h"
 
 void UDualShockLibrary::Settings(const FSettings<FFeatureReport>& Settings)
 {
