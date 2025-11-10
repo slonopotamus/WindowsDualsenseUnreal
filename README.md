@@ -206,4 +206,5 @@ A special thanks as well to the Epic Games team for creating and providing the *
 * [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db)
 * [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master)
 * [flok pydualsense](https://github.com/flok/pydualsense)
+* [SAxense](https://github.com/egormanga/SAxense)
 
