@@ -10,6 +10,7 @@
 #include "Helpers/ValidateHelpers.h"
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/PlayStationOutputComposer.h"
+#include "Core/Algorithms/MadgwickAhrs.h"
 #include "Core/Structs/OutputContext.h"
 
 bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
@@ -435,23 +436,73 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 			Acc.Z = FinalAccelValueZ;
 		}
 		
-		FRotator GyroDelta(
-			Gyro.X * Delta,
-				Gyro.Z * Delta,
-				Gyro.Y * Delta
-			);
-		FQuat GyroBasedOrientation = FusedOrientation * GyroDelta.Quaternion();
-		FVector AccelDirection = FVector(Acc.X ,  Acc.Z, Acc.Y).GetSafeNormal();
-		FQuat AccelBasedOrientation = AccelDirection.ToOrientationQuat();
-		FusedOrientation = FQuat::Slerp(AccelBasedOrientation, GyroBasedOrientation,  0.98f);
-		const FRotator FusedOrientationRotator = FusedOrientation.Rotator();
-		const FVector Tilt = FVector( FusedOrientationRotator.Pitch, FusedOrientationRotator.Yaw, FusedOrientationRotator.Roll);
-			
+		// ---------- REPLACED: Complementary Slerp fusion  ----------
+		// We now use the Madgwick AHRS (IMU-only) and feed it with values
+		// converted from raw counts to SI using the official DS constants.
+		// The Madgwick instance and initialization are static locals so that
+		// we don't need to change the class header right away.
+
+		static FMadgwickAhrs MadgwickFilter(200.0f, 0.08f);
+		static bool bMadgwickInitialized = false;
+
+		// Official PlayStation DualSense scaling constants (from kernel driver)
+		constexpr float DS_ACC_RES_PER_G = 8192.0f;                 // counts per 1 g
+		constexpr float DS_GYRO_RES_PER_DEG_S = 1024.0f;           // counts per 1 deg/s
+		constexpr float G_TO_MS2 = 9.80665f;
+		constexpr float DEG2RAD = 3.14159265358979323846f / 180.0f;
+
+		// Convert gyro raw (counts) -> deg/s -> rad/s
+		float gx_dps = static_cast<float>(Gyro.X) / DS_GYRO_RES_PER_DEG_S;
+		float gy_dps = static_cast<float>(Gyro.Y) / DS_GYRO_RES_PER_DEG_S;
+		float gz_dps = static_cast<float>(Gyro.Z) / DS_GYRO_RES_PER_DEG_S;
+
+		float gx = gx_dps * DEG2RAD; // rad/s
+		float gy = gy_dps * DEG2RAD;
+		float gz = gz_dps * DEG2RAD;
+
+		// Convert accel raw -> g -> m/s^2
+		float ax_g = static_cast<float>(Acc.X) / DS_ACC_RES_PER_G;
+		float ay_g = static_cast<float>(Acc.Y) / DS_ACC_RES_PER_G;
+		float az_g = static_cast<float>(Acc.Z) / DS_ACC_RES_PER_G;
+
+		float ax = ax_g * G_TO_MS2;
+		float ay = ay_g * G_TO_MS2;
+		float az = az_g * G_TO_MS2;
+
+		// Initialize Madgwick on first run (sample freq estimated from Delta)
+		if (!bMadgwickInitialized)
+		{
+			const float safeDt = FMath::Max(Delta, 0.001f);
+			MadgwickFilter.SetSampleFreq(1.0f / safeDt);
+			MadgwickFilter.SetBeta(0.08f); // default, tune if needed
+			bMadgwickInitialized = true;
+		}
+
+		// Update Madgwick filter (IMU-only)
+		MadgwickFilter.UpdateImu(gx, gy, gz, ax, ay, az, Delta);
+
+		// Extract Euler angles (rad)
+		float roll_rad = 0.0f, pitch_rad = 0.0f, yaw_rad = 0.0f;
+		MadgwickFilter.GetEuler(roll_rad, pitch_rad, yaw_rad);
+
+		// Compose Tilt vector using same layout your code used before (Pitch, Yaw, Roll) in degrees
+		const FVector Tilt = FVector(FMath::RadiansToDegrees(pitch_rad),
+		                             FMath::RadiansToDegrees(yaw_rad),
+		                             FMath::RadiansToDegrees(roll_rad));
+
+		// Keep the same output vectors you already used elsewhere
 		const FVector Gyroscope = FVector(Gyro.X, Gyro.Z, Gyro.Y);
 		const FVector Accelerometer = FVector(Acc.X, Acc.Z, Acc.Y);
-		const float GravityMagnitude = FVector(Acc.X, Acc.Z, Acc.Y).Size();
-		const FVector Gravity = (FVector(Acc.X, Acc.Z, Acc.Y) / GravityMagnitude) * 9.81f;
-		InMessageHandler.Get().OnMotionDetected(Tilt, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
+
+		// Compute gravity using scaled accelerometer, mapping axes same as original code (X,Z,Y)
+		{
+			FVector Accel_MS2 = FVector(ax, az, ay); // note mapping consistent with previous code
+			const float GravityMagnitude = Accel_MS2.Size();
+			FVector Gravity = (GravityMagnitude > KINDA_SMALL_NUMBER) ? (Accel_MS2 / GravityMagnitude) * G_TO_MS2 : FVector::ZeroVector;
+
+			InMessageHandler.Get().OnMotionDetected(Tilt, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
+		}
+		// ---------- END Madgwick replacement ----------
 	}
 
 	SetHasPhoneConnected(HIDInput[0x35] & 0x01);
@@ -983,4 +1034,61 @@ void UDualSenseLibrary::SetLevelBattery(const float Level, bool FullyCharged, bo
 		return;
 	}
 	LevelBattery = Level;
+}
+
+void UDualSenseLibrary::CustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes)
+{
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
+	FOutputContext* OutBuffer = &HIDDeviceContexts.Output;
+
+	uint8 Bytes[10] = {0};
+	for (int32 i = 0; i < 10; ++i)
+	{
+		uint8 B = 0;
+		if (!FValidateHelpers::ParseHexByte_Local(HexBytes[i], B))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("CustomTrigger: invalid hex token at index %d: '%s'"), i, *HexBytes[i]);
+			return;
+		}
+		Bytes[i] = B;
+	}
+
+	bool bIsValid;
+	switch (Bytes[0])
+	{
+		case 0x01:
+		case 0x02:
+		case 0x21:
+		case 0x22:
+		case 0x23:
+		case 0x25:
+		case 0x26:
+		case 0x27:
+			bIsValid = true;
+			break;
+		default:
+			bIsValid = false;
+	}
+
+	if (!bIsValid)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CustomTrigger: invalid hex token at index %d: '%s'"), 0, *HexBytes[0]);
+		return;
+	}
+	
+	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+	{
+		OutBuffer->LeftTrigger.Mode = 0xFF;
+		FMemory::Memset(OutBuffer->LeftTrigger.Strengths.Compose, 0, 10);
+		FMemory::Memcpy(OutBuffer->LeftTrigger.Strengths.Compose, Bytes, 10);
+	}
+
+	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+	{
+		OutBuffer->RightTrigger.Mode = 0xFF;
+		FMemory::Memset(OutBuffer->RightTrigger.Strengths.Compose, 0, 10);
+		FMemory::Memcpy(OutBuffer->RightTrigger.Strengths.Compose, Bytes, 10);
+	}
+	
+	SendOut();
 }

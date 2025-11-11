@@ -12,6 +12,7 @@
 #include "Core/Structs/DualSenseFeatureReport.h"
 #include "DualSenseProxy.generated.h"
 
+
 /**
  * @brief Proxy class for PlayStation DualSense controller interactions and effects.
  *
@@ -78,15 +79,44 @@ public:
 		int32 MiddleStrength,
 		UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 EndStrength,
+		
 		EControllerHand Hand,
 		bool KeepEffect,
 		float Frequency = 0.05f
 	);
 
-	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
+	/**
+	 * @brief Sets the GameCube trigger effect for the specified controller and hand.
+	 *
+	 * This method applies the preconfigured GameCube trigger effect to a connected DualSense
+	 * controller using the specified controller ID and hand designation.
+	 *
+	 * @param ControllerId The identifier for the DualSense controller to target.
+	 * @param Hand Specifies which hand (left or right) the effect should be applied to.
+	 */
+	UFUNCTION (BlueprintCallable, Category = "DualSense Effects")
 	static void GameCube(
 		int32 ControllerId,
+		
 		EControllerHand Hand
+	);
+
+	/**
+	 * @brief Configures custom trigger effects for a PlayStation DualSense controller.
+	 *
+	 * This method allows customization of the trigger input by defining a sequence of hexadecimal
+	 * byte strings. It communicates with the controller to apply the specified trigger effect patterns.
+	 *
+	 * @param ControllerId The ID of the controller to configure.
+	 * @param Hand Specifies which hand (left or right) the controller is associated with.
+	 * @param HexBytes An array of hexadecimal byte strings representing the desired trigger configuration.
+	 *                 Maximum of 10 byte strings is permitted.
+	 */
+	UFUNCTION (BlueprintCallable, Category = "DualSense Effects")
+	static void CustomTrigger(
+		int32 ControllerId,
+		EControllerHand Hand,
+		const TArray<FString>& HexBytes
 	);
 
 	/**
@@ -107,6 +137,7 @@ public:
 		int32 MiddleStrength,
 		UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 EndStrength,
+		
 		EControllerHand Hand
 	);
 
@@ -132,6 +163,7 @@ public:
 		int32 EndPosition,
 		UPARAM(DisplayName = "Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 Strength,
+		
 		EControllerHand Hand
 	);
 
@@ -150,6 +182,7 @@ public:
 		int32 StartPosition,
 		UPARAM(DisplayName = "Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 Strength,
+		
 		EControllerHand Hand
 	);
 
@@ -174,6 +207,7 @@ public:
 		int32 BeginStrength,
 		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 EndStrength,
+		
 		EControllerHand Hand
 	);
 
@@ -206,6 +240,7 @@ public:
 		int32 SecondFoot,
 		UPARAM(DisplayName = "Frequency Example: 5.0", meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
 		float Frequency,
+		
 		EControllerHand Hand
 	);
 
@@ -236,6 +271,7 @@ public:
 		float Frequency,
 		UPARAM(meta = (ClampMin = "0.015", ClampMax = "1.0", UIMin = "0.01", UIMax = "1.0"))
 		float Period,
+		
 		EControllerHand Hand
 	);
 
@@ -257,6 +293,7 @@ public:
 		int32 EndPosition,
 		UPARAM(DisplayName = "Strength max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 Strength,
+		
 		EControllerHand Hand
 	);
 
@@ -277,7 +314,9 @@ public:
 	 * @param Hand The hand (left or right) associated with the effect to disable resistance for.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Reset Effects")
-	static void NoResistance(int32 ControllerId, EControllerHand Hand);
+	static void NoResistance(int32 ControllerId,
+	
+		EControllerHand Hand);
 
 	/**
 	 * Stops the trigger effect on a specific controller for the specified hand.
@@ -286,7 +325,9 @@ public:
 	 * @param HandStop Specifies which hand's trigger effect (left or right) should be stopped.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Reset Effects")
-	static void StopTriggerEffect(int32 ControllerId, EControllerHand HandStop);
+	static void StopTriggerEffect(int32 ControllerId,
+	
+		EControllerHand HandStop);
 
 	/**
 	 * Stops all trigger effects currently active for the specified DualSense controller.
@@ -344,6 +385,7 @@ public:
 		int32 BeginStrength,
 		int32 MiddleStrength,
 		int32 EndStrength,
+		
 		EControllerHand Hand, bool KeepEffect
 	)
 	{
@@ -384,7 +426,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects",
 		meta=(DeprecatedFunction, DeprecationMessage="Use Machine"))
 	static void EffectMachine(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
-	                          int32 LasFoot, float Frequency, float Period, EControllerHand Hand)
+	                          int32 LasFoot, float Frequency, float Period,
+	                          
+	                          EControllerHand Hand)
 	{
 		Machine(ControllerId, StartPosition, EndPosition, FirstFoot, LasFoot, Frequency, Period, Hand);
 	}
@@ -404,6 +448,7 @@ public:
 	UE_DEPRECATED(5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Bow instead of EffectBow.")
 	UFUNCTION(BlueprintCallable, Category="DualSense Effects", meta=(DeprecatedFunction, DeprecationMessage="Use Bow"))
 	static void EffectBow(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 BeginStrength, int32 EndStrength,
+	
 	                      EControllerHand Hand)
 	{
 		Bow(ControllerId, StartPosition, EndPosition, BeginStrength, EndStrength, Hand);

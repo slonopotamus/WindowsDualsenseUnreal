@@ -32,6 +32,15 @@ public:
 	 */
 	virtual void SetTriggers(const FInputDeviceProperty* Values) = 0;
 	/**
+	 * Activates custom trigger configurations on a gamepad for a specified hand.
+	 *
+	 * @param Hand A reference to the EControllerHand enum specifying the hand
+	 *             (e.g., left or right) for which the trigger is being configured.
+	 * @param HexBytes An array of strings representing hexadecimal values that define
+	 *                 the trigger configuration parameters.
+	 */
+	virtual void CustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) = 0;
+	/**
 	 * Sets the haptic feedback for a specific hand on the gamepad.
 	 *
 	 * @param Hand The hand to which the haptic feedback will be applied.

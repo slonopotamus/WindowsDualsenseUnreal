@@ -98,6 +98,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 		SetTriggerEffects(&Output[10], HidOut->RightTrigger);
 		SetTriggerEffects(&Output[21], HidOut->LeftTrigger);	
 	}
+	
 	if (DeviceContext->ConnectionType == Bluetooth)
 	{
 		const int32 CrcChecksum = Compute(DeviceContext->BufferOutput, 74);
@@ -184,6 +185,20 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x3] = ((Effect.Strengths.StrengthZones) & 0xFF);
 		Trigger[0x4] = Effect.Frequency;
 		Trigger[0x5] = Effect.Strengths.Period;
+	}
+	
+	if (Effect.Mode == 0xFF) // Custom Mode effect
+	{
+		Trigger[0x0] = Effect.Strengths.Compose[0];
+		Trigger[0x1] = Effect.Strengths.Compose[1];
+		Trigger[0x2] = Effect.Strengths.Compose[2];
+		Trigger[0x3] = Effect.Strengths.Compose[3];
+		Trigger[0x4] = Effect.Strengths.Compose[4];
+		Trigger[0x5] = Effect.Strengths.Compose[5];
+		Trigger[0x6] = Effect.Strengths.Compose[6];
+		Trigger[0x7] = Effect.Strengths.Compose[7];
+		Trigger[0x8] = Effect.Strengths.Compose[8];
+		Trigger[0x9] = Effect.Strengths.Compose[9];
 	}
 	
 	if (Effect.Mode == 0x0) // Reset

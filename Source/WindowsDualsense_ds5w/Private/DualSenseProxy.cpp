@@ -154,6 +154,27 @@ void UDualSenseProxy::GameCube ( int32 ControllerId , EControllerHand Hand )
 	Gamepad->SetGameCube (Hand);
 }
 
+void UDualSenseProxy::CustomTrigger ( int32 ControllerId , EControllerHand Hand , const TArray<FString> & HexBytes )
+{
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+	
+	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
+	if (!Gamepad)
+	{
+		return;
+	}
+
+	if (HexBytes.Num() > 10)
+	{
+		return;
+	}
+	Gamepad->CustomTrigger (Hand, HexBytes);
+}
+
 void UDualSenseProxy::ContinuousResistance(int32 ControllerId, int32 StartPosition, int32 Strength, EControllerHand Hand)
 {
 	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 0;

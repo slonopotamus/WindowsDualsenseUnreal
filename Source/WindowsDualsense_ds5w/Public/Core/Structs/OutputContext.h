@@ -384,7 +384,7 @@ struct FStrengths
 	/**
 	 *
 	 */
-	unsigned char Compose[9] = {0};
+	unsigned char Compose[10] = {0};
 };
 
 /**
