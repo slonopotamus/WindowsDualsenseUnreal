@@ -79,7 +79,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 	Output[7] = HidOut->Audio.Mode;
 	Output[9] = HidOut->Audio.MicStatus;
 	Output[8] = HidOut->MicLight.Mode;
-	Output[36] = (HidOut->Feature.TriggerSoftnessLevel << 4) | HidOut->Feature.SoftRumbleReduce & 0x0F;
+	Output[36] = (HidOut->Feature.TriggerSoftnessLevel << 4) | (HidOut->Feature.SoftRumbleReduce & 0x0F);
 	Output[38] = 0x07;
 	Output[41] = 0x02;
 	Output[42] = HidOut->PlayerLed.Brightness;

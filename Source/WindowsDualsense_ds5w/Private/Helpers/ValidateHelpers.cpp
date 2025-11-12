@@ -2,8 +2,6 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-#pragma once
-
 #include "Helpers/ValidateHelpers.h"
 
 bool FValidateHelpers::ValidateMaxForce(const int32 Strength)
