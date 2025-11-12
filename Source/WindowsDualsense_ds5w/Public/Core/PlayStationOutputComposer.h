@@ -47,17 +47,6 @@ public:
 	 */
 	const static uint32 HashTable[256];
 	/**
-	 * @fn FPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
-	 *
-	 * Releases and invalidates the provided device context, ensuring that
-	 * all associated resources are properly disposed of or reset. This method
-	 * guarantees that the device handle referenced by the context becomes
-	 * unusable after execution to prevent unauthorized or unintended access.
-	 *
-	 * @param Context The device context to be freed and invalidated. Must not be null.
-	 */
-	static void FreeContext(FDeviceContext* Context);
-	/**
 	 * @brief Configures and sends output data to a DualSense device using the provided device context.
 	 *
 	 * This method builds and formats an output data buffer with specific device settings,
