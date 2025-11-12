@@ -702,42 +702,23 @@ void UDualSenseLibrary::SetResistance(int32 BeginStrength, int32 MiddleStrength,
                                       const EControllerHand& Hand)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	unsigned char PositionalAmplitudes[10];
-	PositionalAmplitudes[0] = BeginStrength;
-	PositionalAmplitudes[1] = BeginStrength;
-	PositionalAmplitudes[2] = BeginStrength;
-	PositionalAmplitudes[3] = BeginStrength;
-	PositionalAmplitudes[4] = MiddleStrength;
-	PositionalAmplitudes[5] = MiddleStrength;
-	PositionalAmplitudes[6] = MiddleStrength;
-	PositionalAmplitudes[7] = MiddleStrength;
-	PositionalAmplitudes[8] = EndStrength;
-	PositionalAmplitudes[9] = EndStrength;
-
-	int32 ActiveZones = 0;
-	int16 StrengthValues = 0;
-	for (int i = 0; i < 3; i++)
-	{
-		if (PositionalAmplitudes[i] > 0)
-		{
-			const int8_t StrengthValue = static_cast<int8_t>((PositionalAmplitudes[i] - 1) & 0x07);
-			StrengthValues |= (StrengthValue << (3 * i));
-			ActiveZones |= static_cast<int16>(1 << i);
-		}
-	}
 
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->LeftTrigger.Mode = 0x21;
-		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
-		HidOutput->LeftTrigger.Strengths.StrengthZones = StrengthValues;
+		HidOutput->LeftTrigger.Strengths.Compose[0] = FValidateHelpers::To255 (BeginStrength, 9);
+		HidOutput->LeftTrigger.Strengths.Compose[1] = 0x02;
+		HidOutput->LeftTrigger.Strengths.Compose[2] = FValidateHelpers::To255 (MiddleStrength, 9);
+		HidOutput->LeftTrigger.Strengths.Compose[3] = FValidateHelpers::To255 (EndStrength, 7);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->RightTrigger.Mode = 0x21;
-		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
-		HidOutput->RightTrigger.Strengths.StrengthZones = StrengthValues;
+		HidOutput->RightTrigger.Strengths.Compose[0] = FValidateHelpers::To255 (BeginStrength, 9);
+		HidOutput->RightTrigger.Strengths.Compose[1] = 0x02;
+		HidOutput->RightTrigger.Strengths.Compose[2] = FValidateHelpers::To255 (MiddleStrength, 9);
+		HidOutput->RightTrigger.Strengths.Compose[3] = FValidateHelpers::To255 (EndStrength, 7);
 	}
 
 	SendOut();
@@ -788,7 +769,7 @@ void UDualSenseLibrary::SetGalloping(int32 StartPosition, int32 EndPosition, int
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->LeftTrigger.Mode = 0x23;
-		HidOutput->LeftTrigger.Strengths.Compose[0] = (1 << StartPosition) | (1 << EndPosition);
+		HidOutput->LeftTrigger.Strengths.Compose[0] = (StartPosition << 4) & 0x0F | (EndPosition << 4) & 0x0F;
 		HidOutput->LeftTrigger.Strengths.Compose[1] = KeepEffect;
 		HidOutput->LeftTrigger.Strengths.Compose[2] = ((FirstFootNib & 0x0F) << 4) | (SecondFootNib & 0x0F);
 		HidOutput->LeftTrigger.Strengths.Compose[3] = static_cast <uint8> (Frequency);
@@ -797,7 +778,7 @@ void UDualSenseLibrary::SetGalloping(int32 StartPosition, int32 EndPosition, int
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->RightTrigger.Mode = 0x23;
-		HidOutput->RightTrigger.Strengths.Compose[0] = (1 << StartPosition) | (1 << EndPosition);
+		HidOutput->RightTrigger.Strengths.Compose[0] = (StartPosition << 4) & 0x0F | (EndPosition << 4) & 0x0F;
 		HidOutput->RightTrigger.Strengths.Compose[1] = KeepEffect;
 		HidOutput->RightTrigger.Strengths.Compose[2] = ((FirstFootNib & 0x0F) << 4) | (SecondFootNib & 0x0F);
 		HidOutput->RightTrigger.Strengths.Compose[3] = static_cast <uint8> (Frequency);
@@ -844,24 +825,55 @@ void UDualSenseLibrary::SetBow(int32 StartPosition, int32 EndPosition, int32 Beg
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 
-	const uint8 ResistanceNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((BegingStrength / 8.0f) * 15.0f), 1, 15));
-	const uint8 SnapNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((EndStrength / 8.0f) * 15.0f), 1, 15));
+	
+	if (StartPosition > 2 && StartPosition <= 4)
+	{
+		StartPosition = 4;
+	}
+	else if (StartPosition > 4 && StartPosition <= 6)
+	{
+		StartPosition = 8;
+	}
+	else if (StartPosition > 6)
+	{
+		StartPosition = 0;
+	}
+	else
+	{
+		StartPosition = 2;
+	}
+
+	if (BegingStrength > 2 && BegingStrength <= 6)
+	{
+		EndStrength = 15;
+		BegingStrength = 2;
+	}
+	else if (BegingStrength > 6)
+	{
+		EndStrength = 15;
+		BegingStrength = 3;
+	}
+	else
+	{
+		EndStrength = 0;
+		BegingStrength = 10;
+	}
+	
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->LeftTrigger.Mode = 0x22;
-		HidOutput->LeftTrigger.Strengths.Compose[0] = (1 << StartPosition) | 0x02;
+		HidOutput->LeftTrigger.Strengths.Compose[0] = (0x08 << 4) | (StartPosition & 0x0F);
 		HidOutput->LeftTrigger.Strengths.Compose[1] = EndPosition == 8 ? 0x01 : 0x00;
-		HidOutput->LeftTrigger.Strengths.Compose[2] = (ResistanceNib & 0x0F) << 4 | (SnapNib & 0x0F);
+		HidOutput->LeftTrigger.Strengths.Compose[2] = (BegingStrength & 0x0F) << 4 | (EndStrength & 0x0F);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->RightTrigger.Mode = 0x22;
-		HidOutput->RightTrigger.Strengths.Compose[0] = (1 << StartPosition) | 0x02;
+		HidOutput->RightTrigger.Strengths.Compose[0] = (0x08 << 4) | (StartPosition & 0x0F);
 		HidOutput->RightTrigger.Strengths.Compose[1] = EndPosition == 8 ? 0x01 : 0x00;
-		HidOutput->RightTrigger.Strengths.Compose[2] = (ResistanceNib & 0x0F) << 4 | (SnapNib & 0x0F);
+		HidOutput->RightTrigger.Strengths.Compose[2] = (BegingStrength & 0x0F) << 4 | (EndStrength & 0x0F);
 	}
-
 	SendOut();
 }
 

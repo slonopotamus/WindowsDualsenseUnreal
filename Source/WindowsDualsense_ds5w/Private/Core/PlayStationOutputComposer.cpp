@@ -123,13 +123,14 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 	
 	if (Effect.Mode == 0x21) // Resistance
 	{
-		const uint64_t LeftTriggerStrengthZones = Effect.Strengths.StrengthZones;
-		Trigger[0x1] = ((Effect.Strengths.ActiveZones >> 0) & 0xFF);
-		Trigger[0x2] = ((Effect.Strengths.ActiveZones >> 8) & 0xFF);
-		Trigger[0x3] = ((LeftTriggerStrengthZones >> 0) & 0xFF);
-		Trigger[0x4] = ((LeftTriggerStrengthZones >> 8) & 0xFF);
-		Trigger[0x5] = ((LeftTriggerStrengthZones >> 16) & 0xFF);
-		Trigger[0x6] = ((LeftTriggerStrengthZones >> 24) & 0xFF);
+		Trigger[0x1] = 0xf0;
+		Trigger[0x2] = 0x03;
+		Trigger[0x3] = 0x00;
+		Trigger[0x5] = Effect.Strengths.Compose[2];
+		Trigger[0x6] = Effect.Strengths.Compose[3];
+		Trigger[0x7] = 0x0;
+		Trigger[0x8] = 0x0;
+		Trigger[0x9] = 0x0;
 	}
 	
 	if (Effect.Mode == 0x22 || Effect.Mode == 0x02) // Bow
@@ -143,7 +144,9 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x7] = 0x0;
 		Trigger[0x8] = 0x0;
 		Trigger[0x9] = 0x0;
+		UE_LOG(LogTemp, Warning, TEXT("SetBow not implemented yet! %02X %02X %02X"), Trigger[1], Trigger[2], Trigger[3]);
 	}
+	
 	
 	if (Effect.Mode == 0x23) // Gallopping
 	{

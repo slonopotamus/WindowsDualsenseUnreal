@@ -99,8 +99,8 @@ void UDualSenseProxy::SetFeedback(int32 ControllerId, int32 BeginStrength,
 void UDualSenseProxy::Resistance(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 Strength, EControllerHand Hand)
 {
 	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 0;
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(Strength)) Strength = 8;
+	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 0;
+	if (!FValidateHelpers::ValidateMaxPosition(Strength)) Strength = 0;
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
