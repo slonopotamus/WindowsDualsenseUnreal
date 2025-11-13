@@ -126,6 +126,7 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 
 void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 {
+	
 	if (!Context)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Context nto found!"));
@@ -144,10 +145,21 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 		UE_LOG(LogTemp, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
 		return;
 	}
+
+	DWORD BytesRead = 0;
+	HidD_FlushQueue(Context->Handle);
+	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
+	{
+		constexpr size_t InputReportLength = 547;
+		const EPollResult Response = PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
+		if (Response == EPollResult::Disconnected)
+		{
+			InvalidateHandle(Context);
+		}
+		return;
+	}
 	
 	const size_t InputBufferSize = Context->ConnectionType == Bluetooth ? 78 : 64;
-	HidD_FlushQueue(Context->Handle);
-	DWORD BytesRead = 0;
 	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
 	if (Response == EPollResult::Disconnected)
 	{

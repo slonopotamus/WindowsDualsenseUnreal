@@ -119,7 +119,7 @@ void UDualSenseProxy::Resistance(int32 ControllerId, int32 StartPosition, int32 
 
 void UDualSenseProxy::AutomaticGun(int32 ControllerId, int32 BeginStrength, int32 MiddleStrength, int32 EndStrength, EControllerHand Hand, bool KeepEffect, float Frequency)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength)) BeginStrength = 8;
+	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength)) BeginStrength = 6;
 	if (!FValidateHelpers::ValidateMaxPosition(MiddleStrength)) MiddleStrength = 8;
 	if (!FValidateHelpers::ValidateMaxPosition(EndStrength)) EndStrength = 8;
 

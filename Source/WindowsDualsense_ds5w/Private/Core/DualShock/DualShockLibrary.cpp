@@ -82,7 +82,7 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		}
 		else
 		{
-			HIDInput = &HIDDeviceContexts.BufferDS4[1];
+			HIDInput = &HIDDeviceContexts.Buffer[1];
 		}
 	
 		// Triggers

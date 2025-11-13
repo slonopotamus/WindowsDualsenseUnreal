@@ -79,10 +79,9 @@ public:
 		int32 MiddleStrength,
 		UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 EndStrength,
-		
 		EControllerHand Hand,
 		bool KeepEffect,
-		float Frequency = 0.05f
+		float Frequency = 5.0f
 	);
 
 	/**
