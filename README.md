@@ -53,14 +53,20 @@ Designed to bridge the gap left by generic controller support, this asset empowe
 * 🎮 **Multi-Controller Support**: Manage up to 4 controllers simultaneously.
 
 
-## 🚀 New Feature: Live Trigger Effect Testing via Console
+## 🚀 New Workflow: Live Haptic Prototyping (Console to Blueprint)
 
-You can now test and fine-tune adaptive trigger effects directly in the Unreal Engine console. This allows for rapid prototyping and debugging of haptic sensations without recompiling code or setting up Blueprint nodes.
+You can now discover, test, and implement advanced trigger effects with a new, highly efficient workflow.
 
-Use the `ds.SetTrigL` and `ds.SetTrigR` commands to send raw 10-byte HEX arrays directly to the controller, or use preset helper commands like `ds.BowR` and `ds.GallopR` to test specific common effects.
+**1. Test Live in Console:** Fine-tune adaptive trigger effects directly in the Unreal Engine console. This is the fastest way to prototype and debug haptic sensations without recompiling. Use the `ds.SetTrigL` and `ds.SetTrigR` commands to send raw 10-byte HEX arrays until you discover the perfect effect.
 
-For a complete guide on the available commands and the raw byte structure for each effect, please see the new Wiki documentation page:
-**[➡️ Wiki Page: Console Commands & HEX Reference](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%AE-DualSense-Trigger-Effects:-Console-Commands-&-HEX-Reference)**
+**2. Store and Reuse:** Once you have your ideal HEX values, don't hard-code them! Store them in a reusable **Data Table** to be called from any Blueprint using the `Custom Trigger` node.
+
+This complete workflow—from live console discovery to clean Blueprint implementation—is covered in our new Wiki guides:
+
+* ➡️ **[Wiki Page: Console Commands & HEX Reference](🎮-DualSense-Trigger-Effects:-Console-Commands-&-HEX-Reference)**
+    * (Learn to *find and test* effects using the console)
+* ➡️ **[Wiki Page: Tutorial: Creating a Reusable Trigger Effect Data Table](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%93-Tutorial:-Creating-a-Reusable-Trigger-Effect-Data-Table)**
+    * (Learn to *store and use* your effects in Blueprints)
 
 ## 🎮 Example Project: Arena Shooter UE 5.6
 
