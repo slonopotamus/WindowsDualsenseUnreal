@@ -49,7 +49,7 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 void UDualSenseLibrary::ShutdownLibrary()
 {
 	ButtonStates.Reset();
-	FPlayStationOutputComposer::FreeContext(&HIDDeviceContexts);
+	IPlatformHardwareInfoInterface::Get().InvalidateHandle(&HIDDeviceContexts);
 }
 
 bool UDualSenseLibrary::IsConnected()

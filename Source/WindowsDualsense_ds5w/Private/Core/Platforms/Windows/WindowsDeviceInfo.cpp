@@ -126,7 +126,6 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 
 void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 {
-	
 	if (!Context)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Context nto found!"));

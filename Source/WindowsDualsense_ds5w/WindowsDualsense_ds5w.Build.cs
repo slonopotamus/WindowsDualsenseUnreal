@@ -19,7 +19,7 @@ public class WindowsDualsense_ds5w : ModuleRules
 		
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-		    PublicAdditionalLibraries.Add("hid.lib");
+			PublicSystemLibraries.Add("hid.lib");
 		}
 	    
 		if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.Mac)

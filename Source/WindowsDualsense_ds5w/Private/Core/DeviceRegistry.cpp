@@ -70,8 +70,6 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 					{
 						if (Manager->LibraryInstances.Contains(DeviceId))
 						{
-							IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(DeviceId, EInputDeviceConnectionState::Disconnected);
-
 							Manager->RemoveLibraryInstance(DeviceId);
 							DisconnectedPaths.Add(Path);
 						}
@@ -147,18 +145,15 @@ ISonyGamepadInterface* FDeviceRegistry::GetLibraryInstance(const FInputDeviceId&
 
 void FDeviceRegistry::RemoveLibraryInstance(const FInputDeviceId& GamepadId)
 {
-	if (
-		IPlatformInputDeviceMapper::Get().GetInputDeviceConnectionState(GamepadId) !=
-		EInputDeviceConnectionState::Disconnected)
-	{
-		IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(
-			GamepadId, EInputDeviceConnectionState::Disconnected);
-	}
+	// We should never call into IPlatformInputDeviceMapper from non-game thread because it is not thread-safe
+	check(IsInGameThread());
 
 	if (!LibraryInstances.Contains(GamepadId))
 	{
 		return;
 	}
+
+	IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(GamepadId, EInputDeviceConnectionState::Disconnected);
 
 	LibraryInstances[GamepadId]->ShutdownLibrary();
 	LibraryInstances.Remove(GamepadId);
@@ -185,6 +180,9 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	TArray<FInputDeviceId> Devices;
 	Devices.Reset();
 	
+	// We should never call into IPlatformInputDeviceMapper from non-game thread because it is not thread-safe
+	check(IsInGameThread());
+
 	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
 		IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
 
