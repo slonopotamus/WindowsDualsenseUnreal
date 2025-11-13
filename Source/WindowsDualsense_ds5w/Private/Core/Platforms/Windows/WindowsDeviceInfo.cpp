@@ -8,8 +8,6 @@
 #include <hidsdi.h>
 #include <setupapi.h>
 
-#include "Core/PlayStationOutputComposer.h"
-
 void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 {
 	GUID HidGuid;
@@ -49,9 +47,7 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 				GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
 			);
 			
-			if (
-				TempDeviceHandle != INVALID_HANDLE_VALUE
-			)
+			if (TempDeviceHandle != INVALID_HANDLE_VALUE)
 			{
 				HIDD_ATTRIBUTES Attributes = {};
 				Attributes.Size = sizeof(HIDD_ATTRIBUTES);
@@ -70,47 +66,45 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 					{
 						FDeviceContext Context = {};
 						WCHAR DeviceProductString[260];
-						if (!HidD_GetProductString(TempDeviceHandle, DeviceProductString, 260))
+						if (HidD_GetProductString(TempDeviceHandle, DeviceProductString, 260))
 						{
-							UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to obtain device path for the DualSense."));
-							continue;
-						}
-
-						if (DevicePaths.Contains(DeviceIndex))
-						{
-							continue;
-						}
-
-						FString PathStr(DetailDataBuffer->DevicePath);
-						Context.Path = PathStr;
-						DevicePaths.Add(DeviceIndex, PathStr);
-						switch (Attributes.ProductID)
-						{
-							case 0x05C4:
-							case 0x09CC:
-								Context.DeviceType = DualShock4;
-								break;
-							case 0x0DF2:
-								Context.DeviceType = DualSenseEdge;
-								break;
-							default: Context.DeviceType = DualSense;
-						}
-						
-						Context.IsConnected = true;
-						Context.ConnectionType = Usb;
-						Context.Handle = TempDeviceHandle;
-						FString DevicePath(Context.Path);
-						if (DevicePath.Contains(TEXT("{00001124-0000-1000-8000-00805f9b34fb}")) ||
-							DevicePath.Contains(TEXT("bth")) ||
-							DevicePath.Contains(TEXT("BTHENUM")))
-						{
-							Context.ConnectionType = Bluetooth;
-							if (!ConfigureBluetoothFeatures(TempDeviceHandle))
+							if (!DevicePaths.Contains(DeviceIndex))
 							{
-								UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to configure Bluetooth features."));
+								FString PathStr(DetailDataBuffer->DevicePath);
+								Context.Path = PathStr;
+								DevicePaths.Add(DeviceIndex, PathStr);
+								switch (Attributes.ProductID)
+								{
+									case 0x05C4:
+									case 0x09CC:
+										Context.DeviceType = DualShock4;
+										break;
+									case 0x0DF2:
+										Context.DeviceType = DualSenseEdge;
+										break;
+									default: Context.DeviceType = DualSense;
+								}
+
+								Context.IsConnected = true;
+								Context.ConnectionType = Usb;
+								FString DevicePath(Context.Path);
+								if (DevicePath.Contains(TEXT("{00001124-0000-1000-8000-00805f9b34fb}")) ||
+									DevicePath.Contains(TEXT("bth")) ||
+									DevicePath.Contains(TEXT("BTHENUM")))
+								{
+									Context.ConnectionType = Bluetooth;
+									if (!ConfigureBluetoothFeatures(TempDeviceHandle))
+									{
+										UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to configure Bluetooth features."));
+									}
+								}
+								Devices.Add(Context);
 							}
 						}
-						Devices.Add(Context);
+						else
+						{
+							UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to obtain device path for the DualSense."));
+						}
 					}
 				}
 				CloseHandle(TempDeviceHandle);
