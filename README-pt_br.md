@@ -52,6 +52,15 @@ Projetado para preencher a lacuna deixada pelo suporte genérico ao controlador,
 * ⚙️ **Force Feedback**: Integração nativa com o sistema de Force Feedback da Unreal Engine para a vibração padrão dos motores.
 * 🎮 **Suporte a Múltiplos Controles**: Gerencie até 4 controles conectados simultaneamente.
 
+## 🚀 New Feature: Live Trigger Effect Testing via Console
+
+You can now test and fine-tune adaptive trigger effects directly in the Unreal Engine console. This allows for rapid prototyping and debugging of haptic sensations without recompiling code or setting up Blueprint nodes.
+
+Use the `ds.SetTrigL` and `ds.SetTrigR` commands to send raw 10-byte HEX arrays directly to the controller, or use preset helper commands like `ds.BowR` and `ds.GallopR` to test specific common effects.
+
+For a complete guide on the available commands and the raw byte structure for each effect, please see the new Wiki documentation page:
+**[➡️ Wiki Page: Console Commands & HEX Reference](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%AE-DualSense-Trigger-Effects:-Console-Commands-&-HEX-Reference)**
+
 ## 🎮 Projeto de Exemplo: Arena Shooter UE 5.6
 
 To demonstrate the practical use of the **Dualsense Unreal Plugin**, a sample project has been developed using the [*Arena Shooter* template](https://www.unrealengine.com/marketplace/en-US/product/arena-shooter-template) and upgraded to Unreal Engine 5.6. This project integrates key features of the DualSense controller to enhance the player's experience.
