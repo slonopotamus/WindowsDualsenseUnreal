@@ -134,29 +134,22 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 	
 	if (!Context->IsConnected)
 	{
-		InvalidateHandle(Context);
 		UE_LOG(LogTemp, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
 		return;
 	}
 
 	DWORD BytesRead = 0;
 	HidD_FlushQueue(Context->Handle);
+	
 	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
 	{
 		constexpr size_t InputReportLength = 547;
-		const EPollResult Response = PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
-		if (Response == EPollResult::Disconnected)
-		{
-			InvalidateHandle(Context);
-		}
-		return;
+		PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
 	}
-	
-	const size_t InputBufferSize = Context->ConnectionType == Bluetooth ? 78 : 64;
-	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
-	if (Response == EPollResult::Disconnected)
+	else
 	{
-		InvalidateHandle(Context);
+		const size_t InputBufferSize = Context->ConnectionType == Bluetooth ? 78 : 64;
+		PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
 	}
 }
 
@@ -175,18 +168,11 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to write output report 0x02/0x31 data to device. report %llu error Code: %d"),
 			OutputReportLength, GetLastError());
-		InvalidateHandle(Context);
 	}
 }
 
 bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 {
-	if (DeviceContext->Handle != INVALID_HANDLE_VALUE)
-	{
-		CloseHandle(DeviceContext->Handle);
-		DeviceContext->Handle = INVALID_HANDLE_VALUE;
-	}
-
 	const HANDLE DeviceHandle = CreateFileW(
 			*DeviceContext->Path,
 			GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
@@ -205,12 +191,11 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 
 void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 {
-	IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(Context->UniqueInputDeviceId, EInputDeviceConnectionState::Disconnected);
 	if (!Context)
 	{
 		return;
 	}
-	
+
 	if (Context->Handle != INVALID_HANDLE_VALUE)
 	{
 		CloseHandle(Context->Handle);
@@ -242,13 +227,7 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, i
 	OutBytesRead = 0;
 	if (!ReadFile(Handle, Buffer, Length, &OutBytesRead, nullptr))
 	{
-		const int32 Error = GetLastError();
-		if (ShouldTreatAsDisconnected(Error))
-		{
-			return EPollResult::Disconnected;
-		}
-
-		InvalidateHandle(Handle);
+		return EPollResult::Disconnected;
 	}
 
 	return EPollResult::ReadOk;
