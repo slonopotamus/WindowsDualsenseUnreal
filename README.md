@@ -63,7 +63,7 @@ You can now discover, test, and implement advanced trigger effects with a new, h
 
 This complete workflow—from live console discovery to clean Blueprint implementation—is covered in our new Wiki guides:
 
-* ➡️ **[Wiki Page: Console Commands & HEX Reference](🎮-DualSense-Trigger-Effects:-Console-Commands-&-HEX-Reference)**
+* ➡️ **[Wiki Page: Console Commands & HEX Reference](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%AE-DualSense-Trigger-Effects:-Console-Commands-&-HEX-Reference)**
     * (Learn to *find and test* effects using the console)
 * ➡️ **[Wiki Page: Tutorial: Creating a Reusable Trigger Effect Data Table](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%93-Tutorial:-Creating-a-Reusable-Trigger-Effect-Data-Table)**
     * (Learn to *store and use* your effects in Blueprints)
