@@ -30,7 +30,7 @@ bool UDualShockLibrary::InitializeLibrary(const FDeviceContext& Context)
 void UDualShockLibrary::ShutdownLibrary()
 {
 	ButtonStates.Reset();
-	FPlayStationOutputComposer::FreeContext(&HIDDeviceContexts);
+	IPlatformHardwareInfoInterface::Get().InvalidateHandle(&HIDDeviceContexts);
 }
 
 bool UDualShockLibrary::IsConnected()

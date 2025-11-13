@@ -185,6 +185,9 @@ void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGy
 
 FInputDeviceId USonyGamepadProxy::GetGamepadInterface(int32 ControllerId)
 {
+	// We should never call into IPlatformInputDeviceMapper from non-game thread because it is not thread-safe
+	check(IsInGameThread());
+
 	TArray<FInputDeviceId> Devices;
 	
 	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(FPlatformUserId::CreateFromInternalId(ControllerId), Devices);

@@ -2,7 +2,7 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-#include "../../Public/Subsystems/SonyInputProcessor.h"
+#include "Subsystems/SonyInputProcessor.h"
 #include "Core/DeviceRegistry.h"
 
 bool FSonyInputProcessor::HandleKeyDownEvent(FSlateApplication& SlateApp, const FKeyEvent& InKeyEvent)

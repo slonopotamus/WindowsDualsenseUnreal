@@ -7,7 +7,7 @@
 
 #if PLATFORM_LINUX || PLATFORM_MAC
 #include "SDL.h"
-#include "Subsystems/FSonyInputProcessor.h"
+#include "Subsystems/SonyInputProcessor.h"
 #include "Framework/Application/SlateApplication.h"
 #endif
 #include "InputCoreTypes.h"
