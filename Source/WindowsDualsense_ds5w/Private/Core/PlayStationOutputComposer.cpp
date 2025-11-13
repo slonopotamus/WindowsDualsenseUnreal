@@ -9,11 +9,6 @@
 
 const uint32 FPlayStationOutputComposer::CRCSeed = 0xeada2d49;
 
-void FPlayStationOutputComposer::FreeContext(FDeviceContext* Context)
-{
-	IPlatformHardwareInfoInterface::Get().InvalidateHandle(Context);
-}
-
 void FPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
 {
 	const FOutputContext* HidOut = &DeviceContext->Output;
