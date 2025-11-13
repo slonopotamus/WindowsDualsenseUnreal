@@ -56,7 +56,7 @@ struct FDeviceContext
 	 * disconnected handles can result in undefined behavior.
 	 * For instance, it may hold `INVALID_HANDLE_VALUE` when invalid or disconnected.
 	 */
-	FPlatformDeviceHandle Handle;
+	FPlatformDeviceHandle Handle = INVALID_PLATFORM_HANDLE;
 	/**
 	 * @brief A platform-specific handle to manage interaction with audio devices.
 	 *
@@ -75,7 +75,7 @@ struct FDeviceContext
 	 * This handle is specifically tailored to align with platform constraints and
 	 * capabilities to ensure broad support for audio functionalities.
 	 */
-	FPlatformDeviceHandle AudioHandle;
+	FPlatformDeviceHandle AudioHandle = INVALID_PLATFORM_HANDLE;
 	/**
 	 * @brief Represents a file or resource path in the context of device management.
 	 *
@@ -96,7 +96,7 @@ struct FDeviceContext
 	 * The size of the buffer is designed to accommodate the expected data payload
 	 * during these communications, ensuring efficient handling of device protocols.
 	 */
-	unsigned char Buffer[78];
+	unsigned char Buffer[78] = {};
 	/**
 	 * @brief Internal data buffer for DualShock 4 Bluetooth communication.
 	 *
@@ -112,7 +112,7 @@ struct FDeviceContext
 	 * @note This buffer is not intended for DualSense controllers or USB connections;
 	 *       for those, use Buffer[78] instead.
 	 */
-	unsigned char BufferDS4[547];
+	unsigned char BufferDS4[547] = {};
 	/**
 	 * @brief Stores the haptic audio data for DualSense devices.
 	 *
@@ -120,7 +120,7 @@ struct FDeviceContext
 	 * to a connected DualSense device, enabling advanced vibration and
 	 * feedback mechanisms driven by audio signals.
 	 */
-	unsigned char BufferAudio[142];
+	unsigned char BufferAudio[142] = {};
 	/**
 	 * A fixed-size buffer for storing input or output data associated with a device context.
 	 * This buffer is utilized for reading device input reports or for other data
@@ -134,7 +134,7 @@ struct FDeviceContext
 	 *       type or input requirements, ensuring compatibility and sufficient
 	 *       data handling capabilities.
 	 */
-	unsigned char BufferOutput[78];
+	unsigned char BufferOutput[78] = {};
 	/**
 	 * Indicates whether the device is connected.
 	 *
@@ -145,7 +145,7 @@ struct FDeviceContext
 	 * It is used to manage and track the status of devices in the context
 	 * of operations such as detection, initialization, and communication.
 	 */
-	bool IsConnected;
+	bool IsConnected = false;
 	/**
 	 * Represents the output configuration for a device context, typically used
 	 * to control advanced features of a connected DualSense controller.
@@ -176,7 +176,7 @@ struct FDeviceContext
 	 * In scenarios such as device discovery or IO operations, ConnectionType
 	 * influences logic such as input report length, output buffering, and connection state updates.
 	 */
-	EDeviceConnection ConnectionType;
+	EDeviceConnection ConnectionType = Unrecognized;
 	/**
 	 * @brief Represents the type of device in the context of DualSense HID management.
 	 *
@@ -187,7 +187,7 @@ struct FDeviceContext
 	 * It plays a pivotal role in distinguishing devices for operations such as feature
 	 * initialization, compatibility checks, and tailored input/output processing.
 	 */
-	EDeviceType DeviceType;
+	EDeviceType DeviceType = NotFound;
 	/**
 	 * @brief Uniquely identifies an input device within the system.
 	 *
@@ -202,14 +202,6 @@ struct FDeviceContext
 	// Runtime override for trigger bytes [10..20] (Right) and [21..31] (Left) in the DualSense output buffer.
 	// When enabled via console commands, these arrays are copied verbatim into the HID report.
 	bool bOverrideTriggerBytes = false;
-	unsigned char OverrideTriggerRight[10] = {0};
-	unsigned char OverrideTriggerLeft[10]  = {0};
-	
-	FDeviceContext() : Handle(nullptr), AudioHandle(nullptr), Path{}, Buffer{}, BufferDS4{}, BufferAudio{},
-	                   BufferOutput{},
-	                   IsConnected(false),
-	                   ConnectionType(), DeviceType(),
-	                   UniqueInputDeviceId()
-	{
-	}
+	unsigned char OverrideTriggerRight[10] = {};
+	unsigned char OverrideTriggerLeft[10]  = {};
 };
