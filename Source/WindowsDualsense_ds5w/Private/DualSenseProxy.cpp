@@ -99,8 +99,8 @@ void UDualSenseProxy::SetFeedback(int32 ControllerId, int32 BeginStrength,
 void UDualSenseProxy::Resistance(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 Strength, EControllerHand Hand)
 {
 	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 0;
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(Strength)) Strength = 8;
+	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 0;
+	if (!FValidateHelpers::ValidateMaxPosition(Strength)) Strength = 0;
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -119,7 +119,7 @@ void UDualSenseProxy::Resistance(int32 ControllerId, int32 StartPosition, int32 
 
 void UDualSenseProxy::AutomaticGun(int32 ControllerId, int32 BeginStrength, int32 MiddleStrength, int32 EndStrength, EControllerHand Hand, bool KeepEffect, float Frequency)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength)) BeginStrength = 8;
+	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength)) BeginStrength = 6;
 	if (!FValidateHelpers::ValidateMaxPosition(MiddleStrength)) MiddleStrength = 8;
 	if (!FValidateHelpers::ValidateMaxPosition(EndStrength)) EndStrength = 8;
 
@@ -152,6 +152,27 @@ void UDualSenseProxy::GameCube ( int32 ControllerId , EControllerHand Hand )
 		return;
 	}
 	Gamepad->SetGameCube (Hand);
+}
+
+void UDualSenseProxy::CustomTrigger ( int32 ControllerId , EControllerHand Hand , const TArray<FString> & HexBytes )
+{
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+	
+	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
+	if (!Gamepad)
+	{
+		return;
+	}
+
+	if (HexBytes.Num() > 10)
+	{
+		return;
+	}
+	Gamepad->CustomTrigger (Hand, HexBytes);
 }
 
 void UDualSenseProxy::ContinuousResistance(int32 ControllerId, int32 StartPosition, int32 Strength, EControllerHand Hand)

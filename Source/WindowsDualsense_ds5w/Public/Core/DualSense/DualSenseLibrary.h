@@ -619,6 +619,13 @@ public:
 	 */
 	void StopTrigger(const EControllerHand& Hand);
 	/**
+	 * Custom Trigger: directly set raw trigger effect bytes using hex tokens, similar to ds.SetTrigR/L console commands.
+	 * - Accepts up to 10 bytes as 2-digit hex tokens (e.g., 22 3F 08 01).
+	 * - Rejects any token that contains non-hex characters or not 1-2 hex digits (0x prefix optional).
+	 * - Applies to Left, Right, or AnyHand (sets both) based on Hand.
+	 */
+	void CustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) override;
+	/**
 	 * @brief Stops all ongoing input and feedback operations on the DualSense controller.
 	 *
 	 * The StopAll function halts all active feedback features such as LED lights,

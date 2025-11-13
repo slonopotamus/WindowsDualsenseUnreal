@@ -204,4 +204,7 @@ struct FDeviceContext
 	bool bOverrideTriggerBytes = false;
 	unsigned char OverrideTriggerRight[10] = {};
 	unsigned char OverrideTriggerLeft[10]  = {};
+
+	FDeviceContext() = default;
+	explicit FDeviceContext( const FInputDeviceId InUniqueInputDeviceId) : UniqueInputDeviceId(InUniqueInputDeviceId) {}
 };

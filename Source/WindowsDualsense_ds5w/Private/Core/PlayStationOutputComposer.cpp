@@ -93,6 +93,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 		SetTriggerEffects(&Output[10], HidOut->RightTrigger);
 		SetTriggerEffects(&Output[21], HidOut->LeftTrigger);	
 	}
+	
 	if (DeviceContext->ConnectionType == Bluetooth)
 	{
 		const int32 CrcChecksum = Compute(DeviceContext->BufferOutput, 74);
@@ -117,13 +118,14 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 	
 	if (Effect.Mode == 0x21) // Resistance
 	{
-		const uint64_t LeftTriggerStrengthZones = Effect.Strengths.StrengthZones;
-		Trigger[0x1] = ((Effect.Strengths.ActiveZones >> 0) & 0xFF);
-		Trigger[0x2] = ((Effect.Strengths.ActiveZones >> 8) & 0xFF);
-		Trigger[0x3] = ((LeftTriggerStrengthZones >> 0) & 0xFF);
-		Trigger[0x4] = ((LeftTriggerStrengthZones >> 8) & 0xFF);
-		Trigger[0x5] = ((LeftTriggerStrengthZones >> 16) & 0xFF);
-		Trigger[0x6] = ((LeftTriggerStrengthZones >> 24) & 0xFF);
+		Trigger[0x1] = 0xf0;
+		Trigger[0x2] = 0x03;
+		Trigger[0x3] = 0x00;
+		Trigger[0x5] = Effect.Strengths.Compose[2];
+		Trigger[0x6] = Effect.Strengths.Compose[3];
+		Trigger[0x7] = 0x0;
+		Trigger[0x8] = 0x0;
+		Trigger[0x9] = 0x0;
 	}
 	
 	if (Effect.Mode == 0x22 || Effect.Mode == 0x02) // Bow
@@ -138,6 +140,7 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x8] = 0x0;
 		Trigger[0x9] = 0x0;
 	}
+	
 	
 	if (Effect.Mode == 0x23) // Gallopping
 	{
@@ -162,14 +165,15 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 	
 	if (Effect.Mode == 0x26) // Automatic Gun
 	{
-		const uint64_t LeftTriggerStrengthZones = Effect.Strengths.StrengthZones;
-		Trigger[0x1] = ((Effect.Strengths.ActiveZones >> 0) & 0xFF);
-		Trigger[0x2] = ((Effect.Strengths.ActiveZones >> 8) & 0xFF);
-		Trigger[0x3] = ((LeftTriggerStrengthZones >> 0) & 0xFF);
-		Trigger[0x4] = ((LeftTriggerStrengthZones >> 8) & 0xFF);
-		Trigger[0x5] = ((LeftTriggerStrengthZones >> 16) & 0xFF);
-		Trigger[0x6] = ((LeftTriggerStrengthZones >> 24) & 0xFF);
-		Trigger[0x9] = Effect.Frequency;
+		Trigger[0x1] = Effect.Strengths.Compose[0];
+		Trigger[0x2] = Effect.Strengths.Compose[1];
+		Trigger[0x3] = Effect.Strengths.Compose[2];
+		Trigger[0x4] = Effect.Strengths.Compose[3];
+		Trigger[0x5] = Effect.Strengths.Compose[4];
+		Trigger[0x6] = Effect.Strengths.Compose[5];
+		Trigger[0x7] = 0x0;
+		Trigger[0x8] = 0x0;
+		Trigger[0x9] = Effect.Strengths.Compose[9];
 	}
 	
 	if (Effect.Mode == 0x27) // Machine
@@ -179,6 +183,20 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x3] = ((Effect.Strengths.StrengthZones) & 0xFF);
 		Trigger[0x4] = Effect.Frequency;
 		Trigger[0x5] = Effect.Strengths.Period;
+	}
+	
+	if (Effect.Mode == 0xFF) // Custom Mode effect
+	{
+		Trigger[0x0] = Effect.Strengths.Compose[0];
+		Trigger[0x1] = Effect.Strengths.Compose[1];
+		Trigger[0x2] = Effect.Strengths.Compose[2];
+		Trigger[0x3] = Effect.Strengths.Compose[3];
+		Trigger[0x4] = Effect.Strengths.Compose[4];
+		Trigger[0x5] = Effect.Strengths.Compose[5];
+		Trigger[0x6] = Effect.Strengths.Compose[6];
+		Trigger[0x7] = Effect.Strengths.Compose[7];
+		Trigger[0x8] = Effect.Strengths.Compose[8];
+		Trigger[0x9] = Effect.Strengths.Compose[9];
 	}
 	
 	if (Effect.Mode == 0x0) // Reset

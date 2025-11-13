@@ -8,6 +8,8 @@
 #include <hidsdi.h>
 #include <setupapi.h>
 
+#include "Core/PlayStationOutputComposer.h"
+
 void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 {
 	GUID HidGuid;
@@ -47,7 +49,9 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 				GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
 			);
 			
-			if (TempDeviceHandle != INVALID_HANDLE_VALUE)
+			if (
+				TempDeviceHandle != INVALID_HANDLE_VALUE
+			)
 			{
 				HIDD_ATTRIBUTES Attributes = {};
 				Attributes.Size = sizeof(HIDD_ATTRIBUTES);
@@ -66,45 +70,47 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 					{
 						FDeviceContext Context = {};
 						WCHAR DeviceProductString[260];
-						if (HidD_GetProductString(TempDeviceHandle, DeviceProductString, 260))
-						{
-							if (!DevicePaths.Contains(DeviceIndex))
-							{
-								FString PathStr(DetailDataBuffer->DevicePath);
-								Context.Path = PathStr;
-								DevicePaths.Add(DeviceIndex, PathStr);
-								switch (Attributes.ProductID)
-								{
-									case 0x05C4:
-									case 0x09CC:
-										Context.DeviceType = DualShock4;
-										break;
-									case 0x0DF2:
-										Context.DeviceType = DualSenseEdge;
-										break;
-									default: Context.DeviceType = DualSense;
-								}
-						
-								Context.IsConnected = true;
-								Context.ConnectionType = Usb;
-								FString DevicePath(Context.Path);
-								if (DevicePath.Contains(TEXT("{00001124-0000-1000-8000-00805f9b34fb}")) ||
-									DevicePath.Contains(TEXT("bth")) ||
-									DevicePath.Contains(TEXT("BTHENUM")))
-								{
-									Context.ConnectionType = Bluetooth;
-									if (!ConfigureBluetoothFeatures(TempDeviceHandle))
-									{
-										UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to configure Bluetooth features."));
-									}
-								}
-								Devices.Add(Context);
-							}
-						}
-						else
+						if (!HidD_GetProductString(TempDeviceHandle, DeviceProductString, 260))
 						{
 							UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to obtain device path for the DualSense."));
+							continue;
 						}
+
+						if (DevicePaths.Contains(DeviceIndex))
+						{
+							continue;
+						}
+
+						FString PathStr(DetailDataBuffer->DevicePath);
+						Context.Path = PathStr;
+						DevicePaths.Add(DeviceIndex, PathStr);
+						switch (Attributes.ProductID)
+						{
+							case 0x05C4:
+							case 0x09CC:
+								Context.DeviceType = DualShock4;
+								break;
+							case 0x0DF2:
+								Context.DeviceType = DualSenseEdge;
+								break;
+							default: Context.DeviceType = DualSense;
+						}
+						
+						Context.IsConnected = true;
+						Context.ConnectionType = Usb;
+						Context.Handle = TempDeviceHandle;
+						FString DevicePath(Context.Path);
+						if (DevicePath.Contains(TEXT("{00001124-0000-1000-8000-00805f9b34fb}")) ||
+							DevicePath.Contains(TEXT("bth")) ||
+							DevicePath.Contains(TEXT("BTHENUM")))
+						{
+							Context.ConnectionType = Bluetooth;
+							if (!ConfigureBluetoothFeatures(TempDeviceHandle))
+							{
+								UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to configure Bluetooth features."));
+							}
+						}
+						Devices.Add(Context);
 					}
 				}
 				CloseHandle(TempDeviceHandle);
@@ -134,14 +140,30 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 	
 	if (!Context->IsConnected)
 	{
+		InvalidateHandle(Context);
 		UE_LOG(LogTemp, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
+		return;
+	}
+
+	DWORD BytesRead = 0;
+	HidD_FlushQueue(Context->Handle);
+	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
+	{
+		constexpr size_t InputReportLength = 547;
+		const EPollResult Response = PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
+		if (Response == EPollResult::Disconnected)
+		{
+			InvalidateHandle(Context);
+		}
 		return;
 	}
 	
 	const size_t InputBufferSize = Context->ConnectionType == Bluetooth ? 78 : 64;
-	HidD_FlushQueue(Context->Handle);
-	DWORD BytesRead = 0;
-	PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
+	const EPollResult Response = PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
+	if (Response == EPollResult::Disconnected)
+	{
+		InvalidateHandle(Context);
+	}
 }
 
 void FWindowsDeviceInfo::Write(FDeviceContext* Context)
@@ -159,11 +181,18 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to write output report 0x02/0x31 data to device. report %llu error Code: %d"),
 			OutputReportLength, GetLastError());
+		InvalidateHandle(Context);
 	}
 }
 
 bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 {
+	if (DeviceContext->Handle != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(DeviceContext->Handle);
+		DeviceContext->Handle = INVALID_HANDLE_VALUE;
+	}
+
 	const HANDLE DeviceHandle = CreateFileW(
 			*DeviceContext->Path,
 			GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
@@ -182,11 +211,12 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 
 void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 {
+	IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(Context->UniqueInputDeviceId, EInputDeviceConnectionState::Disconnected);
 	if (!Context)
 	{
 		return;
 	}
-
+	
 	if (Context->Handle != INVALID_HANDLE_VALUE)
 	{
 		CloseHandle(Context->Handle);
@@ -218,7 +248,13 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, i
 	OutBytesRead = 0;
 	if (!ReadFile(Handle, Buffer, Length, &OutBytesRead, nullptr))
 	{
-		return EPollResult::Disconnected;
+		const int32 Error = GetLastError();
+		if (ShouldTreatAsDisconnected(Error))
+		{
+			return EPollResult::Disconnected;
+		}
+
+		InvalidateHandle(Handle);
 	}
 
 	return EPollResult::ReadOk;
