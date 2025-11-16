@@ -12,10 +12,6 @@
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
 #include "Core/Structs/OutputContext.h"
 
-void UDualShockLibrary::Settings(const FSettings<FFeatureReport>& Settings)
-{
-}
-
 void UDualShockLibrary::Settings(const FDualShockFeatureReport& Settings)
 {
 }
@@ -44,22 +40,25 @@ void UDualShockLibrary::SendOut()
 	{
 		return;
 	}
-	
+
 	FPlayStationOutputComposer::OutputDualShock(&HIDDeviceContexts);
 }
 
 void UDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-	const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName,
-	const bool IsButtonPressed)
+                                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId,
+                                         const FName ButtonName,
+                                         const bool IsButtonPressed)
 {
 	const bool PreviousState = ButtonStates.Contains(ButtonName) ? ButtonStates[ButtonName] : false;
 	if (IsButtonPressed && !PreviousState)
 	{
+		SetControllerEvents(true);
 		InMessageHandler.Get().OnControllerButtonPressed(ButtonName, UserId, InputDeviceId, false);
 	}
 
 	if (!IsButtonPressed && PreviousState)
 	{
+		SetControllerEvents(true);
 		InMessageHandler.Get().OnControllerButtonReleased(ButtonName, UserId, InputDeviceId, false);
 	}
 
@@ -67,126 +66,136 @@ void UDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMes
 }
 
 void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-	const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta)
+                                    const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta)
 {
-		FDeviceContext* Context = &HIDDeviceContexts;
-		AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
-		{
-			IPlatformHardwareInfoInterface::Get().Read(NewContext);
-		});
-		
-		const unsigned char* HIDInput;
-		if (HIDDeviceContexts.ConnectionType == Bluetooth)
-		{
-			HIDInput = &HIDDeviceContexts.BufferDS4[3];
-		}
-		else
-		{
-			HIDInput = &HIDDeviceContexts.Buffer[1];
-		}
-	
-		// Triggers
-		const bool bLeftTriggerThreshold = HIDInput[0x05] & BTN_LEFT_TRIGGER;
-		const bool bRightTriggerThreshold = HIDInput[0x05] & BTN_RIGHT_TRIGGER;
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftTriggerThreshold, bLeftTriggerThreshold);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightTriggerThreshold, bRightTriggerThreshold);
+	FDeviceContext* Context = &HIDDeviceContexts;
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
+	{
+		IPlatformHardwareInfoInterface::Get().Read(NewContext);
+	});
 
-		// Triggers Analog 1D
-		const float TriggerL = HIDInput[0x07] / 256.0f;
-		const float TriggerR = HIDInput[0x08] / 256.0f;
-		InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftTriggerAnalog, UserId, InputDeviceId, TriggerL);
-		InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightTriggerAnalog, UserId, InputDeviceId, TriggerR);
+	const unsigned char* HIDInput;
+	if (HIDDeviceContexts.ConnectionType == Bluetooth)
+	{
+		HIDInput = &HIDDeviceContexts.BufferDS4[3];
+	}
+	else
+	{
+		HIDInput = &HIDDeviceContexts.Buffer[1];
+	}
 
-		// Analogs
-		const float LeftAnalogX = static_cast<char>(static_cast<short>(HIDInput[0x00] - 128)) / 128.0f;
-		const float LeftAnalogY = static_cast<char>(static_cast<short>(HIDInput[0x01] - 127) * -1) / 128.0f;
-		InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftAnalogX, UserId, InputDeviceId, LeftAnalogX);
-		InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftAnalogY, UserId, InputDeviceId, LeftAnalogY);
+	// Triggers
+	const bool bLeftTriggerThreshold = HIDInput[0x05] & BTN_LEFT_TRIGGER;
+	const bool bRightTriggerThreshold = HIDInput[0x05] & BTN_RIGHT_TRIGGER;
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftTriggerThreshold,
+	                 bLeftTriggerThreshold);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightTriggerThreshold,
+	                 bRightTriggerThreshold);
 
-		const float RightAnalogX = static_cast<char>(static_cast<short>(HIDInput[0x02] - 128)) / 128.0f;
-		const float RightAnalogY = static_cast<char>(static_cast<short>(HIDInput[0x03] - 127) * -1) / 128.0f;
-		InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightAnalogX, UserId, InputDeviceId, RightAnalogX);
-		InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightAnalogY, UserId, InputDeviceId, RightAnalogY);
+	// Triggers Analog 1D
+	const float TriggerL = HIDInput[0x07] / 256.0f;
+	const float TriggerR = HIDInput[0x08] / 256.0f;
+	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftTriggerAnalog, UserId, InputDeviceId, TriggerL);
+	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightTriggerAnalog, UserId, InputDeviceId, TriggerR);
 
-		uint8_t ButtonsMask = HIDInput[0x04] & 0xF0;
-		const bool bCross = ButtonsMask & BTN_CROSS;
-		const bool bSquare = ButtonsMask & BTN_SQUARE;
-		const bool bCircle = ButtonsMask & BTN_CIRCLE;
-		const bool bTriangle = ButtonsMask & BTN_TRIANGLE;
+	// Analogs
+	const float LeftAnalogX = static_cast<char>(static_cast<short>(HIDInput[0x00] - 128)) / 128.0f;
+	const float LeftAnalogY = static_cast<char>(static_cast<short>(HIDInput[0x01] - 127) * -1) / 128.0f;
+	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftAnalogX, UserId, InputDeviceId, LeftAnalogX);
+	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftAnalogY, UserId, InputDeviceId, LeftAnalogY);
 
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonBottom, bCross);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonLeft, bSquare);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonRight, bCircle);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonTop, bTriangle);
+	const float RightAnalogX = static_cast<char>(static_cast<short>(HIDInput[0x02] - 128)) / 128.0f;
+	const float RightAnalogY = static_cast<char>(static_cast<short>(HIDInput[0x03] - 127) * -1) / 128.0f;
+	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightAnalogX, UserId, InputDeviceId, RightAnalogX);
+	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightAnalogY, UserId, InputDeviceId, RightAnalogY);
 
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickUp, RightAnalogY > AnalogDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickDown, RightAnalogY < -AnalogDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickLeft, RightAnalogX < -AnalogDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickRight, RightAnalogX > AnalogDeadZone);
+	uint8_t ButtonsMask = HIDInput[0x04] & 0xF0;
+	const bool bCross = ButtonsMask & BTN_CROSS;
+	const bool bSquare = ButtonsMask & BTN_SQUARE;
+	const bool bCircle = ButtonsMask & BTN_CIRCLE;
+	const bool bTriangle = ButtonsMask & BTN_TRIANGLE;
 
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickUp, LeftAnalogY > AnalogDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickDown, LeftAnalogY < -AnalogDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickLeft, LeftAnalogX < -AnalogDeadZone);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickRight, LeftAnalogX > AnalogDeadZone);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonBottom, bCross);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonLeft, bSquare);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonRight, bCircle);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonTop, bTriangle);
 
-		switch (HIDInput[0x04] & 0x0F)
-		{
-			case 0x0:
-				ButtonsMask |= BTN_DPAD_UP;
-				break;
-			case 0x4:
-				ButtonsMask |= BTN_DPAD_DOWN;
-				break;
-			case 0x6:
-				ButtonsMask |= BTN_DPAD_LEFT;
-				break;
-			case 0x2:
-				ButtonsMask |= BTN_DPAD_RIGHT;
-				break;
-			case 0x5:
-				ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
-				break;
-			case 0x7:
-				ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
-				break;
-			case 0x1:
-				ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
-				break;
-			case 0x3:
-				ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
-				break;
-			default: ;
-		}
-		const bool bDPadLeft = ButtonsMask & BTN_DPAD_LEFT;
-		const bool bDPadDown = ButtonsMask & BTN_DPAD_DOWN;
-		const bool bDPadRight = ButtonsMask & BTN_DPAD_RIGHT;
-		const bool bDPadUp = ButtonsMask & BTN_DPAD_UP;
-		
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::DPadUp, bDPadUp);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::DPadDown, bDPadDown);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::DPadLeft, bDPadLeft);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::DPadRight, bDPadRight);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickUp,
+	                 RightAnalogY > AnalogDeadZone);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickDown,
+	                 RightAnalogY < -AnalogDeadZone);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickLeft,
+	                 RightAnalogX < -AnalogDeadZone);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickRight,
+	                 RightAnalogX > AnalogDeadZone);
 
-		// Shoulders
-		const bool bLeftShoulder = HIDInput[0x05] & BTN_LEFT_SHOLDER;
-		const bool bRightShoulder = HIDInput[0x05] & BTN_RIGHT_SHOLDER;
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftShoulder, bLeftShoulder);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightShoulder, bRightShoulder);
-		
-		// Push Stick
-		const bool PushLeftStick = HIDInput[0x05] & BTN_LEFT_STICK;
-		const bool PushRightStick = HIDInput[0x05] & BTN_RIGHT_STICK;
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FName("PS_PushLeftStick"), PushLeftStick);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FName("PS_PushRightStick"), PushRightStick);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftThumb, PushLeftStick);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightThumb, PushRightStick);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickUp,
+	                 LeftAnalogY > AnalogDeadZone);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickDown,
+	                 LeftAnalogY < -AnalogDeadZone);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickLeft,
+	                 LeftAnalogX < -AnalogDeadZone);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickRight,
+	                 LeftAnalogX > AnalogDeadZone);
 
-		const bool Start = HIDInput[0x05] & BTN_START;
-		const bool Select = HIDInput[0x05] & BTN_SELECT;
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FName("PS_Menu"), Start);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FName("PS_Share"), Select);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialRight, Start);
-		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialLeft, Select);
+	switch (HIDInput[0x04] & 0x0F)
+	{
+	case 0x0:
+		ButtonsMask |= BTN_DPAD_UP;
+		break;
+	case 0x4:
+		ButtonsMask |= BTN_DPAD_DOWN;
+		break;
+	case 0x6:
+		ButtonsMask |= BTN_DPAD_LEFT;
+		break;
+	case 0x2:
+		ButtonsMask |= BTN_DPAD_RIGHT;
+		break;
+	case 0x5:
+		ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
+		break;
+	case 0x7:
+		ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
+		break;
+	case 0x1:
+		ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
+		break;
+	case 0x3:
+		ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
+		break;
+	default: ;
+	}
+	const bool bDPadLeft = ButtonsMask & BTN_DPAD_LEFT;
+	const bool bDPadDown = ButtonsMask & BTN_DPAD_DOWN;
+	const bool bDPadRight = ButtonsMask & BTN_DPAD_RIGHT;
+	const bool bDPadUp = ButtonsMask & BTN_DPAD_UP;
+
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::DPadUp, bDPadUp);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::DPadDown, bDPadDown);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::DPadLeft, bDPadLeft);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::DPadRight, bDPadRight);
+
+	// Shoulders
+	const bool bLeftShoulder = HIDInput[0x05] & BTN_LEFT_SHOLDER;
+	const bool bRightShoulder = HIDInput[0x05] & BTN_RIGHT_SHOLDER;
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftShoulder, bLeftShoulder);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightShoulder, bRightShoulder);
+
+	// Push Stick
+	const bool PushLeftStick = HIDInput[0x05] & BTN_LEFT_STICK;
+	const bool PushRightStick = HIDInput[0x05] & BTN_RIGHT_STICK;
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FName("PS_PushLeftStick"), PushLeftStick);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FName("PS_PushRightStick"), PushRightStick);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftThumb, PushLeftStick);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightThumb, PushRightStick);
+
+	const bool Start = HIDInput[0x05] & BTN_START;
+	const bool Select = HIDInput[0x05] & BTN_SELECT;
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FName("PS_Menu"), Start);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FName("PS_Share"), Select);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialRight, Start);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialLeft, Select);
 }
 
 
@@ -239,4 +248,3 @@ void UDualShockLibrary::StopAll()
 {
 	SendOut();
 }
-

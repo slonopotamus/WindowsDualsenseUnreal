@@ -41,27 +41,11 @@ class WINDOWSDUALSENSE_DS5W_API ISonyGamepadInterface
 
 public:
 	/**
-	 * Provides access to the underlying mutable device context for low-level operations.
-	 * Note: For advanced/console usage only. May return nullptr if not available.
-	 */
-	virtual FDeviceContext* GetMutableDeviceContext() = 0;
-	/**
-	 * Resets the orientation of the gyroscope to its default state.
-	 * Typically used to recalibrate the gyroscope sensor.
-	 */
-	virtual void ResetGyroOrientation() = 0;
-	/**
 	 * Pure virtual function that checks the connection status of the gamepad.
 	 *
 	 * @return True if the gamepad is connected, false otherwise.
 	 */
 	virtual bool IsConnected() = 0;
-	/**
-	 * Sets the identifier for the controller to associate it with a specific device or context.
-	 *
-	 * @param ControllerId An integer representing the unique identifier for the controller.
-	 */
-	virtual void SetControllerId(int32 ControllerId) = 0;
 	/**
 	 * Retrieves the type of the device.
 	 *
@@ -74,14 +58,6 @@ public:
 	 * @return The connection type of the device as an EDeviceConnection enumeration.
 	 */
 	virtual EDeviceConnection GetConnectionType() = 0;
-	/**
-	 * Configures device settings for the Sony gamepad interface.
-	 * This pure virtual function must be implemented by derived classes to apply
-	 * specific settings defined in the FDeviceSettings struct to the gamepad device.
-	 *
-	 * @param Settings Reference to an FDeviceSettings struct containing the desired configuration parameters for the device.
-	 */
-	virtual void Settings(const FSettings<FFeatureReport>& Settings) = 0;
 	/**
 	 * Initializes the gamepad library using the specified device context.
 	 *
@@ -140,6 +116,11 @@ public:
 	 */
 	virtual void EnableTouch(const bool bIsTouch) = 0;
 	/**
+	 * Resets the orientation of the gyroscope to its default state.
+	 * Typically used to recalibrate the gyroscope sensor.
+	 */
+	virtual void ResetGyroOrientation() = 0;
+	/**
 	 * Enables the motion sensor functionality of the gamepad.
 	 *
 	 * @param bIsMotionSensor Specifies whether to enable the gyroscope (true) or accelerometer (false) as the motion sensor.
@@ -161,12 +142,6 @@ public:
 	 */
 	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) = 0;
 	/**
-	 * Stops all currently active operations or actions associated with the interface.
-	 * This method must be implemented by any derived class to handle the termination
-	 * of all ongoing processes.
-	 */
-	virtual void StopAll() = 0;
-	/**
 	 * Retrieves the current battery level of the Sony gamepad.
 	 *
 	 * @return The battery level as a floating-point value, where the exact range
@@ -182,10 +157,34 @@ public:
 	 */
 	virtual void SetVibration(const FForceFeedbackValues& Values) = 0;
 	/**
+	 * Provides access to the underlying mutable device context for low-level operations.
+	 * Note: For advanced/console usage only. May return nullptr if not available.
+	 */
+	virtual FDeviceContext* GetMutableDeviceContext() = 0;
+	/**
+	 * Determines if the controller events are enabled for sending.
+	 *
+	 * @return True if controller events are being sent, false otherwise.
+	 */
+	virtual bool IsSendControllerEvents() = 0;
+	/**
+	 * Sets the controller events based on the specified change state.
+	 *
+	 * @param IsChanged A boolean value indicating whether the controller events have changed.
+	 * @return True if the operation was successful, otherwise false.
+	 */
+	virtual void SetControllerEvents(const bool IsChanged) = 0;
+	/**
 	 * Pure virtual function that sends data or commands to the connected gamepad.
 	 * This function must be implemented by any class inheriting this interface.
 	 */
 	virtual void SendOut() = 0;
+	/**
+	 * Stops all currently active operations or actions associated with the interface.
+	 * This method must be implemented by any derived class to handle the termination
+	 * of all ongoing processes.
+	 */
+	virtual void StopAll() = 0;
 	/**
 	 * Updates the input state for the Sony gamepad interface.
 	 *

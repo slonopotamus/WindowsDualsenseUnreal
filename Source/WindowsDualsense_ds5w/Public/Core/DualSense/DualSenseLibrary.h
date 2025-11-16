@@ -250,22 +250,22 @@ USTRUCT()
 struct FSensorBounds
 {
 	GENERATED_BODY()
-	
+
 	UPROPERTY()
 	FVector2D Gyro_X_Bounds; // X = Min, Y = Max
-	
+
 	UPROPERTY()
 	FVector2D Gyro_Y_Bounds; // X = Min, Y = Max
-	
+
 	UPROPERTY()
 	FVector2D Gyro_Z_Bounds; // X = Min, Y = Max
-	
+
 	UPROPERTY()
 	FVector2D Accel_X_Bounds; // X = Min, Y = Max
-	
+
 	UPROPERTY()
 	FVector2D Accel_Y_Bounds; // X = Min, Y = Max
-	
+
 	UPROPERTY()
 	FVector2D Accel_Z_Bounds; // X = Min, Y = Max
 
@@ -303,13 +303,12 @@ struct FSensorBounds
  * the DualSense controller programmatically within an application.
  */
 UCLASS()
-class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISonyGamepadInterface, public ISonyGamepadTriggerInterface
+class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISonyGamepadInterface,
+                                                    public ISonyGamepadTriggerInterface
 {
 	GENERATED_BODY()
-	
+
 public:
-	// Expose device context for command-line helper operations
-	virtual FDeviceContext* GetMutableDeviceContext() override { return &HIDDeviceContexts; }
 	/**
 	 * @brief Configures device settings for a connected device.
 	 *
@@ -321,7 +320,6 @@ public:
 	 * @param Settings A reference to a FDeviceSettings object that holds
 	 * the device's configuration options to be adjusted or updated.
 	 */
-	virtual void Settings(const FSettings<FFeatureReport>& Settings) override;
 	virtual void Settings(const FDualSenseFeatureReport& Settings);
 	/**
 	 * @brief Initializes the DualSense library with the specified device context.
@@ -388,8 +386,8 @@ public:
 	 * @param IsButtonPressed A boolean indicating the current pressed state of the button (true if pressed, false otherwise).
 	 */
 	virtual void CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-								  const FPlatformUserId UserId, const FInputDeviceId InputDeviceId,
-								  const FName ButtonName, const bool IsButtonPressed);
+	                              const FPlatformUserId UserId, const FInputDeviceId InputDeviceId,
+	                              const FName ButtonName, const bool IsButtonPressed);
 	/**
 	 * @brief Updates the input state for a DualSense device.
 	 *
@@ -405,7 +403,6 @@ public:
 	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
 	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override;
 
-
 	/**
 	 * Retrieves the current battery level of the DualSense controller.
 	 *
@@ -414,20 +411,6 @@ public:
 	virtual float GetBattery() const override
 	{
 		return LevelBattery;
-	}
-	/**
-	 * @brief Sets the controller ID for the instance.
-	 *
-	 * This method is used to assign a specific identifier to the controller, which
-	 * can be utilized to differentiate between multiple controllers or devices in use.
-	 * The method overrides an existing function in the parent class, ensuring consistent
-	 * behavior across derived implementations.
-	 *
-	 * @param Id The unique identifier to assign to the controller.
-	 */
-	virtual void SetControllerId(int32 Id) override
-	{
-		ControllerID = Id;
 	}
 	/**
 	 * @brief Sets the haptic feedback values for the specified hand of the DualSense controller.
@@ -482,7 +465,6 @@ public:
 	 * a value of the EControllerHand enumeration.
 	 */
 	virtual void SetGameCube(const EControllerHand& Hand) override;
-
 	/**
 	 * Configures the adaptive trigger on a DualSense controller to apply continuous resistance.
 	 *
@@ -524,7 +506,7 @@ public:
 	 * @param Hand The controller hand (Left, Right, or AnyHand) to apply the effect to.
 	 */
 	void SetBow(int32 StartPosition, int32 EndPosition, int32 BegingStrength, int32 EndStrength,
-	                   const EControllerHand& Hand);
+	            const EControllerHand& Hand);
 	/**
 	 * Sets machine effects for the DualSense controller's adaptive triggers.
 	 *
@@ -537,7 +519,7 @@ public:
 	 * @param Hand The hand (Left, Right, or AnyHand) to apply the effect to.
 	 */
 	void SetMachine(int32 StartPosition, int32 EndPosition, int32 AmplitudeBegin, int32 AmplitudeEnd,
-	                       float Frequency, float Period, const EControllerHand& Hand);
+	                float Frequency, float Period, const EControllerHand& Hand);
 	/**
 	 * @brief Configures the galloping effect for a controller's trigger.
 	 *
@@ -609,20 +591,6 @@ public:
 	 */
 	virtual void SetVibration(const FForceFeedbackValues& Vibration) override;
 	/**
-	 * Sets the connection state of a phone.
-	 *
-	 * @param HasConnected Indicates whether the phone is connected (true) or not (false).
-	 */
-	void SetHasPhoneConnected(bool HasConnected);
-	/**
-	 * Sets the battery level of the DualSense device.
-	 *
-	 * @param Level The current battery level as a float value.
-	 * @param FullyCharged Indicates if the battery is fully charged.
-	 * @param Charging Indicates if the device is currently charging.
-	 */
-	void SetLevelBattery(float Level, bool FullyCharged, bool Charging);
-	/**
 	 * Stops any ongoing adaptive trigger effects on the specified controller hand.
 	 *
 	 * @param Hand The hand for which to stop the adaptive trigger effect.
@@ -667,7 +635,7 @@ public:
 	 */
 	virtual EDeviceConnection GetConnectionType() override
 	{
-		return HIDDeviceContexts.ConnectionType;	
+		return HIDDeviceContexts.ConnectionType;
 	}
 	/**
 	 * @brief Retrieves the type of device associated with the current context.
@@ -680,7 +648,7 @@ public:
 	 */
 	virtual EDeviceType GetDeviceType() override
 	{
-		return HIDDeviceContexts.DeviceType;	
+		return HIDDeviceContexts.DeviceType;
 	}
 	/**
 	 * @brief Enables or disables the touch functionality for the DualSense library.
@@ -755,14 +723,14 @@ public:
 	 */
 	virtual void ResetGyroOrientation() override;
 	/**
-	 * Represents the unique identifier assigned to a specific DualSense controller.
+	 * @brief Retrieves a mutable device context associated with the object.
 	 *
-	 * This variable is used to differentiate connected DualSense controllers, enabling the system
-	 * to identify which controller instance corresponds to ongoing operations or events. The
-	 * `ControllerID` is integral to updating input, haptic feedback, LED settings, and managing
-	 * individual device states in multi-controller environments.
+	 * This method provides access to the device context in a mutable form, allowing modifications to the underlying
+	 * hardware interface descriptor (HID) data specific to the device.
+	 *
+	 * @return A pointer to the mutable FDeviceContext object corresponding to the device's HID context.
 	 */
-	int32 ControllerID;
+	virtual FDeviceContext* GetMutableDeviceContext() override { return &HIDDeviceContexts; }
 	/**
 	 * A map representing the states of various buttons on a controller.
 	 *
@@ -778,7 +746,33 @@ public:
 	 * It is reset during library shutdown to clear all stored button states.
 	 */
 	TMap<const FName, bool> ButtonStates;
-	
+	/**
+	 * @brief Checks if controller events should be dispatched.
+	 *
+	 * Determines whether the system is configured to send controller
+	 * input events, allowing input processing for connected controllers.
+	 *
+	 * @return A boolean value where true indicates that controller events
+	 * should be sent, and false indicates they should not.
+	 */
+	virtual bool IsSendControllerEvents() override
+	{
+		return IsChange;
+	}
+	/**
+	 * @brief Checks if controller events should be dispatched.
+	 *
+	 * Determines whether the system is configured to send controller
+	 * input events, allowing input processing for connected controllers.
+	 *
+	 * @return A boolean value where true indicates that controller events
+	 * should be sent, and false indicates they should not.
+	 */
+	virtual void SetControllerEvents(const bool IsChanged) override
+	{
+		IsChange = IsChanged;
+	}
+
 protected:
 	/**
 	 * @brief The PlatformInputDeviceMapper is responsible for mapping platform-specific
@@ -799,8 +793,35 @@ protected:
 	 * - Facilitating cross-platform input device compatibility.
 	 */
 	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
-	
+	/**
+	 * Sets the connection state of a phone.
+	 *
+	 * @param HasConnected Indicates whether the phone is connected (true) or not (false).
+	 */
+	void SetHasPhoneConnected(bool HasConnected);
+	/**
+	 * Sets the battery level of the DualSense device.
+	 *
+	 * @param Level The current battery level as a float value.
+	 * @param FullyCharged Indicates if the battery is fully charged.
+	 * @param Charging Indicates if the device is currently charging.
+	 */
+	void SetLevelBattery(float Level, bool FullyCharged, bool Charging);
+
 private:
+	bool IsChange = false;
+	/**
+	 * @typedef FPlatformUserId
+	 * @brief Represents a platform-specific user identifier.
+	 *
+	 * The FPlatformUserId type is used to uniquely identify a user on the platform.
+	 * It helps in associating specific actions, settings, or preferences with a
+	 * particular user in a platform environment.
+	 *
+	 * @details Often utilized in multi-user applications or systems, this identifier
+	 * allows differentiation between users and helps in maintaining user-specific
+	 * data or context, especially in scenarios involving shared devices or services.
+	 */
 	FPlatformUserId DSUserId;
 	/**
 	 * @brief A variable that indicates whether touch functionality is enabled or disabled.
@@ -811,11 +832,33 @@ private:
 	 */
 	bool bEnableTouch;
 	/**
+	 * @brief Indicates whether the first touch input was active in the previous frame.
 	 *
+	 * Represents a boolean state that tracks if the first touch input (Touch1)
+	 * was detected as being down (pressed or active) during the last frame.
+	 * This variable is useful for identifying changes in touch state, such as
+	 * transitions between touch down and touch up events, or for implementing
+	 * touch-based controls in applications.
+	 *
+	 * @details This flag is often utilized within systems handling touch input
+	 * to determine the prior state of a touch point. By comparing its current
+	 * and previous states, developers can detect touch events such as presses,
+	 * holds, or releases for the primary touch interaction.
 	 */
 	bool bWasTouch1Down;
 	/**
+	 * @variable bWasTouch2Down
+	 * @brief Indicates the previous state of the second touch input on a touch-sensitive device.
 	 *
+	 * bWasTouch2Down is a boolean flag used to track whether the second touch input
+	 * on a touch-sensitive surface was previously in the "down" state. It stores the
+	 * state from a previous update, allowing for comparison with the current state
+	 * to detect changes in the touch interaction.
+	 *
+	 * @details This variable is typically part of an input handling system, where it plays
+	 * a role in monitoring touch events, such as detecting when the second touch point
+	 * transitions between active (down) and inactive (up) states. It may be utilized
+	 * in gesture recognition or other forms of touch-based interaction management.
 	 */
 	bool bWasTouch2Down;
 	/**
@@ -900,7 +943,19 @@ private:
 	 */
 	bool bEnableAccelerometerAndGyroscope;
 	/**
+	 * @var bIsResetGyroscope
+	 * @brief Indicates whether the gyroscope reset operation is enabled.
 	 *
+	 * This boolean variable is used to determine if the gyroscope should be reset
+	 * to its default state. When set to true, the system will perform the necessary
+	 * operations to reset and recalibrate the gyroscope. When set to false, the
+	 * gyroscope continues operating without reset.
+	 *
+	 * @details The variable is typically utilized in applications or systems
+	 * where gyroscope functionality is integrated, such as motion sensing
+	 * for gaming controllers, virtual reality devices, or other motion-driven
+	 * systems. Resetting the gyroscope might be necessary in scenarios where
+	 * recalibration is required due to drift or unexpected behavior.
 	 */
 	bool bIsResetGyroscope = false;
 	/**
@@ -1064,7 +1119,6 @@ private:
 	 * accelerometer measurements.
 	 */
 	FVector AccelBaseline;
-
 	/**
 	 * @class FusedOrientation
 	 * @brief Represents the fused orientation in quaternion format.

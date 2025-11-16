@@ -7,6 +7,7 @@
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/DeviceRegistry.h"
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
+#include "GameFramework/InputDeviceSubsystem.h"
 #include "Misc/CoreDelegates.h"
 
 DeviceManager::DeviceManager(
@@ -23,6 +24,7 @@ DeviceManager::~DeviceManager()
 
 void DeviceManager::SendControllerEvents()
 {
+	
 }
 
 void DeviceManager::Tick(float DeltaTime)
@@ -40,7 +42,6 @@ void DeviceManager::Tick(float DeltaTime)
 	TArray<FInputDeviceId> OutInputDevices;
 	OutInputDevices.Reset();
 	IPlatformInputDeviceMapper::Get().GetAllConnectedInputDevices(OutInputDevices);
-	
 	for (const FInputDeviceId& Device : OutInputDevices)
 	{
 		if (ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(Device); Gamepad)
@@ -50,7 +51,7 @@ void DeviceManager::Tick(float DeltaTime)
 			{
 				continue;
 			}
-			
+
 			FString ContextDrive = TEXT("DualSense");
 			if (Gamepad->GetDeviceType() == EDeviceType::DualShock4)
 			{
@@ -60,11 +61,17 @@ void DeviceManager::Tick(float DeltaTime)
 			{
 				ContextDrive = TEXT("DualSenseEdge");
 			}
-			
+
 			FInputDeviceScope InputScope(this, TEXT("DeviceManager.WindowsDualsense"), Device.GetId(), ContextDrive);
 			Gamepad->UpdateInput(MessageHandler, UserId, Device, DeltaTime);
+			if (Gamepad->IsSendControllerEvents())
+			{
+				UInputDeviceSubsystem::Get()->OnInputHardwareDeviceChanged.Broadcast(UserId, Device);
+				Gamepad->SetControllerEvents(false);
+			}
 		}
 	}
+	
 }
 
 void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProperty* Property)

@@ -205,7 +205,6 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	}
 
 	SonyGamepad->_getUObject()->AddToRoot();
-	SonyGamepad->SetControllerId(Context.UniqueInputDeviceId.GetId());
 	SonyGamepad->InitializeLibrary(Context);
 	
 	KnownDevicePaths.Add(Context.Path, Context.UniqueInputDeviceId);

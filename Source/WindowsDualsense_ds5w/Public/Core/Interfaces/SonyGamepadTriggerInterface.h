@@ -32,6 +32,14 @@ public:
 	 */
 	virtual void SetTriggers(const FInputDeviceProperty* Values) = 0;
 	/**
+	 * Sets the haptic feedback for a specific hand on the gamepad.
+	 *
+	 * @param Hand The hand to which the haptic feedback will be applied.
+	 *             Typically, 0 represents the left hand, and 1 represents the right hand.
+	 * @param Values A pointer to an FHapticFeedbackValues structure containing the haptic feedback details.
+	 */
+	virtual void SetHapticFeedback(int32 Hand, const FHapticFeedbackValues* Values) = 0;
+	/**
 	 * Activates custom trigger configurations on a gamepad for a specified hand.
 	 *
 	 * @param Hand A reference to the EControllerHand enum specifying the hand
@@ -40,14 +48,6 @@ public:
 	 *                 the trigger configuration parameters.
 	 */
 	virtual void CustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) = 0;
-	/**
-	 * Sets the haptic feedback for a specific hand on the gamepad.
-	 *
-	 * @param Hand The hand to which the haptic feedback will be applied.
-	 *             Typically, 0 represents the left hand, and 1 represents the right hand.
-	 * @param Values A pointer to an FHapticFeedbackValues structure containing the haptic feedback details.
-	 */
-	virtual void SetHapticFeedback(int32 Hand, const FHapticFeedbackValues* Values) = 0;
 	/**
 	 * Sets the resistance levels for the gamepad triggers across different stages
 	 * and applies them to a specified controller hand.
@@ -122,6 +122,12 @@ public:
 	 * @param Hand The controller hand to which the bow effect will be applied.
 	 */
 	virtual void SetBow(int32 StartPosition, int32 EndPosition, int32 BegingStrength, int32 EndStrength, const EControllerHand& Hand) = 0;
+	/**
+	 * Configures the GameCube controller interface for a specified controller hand.
+	 *
+	 * @param Hand The controller hand (left or right) for which the GameCube interface
+	 *             configuration is applied.
+	 */
 	virtual void SetGameCube(const EControllerHand& Hand) = 0;
 	/**
 	 * Disables the trigger effects on a gamepad for the specified controller hand.
