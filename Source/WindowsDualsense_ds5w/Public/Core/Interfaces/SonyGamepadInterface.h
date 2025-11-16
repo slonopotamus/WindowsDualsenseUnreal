@@ -46,6 +46,11 @@ public:
 	 */
 	virtual FDeviceContext* GetMutableDeviceContext() = 0;
 	/**
+	 * Resets the orientation of the gyroscope to its default state.
+	 * Typically used to recalibrate the gyroscope sensor.
+	 */
+	virtual void ResetGyroOrientation() = 0;
+	/**
 	 * Pure virtual function that checks the connection status of the gamepad.
 	 *
 	 * @return True if the gamepad is connected, false otherwise.

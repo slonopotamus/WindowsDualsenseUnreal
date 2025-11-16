@@ -19,7 +19,7 @@ void UDualSenseProxy::DeviceSettings(int32 ControllerId, FDualSenseFeatureReport
 	{
 		return;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -41,7 +41,7 @@ void UDualSenseProxy::RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* 
 	{
 		return;
 	}
-	
+
 	FHapticsRegistry::Get()->CreateListenerForDevice(DeviceId, Submix);
 }
 
@@ -62,7 +62,7 @@ void UDualSenseProxy::LedPlayerEffects(int32 ControllerId, ELedPlayerEnum Value,
 	{
 		return;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -80,13 +80,13 @@ void UDualSenseProxy::SetFeedback(int32 ControllerId, int32 BeginStrength,
 	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength)) BeginStrength = 8;
 	if (!FValidateHelpers::ValidateMaxPosition(MiddleStrength)) MiddleStrength = 8;
 	if (!FValidateHelpers::ValidateMaxPosition(EndStrength)) EndStrength = 8;
-	
+
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
@@ -107,13 +107,13 @@ void UDualSenseProxy::Resistance(int32 ControllerId, int32 StartPosition, int32 
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
 		return;
 	}
-	
+
 	Gamepad->SetResistance(StartPosition, EndPosition, Strength, Hand);
 }
 
@@ -128,40 +128,40 @@ void UDualSenseProxy::AutomaticGun(int32 ControllerId, int32 BeginStrength, int3
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
 		return;
 	}
-	
+
 	Gamepad->SetAutomaticGun(BeginStrength, MiddleStrength, EndStrength, Hand, KeepEffect, Frequency);
 }
 
-void UDualSenseProxy::GameCube ( int32 ControllerId , EControllerHand Hand )
+void UDualSenseProxy::GameCube(int32 ControllerId, EControllerHand Hand)
 {
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
 		return;
 	}
-	Gamepad->SetGameCube (Hand);
+	Gamepad->SetGameCube(Hand);
 }
 
-void UDualSenseProxy::CustomTrigger ( int32 ControllerId , EControllerHand Hand , const TArray<FString> & HexBytes )
+void UDualSenseProxy::CustomTrigger(int32 ControllerId, EControllerHand Hand, const TArray<FString>& HexBytes)
 {
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
@@ -172,7 +172,7 @@ void UDualSenseProxy::CustomTrigger ( int32 ControllerId , EControllerHand Hand 
 	{
 		return;
 	}
-	Gamepad->CustomTrigger (Hand, HexBytes);
+	Gamepad->CustomTrigger(Hand, HexBytes);
 }
 
 void UDualSenseProxy::ContinuousResistance(int32 ControllerId, int32 StartPosition, int32 Strength, EControllerHand Hand)
@@ -185,13 +185,13 @@ void UDualSenseProxy::ContinuousResistance(int32 ControllerId, int32 StartPositi
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
 		return;
 	}
-	
+
 	Gamepad->SetContinuousResistance(StartPosition, Strength, Hand);
 }
 
@@ -209,13 +209,13 @@ void UDualSenseProxy::Galloping(
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
 		return;
 	}
-	
+
 	Gamepad->SetGalloping(StartPosition, EndPosition, FirstFoot, SecondFoot, Frequency, Hand);
 }
 
@@ -227,7 +227,7 @@ void UDualSenseProxy::Machine(int32 ControllerId, int32 StartPosition, int32 End
 	{
 		StartPosition = 2;
 	}
-	
+
 	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 8;
 	if (!FValidateHelpers::ValidateMaxPosition(FirstFoot)) FirstFoot = 1;
 	if (!FValidateHelpers::ValidateMaxPosition(LasFoot)) LasFoot = 8;
@@ -237,7 +237,7 @@ void UDualSenseProxy::Machine(int32 ControllerId, int32 StartPosition, int32 End
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
@@ -259,7 +259,7 @@ void UDualSenseProxy::Weapon(int32 ControllerId, int32 StartPosition, int32 EndP
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
@@ -282,7 +282,7 @@ void UDualSenseProxy::Bow(int32 ControllerId, int32 StartPosition, int32 EndPosi
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
@@ -299,7 +299,7 @@ void UDualSenseProxy::NoResistance(int32 ControllerId, EControllerHand Hand)
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
@@ -316,7 +316,7 @@ void UDualSenseProxy::StopTriggerEffect(const int32 ControllerId, EControllerHan
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
@@ -333,7 +333,7 @@ void UDualSenseProxy::StopAllTriggersEffects(const int32 ControllerId)
 	{
 		return;
 	}
-	
+
 	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
@@ -350,12 +350,12 @@ void UDualSenseProxy::ResetEffects(const int32 ControllerId)
 	{
 		return;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return;
 	}
-	
+
 	Gamepad->StopAll();
 }

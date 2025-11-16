@@ -127,6 +127,22 @@ void USonyGamepadProxy::StartMotionSensorCalibration(int32 ControllerId, float D
 	Gamepad->StartMotionSensorCalibration(Duration, DeadZone);
 }
 
+void USonyGamepadProxy::ResetGyroOrientation(int32 ControllerId)
+{
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
+
+	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	if (!Gamepad)
+	{
+		return;
+	}
+	Gamepad->ResetGyroOrientation();
+}
+
 bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress)
 {
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);

@@ -41,7 +41,20 @@ void FMadgwickAhrs::UpdateImu ( float gx , float gy , float gz , float ax , floa
 	q0 = q0_/q_norm; q1 = q1_/q_norm; q2 = q2_/q_norm; q3 = q3_/q_norm;
 }
 
-void FMadgwickAhrs::GetEuler ( float & Roll , float & Pitch , float & Yaw )
+void FMadgwickAhrs::GetQuaternion(float &Nq0, float &Nq1, float &Nq2, float &Nq3) const
+{
+	Nq0 = this->q0;  // ou simplesmente q0 = FMadgwickAhrs::q0;
+	Nq1 = this->q1;
+	Nq2 = this->q2;
+	Nq3 = this->q3;
+}
+
+void FMadgwickAhrs::Reset()
+{
+	q0 = 1.0f; q1 = 0.0f; q2 = 0.0f; q3 = 0.0f;
+}
+
+void FMadgwickAhrs::GetEuler ( float & Roll , float & Yaw, float & Pitch )
 {
 	Roll = std::atan2(2.0f*(q0*q1 + q2*q3), 1.0f - 2.0f*(q1*q1 + q2*q2));
 	const float Sinp = 2.0f*(q0*q2 - q3*q1);

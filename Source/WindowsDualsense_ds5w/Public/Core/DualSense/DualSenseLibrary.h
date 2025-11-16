@@ -405,6 +405,7 @@ public:
 	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
 	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override;
 
+
 	/**
 	 * Retrieves the current battery level of the DualSense controller.
 	 *
@@ -469,6 +470,17 @@ public:
 	virtual void SetAutomaticGun(int32 BeginStrength, int32 MiddleStrength, int32 EndStrength,
 	                             const EControllerHand& Hand, bool KeepEffect, float Frequency) override;
 
+	/**
+	 * @brief Configures the trigger settings on a DualSense controller for GameCube-style behavior.
+	 *
+	 * This method configures the triggers on the DualSense controller to emulate
+	 * a GameCube-style response based on the specified controller hand.
+	 * It adjusts the trigger's mode and strengths for the desired effects.
+	 *
+	 * @param Hand The hand (left, right, or both) corresponding to the controller
+	 * side where the GameCube-style trigger behavior should be applied. Must be
+	 * a value of the EControllerHand enumeration.
+	 */
 	virtual void SetGameCube(const EControllerHand& Hand) override;
 
 	/**
@@ -735,6 +747,14 @@ public:
 	 */
 	virtual void AudioHapticUpdate(TArray<int8> Data) override;
 	/**
+	 * @brief Resets the gyro orientation to its default alignment.
+	 *
+	 * This method reinitializes the gyroscope orientation, typically
+	 * to recalibrate it or correct drift. It should be invoked when
+	 * a new reference orientation is needed.
+	 */
+	virtual void ResetGyroOrientation() override;
+	/**
 	 * Represents the unique identifier assigned to a specific DualSense controller.
 	 *
 	 * This variable is used to differentiate connected DualSense controllers, enabling the system
@@ -879,6 +899,10 @@ private:
 	 * Disabling this may reduce resource usage but will disable motion-based features.
 	 */
 	bool bEnableAccelerometerAndGyroscope;
+	/**
+	 *
+	 */
+	bool bIsResetGyroscope = false;
 	/**
 	 * @brief Indicates the presence of a motion sensor baseline calibration.
 	 *

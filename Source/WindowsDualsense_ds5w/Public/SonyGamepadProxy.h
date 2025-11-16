@@ -108,6 +108,9 @@ public:
 				ToolTip = "A percentage (0.0 to 1.0) of the sensor noise range to ignore after calibration. A higher value creates a larger deadzone, filtering out more residual noise but potentially ignoring very subtle movements."))
 				float DeadZone = 0.5f
 			);
+
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad|Motion Sensors")
+	static void ResetGyroOrientation(int32 ControllerId);
 	/**
 	 * Retrieves the calibration status of the motion sensor for the specified controller.
 	 *

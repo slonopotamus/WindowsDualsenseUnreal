@@ -231,6 +231,14 @@ public:
 	 */
 	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override {return false;}
 	/**
+	 * @brief Resets the gyro orientation to its default alignment.
+	 *
+	 * This method reinitializes the gyroscope orientation, typically
+	 * to recalibrate it or correct drift. It should be invoked when
+	 * a new reference orientation is needed.
+	 */
+	virtual void ResetGyroOrientation() override {}
+	/**
 	 * Represents the unique identifier assigned to a specific DualSense controller.
 	 *
 	 * This variable is used to differentiate connected DualSense controllers, enabling the system
