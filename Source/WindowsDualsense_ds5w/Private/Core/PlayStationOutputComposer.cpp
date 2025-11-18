@@ -176,14 +176,19 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x9] = Effect.Strengths.Compose[9];
 	}
 	
-	if (Effect.Mode == 0x27) // Machine
-	{
-		Trigger[0x1] = ((Effect.Strengths.ActiveZones >> 0) & 0xFF);
-		Trigger[0x2] = ((Effect.Strengths.ActiveZones >> 8) & 0xFF);
-		Trigger[0x3] = ((Effect.Strengths.StrengthZones) & 0xFF);
-		Trigger[0x4] = Effect.Frequency;
-		Trigger[0x5] = Effect.Strengths.Period;
-	}
+ if (Effect.Mode == 0x27) // Machine Advanced
+ {
+     // Structure: [27] [Start_Zone] [Behavior_Flag] [Force_Amplitude] [Period] [Frequency]
+     Trigger[0x1] = Effect.Strengths.Compose[0]; // Start_Zone
+     Trigger[0x2] = Effect.Strengths.Compose[1]; // Behavior_Flag
+     Trigger[0x3] = Effect.Strengths.Compose[2]; // Force_Amplitude
+     Trigger[0x4] = Effect.Strengths.Compose[3]; // Period
+     Trigger[0x5] = Effect.Strengths.Compose[4]; // Frequency
+     Trigger[0x6] = 0x00;
+     Trigger[0x7] = 0x00;
+     Trigger[0x8] = 0x00;
+     Trigger[0x9] = 0x00;
+ }
 	
 	if (Effect.Mode == 0xFF) // Custom Mode effect
 	{
