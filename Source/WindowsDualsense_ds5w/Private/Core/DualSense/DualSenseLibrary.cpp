@@ -85,13 +85,11 @@ void UDualSenseLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMes
 	const bool PreviousState = ButtonStates.Contains(ButtonName) ? ButtonStates[ButtonName] : false;
 	if (IsButtonPressed && !PreviousState)
 	{
-		SetControllerEvents(true);
 		InMessageHandler.Get().OnControllerButtonPressed(ButtonName, UserId, InputDeviceId, false);
 	}
 
 	if (!IsButtonPressed && PreviousState)
 	{
-		SetControllerEvents(true);
 		InMessageHandler.Get().OnControllerButtonReleased(ButtonName, UserId, InputDeviceId, false);
 	}
 
@@ -106,24 +104,23 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	{
 		IPlatformHardwareInfoInterface::Get().Read(NewContext);
 	});
-
-	// FValidateHelpers::PrintBufferAsHex(HIDDeviceContexts.Buffer, 78, TEXT(""));
+	
 	const size_t Padding = HIDDeviceContexts.ConnectionType == Bluetooth ? 2 : 1;
 	const unsigned char* HIDInput = &HIDDeviceContexts.Buffer[Padding];
 
-	const float LeftAnalogX = static_cast<char>(static_cast<short>(HIDInput[0x00] - 128));
-	const float LeftAnalogY = static_cast<char>(static_cast<short>(HIDInput[0x01] - 127) * -1);
+	const float LeftAnalogX = static_cast<int8_t>(HIDInput[0x00] - 128);
+	const float LeftAnalogY = static_cast<int8_t>(HIDInput[0x01] - 128) * -1.0f;
 	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftAnalogX, UserId, InputDeviceId,
-	                                          LeftAnalogX / 128.0f);
+											  LeftAnalogX / 128.0f);
 	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftAnalogY, UserId, InputDeviceId,
-	                                          LeftAnalogY / 128.0f);
+											  LeftAnalogY / 128.0f);
 
-	const float RightAnalogX = static_cast<char>(static_cast<short>(HIDInput[0x02] - 128));
-	const float RightAnalogY = static_cast<char>(static_cast<short>(HIDInput[0x03] - 127) * -1);
+	const float RightAnalogX = static_cast<int8_t>(HIDInput[0x02] - 128);
+	const float RightAnalogY = static_cast<int8_t>(HIDInput[0x03] - 128) * -1.0f;
 	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightAnalogX, UserId, InputDeviceId,
-	                                          RightAnalogX / 128.0f);
+											  RightAnalogX / 128.0f);
 	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightAnalogY, UserId, InputDeviceId,
-	                                          RightAnalogY / 128.0f);
+											  RightAnalogY / 128.0f);
 
 	const float TriggerL = HIDInput[0x04] / 256.0f;
 	const float TriggerR = HIDInput[0x05] / 256.0f;
@@ -239,7 +236,6 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	// mapped urenal native gamepad Start and Select
 	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialRight, Start);
 	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialLeft, Select);
-
 
 	const bool bLeftTriggerThreshold = HIDInput[0x08] & BTN_LEFT_TRIGGER;
 	const bool bRightTriggerThreshold = HIDInput[0x08] & BTN_RIGHT_TRIGGER;
@@ -430,7 +426,6 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		// converted from raw counts to SI using the official DS constants.
 		// The Madgwick instance and initialization are static locals so that
 		// we don't need to change the class header right away.
-
 		static FMadgwickAhrs MadgwickFilter(200.0f, 0.08f);
 		static bool bMadgwickInitialized = false;
 

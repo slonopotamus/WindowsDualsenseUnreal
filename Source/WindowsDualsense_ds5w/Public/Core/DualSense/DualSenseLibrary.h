@@ -746,32 +746,6 @@ public:
 	 * It is reset during library shutdown to clear all stored button states.
 	 */
 	TMap<const FName, bool> ButtonStates;
-	/**
-	 * @brief Checks if controller events should be dispatched.
-	 *
-	 * Determines whether the system is configured to send controller
-	 * input events, allowing input processing for connected controllers.
-	 *
-	 * @return A boolean value where true indicates that controller events
-	 * should be sent, and false indicates they should not.
-	 */
-	virtual bool IsSendControllerEvents() override
-	{
-		return IsChange;
-	}
-	/**
-	 * @brief Checks if controller events should be dispatched.
-	 *
-	 * Determines whether the system is configured to send controller
-	 * input events, allowing input processing for connected controllers.
-	 *
-	 * @return A boolean value where true indicates that controller events
-	 * should be sent, and false indicates they should not.
-	 */
-	virtual void SetControllerEvents(const bool IsChanged) override
-	{
-		IsChange = IsChanged;
-	}
 
 protected:
 	/**
@@ -809,7 +783,6 @@ protected:
 	void SetLevelBattery(float Level, bool FullyCharged, bool Charging);
 
 private:
-	bool IsChange = false;
 	/**
 	 * @typedef FPlatformUserId
 	 * @brief Represents a platform-specific user identifier.
@@ -913,7 +886,7 @@ private:
 	 * the sensitivity to unintentional micro-adjustments. It is often applied in
 	 * joystick or motion sensor implementations.
 	 */
-	float SensorsDeadZone = 0.3f;
+	float SensorsDeadZone = 0.0f;
 	/**
 	 * @variable SensorsDeadZone
 	 * @brief Defines the threshold for ignoring small sensor input variations.

@@ -7,7 +7,6 @@
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/DeviceRegistry.h"
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
-#include "GameFramework/InputDeviceSubsystem.h"
 #include "Misc/CoreDelegates.h"
 
 DeviceManager::DeviceManager(
@@ -64,11 +63,6 @@ void DeviceManager::Tick(float DeltaTime)
 
 			FInputDeviceScope InputScope(this, TEXT("DeviceManager.WindowsDualsense"), Device.GetId(), ContextDrive);
 			Gamepad->UpdateInput(MessageHandler, UserId, Device, DeltaTime);
-			if (Gamepad->IsSendControllerEvents())
-			{
-				UInputDeviceSubsystem::Get()->OnInputHardwareDeviceChanged.Broadcast(UserId, Device);
-				Gamepad->SetControllerEvents(false);
-			}
 		}
 	}
 	
