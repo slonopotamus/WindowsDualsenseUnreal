@@ -248,6 +248,8 @@ public:
 	 */
 	TMap<const FName, bool> ButtonStates;
 
+	TMap<const FName, float> AnalogStates;
+
 protected:
 	/**
 	 * @brief The PlatformInputDeviceMapper is responsible for mapping platform-specific
