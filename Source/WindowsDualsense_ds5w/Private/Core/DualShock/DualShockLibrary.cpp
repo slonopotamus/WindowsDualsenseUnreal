@@ -95,15 +95,35 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightTriggerAnalog, UserId, InputDeviceId, TriggerR);
 
 	// Analogs
-	const float LeftAnalogX = static_cast<char>(static_cast<short>(HIDInput[0x00] - 128)) / 128.0f;
-	const float LeftAnalogY = static_cast<char>(static_cast<short>(HIDInput[0x01] - 127) * -1) / 128.0f;
-	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftAnalogX, UserId, InputDeviceId, LeftAnalogX);
-	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftAnalogY, UserId, InputDeviceId, LeftAnalogY);
+	const auto HandleAnalogInput = [&](const FName& AnalogKey, const FName& ButtonKeyPositive, const FName& ButtonKeyNegative, float NewAxisValue) {
+		if (FMath::Abs(NewAxisValue) < AnalogDeadZone)
+		{
+			NewAxisValue = 0;
+		}
 
-	const float RightAnalogX = static_cast<char>(static_cast<short>(HIDInput[0x02] - 128)) / 128.0f;
-	const float RightAnalogY = static_cast<char>(static_cast<short>(HIDInput[0x03] - 127) * -1) / 128.0f;
-	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightAnalogX, UserId, InputDeviceId, RightAnalogX);
-	InMessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightAnalogY, UserId, InputDeviceId, RightAnalogY);
+		auto& OldAxisValue = AnalogStates.FindOrAdd(AnalogKey);
+
+		if (FMath::IsNearlyEqual(NewAxisValue, OldAxisValue))
+		{
+			return;
+		}
+
+		InMessageHandler->OnControllerAnalog(AnalogKey, UserId, InputDeviceId, NewAxisValue);
+		OldAxisValue = NewAxisValue;
+
+		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, ButtonKeyPositive, NewAxisValue > 0);
+		CheckButtonInput(InMessageHandler, UserId, InputDeviceId, ButtonKeyNegative, NewAxisValue < 0);
+	};
+
+	const float LeftAnalogX = static_cast<float>(HIDInput[0x00] - 128) / 128;
+	const float LeftAnalogY = static_cast<float>(HIDInput[0x01] - 128) / -128;
+	const float RightAnalogX = static_cast<float>(HIDInput[0x02] - 128) / 128;
+	const float RightAnalogY = static_cast<float>(HIDInput[0x03] - 128) / -128;
+
+	HandleAnalogInput(FGamepadKeyNames::LeftAnalogX, FGamepadKeyNames::LeftStickLeft, FGamepadKeyNames::LeftStickRight, LeftAnalogX);
+	HandleAnalogInput(FGamepadKeyNames::LeftAnalogY, FGamepadKeyNames::LeftStickDown, FGamepadKeyNames::LeftStickUp, LeftAnalogY);
+	HandleAnalogInput(FGamepadKeyNames::RightAnalogX, FGamepadKeyNames::RightStickLeft, FGamepadKeyNames::RightStickRight, RightAnalogX);
+	HandleAnalogInput(FGamepadKeyNames::RightAnalogY, FGamepadKeyNames::RightStickDown, FGamepadKeyNames::RightStickUp, RightAnalogY);
 
 	uint8_t ButtonsMask = HIDInput[0x04] & 0xF0;
 	const bool bCross = ButtonsMask & BTN_CROSS;
@@ -115,24 +135,6 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonLeft, bSquare);
 	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonRight, bCircle);
 	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonTop, bTriangle);
-
-	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickUp,
-	                 RightAnalogY > AnalogDeadZone);
-	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickDown,
-	                 RightAnalogY < -AnalogDeadZone);
-	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickLeft,
-	                 RightAnalogX < -AnalogDeadZone);
-	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightStickRight,
-	                 RightAnalogX > AnalogDeadZone);
-
-	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickUp,
-	                 LeftAnalogY > AnalogDeadZone);
-	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickDown,
-	                 LeftAnalogY < -AnalogDeadZone);
-	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickLeft,
-	                 LeftAnalogX < -AnalogDeadZone);
-	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftStickRight,
-	                 LeftAnalogX > AnalogDeadZone);
 
 	switch (HIDInput[0x04] & 0x0F)
 	{
