@@ -222,29 +222,6 @@ void UDualSenseProxy::Galloping(
 void UDualSenseProxy::Machine(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
                               int32 LasFoot, float Frequency, float Period, EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 2;
-	if (StartPosition < 2)
-	{
-		StartPosition = 2;
-	}
-
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(FirstFoot)) FirstFoot = 1;
-	if (!FValidateHelpers::ValidateMaxPosition(LasFoot)) LasFoot = 8;
-
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
-	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->SetMachine(StartPosition, EndPosition, FirstFoot, LasFoot, Frequency, Period, Hand);
 }
 
 void UDualSenseProxy::Weapon(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 Strength,
@@ -289,7 +266,72 @@ void UDualSenseProxy::Bow(int32 ControllerId, int32 StartPosition, int32 EndPosi
 		return;
 	}
 
-	Gamepad->SetBow(StartPosition, EndPosition, BeginStrength, EndStrength, Hand);
+    Gamepad->SetBow(StartPosition, EndPosition, BeginStrength, EndStrength, Hand);
+}
+
+static uint8 MapStartZoneEnum(ETriggerPosition Pos)
+{
+    // Map to provided constants: Start = 0x82, Middle = 0x84, End = 0x80, MidLow = 0x88
+    switch (Pos)
+    {
+    case ETriggerPosition::Start: return 0x82;
+    case ETriggerPosition::Middle: return 0x84;
+    case ETriggerPosition::End: return 0x80;
+    case ETriggerPosition::BeforeEnd: return 0x88; // using MidLow mapping
+    case ETriggerPosition::Off: default: return 0x00;
+    }
+}
+
+static uint8 MapBehavior(ETriggerEffectBehavior Behavior)
+{
+    // EndAtPos = 1, KeepEffect = 2
+    switch (Behavior)
+    {
+    case ETriggerEffectBehavior::Localized: return 0x01; // EndAtPos
+    case ETriggerEffectBehavior::Sustained: return 0x02; // KeepEffect
+    default: return 0x01;
+    }
+}
+
+static uint8 ComposeForceAmplitude(ETriggerForceIntensity Force, EDualSenseTriggerAmplitude Amplitude)
+{
+    // High nibble 1-3 from Force, Low nibble 0x0A-0x0F from Amplitude
+    const uint8 forceNib = static_cast<uint8>(Force) & 0x0F;
+    const uint8 ampNib = static_cast<uint8>(Amplitude) & 0x0F;
+    uint8 hi = forceNib;
+    if (hi < 1) hi = 1; if (hi > 3) hi = 3;
+    uint8 lo = ampNib;
+    if (lo < 0x0A) lo = 0x0A; if (lo > 0x0F) lo = 0x0F;
+    return static_cast<uint8>((hi << 4) | (lo & 0x0F));
+}
+
+void UDualSenseProxy::MachineAdvanced(int32 ControllerId, ETriggerPosition StartZone,
+                                      ETriggerEffectBehavior Behavior,
+                                      ETriggerForceIntensity ForceIntensity,
+                                      EDualSenseTriggerAmplitude Amplitude,
+                                      int32 Period, int32 Frequency, EControllerHand Hand)
+{
+    // Clamp ranges
+    Period = FMath::Clamp(Period, 0, 20);
+    Frequency = FMath::Clamp(Frequency, 0, 40);
+
+    const uint8 startZoneByte = MapStartZoneEnum(StartZone);
+    const uint8 behaviorByte = MapBehavior(Behavior);
+    const uint8 forceAmp = ComposeForceAmplitude(ForceIntensity, Amplitude);
+
+    const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+    if (!DeviceId.IsValid())
+    {
+        return;
+    }
+
+    ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
+    if (!Gamepad)
+    {
+        return;
+    }
+
+    Gamepad->SetMachine27(startZoneByte, behaviorByte, forceAmp, static_cast<uint8>(Period), static_cast<uint8>(Frequency), Hand);
 }
 
 void UDualSenseProxy::NoResistance(int32 ControllerId, EControllerHand Hand)

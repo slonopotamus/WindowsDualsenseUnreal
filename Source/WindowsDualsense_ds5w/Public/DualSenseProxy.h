@@ -12,6 +12,66 @@
 #include "Core/Structs/DualSenseFeatureReport.h"
 #include "DualSenseProxy.generated.h"
 
+UENUM(BlueprintType)
+enum class ETriggerForceIntensity : uint8
+{
+	/** No force feedback applied */
+	Disabled = 0x00 UMETA(DisplayName = "Disabled"),
+	
+	/** Low intensity force feedback */
+	Low = 0x01 UMETA(DisplayName = "Low (25%)"),
+	
+	/** Medium intensity force feedback */
+	Medium = 0x02 UMETA(DisplayName = "Medium (50%)"),
+	
+	/** High intensity force feedback */
+	High = 0x03 UMETA(DisplayName = "High (100%)")
+};
+
+UENUM(BlueprintType)
+enum class ETriggerPosition : uint8
+{
+	/** No resistance at any position */
+	Off = 0x00 UMETA(DisplayName = "Off (No Resistance)"),
+	
+	/** Start position - Beginning of trigger pull (0-25%) */
+	Start = 0x02 UMETA(DisplayName = "Start (0-25%)"),
+	
+	/** Middle position - Mid trigger pull (25-50%) */
+	Middle = 0x04 UMETA(DisplayName = "Middle (25-50%)"),
+	
+	/** Before End position - Near full pull (50-75%) */
+	BeforeEnd = 0x08 UMETA(DisplayName = "Before End (50-75%)"),
+	
+	/** End position - Full trigger pull (75-100%) */
+	End = 0x80 UMETA(DisplayName = "End (75-100%)")
+};
+
+UENUM(BlueprintType)
+enum class EDualSenseTriggerAmplitude : uint8
+{
+	/** No amplitude - Effect disabled */
+	None = 0x00 UMETA(DisplayName = "None (0%)"),
+	
+	/** Low amplitude - Subtle vibration effect */
+	Low = 0x0A UMETA(DisplayName = "Low (~40%)"),
+	
+	/** Medium amplitude - Moderate vibration effect */
+	Medium = 0x0C UMETA(DisplayName = "Medium (~50%)"),
+	
+	/** High amplitude - Strong vibration effect */
+	High = 0x0F UMETA(DisplayName = "High (100%)")
+};
+
+UENUM(BlueprintType)
+enum class ETriggerEffectBehavior : uint8
+{
+	/** Effect applies only at specified position range */
+	Localized = 0 UMETA(DisplayName = "Localized (Stop at Position)"),
+	
+	/** Effect continues until trigger is fully pressed */
+	Sustained = 1 UMETA(DisplayName = "Sustained (Extend to End)")
+};
 
 /**
  * @brief Proxy class for PlayStation DualSense controller interactions and effects.
@@ -93,10 +153,9 @@ public:
 	 * @param ControllerId The identifier for the DualSense controller to target.
 	 * @param Hand Specifies which hand (left or right) the effect should be applied to.
 	 */
-	UFUNCTION (BlueprintCallable, Category = "DualSense Effects")
+	UFUNCTION (BlueprintCallable, Category = "DualSense Effects|Game Cube")
 	static void GameCube(
 		int32 ControllerId,
-		
 		EControllerHand Hand
 	);
 
@@ -136,7 +195,6 @@ public:
 		int32 MiddleStrength,
 		UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 EndStrength,
-		
 		EControllerHand Hand
 	);
 
@@ -255,8 +313,10 @@ public:
 	 * @param Period The period of the haptic cycle in seconds.
 	 * @param Hand Specifies which hand the effect is directed towards (left or right).
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
-	static void Machine(
+UE_DEPRECATED(
+	5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Machine instead of EffectMachine.")
+ UFUNCTION(BlueprintCallable, Category = "DualSense Effects", meta=(DeprecatedFunction, DeprecationMessage="Use MachineAdvanced (0x27) instead"))
+ static void Machine(
 		int32 ControllerId,
 		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 		int32 StartPosition,
@@ -271,6 +331,26 @@ public:
 		UPARAM(meta = (ClampMin = "0.015", ClampMax = "1.0", UIMin = "0.01", UIMax = "1.0"))
 		float Period,
 		
+		EControllerHand Hand
+	);
+
+	/**
+	 * Novo efeito Machine avançado (opcode 0x27).
+	 * Estrutura: [27] [Start_Zone] [Behavior_Flag] [Force_Amplitude] [Period] [Frequency]
+	 * Start_Zone: ETriggerPosition -> mapeado para 0x82, 0x84, 0x80, 0x88
+	 * Behavior_Flag: Localized=1 (EndAtPos), Sustained=2 (KeepEffect)
+	 * Force_Amplitude: High nibble (1-3) = ETriggerForceIntensity, Low nibble (10-15) = EDualSenseTriggerAmplitude
+	 * Period: 0-20, Frequency: 0-40
+	 */
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects", meta=(DisplayName="Machine Advanced (0x27)"))
+	static void MachineAdvanced(
+		int32 ControllerId,
+		ETriggerPosition StartZone,
+		ETriggerEffectBehavior Behavior,
+		ETriggerForceIntensity ForceIntensity,
+		EDualSenseTriggerAmplitude Amplitude,
+		UPARAM(meta = (ClampMin = "0", ClampMax = "20", UIMin = "0", UIMax = "20")) int32 Period,
+		UPARAM(meta = (ClampMin = "0", ClampMax = "40", UIMin = "0", UIMax = "40")) int32 Frequency,
 		EControllerHand Hand
 	);
 
@@ -429,7 +509,6 @@ public:
 	                          
 	                          EControllerHand Hand)
 	{
-		Machine(ControllerId, StartPosition, EndPosition, FirstFoot, LasFoot, Frequency, Period, Hand);
 	}
 
 	/**

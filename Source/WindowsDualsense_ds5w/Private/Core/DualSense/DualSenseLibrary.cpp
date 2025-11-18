@@ -786,7 +786,37 @@ void UDualSenseLibrary::SetMachine(int32 StartPosition, int32 EndPosition, int32
 		HidOutput->RightTrigger.Strengths.Compose[6] = static_cast<uint8>(Frequency);
 	}
 
-	SendOut();
+    SendOut();
+}
+
+void UDualSenseLibrary::SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 ForceAmplitude, uint8 Period,
+                                     uint8 Frequency, const EControllerHand& Hand)
+{
+    HIDDeviceContexts.bOverrideTriggerBytes = false;
+    FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+
+    // Mode 0x27 advanced machine effect
+    if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+    {
+        HidOutput->LeftTrigger.Mode = 0x27;
+        HidOutput->LeftTrigger.Strengths.Compose[0] = StartZone;      // Start_Zone
+        HidOutput->LeftTrigger.Strengths.Compose[1] = BehaviorFlag > 0 ? 0x02 : 0x00;
+        HidOutput->LeftTrigger.Strengths.Compose[2] = ForceAmplitude; // High nibble=force, Low nibble=amplitude
+        HidOutput->LeftTrigger.Strengths.Compose[3] = Period;         // Period 0-20
+        HidOutput->LeftTrigger.Strengths.Compose[4] = Frequency;      // Frequency 0-40
+    }
+
+    if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+    {
+        HidOutput->RightTrigger.Mode = 0x27;
+        HidOutput->RightTrigger.Strengths.Compose[0] = StartZone;
+        HidOutput->RightTrigger.Strengths.Compose[1] = BehaviorFlag > 0 ? 0x02 : 0x00;
+        HidOutput->RightTrigger.Strengths.Compose[2] = ForceAmplitude;
+        HidOutput->RightTrigger.Strengths.Compose[3] = Period;
+        HidOutput->RightTrigger.Strengths.Compose[4] = Frequency;
+    }
+
+    SendOut();
 }
 
 void UDualSenseLibrary::SetBow(int32 StartPosition, int32 EndPosition, int32 BegingStrength, int32 EndStrength,
