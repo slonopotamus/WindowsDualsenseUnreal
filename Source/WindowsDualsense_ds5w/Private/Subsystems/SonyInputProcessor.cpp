@@ -50,13 +50,13 @@ bool FSonyInputProcessor::HandleMouseButtonUpEvent(FSlateApplication& SlateApp, 
 }
 
 bool FSonyInputProcessor::HandleMouseButtonDoubleClickEvent(FSlateApplication& SlateApp,
-	const FPointerEvent& MouseEvent)
+                                                            const FPointerEvent& MouseEvent)
 {
 	return IInputProcessor::HandleMouseButtonDoubleClickEvent(SlateApp, MouseEvent);
 }
 
 bool FSonyInputProcessor::HandleMouseWheelOrGestureEvent(FSlateApplication& SlateApp, const FPointerEvent& InWheelEvent,
-	const FPointerEvent* InGestureEvent)
+                                                         const FPointerEvent* InGestureEvent)
 {
 	return IInputProcessor::HandleMouseWheelOrGestureEvent(SlateApp, InWheelEvent, InGestureEvent);
 }

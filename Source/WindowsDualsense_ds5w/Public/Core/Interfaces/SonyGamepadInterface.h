@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/Interface.h"
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Structs/DeviceContext.h"
 #include "Core/Structs/DeviceSettings.h"
+#include "CoreMinimal.h"
 #include "InputCoreTypes.h"
 #include "Misc/CoreDelegates.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
+#include "UObject/Interface.h"
 #include "SonyGamepadInterface.generated.h"
 
 USTRUCT(BlueprintType)

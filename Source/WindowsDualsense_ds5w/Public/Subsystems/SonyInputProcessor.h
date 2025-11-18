@@ -5,24 +5,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Framework/Application/IInputProcessor.h"
 #include "Input/Events.h"
 #include "InputCoreTypes.h"
-#include "Framework/Application/IInputProcessor.h"
 
 class FSonyInputProcessor : public IInputProcessor
 {
 public:
 	virtual ~FSonyInputProcessor() override {}
-	virtual void Tick(const float DeltaTime, FSlateApplication& SlateApp, TSharedRef<ICursor> Cursor) override {};
+	virtual void Tick(const float DeltaTime, FSlateApplication& SlateApp, TSharedRef<ICursor> Cursor) override {}
 	virtual bool HandleMouseMoveEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent) override;
 	virtual bool HandleMouseButtonDownEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent) override;
 	virtual bool HandleMouseButtonUpEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent) override;
 	virtual bool HandleMouseButtonDoubleClickEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent) override;
 	virtual bool HandleMouseWheelOrGestureEvent(FSlateApplication& SlateApp, const FPointerEvent& InWheelEvent,
-		const FPointerEvent* InGestureEvent) override;
+	                                            const FPointerEvent* InGestureEvent) override;
 	virtual bool HandleMotionDetectedEvent(FSlateApplication& SlateApp, const FMotionEvent& MotionEvent) override;
 	virtual const TCHAR* GetDebugName() const override;
-
 
 	/**
 	 * Handles a key-down event and verifies if the input originates from a Sony controller.

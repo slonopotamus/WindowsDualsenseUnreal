@@ -4,12 +4,11 @@
 
 #pragma once
 
-
 #if PLATFORM_WINDOWS
 
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include <Windows.h>
 #include "Windows/HideWindowsPlatformTypes.h"
+#include <Windows.h>
 using FPlatformDeviceHandle = HANDLE;
 #define INVALID_PLATFORM_HANDLE INVALID_HANDLE_VALUE
 
@@ -22,9 +21,9 @@ using FPlatformDeviceHandle = void*;
 #define INVALID_PLATFORM_HANDLE nullptr
 #endif
 
+#include "Core/Enums/EDeviceConnection.h"
 #include "CoreMinimal.h"
 #include "OutputContext.h"
-#include "Core/Enums/EDeviceConnection.h"
 #include "DeviceContext.generated.h"
 
 /**
@@ -203,8 +202,10 @@ struct FDeviceContext
 	// When enabled via console commands, these arrays are copied verbatim into the HID report.
 	bool bOverrideTriggerBytes = false;
 	unsigned char OverrideTriggerRight[10] = {};
-	unsigned char OverrideTriggerLeft[10]  = {};
+	unsigned char OverrideTriggerLeft[10] = {};
 
 	FDeviceContext() = default;
-	explicit FDeviceContext( const FInputDeviceId InUniqueInputDeviceId) : UniqueInputDeviceId(InUniqueInputDeviceId) {}
+	explicit FDeviceContext(const FInputDeviceId InUniqueInputDeviceId)
+	    : UniqueInputDeviceId(InUniqueInputDeviceId)
+	{}
 };

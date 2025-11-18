@@ -16,7 +16,7 @@
  * @value DualShock Represents the DualShock device type.
  */
 UENUM(Blueprintable)
-enum EDeviceType: uint8
+enum EDeviceType : uint8
 {
 	DualSense UMETA(DisplayName = "DualSense Default"),
 	DualSenseEdge UMETA(DisplayName = "DualSense Edge"),
@@ -33,7 +33,7 @@ enum EDeviceType: uint8
  * @value Unknown Represents an unknown or unrecognized connection type.
  */
 UENUM(Blueprintable)
-enum EDeviceConnection: uint8
+enum EDeviceConnection : uint8
 {
 	Usb UMETA(DisplayName = "USB"),
 	Bluetooth UMETA(DisplayName = "Bluetooth"),

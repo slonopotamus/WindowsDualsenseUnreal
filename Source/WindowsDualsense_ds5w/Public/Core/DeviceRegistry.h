@@ -90,7 +90,7 @@ public:
 	 *                  periodic processing of the device lifecycle and connection state.
 	 */
 	void DetectedChangeConnections(float DeltaTime);
-	
+
 private:
 	/**
 	 * A floating-point variable that represents the change or difference in the accumulator value over time.

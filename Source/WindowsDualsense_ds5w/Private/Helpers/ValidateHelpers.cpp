@@ -21,8 +21,14 @@ bool FValidateHelpers::ValidateMaxFrequency(const float Frequency)
 
 int FValidateHelpers::To255(const float Value)
 {
-	if (Value <= 0) return 0;
-	if (Value >= 1.0f) return 255;
+	if (Value <= 0)
+	{
+		return 0;
+	}
+	if (Value >= 1.0f)
+	{
+		return 255;
+	}
 
 	constexpr float Min = 0;
 	constexpr float Max = 1.0;
@@ -32,8 +38,14 @@ int FValidateHelpers::To255(const float Value)
 
 int FValidateHelpers::To255(const unsigned char Value, const unsigned char MaxInput)
 {
-	if (Value <= 0) return 0;
-	if (Value >= MaxInput) return 255;
+	if (Value <= 0)
+	{
+		return 0;
+	}
+	if (Value >= MaxInput)
+	{
+		return 255;
+	}
 
 	return ((Value * 255.0f) / MaxInput);
 }

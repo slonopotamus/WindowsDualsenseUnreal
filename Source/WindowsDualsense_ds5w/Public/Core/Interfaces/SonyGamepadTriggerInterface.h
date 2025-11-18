@@ -5,8 +5,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Interface.h"
 #include "Templates/SharedPointer.h"
+#include "UObject/Interface.h"
 #include "SonyGamepadTriggerInterface.generated.h"
 
 // This class does not need to be modified.
@@ -17,11 +17,11 @@ class USonyGamepadTriggerInterface : public UInterface
 };
 
 /**
- * 
+ *
  */
 class WINDOWSDUALSENSE_DS5W_API ISonyGamepadTriggerInterface
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
 	/**
@@ -141,15 +141,15 @@ public:
 	 * @param AudioData An array of integer values representing the audio waveform data
 	 *                  used to drive the haptic feedback effects on the triggers.
 	 */
-    virtual void AudioHapticUpdate(TArray<int8> AudioData) = 0;
+	virtual void AudioHapticUpdate(TArray<int8> AudioData) = 0;
 
-    /**
-     * New advanced rhythmic machine effect (opcode 0x27).
-     * Structure: [27] [Start_Zone] [Behavior_Flag] [Force_Amplitude] [Period] [Frequency]
-     * Start_Zone: one-byte zone value (e.g., 0x82, 0x84, 0x80, 0x88)
-     * Behavior_Flag: 1 = EndAtPos, 2 = KeepEffect
-     * Force_Amplitude: High nibble (1-3) = force intensity, Low nibble (10-15) = amplitude level
-     * Period: 0-20, Frequency: 0-40
-     */
-    virtual void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 ForceAmplitude, uint8 Period, uint8 Frequency, const EControllerHand& Hand) = 0;
+	/**
+	 * New advanced rhythmic machine effect (opcode 0x27).
+	 * Structure: [27] [Start_Zone] [Behavior_Flag] [Force_Amplitude] [Period] [Frequency]
+	 * Start_Zone: one-byte zone value (e.g., 0x82, 0x84, 0x80, 0x88)
+	 * Behavior_Flag: 1 = EndAtPos, 2 = KeepEffect
+	 * Force_Amplitude: High nibble (1-3) = force intensity, Low nibble (10-15) = amplitude level
+	 * Period: 0-20, Frequency: 0-40
+	 */
+	virtual void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 ForceAmplitude, uint8 Period, uint8 Frequency, const EControllerHand& Hand) = 0;
 };

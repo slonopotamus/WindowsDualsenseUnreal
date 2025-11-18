@@ -4,15 +4,14 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/Object.h"
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Enums/EDeviceConnection.h"
+#include "CoreMinimal.h"
+#include "UObject/Object.h"
 #if PLATFORM_WINDOWS
 #include "Windows/WindowsApplication.h"
 #endif
 #include "SonyGamepadProxy.generated.h"
-
 
 /**
  * Proxy class for interacting with Sony gamepad devices such as DualSense or DualShock controllers.
@@ -24,7 +23,6 @@ UCLASS(Blueprintable, BlueprintType)
 class WINDOWSDUALSENSE_DS5W_API USonyGamepadProxy : public UObject
 {
 	GENERATED_BODY()
-	
 
 public:
 	/**
@@ -75,13 +73,12 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Led Effects")
 	static void LedColorEffects(
-		int32 ControllerId,
-		FColor Color,
-		UPARAM(DisplayName = "(DualShock 4) LED brightness transition time min: 0.0f max: 2.5f", meta = (ClampMin = "0.0", ClampMax = "2.5", UIMin = "0.0", UIMax = "2.5", ToolTip = "(DualShock) LED brightness transition time, in seconds."))
-		const float BrightnessTime = 0.0f,
-		UPARAM(DisplayName = "(DualShock 4) Toggle transition time min: 0.0f max: 2.5f",  meta = (ClampMin = "0.0", ClampMax = "2.5", UIMin = "0.0", UIMax = "2.5", ToolTip = "(DualShock) Toggle transition time, in seconds."))
-		const float ToogleTime = 0.0f
-	);
+	    int32 ControllerId,
+	    FColor Color,
+	    UPARAM(DisplayName = "(DualShock 4) LED brightness transition time min: 0.0f max: 2.5f", meta = (ClampMin = "0.0", ClampMax = "2.5", UIMin = "0.0", UIMax = "2.5", ToolTip = "(DualShock) LED brightness transition time, in seconds."))
+	        const float BrightnessTime = 0.0f,
+	    UPARAM(DisplayName = "(DualShock 4) Toggle transition time min: 0.0f max: 2.5f", meta = (ClampMin = "0.0", ClampMax = "2.5", UIMin = "0.0", UIMax = "2.5", ToolTip = "(DualShock) Toggle transition time, in seconds."))
+	        const float ToogleTime = 0.0f);
 	/**
 	 * Controls the LED and microphone visual effects on a DualSense controller.
 	 *
@@ -100,14 +97,11 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad|Motion Sensors")
 	static void StartMotionSensorCalibration(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Calibration Duration (Seconds)", meta = (ClampMin = "1.0", ClampMax = "10.0", UIMin = "1.0", UIMax = "10.0", 
-			ToolTip = "The time in seconds to collect sensor data for calculating the stable center (baseline). Longer durations can provide a more accurate baseline."))
-			float Duration = 2.0f,
-			UPARAM(DisplayName = "Noise Deadzone Percentage", meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0", 
-				ToolTip = "A percentage (0.0 to 1.0) of the sensor noise range to ignore after calibration. A higher value creates a larger deadzone, filtering out more residual noise but potentially ignoring very subtle movements."))
-				float DeadZone = 0.5f
-			);
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Calibration Duration (Seconds)", meta = (ClampMin = "1.0", ClampMax = "10.0", UIMin = "1.0", UIMax = "10.0",
+	                                                                   ToolTip = "The time in seconds to collect sensor data for calculating the stable center (baseline). Longer durations can provide a more accurate baseline.")) float Duration = 2.0f,
+	    UPARAM(DisplayName = "Noise Deadzone Percentage", meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0",
+	                                                              ToolTip = "A percentage (0.0 to 1.0) of the sensor noise range to ignore after calibration. A higher value creates a larger deadzone, filtering out more residual noise but potentially ignoring very subtle movements.")) float DeadZone = 0.5f);
 
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad|Motion Sensors")
 	static void ResetGyroOrientation(int32 ControllerId);
@@ -147,9 +141,9 @@ public:
 	 * @param OldUser The ID of the previous user who was associated with the gamepad.
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.1.")
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.1.")
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Remap Device from User",
-		meta=(DeprecatedFunction, DeprecationMessage="Use GamepadCoOp Plugin"))
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use GamepadCoOp Plugin"))
 	static void RemapControllerIdToUser(int32 GamepadId, int32 UserId, int32 OldUser) {}
 
 	/**
@@ -161,9 +155,9 @@ public:
 	 * @return Returns true if the controller was successfully reconnected, false otherwise.
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.10")
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.10")
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Status",
-		meta=(DeprecatedFunction, DeprecationMessage="Use GamepadCoOp Plugin"))
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use GamepadCoOp Plugin"))
 	static bool DeviceReconnect(int32 ControllerId) { return true; }
 
 	/**
@@ -174,10 +168,10 @@ public:
 	 * @return true if the disconnection was initiated successfully.
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.10")
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.10")
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Status",
-		meta=(DeprecatedFunction, DeprecationMessage="SonyGamepad: Dualsense or DualShock Status"))
-	static bool DeviceDisconnect(int32 ControllerId) { return true; };
+	          meta = (DeprecatedFunction, DeprecationMessage = "SonyGamepad: Dualsense or DualShock Status"))
+	static bool DeviceDisconnect(int32 ControllerId) { return true; }
 
 	/**
 	 * Enables or disables accelerometer values for the specified controller.
@@ -190,7 +184,7 @@ public:
 	 * @param bEnableAccelerometer A boolean value that determines whether to enable or disable accelerometer values.
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.14")
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.14")
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Touch, Use EnableGyroscopeValues")
 	static void EnableAccelerometerValues(int32 ControllerId, bool bEnableAccelerometer)
 	{
@@ -200,5 +194,4 @@ public:
 protected:
 	UFUNCTION()
 	static FInputDeviceId GetGamepadInterface(int32 ControllerId);
-	
 };

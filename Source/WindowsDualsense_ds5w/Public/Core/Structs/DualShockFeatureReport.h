@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
+#include "CoreMinimal.h"
 #include "DualShockFeatureReport.generated.h"
 
 /**

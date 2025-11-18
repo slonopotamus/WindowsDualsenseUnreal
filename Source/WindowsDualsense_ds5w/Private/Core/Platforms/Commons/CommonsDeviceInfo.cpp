@@ -11,8 +11,8 @@
 static const uint16 SONY_VENDOR_ID = 0x054C;
 static const uint16 DUALSHOCK4_PID_V1 = 0x05C4;
 static const uint16 DUALSHOCK4_PID_V2 = 0x09CC;
-static const uint16 DUALSENSE_PID     = 0x0CE6;
-static const uint16 DUALSENSE_EDGE_PID= 0x0DF2;
+static const uint16 DUALSENSE_PID = 0x0CE6;
+static const uint16 DUALSENSE_EDGE_PID = 0x0DF2;
 
 void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 {
@@ -33,7 +33,7 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 		}
 		return;
 	}
-	
+
 	const size_t InputReportLength = (Context->ConnectionType == Bluetooth) ? 78 : 64;
 	if (sizeof(Context->Buffer) < InputReportLength)
 	{
@@ -88,18 +88,17 @@ void FCommonsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	Devices.Empty();
 
 	const TSet<uint16> SupportedPIDs = {
-		DUALSHOCK4_PID_V1,
-		DUALSHOCK4_PID_V2,
-		DUALSENSE_PID,
-		DUALSENSE_EDGE_PID
-	};
+	    DUALSHOCK4_PID_V1,
+	    DUALSHOCK4_PID_V2,
+	    DUALSENSE_PID,
+	    DUALSENSE_EDGE_PID};
 
 	SDL_hid_device_info* Devs = SDL_hid_enumerate(SONY_VENDOR_ID, 0);
 	if (!Devs)
 	{
 		return;
 	}
-	
+
 	for (SDL_hid_device_info* CurrentDevice = Devs; CurrentDevice != nullptr; CurrentDevice = CurrentDevice->next)
 	{
 		if (SupportedPIDs.Contains(CurrentDevice->product_id))
@@ -107,22 +106,22 @@ void FCommonsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 			FDeviceContext NewDeviceContext;
 			FString PathStr = UTF8_TO_TCHAR(CurrentDevice->path);
 			NewDeviceContext.Path = PathStr;
-			
+
 			switch (CurrentDevice->product_id)
 			{
-			case DUALSHOCK4_PID_V1:
-			case DUALSHOCK4_PID_V2:
-				NewDeviceContext.DeviceType = EDeviceType::DualShock4;
-				break;
-			case DUALSENSE_EDGE_PID:
-				NewDeviceContext.DeviceType = EDeviceType::DualSenseEdge;
-				break;
-			case DUALSENSE_PID:
-			default:
-				NewDeviceContext.DeviceType = EDeviceType::DualSense;
-				break;
+				case DUALSHOCK4_PID_V1:
+				case DUALSHOCK4_PID_V2:
+					NewDeviceContext.DeviceType = EDeviceType::DualShock4;
+					break;
+				case DUALSENSE_EDGE_PID:
+					NewDeviceContext.DeviceType = EDeviceType::DualSenseEdge;
+					break;
+				case DUALSENSE_PID:
+				default:
+					NewDeviceContext.DeviceType = EDeviceType::DualSense;
+					break;
 			}
-	
+
 			NewDeviceContext.IsConnected = true;
 			if (CurrentDevice->interface_number == -1)
 			{
@@ -145,14 +144,14 @@ bool FCommonsDeviceInfo::CreateHandle(FDeviceContext* Context)
 	{
 		return false;
 	}
-  
+
 	const FTCHARToUTF8 PathConverter(*Context->Path);
-	const FPlatformDeviceHandle Handle =  SDL_hid_open_path(PathConverter.Get(), true);
+	const FPlatformDeviceHandle Handle = SDL_hid_open_path(PathConverter.Get(), true);
 	if (Handle == INVALID_PLATFORM_HANDLE)
 	{
 		return false;
 	}
-	
+
 	SDL_hid_set_nonblocking(Handle, 1);
 	Context->Handle = Handle;
 	return true;

@@ -4,12 +4,12 @@
 
 #pragma once
 
+#include "Core/Enums/EDeviceCommons.h"
+#include "Core/HapticsRegistry.h"
+#include "Core/Structs/DualSenseFeatureReport.h"
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
 #include "SonyGamepadProxy.h"
-#include "Core/HapticsRegistry.h"
-#include "Core/Enums/EDeviceCommons.h"
-#include "Core/Structs/DualSenseFeatureReport.h"
 #include "DualSenseProxy.generated.h"
 
 UENUM(BlueprintType)
@@ -17,13 +17,13 @@ enum class ETriggerForceIntensity : uint8
 {
 	/** No force feedback applied */
 	Disabled = 0x00 UMETA(DisplayName = "Disabled"),
-	
+
 	/** Low intensity force feedback */
 	Low = 0x01 UMETA(DisplayName = "Low (25%)"),
-	
+
 	/** Medium intensity force feedback */
 	Medium = 0x02 UMETA(DisplayName = "Medium (50%)"),
-	
+
 	/** High intensity force feedback */
 	High = 0x03 UMETA(DisplayName = "High (100%)")
 };
@@ -33,16 +33,16 @@ enum class ETriggerPosition : uint8
 {
 	/** No resistance at any position */
 	Off = 0x00 UMETA(DisplayName = "Off (No Resistance)"),
-	
+
 	/** Start position - Beginning of trigger pull (0-25%) */
 	Start = 0x02 UMETA(DisplayName = "Start (0-25%)"),
-	
+
 	/** Middle position - Mid trigger pull (25-50%) */
 	Middle = 0x04 UMETA(DisplayName = "Middle (25-50%)"),
-	
+
 	/** Before End position - Near full pull (50-75%) */
 	BeforeEnd = 0x08 UMETA(DisplayName = "Before End (50-75%)"),
-	
+
 	/** End position - Full trigger pull (75-100%) */
 	End = 0x80 UMETA(DisplayName = "End (75-100%)")
 };
@@ -52,13 +52,13 @@ enum class EDualSenseTriggerAmplitude : uint8
 {
 	/** No amplitude - Effect disabled */
 	None = 0x00 UMETA(DisplayName = "None (0%)"),
-	
+
 	/** Low amplitude - Subtle vibration effect */
 	Low = 0x0A UMETA(DisplayName = "Low (~40%)"),
-	
+
 	/** Medium amplitude - Moderate vibration effect */
 	Medium = 0x0C UMETA(DisplayName = "Medium (~50%)"),
-	
+
 	/** High amplitude - Strong vibration effect */
 	High = 0x0F UMETA(DisplayName = "High (100%)")
 };
@@ -68,7 +68,7 @@ enum class ETriggerEffectBehavior : uint8
 {
 	/** Effect applies only at specified position range */
 	Localized = 0 UMETA(DisplayName = "Localized (Stop at Position)"),
-	
+
 	/** Effect continues until trigger is fully pressed */
 	Sustained = 1 UMETA(DisplayName = "Sustained (Extend to End)")
 };
@@ -132,17 +132,16 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
 	static void AutomaticGun(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Begin Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 BeginStrength,
-		UPARAM(DisplayName = "Middle Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 MiddleStrength,
-		UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndStrength,
-		EControllerHand Hand,
-		bool KeepEffect,
-		float Frequency = 5.0f
-	);
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Begin Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 BeginStrength,
+	    UPARAM(DisplayName = "Middle Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 MiddleStrength,
+	    UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndStrength,
+	    EControllerHand Hand,
+	    bool KeepEffect,
+	    float Frequency = 5.0f);
 
 	/**
 	 * @brief Sets the GameCube trigger effect for the specified controller and hand.
@@ -153,11 +152,10 @@ public:
 	 * @param ControllerId The identifier for the DualSense controller to target.
 	 * @param Hand Specifies which hand (left or right) the effect should be applied to.
 	 */
-	UFUNCTION (BlueprintCallable, Category = "DualSense Effects|Game Cube")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects|Game Cube")
 	static void GameCube(
-		int32 ControllerId,
-		EControllerHand Hand
-	);
+	    int32 ControllerId,
+	    EControllerHand Hand);
 
 	/**
 	 * @brief Configures custom trigger effects for a PlayStation DualSense controller.
@@ -170,12 +168,11 @@ public:
 	 * @param HexBytes An array of hexadecimal byte strings representing the desired trigger configuration.
 	 *                 Maximum of 10 byte strings is permitted.
 	 */
-	UFUNCTION (BlueprintCallable, Category = "DualSense Effects")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
 	static void CustomTrigger(
-		int32 ControllerId,
-		EControllerHand Hand,
-		const TArray<FString>& HexBytes
-	);
+	    int32 ControllerId,
+	    EControllerHand Hand,
+	    const TArray<FString>& HexBytes);
 
 	/**
 	 * Sets haptic feedback for a DualSense controller.
@@ -188,15 +185,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
 	static void SetFeedback(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Begin Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 BeginStrength,
-		UPARAM(DisplayName = "Middle Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 MiddleStrength,
-		UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndStrength,
-		EControllerHand Hand
-	);
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Begin Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 BeginStrength,
+	    UPARAM(DisplayName = "Middle Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 MiddleStrength,
+	    UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndStrength,
+	    EControllerHand Hand);
 
 	/**
 	 * Applies a resistance effect to the trigger of a PlayStation DualSense controller.
@@ -213,16 +209,15 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
 	static void Resistance(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Start Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(DisplayName = "End Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndPosition,
-		UPARAM(DisplayName = "Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 Strength,
-		
-		EControllerHand Hand
-	);
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Start Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(DisplayName = "End Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndPosition,
+	    UPARAM(DisplayName = "Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 Strength,
+
+	    EControllerHand Hand);
 
 	/**
 	 * Applies a continuous resistance effect on the adaptive trigger of a DualSense controller.
@@ -234,14 +229,13 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
 	static void ContinuousResistance(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Start Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(DisplayName = "Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 Strength,
-		
-		EControllerHand Hand
-	);
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Start Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(DisplayName = "Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 Strength,
+
+	    EControllerHand Hand);
 
 	/**
 	 * Configures the bow effect on a DualSense controller.
@@ -255,19 +249,17 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
 	static void Bow(
-		int32 ControllerId,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndPosition,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 BeginStrength,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndStrength,
-		
-		EControllerHand Hand
-	);
+	    int32 ControllerId,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndPosition,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 BeginStrength,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndStrength,
 
+	    EControllerHand Hand);
 
 	/**
 	 * @brief Triggers a galloping vibration effect on a DualSense controller.
@@ -286,20 +278,18 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
 	static void Galloping(
-		int32 ControllerId,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
-		int32 EndPosition,
-		UPARAM(DisplayName = "First Foot min: 2 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 FirstFoot,
-		UPARAM(DisplayName = "Second Foot min: (Greater FirstFoot) max: 9", meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
-		int32 SecondFoot,
-		UPARAM(DisplayName = "Frequency Example: 5.0", meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
-		float Frequency,
-		
-		EControllerHand Hand
-	);
+	    int32 ControllerId,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
+	        int32 EndPosition,
+	    UPARAM(DisplayName = "First Foot min: 2 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 FirstFoot,
+	    UPARAM(DisplayName = "Second Foot min: (Greater FirstFoot) max: 9", meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
+	        int32 SecondFoot,
+	    UPARAM(DisplayName = "Frequency Example: 5.0", meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0")) float Frequency,
+
+	    EControllerHand Hand);
 
 	/**
 	 * Configures and applies machine-like haptic effects to the DualSense controller.
@@ -313,26 +303,23 @@ public:
 	 * @param Period The period of the haptic cycle in seconds.
 	 * @param Hand Specifies which hand the effect is directed towards (left or right).
 	 */
-UE_DEPRECATED(
-	5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Machine instead of EffectMachine.")
- UFUNCTION(BlueprintCallable, Category = "DualSense Effects", meta=(DeprecatedFunction, DeprecationMessage="Use MachineAdvanced (0x27) instead"))
- static void Machine(
-		int32 ControllerId,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndPosition,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 FirstFoot,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 LasFoot,
-		UPARAM(meta = (ClampMin = "0.015", ClampMax = "1.0", UIMin = "0.01", UIMax = "1.0"))
-		float Frequency,
-		UPARAM(meta = (ClampMin = "0.015", ClampMax = "1.0", UIMin = "0.01", UIMax = "1.0"))
-		float Period,
-		
-		EControllerHand Hand
-	);
+	UE_DEPRECATED(
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Machine instead of EffectMachine.")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects", meta = (DeprecatedFunction, DeprecationMessage = "Use MachineAdvanced (0x27) instead"))
+	static void Machine(
+	    int32 ControllerId,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndPosition,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 FirstFoot,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 LasFoot,
+	    UPARAM(meta = (ClampMin = "0.015", ClampMax = "1.0", UIMin = "0.01", UIMax = "1.0")) float Frequency,
+	    UPARAM(meta = (ClampMin = "0.015", ClampMax = "1.0", UIMin = "0.01", UIMax = "1.0")) float Period,
+
+	    EControllerHand Hand);
 
 	/**
 	 * Novo efeito Machine avançado (opcode 0x27).
@@ -342,17 +329,16 @@ UE_DEPRECATED(
 	 * Force_Amplitude: High nibble (1-3) = ETriggerForceIntensity, Low nibble (10-15) = EDualSenseTriggerAmplitude
 	 * Period: 0-20, Frequency: 0-40
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Effects", meta=(DisplayName="Machine Advanced (0x27)"))
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects", meta = (DisplayName = "Machine Advanced (0x27)"))
 	static void MachineAdvanced(
-		int32 ControllerId,
-		ETriggerPosition StartZone,
-		ETriggerEffectBehavior Behavior,
-		ETriggerForceIntensity ForceIntensity,
-		EDualSenseTriggerAmplitude Amplitude,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "20", UIMin = "0", UIMax = "20")) int32 Period,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "40", UIMin = "0", UIMax = "40")) int32 Frequency,
-		EControllerHand Hand
-	);
+	    int32 ControllerId,
+	    ETriggerPosition StartZone,
+	    ETriggerEffectBehavior Behavior,
+	    ETriggerForceIntensity ForceIntensity,
+	    EDualSenseTriggerAmplitude Amplitude,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "20", UIMin = "0", UIMax = "20")) int32 Period,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "40", UIMin = "0", UIMax = "40")) int32 Frequency,
+	    EControllerHand Hand);
 
 	/**
 	 * Configures a weapon effect on the DualSense controller using specified parameters.
@@ -365,16 +351,15 @@ UE_DEPRECATED(
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects")
 	static void Weapon(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Start Position min: 2", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(DisplayName = "End Position max: 7", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndPosition,
-		UPARAM(DisplayName = "Strength max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 Strength,
-		
-		EControllerHand Hand
-	);
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Start Position min: 2", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(DisplayName = "End Position max: 7", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndPosition,
+	    UPARAM(DisplayName = "Strength max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 Strength,
+
+	    EControllerHand Hand);
 
 	/**
 	 * Controls the LED player light effects on the DualSense controller.
@@ -394,8 +379,8 @@ UE_DEPRECATED(
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Reset Effects")
 	static void NoResistance(int32 ControllerId,
-	
-		EControllerHand Hand);
+
+	                         EControllerHand Hand);
 
 	/**
 	 * Stops the trigger effect on a specific controller for the specified hand.
@@ -405,8 +390,8 @@ UE_DEPRECATED(
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Reset Effects")
 	static void StopTriggerEffect(int32 ControllerId,
-	
-		EControllerHand HandStop);
+
+	                              EControllerHand HandStop);
 
 	/**
 	 * Stops all trigger effects currently active for the specified DualSense controller.
@@ -426,7 +411,6 @@ UE_DEPRECATED(
 	UFUNCTION(BlueprintCallable, Category = "DualSense Reset Effects")
 	static void ResetEffects(int32 ControllerId);
 
-
 	/**
 	 * Deprecated method for enabling or disabling touch functionality on a DualSense controller.
 	 * This method has been replaced by EnableTouch and is retained for backward compatibility.
@@ -435,9 +419,9 @@ UE_DEPRECATED(
 	 * @param bEnableTouch A boolean value indicating whether to enable (true) or disable (false) the touch functionality.
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use EnableTouch instead of EnableTouch1.")
-	UFUNCTION(BlueprintCallable, Category="DualSense Touch Pad",
-		meta=(DeprecatedFunction, DeprecationMessage="Use EnableTouch"))
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use EnableTouch instead of EnableTouch1.")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Touch Pad",
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use EnableTouch"))
 	static void EnableTouch1(int32 ControllerId, bool bEnableTouch)
 	{
 		EnableTouch(ControllerId, bEnableTouch);
@@ -455,18 +439,17 @@ UE_DEPRECATED(
 	 * @param KeepEffect Whether the effect should persist after the initial application.
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use AutomaticGun instead of SetTriggerHapticFeedbackEffect.")
-	UFUNCTION(BlueprintCallable, Category="DualSense Effects",
-		meta=(DeprecatedFunction, DeprecationMessage="Use AutomaticGun"))
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use AutomaticGun instead of SetTriggerHapticFeedbackEffect.")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects",
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use AutomaticGun"))
 	static void SetTriggerHapticFeedbackEffect(
-		int32 ControllerId,
-		int32 StartPosition,
-		int32 BeginStrength,
-		int32 MiddleStrength,
-		int32 EndStrength,
-		
-		EControllerHand Hand, bool KeepEffect
-	)
+	    int32 ControllerId,
+	    int32 StartPosition,
+	    int32 BeginStrength,
+	    int32 MiddleStrength,
+	    int32 EndStrength,
+
+	    EControllerHand Hand, bool KeepEffect)
 	{
 		AutomaticGun(ControllerId, BeginStrength, MiddleStrength, EndStrength, Hand, KeepEffect);
 	}
@@ -479,9 +462,9 @@ UE_DEPRECATED(
 	 * @param bEnableTouch A boolean value indicating whether to enable (true) or disable (false) the touch pad.
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use EnableTouch instead of EnableTouch2.")
-	UFUNCTION(BlueprintCallable, Category="DualSense Touch Pad",
-		meta=(DeprecatedFunction, DeprecationMessage="Use EnableTouch"))
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use EnableTouch instead of EnableTouch2.")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Touch Pad",
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use EnableTouch"))
 	static void EnableTouch2(int32 ControllerId, bool bEnableTouch)
 	{
 		EnableTouch(ControllerId, bEnableTouch);
@@ -501,12 +484,12 @@ UE_DEPRECATED(
 	 * @param Hand The hand (left or right) associated with the controller.
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Machine instead of EffectMachine.")
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Machine instead of EffectMachine.")
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects",
-		meta=(DeprecatedFunction, DeprecationMessage="Use Machine"))
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use Machine"))
 	static void EffectMachine(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
 	                          int32 LasFoot, float Frequency, float Period,
-	                          
+
 	                          EControllerHand Hand)
 	{
 	}
@@ -524,9 +507,9 @@ UE_DEPRECATED(
 	 * @param Hand The hand (left or right) associated with the controller for the effect.
 	 */
 	UE_DEPRECATED(5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Bow instead of EffectBow.")
-	UFUNCTION(BlueprintCallable, Category="DualSense Effects", meta=(DeprecatedFunction, DeprecationMessage="Use Bow"))
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects", meta = (DeprecatedFunction, DeprecationMessage = "Use Bow"))
 	static void EffectBow(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 BeginStrength, int32 EndStrength,
-	
+
 	                      EControllerHand Hand)
 	{
 		Bow(ControllerId, StartPosition, EndPosition, BeginStrength, EndStrength, Hand);
@@ -540,10 +523,10 @@ UE_DEPRECATED(
 	 * @param Hand The hand (left or right) associated with the controller.
 	 */
 	UE_DEPRECATED(
-		5.1,
-		"Methods refactored and deprecated as of plugin version v1.2.1. Use EffectNoResistance instead of EffectNoResitance.")
-	UFUNCTION(BlueprintCallable, Category="DualSense Reset Effects",
-		meta=(DeprecatedFunction, DeprecationMessage="Use NoResistance"))
+	    5.1,
+	    "Methods refactored and deprecated as of plugin version v1.2.1. Use EffectNoResistance instead of EffectNoResitance.")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Reset Effects",
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use NoResistance"))
 	static void EffectNoResitance(int32 ControllerId, EControllerHand Hand)
 	{
 		NoResistance(ControllerId, Hand);
@@ -562,10 +545,10 @@ UE_DEPRECATED(
 	 * @deprecated Use Resistance instead.
 	 */
 	UE_DEPRECATED(
-		5.1,
-		"Methods refactored and deprecated as of plugin version v1.2.1. Use Resistance instead of EffectSectionResitance.")
-	UFUNCTION(BlueprintCallable, Category="DualSense Effects",
-		meta=(DeprecatedFunction, DeprecationMessage="Use Resistance"))
+	    5.1,
+	    "Methods refactored and deprecated as of plugin version v1.2.1. Use Resistance instead of EffectSectionResitance.")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects",
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use Resistance"))
 	static void EffectSectionResitance(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 Strength,
 	                                   EControllerHand ResistanceHand)
 	{
@@ -582,10 +565,10 @@ UE_DEPRECATED(
 	 * @param ContinuousHand The hand (left or right) for which the continuous resistance effect is applied.
 	 */
 	UE_DEPRECATED(
-		5.1,
-		"Methods refactored and deprecated as of plugin version v1.2.1. Use ContinuousResistance instead of EffectContinuousResitance.")
-	UFUNCTION(BlueprintCallable, Category="DualSense Effects",
-		meta=(DeprecatedFunction, DeprecationMessage="Use ContinuousResistance"))
+	    5.1,
+	    "Methods refactored and deprecated as of plugin version v1.2.1. Use ContinuousResistance instead of EffectContinuousResitance.")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects",
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use ContinuousResistance"))
 	static void EffectContinuousResitance(int32 ControllerId, int32 StartPosition, int32 Strength,
 	                                      EControllerHand ContinuousHand)
 	{
@@ -603,9 +586,9 @@ UE_DEPRECATED(
 	 * @param Hand The hand (left or right) to which the effect should be applied on the controller.
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Weapon instead of EffectWeapon.")
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Weapon instead of EffectWeapon.")
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects",
-		meta=(DeprecatedFunction, DeprecationMessage="Use Weapon"))
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use Weapon"))
 	static void EffectWeapon(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 Strength,
 	                         EControllerHand Hand)
 	{
@@ -626,16 +609,14 @@ UE_DEPRECATED(
 	 * @param Hand The controller hand (left or right).
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Galloping instead of EffectGalloping.")
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.1. Use Galloping instead of EffectGalloping.")
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects",
-		meta=(DeprecatedFunction, DeprecationMessage="Use Galloping"))
+	          meta = (DeprecatedFunction, DeprecationMessage = "Use Galloping"))
 	static void EffectGalloping(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 BeginStrength,
 	                            int32 EndStrength, float Frequency, EControllerHand Hand)
 	{
 		Galloping(ControllerId, StartPosition, EndPosition, BeginStrength, EndStrength, Frequency, Hand);
 	}
-
-	
 
 	/**
 	 * Sets the vibration for a DualSense controller based on audio envelopes and other parameters.
@@ -651,19 +632,18 @@ UE_DEPRECATED(
 	 * @param BaseMultiplier A base multiplier applied to vibration for additional scaling.
 	 */
 	UE_DEPRECATED(
-		5.1, "Methods refactored and deprecated as of plugin version v1.2.18. Use RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix).")
-	UFUNCTION(BlueprintCallable, Category = "DualSense Audio Vibration", meta=(DeprecatedFunction, DeprecationMessage="Use RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix)"))
+	    5.1, "Methods refactored and deprecated as of plugin version v1.2.18. Use RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix).")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Audio Vibration", meta = (DeprecatedFunction, DeprecationMessage = "Use RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix)"))
 	void SetVibrationFromAudio(
-		const int32 ControllerId,
-		const float AverageEnvelopeValue,
-		const float MaxEnvelopeValue,
-		const int32 NumWaveInstances,
-		float EnvelopeToVibrationMultiplier,
-		float PeakToVibrationMultiplier,
-		float Threshold,
-		float ExponentCurve,
-		float BaseMultiplier
-	)
+	    const int32 ControllerId,
+	    const float AverageEnvelopeValue,
+	    const float MaxEnvelopeValue,
+	    const int32 NumWaveInstances,
+	    float EnvelopeToVibrationMultiplier,
+	    float PeakToVibrationMultiplier,
+	    float Threshold,
+	    float ExponentCurve,
+	    float BaseMultiplier)
 	{
 	}
 
@@ -690,7 +670,4 @@ UE_DEPRECATED(
 	{
 		return 0;
 	}
-
-	
-	
 };

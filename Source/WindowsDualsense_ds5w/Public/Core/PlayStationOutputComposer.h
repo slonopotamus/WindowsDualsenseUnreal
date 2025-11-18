@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Core/Structs/DeviceContext.h"
+#include "CoreMinimal.h"
 
 /**
  * @class FPlayStationOutputComposer
@@ -19,7 +19,7 @@
  */
 class WINDOWSDUALSENSE_DS5W_API FPlayStationOutputComposer
 {
-	
+
 public:
 	/**
 	 * @var FPlayStationOutputComposer::CRCSeed

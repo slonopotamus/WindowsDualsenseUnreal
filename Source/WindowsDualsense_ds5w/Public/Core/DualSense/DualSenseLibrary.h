@@ -4,19 +4,19 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/Object.h"
-#include "InputCoreTypes.h"
 #include "Async/TaskGraphInterfaces.h"
+#include "Containers/Queue.h"
+#include "Core/Enums/EDeviceCommons.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
-#include "Core/Enums/EDeviceCommons.h"
 #include "Core/Structs/DeviceContext.h"
 #include "Core/Structs/DeviceSettings.h"
 #include "Core/Structs/DualSenseFeatureReport.h"
-#include "Containers/Queue.h"
+#include "CoreMinimal.h"
+#include "InputCoreTypes.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
+#include "UObject/Object.h"
 #include <atomic>
 #include "DualSenseLibrary.generated.h"
 
@@ -303,8 +303,7 @@ struct FSensorBounds
  * the DualSense controller programmatically within an application.
  */
 UCLASS()
-class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISonyGamepadInterface,
-                                                    public ISonyGamepadTriggerInterface
+class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISonyGamepadInterface, public ISonyGamepadTriggerInterface
 {
 	GENERATED_BODY()
 
@@ -505,8 +504,8 @@ public:
 	 * @param EndStrength The strength of the trigger at the ending position (1-8).
 	 * @param Hand The controller hand (Left, Right, or AnyHand) to apply the effect to.
 	 */
- void SetBow(int32 StartPosition, int32 EndPosition, int32 BegingStrength, int32 EndStrength,
-             const EControllerHand& Hand);
+	void SetBow(int32 StartPosition, int32 EndPosition, int32 BegingStrength, int32 EndStrength,
+	            const EControllerHand& Hand);
 	/**
 	 * Sets machine effects for the DualSense controller's adaptive triggers.
 	 *
@@ -518,15 +517,15 @@ public:
 	 * @param Period The time period of the vibration effect, influencing its duration.
 	 * @param Hand The hand (Left, Right, or AnyHand) to apply the effect to.
 	 */
- void SetMachine(int32 StartPosition, int32 EndPosition, int32 AmplitudeBegin, int32 AmplitudeEnd,
-                 float Frequency, float Period, const EControllerHand& Hand);
+	void SetMachine(int32 StartPosition, int32 EndPosition, int32 AmplitudeBegin, int32 AmplitudeEnd,
+	                float Frequency, float Period, const EControllerHand& Hand);
 
- /**
-  * Advanced rhythmic machine effect (opcode 0x27):
-  * [27] [Start_Zone] [Behavior_Flag] [Force_Amplitude] [Period] [Frequency]
-  */
- void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 ForceAmplitude, uint8 Period, uint8 Frequency,
-                   const EControllerHand& Hand);
+	/**
+	 * Advanced rhythmic machine effect (opcode 0x27):
+	 * [27] [Start_Zone] [Behavior_Flag] [Force_Amplitude] [Period] [Frequency]
+	 */
+	void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 ForceAmplitude, uint8 Period, uint8 Frequency,
+	                  const EControllerHand& Hand);
 	/**
 	 * @brief Configures the galloping effect for a controller's trigger.
 	 *

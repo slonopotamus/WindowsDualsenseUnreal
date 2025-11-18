@@ -12,9 +12,6 @@
 #include "Framework/Application/SlateApplication.h"
 #endif
 
-
-
-
 /**
  * The FWindowsDualsense_ds5wModule class represents a module for handling DualSense input devices
  * on the Windows platform. It integrates with the Unreal Engine input device system, allowing
@@ -55,7 +52,7 @@ public:
 	 * @return A shared pointer to the created input device instance, or nullptr if initialization fails.
 	 */
 	virtual TSharedPtr<IInputDevice> CreateInputDevice(
-		const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler) override;
+	    const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler) override;
 
 	/**
 	 * A shared pointer that manages an instance of the DualSense input device.
@@ -84,14 +81,13 @@ private:
 
 #if PLATFORM_LINUX || PLATFORM_MAC
 	/**
-     * A shared pointer to an instance of an input processor for handling custom input logic.
-     *
-     * SonyInputProcessor is used to manage additional input processing, such as handling
-     * specific events or logic related to PlayStation controllers. It operates independently
-     * or in conjunction with the main input device to provide enhanced input functionality
-     * for the DualSense controller.
-     */
-    TSharedPtr<IInputProcessor> SonyInputProcessor;
+	 * A shared pointer to an instance of an input processor for handling custom input logic.
+	 *
+	 * SonyInputProcessor is used to manage additional input processing, such as handling
+	 * specific events or logic related to PlayStation controllers. It operates independently
+	 * or in conjunction with the main input device to provide enhanced input functionality
+	 * for the DualSense controller.
+	 */
+	TSharedPtr<IInputProcessor> SonyInputProcessor;
 #endif
-	
 };

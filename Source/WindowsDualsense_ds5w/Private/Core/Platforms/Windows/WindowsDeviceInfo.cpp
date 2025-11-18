@@ -3,8 +3,8 @@
 // Planned Release Year: 2025
 
 #include "Core/Platforms/Windows/WindowsDeviceInfo.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include <hidsdi.h>
 #include <setupapi.h>
 
@@ -26,7 +26,8 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 
 	TMap<int32, FString> DevicePaths;
 	for (int32 DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
-	                                                        &DeviceInterfaceData); DeviceIndex++)
+	                                                        &DeviceInterfaceData);
+	     DeviceIndex++)
 	{
 		DWORD RequiredSize = 0;
 		SetupDiGetDeviceInterfaceDetail(DeviceInfoSet, &DeviceInterfaceData, nullptr, 0, &RequiredSize, nullptr);
@@ -43,10 +44,9 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 		                                    nullptr, nullptr))
 		{
 			const HANDLE TempDeviceHandle = CreateFileW(
-				DetailDataBuffer->DevicePath,
-				GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
-			);
-			
+			    DetailDataBuffer->DevicePath,
+			    GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr);
+
 			if (TempDeviceHandle != INVALID_HANDLE_VALUE)
 			{
 				HIDD_ATTRIBUTES Attributes = {};
@@ -55,14 +55,11 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 				if (HidD_GetAttributes(TempDeviceHandle, &Attributes))
 				{
 					if (
-						Attributes.VendorID == 0x054C &&
-						(
-							Attributes.ProductID == 0x0CE6 ||
-							Attributes.ProductID == 0x0DF2 ||
-							Attributes.ProductID == 0x05C4 ||
-							Attributes.ProductID == 0x09CC
-						)
-					)
+					    Attributes.VendorID == 0x054C &&
+					    (Attributes.ProductID == 0x0CE6 ||
+					     Attributes.ProductID == 0x0DF2 ||
+					     Attributes.ProductID == 0x05C4 ||
+					     Attributes.ProductID == 0x09CC))
 					{
 						FDeviceContext Context = {};
 						WCHAR DeviceProductString[260];
@@ -89,8 +86,8 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 								Context.ConnectionType = Usb;
 								FString DevicePath(Context.Path);
 								if (DevicePath.Contains(TEXT("{00001124-0000-1000-8000-00805f9b34fb}")) ||
-									DevicePath.Contains(TEXT("bth")) ||
-									DevicePath.Contains(TEXT("BTHENUM")))
+								    DevicePath.Contains(TEXT("bth")) ||
+								    DevicePath.Contains(TEXT("BTHENUM")))
 								{
 									Context.ConnectionType = Bluetooth;
 									if (!ConfigureBluetoothFeatures(TempDeviceHandle))
@@ -116,8 +113,6 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	SetupDiDestroyDeviceInfoList(DeviceInfoSet);
 }
 
-
-
 void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 {
 	if (!Context)
@@ -125,13 +120,13 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 		UE_LOG(LogTemp, Error, TEXT("Context nto found!"));
 		return;
 	}
-	
+
 	if (Context->Handle == INVALID_HANDLE_VALUE)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Invalid device handle before attempting to read"));
 		return;
 	}
-	
+
 	if (!Context->IsConnected)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
@@ -140,7 +135,7 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 
 	DWORD BytesRead = 0;
 	HidD_FlushQueue(Context->Handle);
-	
+
 	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
 	{
 		constexpr size_t InputReportLength = 547;
@@ -159,7 +154,7 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	{
 		return;
 	}
-	
+
 	size_t InReportLength = Context->DeviceType == DualShock4 ? 32 : 74;
 	size_t OutputReportLength = Context->ConnectionType == Bluetooth ? 78 : InReportLength;
 
@@ -167,16 +162,15 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to write output report 0x02/0x31 data to device. report %llu error Code: %d"),
-			OutputReportLength, GetLastError());
+		       OutputReportLength, GetLastError());
 	}
 }
 
 bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 {
 	const HANDLE DeviceHandle = CreateFileW(
-			*DeviceContext->Path,
-			GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr
-		);
+	    *DeviceContext->Path,
+	    GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr);
 
 	if (DeviceHandle == INVALID_HANDLE_VALUE)
 	{
@@ -184,7 +178,7 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 		UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to open device handle for the DualSense."));
 		return false;
 	}
-	
+
 	DeviceContext->Handle = DeviceHandle;
 	return true;
 }
@@ -223,7 +217,7 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, i
 {
 	int32 Err = ERROR_SUCCESS;
 	PingOnce(Handle, &Err);
-	
+
 	OutBytesRead = 0;
 	if (!ReadFile(Handle, Buffer, Length, &OutBytesRead, nullptr))
 	{
@@ -238,10 +232,16 @@ bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, int32* OutLastError)
 	FILE_STANDARD_INFO Info{};
 	if (!GetFileInformationByHandleEx(Handle, FileStandardInfo, &Info, sizeof(Info)))
 	{
-		if (OutLastError) *OutLastError = GetLastError();
+		if (OutLastError)
+		{
+			*OutLastError = GetLastError();
+		}
 		return false;
 	}
-	if (OutLastError) *OutLastError = ERROR_SUCCESS;
+	if (OutLastError)
+	{
+		*OutLastError = ERROR_SUCCESS;
+	}
 	return true;
 }
 
@@ -256,12 +256,12 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 	{
 		return;
 	}
-	
+
 	if (Context->ConnectionType != Bluetooth)
 	{
 		return;
 	}
-	
+
 	DWORD BytesWritten = 0;
 	constexpr size_t BufferSize = 142;
 	if (!WriteFile(Context->Handle, Context->BufferAudio, BufferSize, &BytesWritten, nullptr))

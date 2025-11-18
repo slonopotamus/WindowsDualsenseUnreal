@@ -127,7 +127,7 @@ struct FFeatureConfig
 	 * FeatureMode is used to configure a specific feature mode within the device.
 	 * It is stored as an 8-bit unsigned integer, and its default value is 0xF7.
 	 */
-	uint8_t FeatureMode	  = 0xF7;
+	uint8_t FeatureMode = 0xF7;
 	/**
 	 * @brief Represents the mode or pattern of vibration for a device.
 	 *
@@ -346,7 +346,7 @@ struct FStrengths
 	 * The `Period` variable is used to define the timing intervals for effects, such as in haptic triggers.
 	 * It typically ranges from 0 to 255, with conversions from floating-point values done externally.
 	 */
-	uint8_t  Period = 0;
+	uint8_t Period = 0;
 	/**
 	 * @brief Represents a collection or list of zones that are active within a particular system, application,
 	 *        or context of operation.

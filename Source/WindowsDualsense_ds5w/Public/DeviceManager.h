@@ -9,7 +9,6 @@
 #include "IInputDevice.h"
 #include "Subsystems/AudioHapticsListener.h"
 
-
 /**
  * Manages DualSense controllers, providing input and haptic feedback functionality.
  * This class interacts with platform-specific input device frameworks to handle
@@ -27,11 +26,10 @@ public:
 	 * @param InMessageHandler The message handler responsible for capturing and processing input events.
 	 */
 	explicit DeviceManager(
-		const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler
-		);
+	    const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler);
 	/**
 	 * Called every frame to update Controller-State
-	 * 
+	 *
 	 * @param DeltaTime Time
 	 */
 	virtual void Tick(float DeltaTime) override;
