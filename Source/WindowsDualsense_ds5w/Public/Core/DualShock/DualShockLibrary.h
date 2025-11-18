@@ -184,34 +184,6 @@ public:
 		return HIDDeviceContexts.DeviceType;	
 	}
 	/**
-	 * @brief Checks if controller events should be dispatched.
-	 *
-	 * Determines whether the system is configured to send controller
-	 * input events, allowing input processing for connected controllers.
-	 *
-	 * @return A boolean value where true indicates that controller events
-	 * should be sent, and false indicates they should not.
-	 */
-	virtual bool IsSendControllerEvents() override
-	{
-		return IsChange;
-	}
-
-	/**
-	 * @brief Sets the state of controller event handling.
-	 *
-	 * This method updates the controller's event-handling state based on
-	 * the provided input. It can be used to enable or disable the event
-	 * handling mechanism dynamically.
-	 *
-	 * @param IsChanged A boolean value indicating whether the controller
-	 * event state should be updated.
-	 */
-	virtual void SetControllerEvents(const bool IsChanged) override
-	{
-		IsChange = IsChanged;
-	}
-	/**
 	 * Sets the touch state for the device.
 	 *
 	 * @param bIsTouch A boolean indicating whether touch input is enabled (true) or disabled (false).
@@ -296,7 +268,6 @@ protected:
 	 */
 	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
 private:
-	bool IsChange = false;
 	/**
 	 * @brief Represents the current battery level of a device.
 	 *
@@ -344,7 +315,7 @@ private:
 	 *
 	 * @variable SensorsDeadZone A float representing the dead zone limit for sensor input.
 	 */
-	float SensorsDeadZone = 0.3f;
+	float SensorsDeadZone = 0.0f;
 	/**
 	 * @brief Represents the threshold value to filter out unintended analog stick movements.
 	 *

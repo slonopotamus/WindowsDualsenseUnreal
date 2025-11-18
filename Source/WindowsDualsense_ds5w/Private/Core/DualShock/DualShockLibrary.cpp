@@ -52,13 +52,11 @@ void UDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMes
 	const bool PreviousState = ButtonStates.Contains(ButtonName) ? ButtonStates[ButtonName] : false;
 	if (IsButtonPressed && !PreviousState)
 	{
-		SetControllerEvents(true);
 		InMessageHandler.Get().OnControllerButtonPressed(ButtonName, UserId, InputDeviceId, false);
 	}
 
 	if (!IsButtonPressed && PreviousState)
 	{
-		SetControllerEvents(true);
 		InMessageHandler.Get().OnControllerButtonReleased(ButtonName, UserId, InputDeviceId, false);
 	}
 

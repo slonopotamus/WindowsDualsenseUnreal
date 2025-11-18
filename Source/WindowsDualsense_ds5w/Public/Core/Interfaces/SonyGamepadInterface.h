@@ -162,19 +162,6 @@ public:
 	 */
 	virtual FDeviceContext* GetMutableDeviceContext() = 0;
 	/**
-	 * Determines if the controller events are enabled for sending.
-	 *
-	 * @return True if controller events are being sent, false otherwise.
-	 */
-	virtual bool IsSendControllerEvents() = 0;
-	/**
-	 * Sets the controller events based on the specified change state.
-	 *
-	 * @param IsChanged A boolean value indicating whether the controller events have changed.
-	 * @return True if the operation was successful, otherwise false.
-	 */
-	virtual void SetControllerEvents(const bool IsChanged) = 0;
-	/**
 	 * Pure virtual function that sends data or commands to the connected gamepad.
 	 * This function must be implemented by any class inheriting this interface.
 	 */
