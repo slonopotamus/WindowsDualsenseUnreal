@@ -247,8 +247,6 @@ public:
 	 * It is reset during library shutdown to clear all stored button states.
 	 */
 	TMap<const FName, bool> ButtonStates;
-
-	TMap<const FName, float> AnalogStates;
 protected:
 	/**
 	 * @brief The PlatformInputDeviceMapper is responsible for mapping platform-specific
@@ -328,5 +326,5 @@ private:
 	 * The value is in the range [0.0, 1.0], where 0.3f means 30% of the
 	 * full analog stick range is treated as a dead zone.
 	 */
-	float AnalogDeadZone = 0.1f;
+	float AnalogDeadZone = 0.3f;
 };
