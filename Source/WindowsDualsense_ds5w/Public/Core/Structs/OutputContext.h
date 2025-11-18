@@ -148,7 +148,7 @@ struct FFeatureConfig
 	 * the target hardware and does not cause unintended behavior or excessive
 	 * power consumption.
 	 */
-	uint8_t VibrationMode = 0xFC;
+	uint8_t VibrationMode = 0xFF;
 	/**
 	 * @brief Adjusts and reduces the intensity of a soft rumble effect.
 	 *
