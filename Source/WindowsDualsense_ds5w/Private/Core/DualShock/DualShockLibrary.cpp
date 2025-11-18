@@ -2,15 +2,14 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-
 #include "Core/DualShock/DualShockLibrary.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "InputCoreTypes.h"
-#include "Helpers/ValidateHelpers.h"
-#include "Core/PlayStationOutputComposer.h"
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
+#include "Core/PlayStationOutputComposer.h"
 #include "Core/Structs/OutputContext.h"
+#include "Helpers/ValidateHelpers.h"
+#include "InputCoreTypes.h"
 
 void UDualShockLibrary::Settings(const FDualShockFeatureReport& Settings)
 {
@@ -67,8 +66,7 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
                                     const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta)
 {
 	FDeviceContext* Context = &HIDDeviceContexts;
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
-	{
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]() {
 		IPlatformHardwareInfoInterface::Get().Read(NewContext);
 	});
 
@@ -138,31 +136,31 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 	switch (HIDInput[0x04] & 0x0F)
 	{
-	case 0x0:
-		ButtonsMask |= BTN_DPAD_UP;
-		break;
-	case 0x4:
-		ButtonsMask |= BTN_DPAD_DOWN;
-		break;
-	case 0x6:
-		ButtonsMask |= BTN_DPAD_LEFT;
-		break;
-	case 0x2:
-		ButtonsMask |= BTN_DPAD_RIGHT;
-		break;
-	case 0x5:
-		ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
-		break;
-	case 0x7:
-		ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
-		break;
-	case 0x1:
-		ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
-		break;
-	case 0x3:
-		ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
-		break;
-	default: ;
+		case 0x0:
+			ButtonsMask |= BTN_DPAD_UP;
+			break;
+		case 0x4:
+			ButtonsMask |= BTN_DPAD_DOWN;
+			break;
+		case 0x6:
+			ButtonsMask |= BTN_DPAD_LEFT;
+			break;
+		case 0x2:
+			ButtonsMask |= BTN_DPAD_RIGHT;
+			break;
+		case 0x5:
+			ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
+			break;
+		case 0x7:
+			ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
+			break;
+		case 0x1:
+			ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
+			break;
+		case 0x3:
+			ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
+			break;
+		default:;
 	}
 	const bool bDPadLeft = ButtonsMask & BTN_DPAD_LEFT;
 	const bool bDPadDown = ButtonsMask & BTN_DPAD_DOWN;
@@ -195,7 +193,6 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialRight, Start);
 	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialLeft, Select);
 }
-
 
 void UDualShockLibrary::SetVibration(const FForceFeedbackValues& Values)
 {

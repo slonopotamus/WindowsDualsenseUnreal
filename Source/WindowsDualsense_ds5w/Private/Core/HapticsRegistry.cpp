@@ -3,10 +3,10 @@
 // Planned Release Year: 2025
 
 #include "../../Public/Core/HapticsRegistry.h"
+#include "Async/Async.h"
+#include "AudioDevice.h"
 #include "Misc/App.h"
 #include "Runtime/Launch/Resources/Version.h"
-#include "AudioDevice.h"
-#include "Async/Async.h"
 
 TSharedPtr<FHapticsRegistry> FHapticsRegistry::Instance;
 
@@ -32,22 +32,24 @@ TSharedPtr<FHapticsRegistry> FHapticsRegistry::Get()
 		Instance = MakeShared<FHapticsRegistry>();
 
 		Instance->GameThreadTickerHandle = FTSTicker::GetCoreTicker().AddTicker(
-		   FTickerDelegate::CreateSP(Instance.Get(), &FHapticsRegistry::Tick)
-	    );
+		    FTickerDelegate::CreateSP(Instance.Get(), &FHapticsRegistry::Tick));
 	}
 	return Instance;
 }
 
 void FHapticsRegistry::CreateListenerForDevice(const FInputDeviceId& DeviceId, USoundSubmix* Submix)
 {
-	if (!Submix) return;
+	if (!Submix)
+	{
+		return;
+	}
 
 	if (ControllerListeners.Contains(DeviceId))
 	{
 		UE_LOG(LogTemp, Log, TEXT("Haptics listener already registered for device %d"), DeviceId.GetId());
 		RemoveListenerForDevice(DeviceId);
 	};
-	
+
 	const TSharedPtr<FAudioHapticsListener> Listener = MakeShared<FAudioHapticsListener>(DeviceId, Submix);
 	if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
 	{
@@ -61,7 +63,6 @@ void FHapticsRegistry::CreateListenerForDevice(const FInputDeviceId& DeviceId, U
 		ControllerListeners.Add(DeviceId, Listener);
 	}
 }
-
 
 void FHapticsRegistry::RemoveAllListeners()
 {
@@ -86,8 +87,7 @@ bool FHapticsRegistry::Tick(float DeltaTime)
 		if (Pair.Value.IsValid())
 		{
 			TSharedPtr<FAudioHapticsListener> Context = Pair.Value;
-			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]()
-			{
+			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]() {
 				NewContext->ConsumeHapticsQueue();
 			});
 		}

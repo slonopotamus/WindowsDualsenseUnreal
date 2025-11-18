@@ -7,7 +7,7 @@
 #if PLATFORM_WINDOWS
 #else
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
-class FCommonsDeviceInfo : public IPlatformHardwareInfoInterface 
+class FCommonsDeviceInfo : public IPlatformHardwareInfoInterface
 {
 	/**
 	 * Virtual destructor for the FCommonsDeviceInfo class.
@@ -20,7 +20,7 @@ class FCommonsDeviceInfo : public IPlatformHardwareInfoInterface
 	 * of derived class objects through base class pointers.
 	 */
 public:
-	virtual ~FCommonsDeviceInfo() override {};
+	virtual ~FCommonsDeviceInfo() override {}
 	/**
 	 * Processes audio haptic feedback using the given device context.
 	 *

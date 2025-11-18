@@ -2,12 +2,11 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-
 #include "SonyGamepadProxy.h"
-#include "Misc/CoreDelegates.h"
 #include "Core/DeviceRegistry.h"
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
+#include "Misc/CoreDelegates.h"
 
 EDeviceType USonyGamepadProxy::GetDeviceType(int32 ControllerId)
 {
@@ -16,7 +15,7 @@ EDeviceType USonyGamepadProxy::GetDeviceType(int32 ControllerId)
 	{
 		return EDeviceType::NotFound;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -33,7 +32,7 @@ EDeviceConnection USonyGamepadProxy::GetConnectionType(int32 ControllerId)
 	{
 		return EDeviceConnection::Unrecognized;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -50,13 +49,13 @@ bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 	{
 		return false;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -67,13 +66,13 @@ float USonyGamepadProxy::LevelBatteryDevice(int32 ControllerId)
 	{
 		return 0.0f;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return 0.0f;
 	}
-	
+
 	return Gamepad->GetBattery();
 }
 
@@ -84,7 +83,7 @@ void USonyGamepadProxy::LedColorEffects(int32 ControllerId, FColor Color, float 
 	{
 		return;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -101,7 +100,7 @@ void USonyGamepadProxy::LedMicEffects(int32 ControllerId, ELedMicEnum Value)
 	{
 		return;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -118,7 +117,7 @@ void USonyGamepadProxy::StartMotionSensorCalibration(int32 ControllerId, float D
 	{
 		return;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -150,7 +149,7 @@ bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, flo
 	{
 		return false;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -158,11 +157,11 @@ bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, flo
 		return false;
 	}
 
-	if (UDualSenseLibrary* DsLibrary  = Cast<UDualSenseLibrary>(Gamepad))
+	if (UDualSenseLibrary* DsLibrary = Cast<UDualSenseLibrary>(Gamepad))
 	{
 		return DsLibrary->GetMotionSensorCalibrationStatus(Progress);
 	}
-	
+
 	return false;
 }
 
@@ -173,7 +172,7 @@ void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 	{
 		return;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -190,7 +189,7 @@ void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGy
 	{
 		return;
 	}
-	
+
 	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
@@ -205,9 +204,9 @@ FInputDeviceId USonyGamepadProxy::GetGamepadInterface(int32 ControllerId)
 	check(IsInGameThread());
 
 	TArray<FInputDeviceId> Devices;
-	
+
 	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(FPlatformUserId::CreateFromInternalId(ControllerId), Devices);
-	
+
 	for (const FInputDeviceId& DeviceId : Devices)
 	{
 		if (FDeviceRegistry::Get()->GetLibraryInstance(DeviceId))

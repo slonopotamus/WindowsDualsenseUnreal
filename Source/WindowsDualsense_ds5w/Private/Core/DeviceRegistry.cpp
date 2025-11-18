@@ -5,15 +5,15 @@
 #include "Core/DeviceRegistry.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "HAL/PlatformProcess.h"
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/DualShock/DualShockLibrary.h"
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
-#include "GameFramework/InputSettings.h"
+#include "Core/Interfaces/SonyGamepadInterface.h"
 #include "Core/Structs/DeviceContext.h"
 #include "Core/Structs/OutputContext.h"
+#include "GameFramework/InputSettings.h"
+#include "HAL/PlatformProcess.h"
 #include "Runtime/Launch/Resources/Version.h"
-#include "Core/Interfaces/SonyGamepadInterface.h"
 
 // #if PLATFORM_WINDOWS
 // #include "Windows/WindowsApplication.h"
@@ -41,70 +41,68 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 	PrimaryTick = false;
 	bIsDeviceDetectionInProgress = true;
 
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [WeakManager = AsWeak()]()
-	{
-			TArray<FDeviceContext> DetectedDevices;
-			DetectedDevices.Reset();
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [WeakManager = AsWeak()]() {
+		TArray<FDeviceContext> DetectedDevices;
+		DetectedDevices.Reset();
 
-			IPlatformHardwareInfoInterface::Get().Detect(DetectedDevices);
-			AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable
+		IPlatformHardwareInfoInterface::Get().Detect(DetectedDevices);
+		AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable {
+			const TSharedPtr<FDeviceRegistry> Manager = WeakManager.Pin();
+			if (!Manager)
 			{
-				const TSharedPtr<FDeviceRegistry> Manager = WeakManager.Pin();
-				if (!Manager)
-				{
-					return;
-				}
-			
-				TSet<FString> CurrentlyConnectedPaths;
-				for (const FDeviceContext& Context : DetectedDevices)
-				{
-					CurrentlyConnectedPaths.Add(Context.Path);
-				}
+				return;
+			}
 
-				TArray<FString> DisconnectedPaths;
-				for (const TPair<FString, FInputDeviceId>& KnownDevice : Manager->KnownDevicePaths)
+			TSet<FString> CurrentlyConnectedPaths;
+			for (const FDeviceContext& Context : DetectedDevices)
+			{
+				CurrentlyConnectedPaths.Add(Context.Path);
+			}
+
+			TArray<FString> DisconnectedPaths;
+			for (const TPair<FString, FInputDeviceId>& KnownDevice : Manager->KnownDevicePaths)
+			{
+				const FString& Path = KnownDevice.Key;
+				const FInputDeviceId& DeviceId = KnownDevice.Value;
+				if (!CurrentlyConnectedPaths.Contains(Path))
 				{
-					const FString& Path = KnownDevice.Key;
-					const FInputDeviceId& DeviceId = KnownDevice.Value;
-					if (!CurrentlyConnectedPaths.Contains(Path))
+					if (Manager->LibraryInstances.Contains(DeviceId))
 					{
-						if (Manager->LibraryInstances.Contains(DeviceId))
-						{
-							Manager->RemoveLibraryInstance(DeviceId);
-							DisconnectedPaths.Add(Path);
-						}
+						Manager->RemoveLibraryInstance(DeviceId);
+						DisconnectedPaths.Add(Path);
 					}
 				}
+			}
 
-				for (const FString& Path : DisconnectedPaths)
+			for (const FString& Path : DisconnectedPaths)
+			{
+				if (Manager->KnownDevicePaths.Contains(Path))
 				{
-					if (Manager->KnownDevicePaths.Contains(Path))
-					{
-						Manager->KnownDevicePaths.Remove(Path);
-					}
+					Manager->KnownDevicePaths.Remove(Path);
 				}
+			}
 
-				for (FDeviceContext& Context : DetectedDevices)
+			for (FDeviceContext& Context : DetectedDevices)
+			{
+				if (!Manager->KnownDevicePaths.Contains(Context.Path))
 				{
-					if (!Manager->KnownDevicePaths.Contains(Context.Path))
+					Context.Output = FOutputContext();
+					if (!IPlatformHardwareInfoInterface::Get().CreateHandle(&Context))
 					{
-						Context.Output = FOutputContext();
-						if (!IPlatformHardwareInfoInterface::Get().CreateHandle(&Context))
-						{
-							UE_LOG(LogTemp, Log, TEXT("DualSense: DeviceManager Failed to create handle for device %s."), *Context.Path);
-							continue;
-						}
-						
-						if (Context.Handle == INVALID_PLATFORM_HANDLE)
-						{
-							continue;
-						}
-						Manager->CreateLibraryInstance(Context);
+						UE_LOG(LogTemp, Log, TEXT("DualSense: DeviceManager Failed to create handle for device %s."), *Context.Path);
+						continue;
 					}
+
+					if (Context.Handle == INVALID_PLATFORM_HANDLE)
+					{
+						continue;
+					}
+					Manager->CreateLibraryInstance(Context);
 				}
-				
-				Manager->bIsDeviceDetectionInProgress = false;
-			});
+			}
+
+			Manager->bIsDeviceDetectionInProgress = false;
+		});
 	});
 }
 
@@ -179,12 +177,12 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 
 	TArray<FInputDeviceId> Devices;
 	Devices.Reset();
-	
+
 	// We should never call into IPlatformInputDeviceMapper from non-game thread because it is not thread-safe
 	check(IsInGameThread());
 
 	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
-		IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
+	    IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
 
 	bool AllocateDeviceToDefaultUser = false;
 	if (Devices.Num() <= 1)
@@ -206,22 +204,22 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 
 	SonyGamepad->_getUObject()->AddToRoot();
 	SonyGamepad->InitializeLibrary(Context);
-	
+
 	KnownDevicePaths.Add(Context.Path, Context.UniqueInputDeviceId);
 	LibraryInstances.Add(Context.UniqueInputDeviceId, SonyGamepad);
 
 	FInputDeviceId GamepadId = Context.UniqueInputDeviceId;
 	if (
-		IPlatformInputDeviceMapper::Get().GetInputDeviceConnectionState(GamepadId) !=
-		EInputDeviceConnectionState::Connected)
+	    IPlatformInputDeviceMapper::Get().GetInputDeviceConnectionState(GamepadId) !=
+	    EInputDeviceConnectionState::Connected)
 	{
 		FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(GamepadId);
 		if (!UserId.IsValid())
 		{
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 6
 			UserId = AllocateDeviceToDefaultUser
-				? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
-				: IPlatformInputDeviceMapper::Get().AllocateNewUserId();
+			             ? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
+			             : IPlatformInputDeviceMapper::Get().AllocateNewUserId();
 
 #else
 			UserId = IPlatformInputDeviceMapper::Get().GetPlatformUserForNewlyConnectedDevice();

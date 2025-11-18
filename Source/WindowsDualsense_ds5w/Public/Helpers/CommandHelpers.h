@@ -42,6 +42,4 @@ private:
 	static ISonyGamepadInterface* GetGamepad(const FInputDeviceId& DeviceId);
 	static uint8 ClampByte(int32 V) { return static_cast<uint8>(FMath::Clamp(V, 0, 255)); }
 	static bool ParseHexByte(const FString& Token, uint8& OutByte);
-
-	
 };

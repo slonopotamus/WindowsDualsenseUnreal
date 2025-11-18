@@ -3,14 +3,12 @@
 // Planned Release Year: 2025
 
 #include "DualSenseProxy.h"
-
 #include "AudioDevice.h"
 #include "Core/DeviceRegistry.h"
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "Helpers/ValidateHelpers.h"
-
 
 void UDualSenseProxy::DeviceSettings(int32 ControllerId, FDualSenseFeatureReport Settings)
 {
@@ -72,14 +70,21 @@ void UDualSenseProxy::LedPlayerEffects(int32 ControllerId, ELedPlayerEnum Value,
 	Gamepad->SetPlayerLed(Value, Brightness);
 }
 
-
-
 void UDualSenseProxy::SetFeedback(int32 ControllerId, int32 BeginStrength,
                                   int32 MiddleStrength, int32 EndStrength, EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength)) BeginStrength = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(MiddleStrength)) MiddleStrength = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(EndStrength)) EndStrength = 8;
+	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength))
+	{
+		BeginStrength = 8;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(MiddleStrength))
+	{
+		MiddleStrength = 8;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(EndStrength))
+	{
+		EndStrength = 8;
+	}
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -98,9 +103,18 @@ void UDualSenseProxy::SetFeedback(int32 ControllerId, int32 BeginStrength,
 
 void UDualSenseProxy::Resistance(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 Strength, EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 0;
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 0;
-	if (!FValidateHelpers::ValidateMaxPosition(Strength)) Strength = 0;
+	if (!FValidateHelpers::ValidateMaxPosition(StartPosition))
+	{
+		StartPosition = 0;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(EndPosition))
+	{
+		EndPosition = 0;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(Strength))
+	{
+		Strength = 0;
+	}
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -119,9 +133,18 @@ void UDualSenseProxy::Resistance(int32 ControllerId, int32 StartPosition, int32 
 
 void UDualSenseProxy::AutomaticGun(int32 ControllerId, int32 BeginStrength, int32 MiddleStrength, int32 EndStrength, EControllerHand Hand, bool KeepEffect, float Frequency)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength)) BeginStrength = 6;
-	if (!FValidateHelpers::ValidateMaxPosition(MiddleStrength)) MiddleStrength = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(EndStrength)) EndStrength = 8;
+	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength))
+	{
+		BeginStrength = 6;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(MiddleStrength))
+	{
+		MiddleStrength = 8;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(EndStrength))
+	{
+		EndStrength = 8;
+	}
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -177,8 +200,14 @@ void UDualSenseProxy::CustomTrigger(int32 ControllerId, EControllerHand Hand, co
 
 void UDualSenseProxy::ContinuousResistance(int32 ControllerId, int32 StartPosition, int32 Strength, EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 0;
-	if (!FValidateHelpers::ValidateMaxPosition(Strength)) Strength = 8;
+	if (!FValidateHelpers::ValidateMaxPosition(StartPosition))
+	{
+		StartPosition = 0;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(Strength))
+	{
+		Strength = 8;
+	}
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -196,13 +225,25 @@ void UDualSenseProxy::ContinuousResistance(int32 ControllerId, int32 StartPositi
 }
 
 void UDualSenseProxy::Galloping(
-	int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
-                                int32 SecondFoot, float Frequency, EControllerHand Hand)
+    int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
+    int32 SecondFoot, float Frequency, EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition, 8, 1)) StartPosition = 1;
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition, 9, StartPosition+1)) EndPosition = 9;
-	if (!FValidateHelpers::ValidateMaxPosition(FirstFoot, 8)) FirstFoot = 1;
-	if (!FValidateHelpers::ValidateMaxPosition(SecondFoot, 9, FirstFoot+1)) SecondFoot = 9;
+	if (!FValidateHelpers::ValidateMaxPosition(StartPosition, 8, 1))
+	{
+		StartPosition = 1;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(EndPosition, 9, StartPosition + 1))
+	{
+		EndPosition = 9;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(FirstFoot, 8))
+	{
+		FirstFoot = 1;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(SecondFoot, 9, FirstFoot + 1))
+	{
+		SecondFoot = 9;
+	}
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -225,11 +266,20 @@ void UDualSenseProxy::Machine(int32 ControllerId, int32 StartPosition, int32 End
 }
 
 void UDualSenseProxy::Weapon(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 Strength,
-	EControllerHand Hand)
+                             EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 0;
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(Strength)) Strength = 8;
+	if (!FValidateHelpers::ValidateMaxPosition(StartPosition))
+	{
+		StartPosition = 0;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(EndPosition))
+	{
+		EndPosition = 8;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(Strength))
+	{
+		Strength = 8;
+	}
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -249,10 +299,22 @@ void UDualSenseProxy::Weapon(int32 ControllerId, int32 StartPosition, int32 EndP
 void UDualSenseProxy::Bow(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 BeginStrength, int32 EndStrength,
                           EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition)) StartPosition = 2;
-	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength)) BeginStrength = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition)) EndPosition = 8;
-	if (!FValidateHelpers::ValidateMaxPosition(EndStrength)) EndStrength = 8;
+	if (!FValidateHelpers::ValidateMaxPosition(StartPosition))
+	{
+		StartPosition = 2;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength))
+	{
+		BeginStrength = 8;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(EndPosition))
+	{
+		EndPosition = 8;
+	}
+	if (!FValidateHelpers::ValidateMaxPosition(EndStrength))
+	{
+		EndStrength = 8;
+	}
 
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
@@ -266,43 +328,58 @@ void UDualSenseProxy::Bow(int32 ControllerId, int32 StartPosition, int32 EndPosi
 		return;
 	}
 
-    Gamepad->SetBow(StartPosition, EndPosition, BeginStrength, EndStrength, Hand);
+	Gamepad->SetBow(StartPosition, EndPosition, BeginStrength, EndStrength, Hand);
 }
 
 static uint8 MapStartZoneEnum(ETriggerPosition Pos)
 {
-    // Map to provided constants: Start = 0x82, Middle = 0x84, End = 0x80, MidLow = 0x88
-    switch (Pos)
-    {
-    case ETriggerPosition::Start: return 0x82;
-    case ETriggerPosition::Middle: return 0x84;
-    case ETriggerPosition::End: return 0x80;
-    case ETriggerPosition::BeforeEnd: return 0x88; // using MidLow mapping
-    case ETriggerPosition::Off: default: return 0x00;
-    }
+	// Map to provided constants: Start = 0x82, Middle = 0x84, End = 0x80, MidLow = 0x88
+	switch (Pos)
+	{
+		case ETriggerPosition::Start: return 0x82;
+		case ETriggerPosition::Middle: return 0x84;
+		case ETriggerPosition::End: return 0x80;
+		case ETriggerPosition::BeforeEnd: return 0x88; // using MidLow mapping
+		case ETriggerPosition::Off:
+		default: return 0x00;
+	}
 }
 
 static uint8 MapBehavior(ETriggerEffectBehavior Behavior)
 {
-    // EndAtPos = 1, KeepEffect = 2
-    switch (Behavior)
-    {
-    case ETriggerEffectBehavior::Localized: return 0x01; // EndAtPos
-    case ETriggerEffectBehavior::Sustained: return 0x02; // KeepEffect
-    default: return 0x01;
-    }
+	// EndAtPos = 1, KeepEffect = 2
+	switch (Behavior)
+	{
+		case ETriggerEffectBehavior::Localized: return 0x01; // EndAtPos
+		case ETriggerEffectBehavior::Sustained: return 0x02; // KeepEffect
+		default: return 0x01;
+	}
 }
 
 static uint8 ComposeForceAmplitude(ETriggerForceIntensity Force, EDualSenseTriggerAmplitude Amplitude)
 {
-    // High nibble 1-3 from Force, Low nibble 0x0A-0x0F from Amplitude
-    const uint8 forceNib = static_cast<uint8>(Force) & 0x0F;
-    const uint8 ampNib = static_cast<uint8>(Amplitude) & 0x0F;
-    uint8 hi = forceNib;
-    if (hi < 1) hi = 1; if (hi > 3) hi = 3;
-    uint8 lo = ampNib;
-    if (lo < 0x0A) lo = 0x0A; if (lo > 0x0F) lo = 0x0F;
-    return static_cast<uint8>((hi << 4) | (lo & 0x0F));
+	// High nibble 1-3 from Force, Low nibble 0x0A-0x0F from Amplitude
+	const uint8 forceNib = static_cast<uint8>(Force) & 0x0F;
+	const uint8 ampNib = static_cast<uint8>(Amplitude) & 0x0F;
+	uint8 hi = forceNib;
+	if (hi < 1)
+	{
+		hi = 1;
+	}
+	if (hi > 3)
+	{
+		hi = 3;
+	}
+	uint8 lo = ampNib;
+	if (lo < 0x0A)
+	{
+		lo = 0x0A;
+	}
+	if (lo > 0x0F)
+	{
+		lo = 0x0F;
+	}
+	return static_cast<uint8>((hi << 4) | (lo & 0x0F));
 }
 
 void UDualSenseProxy::MachineAdvanced(int32 ControllerId, ETriggerPosition StartZone,
@@ -311,27 +388,27 @@ void UDualSenseProxy::MachineAdvanced(int32 ControllerId, ETriggerPosition Start
                                       EDualSenseTriggerAmplitude Amplitude,
                                       int32 Period, int32 Frequency, EControllerHand Hand)
 {
-    // Clamp ranges
-    Period = FMath::Clamp(Period, 0, 20);
-    Frequency = FMath::Clamp(Frequency, 0, 40);
+	// Clamp ranges
+	Period = FMath::Clamp(Period, 0, 20);
+	Frequency = FMath::Clamp(Frequency, 0, 40);
 
-    const uint8 startZoneByte = MapStartZoneEnum(StartZone);
-    const uint8 behaviorByte = MapBehavior(Behavior);
-    const uint8 forceAmp = ComposeForceAmplitude(ForceIntensity, Amplitude);
+	const uint8 startZoneByte = MapStartZoneEnum(StartZone);
+	const uint8 behaviorByte = MapBehavior(Behavior);
+	const uint8 forceAmp = ComposeForceAmplitude(ForceIntensity, Amplitude);
 
-    const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-    if (!DeviceId.IsValid())
-    {
-        return;
-    }
+	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
+	if (!DeviceId.IsValid())
+	{
+		return;
+	}
 
-    ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-    if (!Gamepad)
-    {
-        return;
-    }
+	ISonyGamepadTriggerInterface* Gamepad = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
+	if (!Gamepad)
+	{
+		return;
+	}
 
-    Gamepad->SetMachine27(startZoneByte, behaviorByte, forceAmp, static_cast<uint8>(Period), static_cast<uint8>(Frequency), Hand);
+	Gamepad->SetMachine27(startZoneByte, behaviorByte, forceAmp, static_cast<uint8>(Period), static_cast<uint8>(Frequency), Hand);
 }
 
 void UDualSenseProxy::NoResistance(int32 ControllerId, EControllerHand Hand)

@@ -76,7 +76,7 @@ public:
 		{
 			HexString += FString::Printf(TEXT("%02X "), Buffer[i]);
 		}
-		
+
 		UE_LOG(LogTemp, Log, TEXT("Buffer Device: %s String: %s"), *Device, *HexString);
 	}
 
@@ -99,28 +99,43 @@ public:
 		{
 			S.RightChopInline(2);
 		}
-		if (S.IsEmpty()) { OutByte = 0; return false; }
+		if (S.IsEmpty())
+		{
+			OutByte = 0;
+			return false;
+		}
 		for (int32 i = 0; i < S.Len(); ++i)
 		{
 			TCHAR C = S[i];
 			if (!((C >= '0' && C <= '9') || (C >= 'a' && C <= 'f') || (C >= 'A' && C <= 'F')))
 			{
-				OutByte = 0; return false;
+				OutByte = 0;
+				return false;
 			}
 		}
 		// Only allow 1-2 hex chars per token after optional 0x prefix
 		if (S.Len() < 1 || S.Len() > 2)
 		{
-			OutByte = 0; return false;
+			OutByte = 0;
+			return false;
 		}
 		int32 Value = 0;
 		for (int32 i = 0; i < S.Len(); ++i)
 		{
 			TCHAR C = S[i];
 			int32 Nibble = 0;
-			if (C >= '0' && C <= '9') Nibble = C - '0';
-			else if (C >= 'a' && C <= 'f') Nibble = 10 + (C - 'a');
-			else if (C >= 'A' && C <= 'F') Nibble = 10 + (C - 'A');
+			if (C >= '0' && C <= '9')
+			{
+				Nibble = C - '0';
+			}
+			else if (C >= 'a' && C <= 'f')
+			{
+				Nibble = 10 + (C - 'a');
+			}
+			else if (C >= 'A' && C <= 'F')
+			{
+				Nibble = 10 + (C - 'A');
+			}
 			Value = (Value << 4) | (Nibble & 0xF);
 		}
 		OutByte = static_cast<uint8>(Value & 0xFF);

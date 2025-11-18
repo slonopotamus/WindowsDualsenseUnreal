@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/Object.h"
+#include "Async/TaskGraphInterfaces.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
 #include "Core/Structs/DualShockFeatureReport.h"
-#include "Async/TaskGraphInterfaces.h"
+#include "CoreMinimal.h"
+#include "UObject/Object.h"
 #include "DualShockLibrary.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class WINDOWSDUALSENSE_DS5W_API UDualShockLibrary : public UObject, public ISonyGamepadInterface
@@ -99,8 +99,8 @@ public:
 	 * @param IsButtonPressed A boolean indicating the current pressed state of the button (true if pressed, false otherwise).
 	 */
 	virtual void CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-								  const FPlatformUserId UserId, const FInputDeviceId InputDeviceId,
-								  const FName ButtonName, const bool IsButtonPressed);
+	                              const FPlatformUserId UserId, const FInputDeviceId InputDeviceId,
+	                              const FName ButtonName, const bool IsButtonPressed);
 	/**
 	 * @brief Updates the input state for a DualSense device.
 	 *
@@ -114,7 +114,7 @@ public:
 	 * @return A boolean value indicating whether the input update was successful.
 	 */
 	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-							 const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override;
+	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override;
 	/**
 	 * Retrieves the current battery level of the DualSense controller.
 	 *
@@ -181,7 +181,7 @@ public:
 	 */
 	virtual EDeviceType GetDeviceType() override
 	{
-		return HIDDeviceContexts.DeviceType;	
+		return HIDDeviceContexts.DeviceType;
 	}
 	/**
 	 * Sets the touch state for the device.
@@ -214,7 +214,7 @@ public:
 	 *                    The value ranges from 0.0 (no progress) to 1.0 (fully calibrated).
 	 * @return True if the calibration status was successfully retrieved, false otherwise.
 	 */
-	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override {return false;}
+	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override { return false; }
 	/**
 	 * @brief Resets the gyro orientation to its default alignment.
 	 *
@@ -247,6 +247,7 @@ public:
 	 * It is reset during library shutdown to clear all stored button states.
 	 */
 	TMap<const FName, bool> ButtonStates;
+
 protected:
 	/**
 	 * @brief The PlatformInputDeviceMapper is responsible for mapping platform-specific
@@ -267,6 +268,7 @@ protected:
 	 * - Facilitating cross-platform input device compatibility.
 	 */
 	static FGenericPlatformInputDeviceMapper PlatformInputDeviceMapper;
+
 private:
 	/**
 	 * @brief Represents the current battery level of a device.

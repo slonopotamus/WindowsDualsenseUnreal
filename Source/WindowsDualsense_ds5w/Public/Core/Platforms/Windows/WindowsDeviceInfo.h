@@ -8,13 +8,13 @@
 #define NOMINMAX
 
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include <Windows.h>
 #include "Windows/HideWindowsPlatformTypes.h"
+#include <Windows.h>
 #endif
 
-#include "CoreMinimal.h"
 #include "../../Interfaces/PlatformHardwareInfoInterface.h"
 #include "../../Structs/DeviceContext.h"
+#include "CoreMinimal.h"
 
 /**
  * @brief Enumerates the possible outcomes of a polling operation in HID device communication.
@@ -23,7 +23,8 @@
  * It provides status indicators for successful reads, lack of data in the current tick,
  * transient errors, or disconnected devices.
  */
-enum class EPollResult {
+enum class EPollResult
+{
 	ReadOk,
 	NoIoThisTick,
 	TransientError,
@@ -38,7 +39,7 @@ enum class EPollResult {
  */
 class FWindowsDeviceInfo final : public IPlatformHardwareInfoInterface
 {
-	
+
 public:
 	virtual void ProcessAudioHapitc(FDeviceContext* Context) override;
 	static bool ConfigureBluetoothFeatures(HANDLE DeviceHandle);
@@ -145,15 +146,15 @@ public:
 	{
 		switch (Error)
 		{
-		case ERROR_DEVICE_NOT_CONNECTED:
-		case ERROR_GEN_FAILURE:
-		case ERROR_INVALID_HANDLE:
-		case ERROR_BAD_COMMAND:
-		case ERROR_FILE_NOT_FOUND:
-		case ERROR_ACCESS_DENIED:
-			return true;
-		default:
-			return false;
+			case ERROR_DEVICE_NOT_CONNECTED:
+			case ERROR_GEN_FAILURE:
+			case ERROR_INVALID_HANDLE:
+			case ERROR_BAD_COMMAND:
+			case ERROR_FILE_NOT_FOUND:
+			case ERROR_ACCESS_DENIED:
+				return true;
+			default:
+				return false;
 		}
 	}
 };

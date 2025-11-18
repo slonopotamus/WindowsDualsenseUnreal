@@ -7,9 +7,9 @@
 #include "CoreMinimal.h"
 #include "EDeviceCommons.generated.h"
 
-#define BTN_FN1          0x10
-#define BTN_FN2          0x20
-#define BTN_PADDLE_LEFT  0x40
+#define BTN_FN1 0x10
+#define BTN_FN2 0x20
+#define BTN_PADDLE_LEFT 0x40
 #define BTN_PADDLE_RIGHT 0x80
 
 #define BTN_DPAD_UP 0x8
@@ -74,7 +74,7 @@ enum class ELedPlayerEnum : uint8
 	One = PLAYER_LED_MIDDLE UMETA(DisplayName = "Player One"),
 	Two = PLAYER_LED_MIDDLE_RIGHT | PLAYER_LED_MIDDLE_LEFT UMETA(DisplayName = "Player Two"),
 	Three = PLAYER_LED_RIGHT | PLAYER_LED_MIDDLE | PLAYER_LED_LEFT UMETA(DisplayName = "Player Three"),
-	All  = PLAYER_LED_RIGHT | PLAYER_LED_MIDDLE_RIGHT | PLAYER_LED_MIDDLE_LEFT | PLAYER_LED_LEFT UMETA(DisplayName = "Player all led")
+	All = PLAYER_LED_RIGHT | PLAYER_LED_MIDDLE_RIGHT | PLAYER_LED_MIDDLE_LEFT | PLAYER_LED_LEFT UMETA(DisplayName = "Player all led")
 };
 
 /**
