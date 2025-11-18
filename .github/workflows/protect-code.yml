@@ -15,7 +15,7 @@ jobs:
       # Step 1: Get a list of all files changed in the PR
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v47
         with:
           files: |
             **/*
