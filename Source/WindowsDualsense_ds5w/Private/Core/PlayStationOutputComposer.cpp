@@ -155,12 +155,15 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 
 	if (Effect.Mode == 0x25) // Weapon
 	{
-		Trigger[0x1] = ((Effect.Strengths.ActiveZones >> 0) & 0xFF);
-		Trigger[0x2] = ((Effect.Strengths.ActiveZones >> 8) & 0xFF);
-		for (int i = 0; i < 8; ++i)
-		{
-			Trigger[0x3 + i] = (Effect.Strengths.StrengthZones >> (8 * i)) & 0xFF;
-		}
+		Trigger[0x1] = Effect.Strengths.Compose[0];
+		Trigger[0x2] = Effect.Strengths.Compose[1];
+		Trigger[0x3] = Effect.Strengths.Compose[2];
+		Trigger[0x4] = 0x00;
+		Trigger[0x5] = 0x00;
+		Trigger[0x6] = 0x00;
+		Trigger[0x7] = 0x00;
+		Trigger[0x8] = 0x00;
+		Trigger[0x9] = 0x00;
 	}
 
 	if (Effect.Mode == 0x26) // Automatic Gun

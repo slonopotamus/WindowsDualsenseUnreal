@@ -18,6 +18,8 @@
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "UObject/Object.h"
 #include <atomic>
+
+#include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "DualSenseLibrary.generated.h"
 
 /**
@@ -303,7 +305,7 @@ struct FSensorBounds
  * the DualSense controller programmatically within an application.
  */
 UCLASS()
-class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISonyGamepadInterface, public ISonyGamepadTriggerInterface
+class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISonyGamepadInterface, public ISonyGamepadTriggerInterface, public IGamepadTrigger, public IGamepadTriggerLegacy, public IGamepadAudioHaptics
 {
 	GENERATED_BODY()
 
@@ -402,6 +404,53 @@ public:
 	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
 	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override;
 
+	// ============ BEGIN NEW EFFECTS ========
+	/**
+	 * @brief Configures the advanced machine effect (Mode 0x27) for DualSense controller triggers.
+	 *
+	 * This function sets the parameters for the Mode 0x27 advanced effect on the adaptive triggers
+	 * of a DualSense controller. It specifies the behavior of the effect, including starting zone,
+	 * force, amplitude, period, and frequency, and applies these configurations to the left, right,
+	 * or both triggers based on the specified hand.
+	 *
+	 * @param StartZone Specifies the starting zone of the trigger effect. Defines the point where the effect begins.
+	 * @param BehaviorFlag Indicates the behavior type of the trigger effect. Determines specific effect adjustments (e.g., feedback type).
+	 * @param Force Defines the level of force to apply in the trigger effect. Higher values result in stronger feedback.
+	 * @param Amplitude Sets the amplitude of the trigger vibration or feedback pattern.
+	 * @param Period Specifies the period for the trigger effect, controlling timing intervals or pulse duration.
+	 * @param Frequency Determines the frequency for the trigger vibration or repeated effect.
+	 * @param Hand Identifies the controller hand (left, right, or both) for applying the trigger effect.
+	 */
+	virtual void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EControllerHand& Hand) override;
+	/**
+	 * @brief Configures the bow effect settings on a DualSense controller.
+	 *
+	 * This method allows customization of the bow effect by specifying its start zone,
+	 * behavior, force amplitude, and the hand associated with the action.
+	 *
+	 * @param StartZone The starting zone value for the bow effect.
+	 * @param SnapBack The SnapBack of the force applied during the bow effect.
+	 * @param Hand The controller hand (left or right) associated with the bow action.
+	 */
+	virtual void SetBow22(uint8 StartZone, uint8 SnapBack, const EControllerHand& Hand) override;
+	/**
+	 * @brief Configures the trigger effect for the DualSense controller's adaptive triggers.
+	 *
+	 * This method sets the advanced bow effect (Mode 0x25) for the specified controller triggers,
+	 * allowing customization of trigger resistance and behavior for enhanced gaming experiences.
+	 *
+	 * @param StartZone Specifies the starting position of the trigger effect.
+	 * @param Amplitude Defines the amplitude or intensity of the resistance effect.
+	 * @param Behavior Determines the behavior of the effect in terms of responsiveness and resistance.
+	 * @param Trigger Specifies an additional parameter for customizing the effect behavior.
+	 * @param Hand Determines which hand (Left, Right, or AnyHand) the configuration applies to.
+	 */
+	virtual void SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EControllerHand& Hand) override;
+
+	virtual void SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot, uint8 Frequency, const EControllerHand& Hand) override;
+
+	// ============ END NEW EFFECTS ========
+	
 	/**
 	 * Retrieves the current battery level of the DualSense controller.
 	 *
@@ -519,13 +568,6 @@ public:
 	 */
 	void SetMachine(int32 StartPosition, int32 EndPosition, int32 AmplitudeBegin, int32 AmplitudeEnd,
 	                float Frequency, float Period, const EControllerHand& Hand);
-
-	/**
-	 * Advanced rhythmic machine effect (opcode 0x27):
-	 * [27] [Start_Zone] [Behavior_Flag] [Force_Amplitude] [Period] [Frequency]
-	 */
-	void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 ForceAmplitude, uint8 Period, uint8 Frequency,
-	                  const EControllerHand& Hand);
 	/**
 	 * @brief Configures the galloping effect for a controller's trigger.
 	 *
@@ -610,7 +652,7 @@ public:
 	 * - Rejects any token that contains non-hex characters or not 1-2 hex digits (0x prefix optional).
 	 * - Applies to Left, Right, or AnyHand (sets both) based on Hand.
 	 */
-	void CustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) override;
+	void SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) override;
 	/**
 	 * @brief Stops all ongoing input and feedback operations on the DualSense controller.
 	 *

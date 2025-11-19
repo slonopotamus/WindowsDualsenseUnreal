@@ -601,6 +601,334 @@ void UDualSenseLibrary::SetTriggers(const FInputDeviceProperty* Values)
 	SendOut();
 }
 
+// ====== BEGIN NEW EFFECTS ==========
+void UDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot,
+									 uint8 Frequency, const EControllerHand& Hand)
+{
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+
+	const uint8 FirstFootNib = static_cast<uint8>(
+		FMath::Clamp(FMath::RoundToInt((FirstFoot / 8.0f) * 15.0f), 1, 15));
+	const uint8 SecondFootNib = static_cast<uint8>(
+		FMath::Clamp(FMath::RoundToInt((SecondFoot / 8.0f) * 15.0f), 1, 15));
+	const uint16 PositionMask = (1 << StartPosition) | (1 << EndPosition);
+	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->LeftTrigger.Mode = 0x23;
+		HidOutput->LeftTrigger.Strengths.Compose[0] = PositionMask & 0xFF;
+		HidOutput->LeftTrigger.Strengths.Compose[1] = (PositionMask >> 8) & 0xFF;
+		HidOutput->LeftTrigger.Strengths.Compose[2] = ((FirstFootNib & 0x0F) << 4) | (SecondFootNib & 0x0F);
+		HidOutput->LeftTrigger.Strengths.Compose[3] = static_cast<uint8>(Frequency);
+	}
+
+	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->RightTrigger.Mode = 0x23;
+		HidOutput->RightTrigger.Strengths.Compose[0] = PositionMask & 0xFF;
+		HidOutput->RightTrigger.Strengths.Compose[1] = (PositionMask >> 8) & 0xFF;
+		HidOutput->RightTrigger.Strengths.Compose[2] = ((FirstFootNib & 0x0F) << 4) | (SecondFootNib & 0x0F);
+		HidOutput->RightTrigger.Strengths.Compose[3] = static_cast<uint8>(Frequency);
+	}
+
+	SendOut();
+}
+
+void UDualSenseLibrary::SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period,
+                                     uint8 Frequency, const EControllerHand& Hand)
+{
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+
+	// Mode 0x27 advanced machine effect
+	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->LeftTrigger.Mode = 0x27;
+		HidOutput->LeftTrigger.Strengths.Compose[0] = StartZone;
+		HidOutput->LeftTrigger.Strengths.Compose[1] = BehaviorFlag > 0 ? 0x02 : 0x01;
+		HidOutput->LeftTrigger.Strengths.Compose[2] = Force << 4 | Amplitude & 0x0F;
+		HidOutput->LeftTrigger.Strengths.Compose[3] = Period;
+		HidOutput->LeftTrigger.Strengths.Compose[4] = Frequency;
+	}
+
+	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->RightTrigger.Mode = 0x27;
+		HidOutput->RightTrigger.Strengths.Compose[0] = StartZone;
+		HidOutput->RightTrigger.Strengths.Compose[1] = BehaviorFlag > 0 ? 0x02 : 0x00;
+		HidOutput->RightTrigger.Strengths.Compose[2] = Force << 4 | Amplitude & 0x0F;
+		HidOutput->RightTrigger.Strengths.Compose[3] = Period;
+		HidOutput->RightTrigger.Strengths.Compose[4] = Frequency;
+	}
+
+	SendOut();
+}
+
+void UDualSenseLibrary::SetBow22(uint8 StartZone,  uint8 SnapBack, const EControllerHand& Hand)
+{
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+
+	// Mode 0x22 advanced bow effect
+	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->LeftTrigger.Mode = 0x22;
+		HidOutput->LeftTrigger.Strengths.Compose[0] = StartZone;
+		HidOutput->LeftTrigger.Strengths.Compose[1] = 0x01;
+		HidOutput->LeftTrigger.Strengths.Compose[2] = SnapBack;
+	}
+
+	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->RightTrigger.Mode = 0x22;
+		HidOutput->RightTrigger.Strengths.Compose[0] = StartZone;
+		HidOutput->RightTrigger.Strengths.Compose[1] = 0x01;
+		HidOutput->RightTrigger.Strengths.Compose[2] = SnapBack;
+	}
+
+	SendOut();
+}
+
+void UDualSenseLibrary::SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EControllerHand& Hand)
+{
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+
+	// Mode 0x25 advanced weapon effect
+	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->LeftTrigger.Mode = 0x25;
+		HidOutput->LeftTrigger.Strengths.Compose[0] = StartZone << 4 | Amplitude & 0x0F;
+		HidOutput->LeftTrigger.Strengths.Compose[1] = Behavior;
+		HidOutput->LeftTrigger.Strengths.Compose[2] = Trigger & 0x0F;
+	}
+
+	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->RightTrigger.Mode = 0x25;
+		HidOutput->RightTrigger.Strengths.Compose[0] = StartZone << 4 | Amplitude & 0x0F;
+		HidOutput->RightTrigger.Strengths.Compose[1] = Behavior;
+		HidOutput->RightTrigger.Strengths.Compose[2] = Trigger & 0x0F;
+	}
+
+	SendOut();
+}
+
+// ====== END NEW EFFECTS IGamepadTrigger ==========
+
+
+void UDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
+{
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->LeftTrigger.Mode = 0x0;
+	}
+
+	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->RightTrigger.Mode = 0x0;
+	}
+
+	SendOut();
+}
+
+void UDualSenseLibrary::StopAll()
+{
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+	if (
+	    HidOutput->Lightbar.A == 0 &&
+	    HidOutput->Lightbar.B == 0 &&
+	    HidOutput->Lightbar.R == 0)
+	{
+		HidOutput->Lightbar.B = 255;
+	}
+
+	HidOutput->PlayerLed.Led = static_cast<unsigned char>(ELedPlayerEnum::One);
+	SendOut();
+}
+
+void UDualSenseLibrary::SetLightbar(FColor Color, float BrithnessTime, float ToggleTime)
+{
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+	if ((HidOutput->Lightbar.R != Color.R) || (HidOutput->Lightbar.G != Color.G) || (HidOutput->Lightbar.B != Color.B))
+	{
+		HidOutput->Lightbar.R = Color.R;
+		HidOutput->Lightbar.G = Color.G;
+		HidOutput->Lightbar.B = Color.B;
+		SendOut();
+	}
+}
+
+void UDualSenseLibrary::SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness)
+{
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+	if ((HidOutput->PlayerLed.Led != static_cast<unsigned char>(Led)) || (HidOutput->PlayerLed.Brightness !=
+	                                                                      static_cast<unsigned char>(Brightness)))
+	{
+		HidOutput->PlayerLed.Led = static_cast<unsigned char>(Led);
+		HidOutput->PlayerLed.Brightness = static_cast<unsigned char>(Brightness);
+		SendOut();
+	}
+}
+
+void UDualSenseLibrary::SetMicrophoneLed(ELedMicEnum Led)
+{
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+	if (HidOutput->MicLight.Mode != static_cast<unsigned char>(Led))
+	{
+		HidOutput->MicLight.Mode = static_cast<unsigned char>(Led);
+		SendOut();
+	}
+}
+
+void UDualSenseLibrary::EnableTouch(const bool bIsTouch)
+{
+	bEnableTouch = bIsTouch;
+}
+
+void UDualSenseLibrary::EnableMotionSensor(bool bIsMotionSensor)
+{
+	bEnableAccelerometerAndGyroscope = bIsMotionSensor;
+}
+
+bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
+{
+	if (!bIsCalibrating)
+	{
+		OutProgress = 1.0f;
+		return false;
+	}
+
+	const double ElapsedTime = FPlatformTime::Seconds() - CalibrationStartTime;
+	OutProgress = FMath::Clamp(ElapsedTime / CalibrationDuration, 0.0, 1.0);
+
+	if (ElapsedTime >= CalibrationDuration)
+	{
+		if (CalibrationSampleCount > 0)
+		{
+			GyroBaseline.X = AccumulatedGyro.X / CalibrationSampleCount;
+			GyroBaseline.Y = AccumulatedGyro.Y / CalibrationSampleCount;
+			GyroBaseline.Z = AccumulatedGyro.Z / CalibrationSampleCount;
+
+			AccelBaseline.X = AccumulatedAccel.X / CalibrationSampleCount;
+			AccelBaseline.Y = AccumulatedAccel.Y / CalibrationSampleCount;
+			AccelBaseline.Z = AccumulatedAccel.Z / CalibrationSampleCount;
+		}
+		bIsCalibrating = false;
+		bHasMotionSensorBaseline = true;
+		return false;
+	}
+
+	return true;
+}
+
+void UDualSenseLibrary::AudioHapticUpdate(TArray<int8> Data)
+{
+	FDeviceContext* Context = &HIDDeviceContexts;
+	if (!Context || !Context->IsConnected)
+	{
+		return;
+	}
+
+	unsigned char* AudioData = &Context->BufferAudio[10];
+	AudioData[0] = (AudioVibrationSequence++) & 0xFF;
+	AudioData[1] = 0x92;
+	AudioData[2] = 0x40;
+	FMemory::Memcpy(&AudioData[3], Data.GetData(), 64);
+	FPlayStationOutputComposer::SendAudioHapticAdvanced(Context);
+}
+
+void UDualSenseLibrary::StartMotionSensorCalibration(float Duration, float DeadZone)
+{
+	bIsCalibrating = true;
+	CalibrationSampleCount = 0;
+
+	GyroBaseline = FVector::ZeroVector;
+	AccelBaseline = FVector::ZeroVector;
+	AccumulatedGyro = FVector::ZeroVector;
+	AccumulatedAccel = FVector::ZeroVector;
+
+	SensorsDeadZone = FMath::Clamp(DeadZone, 0.0f, 1.f);
+	CalibrationDuration = FMath::Clamp(Duration, 1.0f, 10.0f);
+	CalibrationStartTime = FPlatformTime::Seconds();
+}
+
+void UDualSenseLibrary::SetHasPhoneConnected(const bool HasConnected)
+{
+	HasPhoneConnected = HasConnected;
+}
+
+void UDualSenseLibrary::SetLevelBattery(const float Level, bool FullyCharged, bool Charging)
+{
+	if (Level > 100.f)
+	{
+		LevelBattery = 100.f;
+		return;
+	}
+	LevelBattery = Level;
+}
+
+void UDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes)
+{
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
+	FOutputContext* OutBuffer = &HIDDeviceContexts.Output;
+
+	uint8 Bytes[10] = {0};
+	for (int32 i = 0; i < 10; ++i)
+	{
+		uint8 B = 0;
+		if (!FValidateHelpers::ParseHexByte_Local(HexBytes[i], B))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("CustomTrigger: invalid hex token at index %d: '%s'"), i, *HexBytes[i]);
+			return;
+		}
+		Bytes[i] = B;
+	}
+
+	bool bIsValid;
+	switch (Bytes[0])
+	{
+		case 0x01:
+		case 0x02:
+		case 0x21:
+		case 0x22:
+		case 0x23:
+		case 0x25:
+		case 0x26:
+		case 0x27:
+			bIsValid = true;
+			break;
+		default:
+			bIsValid = false;
+	}
+
+	if (!bIsValid)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CustomTrigger: invalid hex token at index %d: '%s'"), 0, *HexBytes[0]);
+		return;
+	}
+
+	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+	{
+		OutBuffer->LeftTrigger.Mode = 0xFF;
+		FMemory::Memset(OutBuffer->LeftTrigger.Strengths.Compose, 0, 10);
+		FMemory::Memcpy(OutBuffer->LeftTrigger.Strengths.Compose, Bytes, 10);
+	}
+
+	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+	{
+		OutBuffer->RightTrigger.Mode = 0xFF;
+		FMemory::Memset(OutBuffer->RightTrigger.Strengths.Compose, 0, 10);
+		FMemory::Memcpy(OutBuffer->RightTrigger.Strengths.Compose, Bytes, 10);
+	}
+
+	SendOut();
+}
+
+
+// ====== BEGIN LEGACY EFFECTS IGamepadTriggerLegacy ==========
+
 void UDualSenseLibrary::SetAutomaticGun(int32 BeginStrength, int32 MiddleStrength, int32 EndStrength,
                                         const EControllerHand& Hand, bool KeepEffect, float Frequency)
 {
@@ -796,38 +1124,9 @@ void UDualSenseLibrary::SetMachine(int32 StartPosition, int32 EndPosition, int32
 	SendOut();
 }
 
-void UDualSenseLibrary::SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 ForceAmplitude, uint8 Period,
-                                     uint8 Frequency, const EControllerHand& Hand)
-{
-	HIDDeviceContexts.bOverrideTriggerBytes = false;
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-
-	// Mode 0x27 advanced machine effect
-	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
-	{
-		HidOutput->LeftTrigger.Mode = 0x27;
-		HidOutput->LeftTrigger.Strengths.Compose[0] = StartZone; // Start_Zone
-		HidOutput->LeftTrigger.Strengths.Compose[1] = BehaviorFlag > 0 ? 0x02 : 0x00;
-		HidOutput->LeftTrigger.Strengths.Compose[2] = ForceAmplitude; // High nibble=force, Low nibble=amplitude
-		HidOutput->LeftTrigger.Strengths.Compose[3] = Period;         // Period 0-20
-		HidOutput->LeftTrigger.Strengths.Compose[4] = Frequency;      // Frequency 0-40
-	}
-
-	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
-	{
-		HidOutput->RightTrigger.Mode = 0x27;
-		HidOutput->RightTrigger.Strengths.Compose[0] = StartZone;
-		HidOutput->RightTrigger.Strengths.Compose[1] = BehaviorFlag > 0 ? 0x02 : 0x00;
-		HidOutput->RightTrigger.Strengths.Compose[2] = ForceAmplitude;
-		HidOutput->RightTrigger.Strengths.Compose[3] = Period;
-		HidOutput->RightTrigger.Strengths.Compose[4] = Frequency;
-	}
-
-	SendOut();
-}
 
 void UDualSenseLibrary::SetBow(int32 StartPosition, int32 EndPosition, int32 BegingStrength, int32 EndStrength,
-                               const EControllerHand& Hand)
+							   const EControllerHand& Hand)
 {
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
@@ -883,211 +1182,4 @@ void UDualSenseLibrary::SetBow(int32 StartPosition, int32 EndPosition, int32 Beg
 	SendOut();
 }
 
-void UDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
-{
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
-	{
-		HidOutput->LeftTrigger.Mode = 0x0;
-	}
-
-	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
-	{
-		HidOutput->RightTrigger.Mode = 0x0;
-	}
-
-	SendOut();
-}
-
-void UDualSenseLibrary::StopAll()
-{
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	if (
-	    HidOutput->Lightbar.A == 0 &&
-	    HidOutput->Lightbar.B == 0 &&
-	    HidOutput->Lightbar.R == 0)
-	{
-		HidOutput->Lightbar.B = 255;
-	}
-
-	HidOutput->PlayerLed.Led = static_cast<unsigned char>(ELedPlayerEnum::One);
-	SendOut();
-}
-
-void UDualSenseLibrary::SetLightbar(FColor Color, float BrithnessTime, float ToggleTime)
-{
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	if ((HidOutput->Lightbar.R != Color.R) || (HidOutput->Lightbar.G != Color.G) || (HidOutput->Lightbar.B != Color.B))
-	{
-		HidOutput->Lightbar.R = Color.R;
-		HidOutput->Lightbar.G = Color.G;
-		HidOutput->Lightbar.B = Color.B;
-		SendOut();
-	}
-}
-
-void UDualSenseLibrary::SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness)
-{
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	if ((HidOutput->PlayerLed.Led != static_cast<unsigned char>(Led)) || (HidOutput->PlayerLed.Brightness !=
-	                                                                      static_cast<unsigned char>(Brightness)))
-	{
-		HidOutput->PlayerLed.Led = static_cast<unsigned char>(Led);
-		HidOutput->PlayerLed.Brightness = static_cast<unsigned char>(Brightness);
-		SendOut();
-	}
-}
-
-void UDualSenseLibrary::SetMicrophoneLed(ELedMicEnum Led)
-{
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	if (HidOutput->MicLight.Mode != static_cast<unsigned char>(Led))
-	{
-		HidOutput->MicLight.Mode = static_cast<unsigned char>(Led);
-		SendOut();
-	}
-}
-
-void UDualSenseLibrary::EnableTouch(const bool bIsTouch)
-{
-	bEnableTouch = bIsTouch;
-}
-
-void UDualSenseLibrary::EnableMotionSensor(bool bIsMotionSensor)
-{
-	bEnableAccelerometerAndGyroscope = bIsMotionSensor;
-}
-
-bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
-{
-	if (!bIsCalibrating)
-	{
-		OutProgress = 1.0f;
-		return false;
-	}
-
-	const double ElapsedTime = FPlatformTime::Seconds() - CalibrationStartTime;
-	OutProgress = FMath::Clamp(ElapsedTime / CalibrationDuration, 0.0, 1.0);
-
-	if (ElapsedTime >= CalibrationDuration)
-	{
-		if (CalibrationSampleCount > 0)
-		{
-			GyroBaseline.X = AccumulatedGyro.X / CalibrationSampleCount;
-			GyroBaseline.Y = AccumulatedGyro.Y / CalibrationSampleCount;
-			GyroBaseline.Z = AccumulatedGyro.Z / CalibrationSampleCount;
-
-			AccelBaseline.X = AccumulatedAccel.X / CalibrationSampleCount;
-			AccelBaseline.Y = AccumulatedAccel.Y / CalibrationSampleCount;
-			AccelBaseline.Z = AccumulatedAccel.Z / CalibrationSampleCount;
-		}
-		bIsCalibrating = false;
-		bHasMotionSensorBaseline = true;
-		return false;
-	}
-
-	return true;
-}
-
-void UDualSenseLibrary::AudioHapticUpdate(TArray<int8> Data)
-{
-	FDeviceContext* Context = &HIDDeviceContexts;
-	if (!Context || !Context->IsConnected)
-	{
-		return;
-	}
-
-	unsigned char* AudioData = &Context->BufferAudio[10];
-	AudioData[0] = (AudioVibrationSequence++) & 0xFF;
-	AudioData[1] = 0x92;
-	AudioData[2] = 0x40;
-	FMemory::Memcpy(&AudioData[3], Data.GetData(), 64);
-	FPlayStationOutputComposer::SendAudioHapticAdvanced(Context);
-}
-
-void UDualSenseLibrary::StartMotionSensorCalibration(float Duration, float DeadZone)
-{
-	bIsCalibrating = true;
-	CalibrationSampleCount = 0;
-
-	GyroBaseline = FVector::ZeroVector;
-	AccelBaseline = FVector::ZeroVector;
-	AccumulatedGyro = FVector::ZeroVector;
-	AccumulatedAccel = FVector::ZeroVector;
-
-	SensorsDeadZone = FMath::Clamp(DeadZone, 0.0f, 1.f);
-	CalibrationDuration = FMath::Clamp(Duration, 1.0f, 10.0f);
-	CalibrationStartTime = FPlatformTime::Seconds();
-}
-
-void UDualSenseLibrary::SetHasPhoneConnected(const bool HasConnected)
-{
-	HasPhoneConnected = HasConnected;
-}
-
-void UDualSenseLibrary::SetLevelBattery(const float Level, bool FullyCharged, bool Charging)
-{
-	if (Level > 100.f)
-	{
-		LevelBattery = 100.f;
-		return;
-	}
-	LevelBattery = Level;
-}
-
-void UDualSenseLibrary::CustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes)
-{
-	HIDDeviceContexts.bOverrideTriggerBytes = false;
-	FOutputContext* OutBuffer = &HIDDeviceContexts.Output;
-
-	uint8 Bytes[10] = {0};
-	for (int32 i = 0; i < 10; ++i)
-	{
-		uint8 B = 0;
-		if (!FValidateHelpers::ParseHexByte_Local(HexBytes[i], B))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("CustomTrigger: invalid hex token at index %d: '%s'"), i, *HexBytes[i]);
-			return;
-		}
-		Bytes[i] = B;
-	}
-
-	bool bIsValid;
-	switch (Bytes[0])
-	{
-		case 0x01:
-		case 0x02:
-		case 0x21:
-		case 0x22:
-		case 0x23:
-		case 0x25:
-		case 0x26:
-		case 0x27:
-			bIsValid = true;
-			break;
-		default:
-			bIsValid = false;
-	}
-
-	if (!bIsValid)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CustomTrigger: invalid hex token at index %d: '%s'"), 0, *HexBytes[0]);
-		return;
-	}
-
-	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
-	{
-		OutBuffer->LeftTrigger.Mode = 0xFF;
-		FMemory::Memset(OutBuffer->LeftTrigger.Strengths.Compose, 0, 10);
-		FMemory::Memcpy(OutBuffer->LeftTrigger.Strengths.Compose, Bytes, 10);
-	}
-
-	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
-	{
-		OutBuffer->RightTrigger.Mode = 0xFF;
-		FMemory::Memset(OutBuffer->RightTrigger.Strengths.Compose, 0, 10);
-		FMemory::Memcpy(OutBuffer->RightTrigger.Strengths.Compose, Bytes, 10);
-	}
-
-	SendOut();
-}
+// ====== END LEGACY EFFECTS IGamepadTriggerLegacy ==========

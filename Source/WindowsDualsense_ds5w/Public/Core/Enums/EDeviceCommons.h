@@ -151,3 +151,87 @@ enum class EDualSenseTriggerSoftnessLevel : uint8
 	Soft = 6 UMETA(DisplayName = "Soft"),
 	VerySoft = 8 UMETA(DisplayName = "Very Soft")
 };
+
+// =========== Triggers ============
+
+UENUM(BlueprintType)
+enum class ETriggerForceIntensity : uint8
+{
+	/** No force feedback applied */
+	Disabled = 0x00 UMETA(DisplayName = "Disabled"),
+
+	/** Low intensity force feedback */
+	Low = 0x01 UMETA(DisplayName = "Low (25%)"),
+
+	/** Medium intensity force feedback */
+	Medium = 0x02 UMETA(DisplayName = "Medium (50%)"),
+
+	/** High intensity force feedback */
+	High = 0x03 UMETA(DisplayName = "High (100%)")
+};
+
+UENUM(BlueprintType)
+enum class ETriggerPosition : uint8
+{
+	/** No resistance at any position */
+	Off = 0x00 UMETA(DisplayName = "Off (No Resistance)"),
+
+	/** Start position - Beginning of trigger pull (0-25%) */
+	Start = 0x82 UMETA(DisplayName = "Start (0-25%)"),
+
+	/** Middle position - Mid trigger pull (25-50%) */
+	Middle = 0x84 UMETA(DisplayName = "Middle (25-50%)"),
+
+	/** Before End position - Near full pull (50-75%) */
+	BeforeEnd = 0x88 UMETA(DisplayName = "Before End (50-75%)"),
+
+	/** End position - Full trigger pull (75-100%) */
+	End = 0x80 UMETA(DisplayName = "End (75-100%)")
+};
+
+UENUM(BlueprintType)
+enum class EDualSenseTriggerAmplitude : uint8
+{
+	/** No amplitude - Effect disabled */
+	None = 0x00 UMETA(DisplayName = "None (0%)"),
+
+	/** Low amplitude - Subtle vibration effect */
+	Low = 0x0A UMETA(DisplayName = "Low (~40%)"),
+
+	/** Medium amplitude - Moderate vibration effect */
+	Medium = 0x0C UMETA(DisplayName = "Medium (~50%)"),
+
+	/** High amplitude - Strong vibration effect */
+	High = 0x0F UMETA(DisplayName = "High (100%)")
+};
+
+UENUM(BlueprintType)
+enum class EDualSenseSnapBack : uint8
+{
+	/** No SnapBack - Effect disabled */
+	None = 0x00 UMETA(DisplayName = "None (0%)"),
+	Low = 0x3A UMETA(DisplayName = "Low (~40%)"),
+	Medium = 0x3E UMETA(DisplayName = "Medium (~50%)"),
+	High = 0x3F UMETA(DisplayName = "High (100%)"),
+};
+
+UENUM(BlueprintType)
+enum class EDualSenseWeaponTrigger : uint8
+{
+	/** No WeaponClick - Effect disabled */
+	None = 0x00 UMETA(DisplayName = "None (0%)"),
+	Low =  0x02 UMETA(DisplayName = "Low (~40%)"),
+	Medium = 0x04 UMETA(DisplayName = "Medium (~50%)"),
+	High = 0x0A UMETA(DisplayName = "High (~75%)"),
+	Max = 0x0F UMETA(DisplayName = "Max (100%)"),
+};
+
+UENUM(BlueprintType)
+enum class ETriggerEffectBehavior : uint8
+{
+	/** Effect applies only at specified position range */
+	Localized = 0 UMETA(DisplayName = "Localized (Stop at Position)"),
+
+	/** Effect continues until trigger is fully pressed */
+	Sustained = 1 UMETA(DisplayName = "Sustained (Extend to End)")
+};

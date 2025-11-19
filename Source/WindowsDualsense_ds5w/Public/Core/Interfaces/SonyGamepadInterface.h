@@ -41,24 +41,6 @@ class WINDOWSDUALSENSE_DS5W_API ISonyGamepadInterface
 
 public:
 	/**
-	 * Pure virtual function that checks the connection status of the gamepad.
-	 *
-	 * @return True if the gamepad is connected, false otherwise.
-	 */
-	virtual bool IsConnected() = 0;
-	/**
-	 * Retrieves the type of the device.
-	 *
-	 * @return The type of the device as an EDeviceType enumeration.
-	 */
-	virtual EDeviceType GetDeviceType() = 0;
-	/**
-	 * Retrieves the connection type of the device.
-	 *
-	 * @return The connection type of the device as an EDeviceConnection enumeration.
-	 */
-	virtual EDeviceConnection GetConnectionType() = 0;
-	/**
 	 * Initializes the gamepad library using the specified device context.
 	 *
 	 * This function is used to establish the initial connection and setup
@@ -88,6 +70,24 @@ public:
 	 * ISonyGamepadInterface interface.
 	 */
 	virtual void ShutdownLibrary() = 0;
+	/**
+	 * Pure virtual function that checks the connection status of the gamepad.
+	 *
+	 * @return True if the gamepad is connected, false otherwise.
+	 */
+	virtual bool IsConnected() = 0;
+	/**
+	 * Retrieves the type of the device.
+	 *
+	 * @return The type of the device as an EDeviceType enumeration.
+	 */
+	virtual EDeviceType GetDeviceType() = 0;
+	/**
+	 * Retrieves the connection type of the device.
+	 *
+	 * @return The connection type of the device as an EDeviceConnection enumeration.
+	 */
+	virtual EDeviceConnection GetConnectionType() = 0;
 	/**
 	 * Sets the lightbar color and associated timing parameters on the gamepad.
 	 *
