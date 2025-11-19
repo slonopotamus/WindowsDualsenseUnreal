@@ -116,13 +116,15 @@ public:
 	 * @return Pointer to the current instance as an IHapticDevice interface.
 	 */
 	virtual IHapticDevice* GetHapticDevice() override { return this; }
+
 	/**
 	 * Determines whether a gamepad is currently attached.
 	 * This method always indicates that a DualSense gamepad is attached.
 	 *
 	 * @return True if a gamepad is attached; false otherwise.
 	 */
-	virtual bool IsGamepadAttached() const override { return true; }
+	virtual bool IsGamepadAttached() const override;
+
 	/**
 	 * Handles user login state changes
 	 * @param bLoggedIn Whether a User is logged in
