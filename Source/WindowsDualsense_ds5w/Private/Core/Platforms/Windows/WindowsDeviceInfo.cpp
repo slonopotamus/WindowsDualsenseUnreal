@@ -74,22 +74,22 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 								{
 									case 0x05C4:
 									case 0x09CC:
-										Context.DeviceType = DualShock4;
+										Context.DeviceType = EDeviceType::DualShock4;
 										break;
 									case 0x0DF2:
-										Context.DeviceType = DualSenseEdge;
+										Context.DeviceType = EDeviceType::DualSenseEdge;
 										break;
-									default: Context.DeviceType = DualSense;
+									default: Context.DeviceType = EDeviceType::DualSense;
 								}
 
 								Context.IsConnected = true;
-								Context.ConnectionType = Usb;
+								Context.ConnectionType = EDeviceConnection::Usb;
 								FString DevicePath(Context.Path);
 								if (DevicePath.Contains(TEXT("{00001124-0000-1000-8000-00805f9b34fb}")) ||
 								    DevicePath.Contains(TEXT("bth")) ||
 								    DevicePath.Contains(TEXT("BTHENUM")))
 								{
-									Context.ConnectionType = Bluetooth;
+									Context.ConnectionType = EDeviceConnection::Bluetooth;
 									if (!ConfigureBluetoothFeatures(TempDeviceHandle))
 									{
 										UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to configure Bluetooth features."));
@@ -136,14 +136,14 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 	DWORD BytesRead = 0;
 	HidD_FlushQueue(Context->Handle);
 
-	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
+	if (Context->ConnectionType == EDeviceConnection::Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
 	{
 		constexpr size_t InputReportLength = 547;
 		PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
 	}
 	else
 	{
-		const size_t InputBufferSize = Context->ConnectionType == Bluetooth ? 78 : 64;
+		const size_t InputBufferSize = Context->ConnectionType == EDeviceConnection::Bluetooth ? 78 : 64;
 		PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
 	}
 }
@@ -155,8 +155,8 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 		return;
 	}
 
-	size_t InReportLength = Context->DeviceType == DualShock4 ? 32 : 74;
-	size_t OutputReportLength = Context->ConnectionType == Bluetooth ? 78 : InReportLength;
+	size_t InReportLength = Context->DeviceType == EDeviceType::DualShock4 ? 32 : 74;
+	size_t OutputReportLength = Context->ConnectionType == EDeviceConnection::Bluetooth ? 78 : InReportLength;
 
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
@@ -257,7 +257,7 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		return;
 	}
 
-	if (Context->ConnectionType != Bluetooth)
+	if (Context->ConnectionType != EDeviceConnection::Bluetooth)
 	{
 		return;
 	}

@@ -91,7 +91,7 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 		{
 			return;
 		}
-		
+
 		const FInputDeviceTriggerResistanceProperty* TriggerResistanceProperty = static_cast<const FInputDeviceTriggerResistanceProperty*>(Property);
 		GamepadTrigger->SetTriggerResistance(*TriggerResistanceProperty);
 	}
