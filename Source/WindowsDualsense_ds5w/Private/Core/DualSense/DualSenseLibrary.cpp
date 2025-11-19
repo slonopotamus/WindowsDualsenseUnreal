@@ -601,7 +601,6 @@ void UDualSenseLibrary::SetTriggers(const FInputDeviceProperty* Values)
 	SendOut();
 }
 
-// ====== BEGIN NEW EFFECTS ==========
 void UDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot,
 									 uint8 Frequency, const EControllerHand& Hand)
 {
@@ -713,9 +712,6 @@ void UDualSenseLibrary::SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Beha
 
 	SendOut();
 }
-
-// ====== END NEW EFFECTS IGamepadTrigger ==========
-
 
 void UDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
 {
@@ -925,9 +921,6 @@ void UDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArr
 
 	SendOut();
 }
-
-
-// ====== BEGIN LEGACY EFFECTS IGamepadTriggerLegacy ==========
 
 void UDualSenseLibrary::SetAutomaticGun(int32 BeginStrength, int32 MiddleStrength, int32 EndStrength,
                                         const EControllerHand& Hand, bool KeepEffect, float Frequency)
@@ -1181,5 +1174,3 @@ void UDualSenseLibrary::SetBow(int32 StartPosition, int32 EndPosition, int32 Beg
 	}
 	SendOut();
 }
-
-// ====== END LEGACY EFFECTS IGamepadTriggerLegacy ==========
