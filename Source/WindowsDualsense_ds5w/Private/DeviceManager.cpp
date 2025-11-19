@@ -165,6 +165,11 @@ void DeviceManager::ResetLightColor(const int32 ControllerId)
 	Gamepad->SetLightbar(FColor::Blue);
 }
 
+bool DeviceManager::IsGamepadAttached() const
+{
+	return FDeviceRegistry::Get()->GetAllocatedDevices() > 0;
+}
+
 void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex) const
 {
 	const FPlatformUserId PlatformUserId = FPlatformUserId::CreateFromInternalId(UserId);
