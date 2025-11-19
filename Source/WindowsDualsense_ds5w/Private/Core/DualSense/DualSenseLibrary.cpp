@@ -16,7 +16,7 @@
 bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
 	HIDDeviceContexts = Context;
-	if (HIDDeviceContexts.ConnectionType == Bluetooth)
+	if (HIDDeviceContexts.ConnectionType == EDeviceConnection::Bluetooth)
 	{
 		FOutputContext* EnableReport = &HIDDeviceContexts.Output;
 		// Set flags to enable control over the lightbar, player LEDs
@@ -118,7 +118,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		IPlatformHardwareInfoInterface::Get().Read(NewContext);
 	});
 
-	const size_t Padding = HIDDeviceContexts.ConnectionType == Bluetooth ? 2 : 1;
+	const size_t Padding = HIDDeviceContexts.ConnectionType == EDeviceConnection::Bluetooth ? 2 : 1;
 	const unsigned char* HIDInput = &HIDDeviceContexts.Buffer[Padding];
 
 	const auto HandleAnalogInput = [&](const FName& AnalogKey, const FName& ButtonKeyPositive, const FName& ButtonKeyNegative, float NewAxisValue) {
