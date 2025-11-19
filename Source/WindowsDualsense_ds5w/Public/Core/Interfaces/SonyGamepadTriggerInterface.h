@@ -24,13 +24,7 @@ class WINDOWSDUALSENSE_DS5W_API ISonyGamepadTriggerInterface
 	GENERATED_BODY()
 
 public:
-	/**
-	 * Configures the trigger effects on a gamepad using specified haptic feedback values.
-	 *
-	 * @param Values A reference to an FHapticFeedbackValues structure that contains the details
-	 *               of the haptic feedback configuration for the triggers.
-	 */
-	virtual void SetTriggers(const FInputDeviceProperty* Values) = 0;
+	virtual void SetTriggerResistance(const FInputDeviceTriggerResistanceProperty& Resistance) = 0;
 	/**
 	 * Sets the haptic feedback for a specific hand on the gamepad.
 	 *

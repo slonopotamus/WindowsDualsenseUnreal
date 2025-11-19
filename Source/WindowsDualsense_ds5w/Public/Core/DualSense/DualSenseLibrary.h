@@ -10,7 +10,6 @@
 #include "Core/Interfaces/SonyGamepadInterface.h"
 #include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "Core/Structs/DeviceContext.h"
-#include "Core/Structs/DeviceSettings.h"
 #include "Core/Structs/DualSenseFeatureReport.h"
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
@@ -576,13 +575,13 @@ public:
 	 * configurations for left and right triggers, setting their resistance zones,
 	 * activation strength, and associated levels.
 	 *
-	 * @param Values A pointer to an `FInputDeviceProperty` structure that defines
+	 * @param Resistance An `FInputDeviceTriggerResistanceProperty` structure that defines
 	 *        the desired properties to configure the triggers. It may include
 	 *        attributes such as the start and end positions of resistance zones,
 	 *        strength levels, and the specific triggers to be affected (e.g., left,
 	 *        right, or both triggers).
 	 */
-	virtual void SetTriggers(const FInputDeviceProperty* Values) override;
+	virtual void SetTriggerResistance(const FInputDeviceTriggerResistanceProperty& Resistance) override;
 	/**
 	 * @brief Updates the vibration feedback for a DualSense controller using force feedback values.
 	 *

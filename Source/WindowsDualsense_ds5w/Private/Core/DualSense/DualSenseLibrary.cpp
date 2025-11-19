@@ -544,58 +544,54 @@ void UDualSenseLibrary::SetHapticFeedback(int32 Hand, const FHapticFeedbackValue
 	SendOut();
 }
 
-void UDualSenseLibrary::SetTriggers(const FInputDeviceProperty* Values)
+void UDualSenseLibrary::SetTriggerResistance(const FInputDeviceTriggerResistanceProperty& Resistance)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	if (Values->Name == FName("InputDeviceTriggerResistance"))
+
+	const uint8_t Start = Resistance.StartPosition;
+	const uint8_t End = Resistance.EndPosition;
+	const float StartStr = static_cast<float>(Resistance.StartStrengh);
+	const float EndStr = static_cast<float>(Resistance.EndStrengh);
+
+	constexpr int NumZones = 10;
+	uint8_t Strengths[NumZones] = {0};
+	if (End > Start)
 	{
-		const FInputDeviceTriggerResistanceProperty* Resistance = static_cast<const FInputDeviceTriggerResistanceProperty*>(Values);
-
-		const uint8_t Start = Resistance->StartPosition;
-		const uint8_t End = Resistance->EndPosition;
-		const float StartStr = static_cast<float>(Resistance->StartStrengh);
-		const float EndStr = static_cast<float>(Resistance->EndStrengh);
-
-		constexpr int NumZones = 10;
-		uint8_t Strengths[NumZones] = {0};
-		if (End > Start)
+		for (int i = Start; i <= End && i < NumZones; ++i)
 		{
-			for (int i = Start; i <= End && i < NumZones; ++i)
-			{
-				const float Alpha = (End == Start) ? 0.0f : (i - Start) / (End - Start);
-				Strengths[i] = static_cast<uint8>(StartStr + Alpha * (EndStr - StartStr));
-			}
+			const float Alpha = (End == Start) ? 0.0f : (i - Start) / (End - Start);
+			Strengths[i] = static_cast<uint8>(StartStr + Alpha * (EndStr - StartStr));
 		}
+	}
 
-		int32 ActiveZones = 0;
-		int64 StrengthZones = 0;
-		for (int i = 0; i < 10; i++)
+	int32 ActiveZones = 0;
+	int64 StrengthZones = 0;
+	for (int i = 0; i < 10; i++)
+	{
+		if (Strengths[i] > 0)
 		{
-			if (Strengths[i] > 0)
-			{
-				const uint64_t StrengthValue = static_cast<uint64_t>((Strengths[i] - 1) & 0x07);
-				StrengthZones |= static_cast<int64>(StrengthValue << (3 * i));
-				ActiveZones |= (1 << i);
-			}
+			const uint64_t StrengthValue = static_cast<uint64_t>((Strengths[i] - 1) & 0x07);
+			StrengthZones |= static_cast<int64>(StrengthValue << (3 * i));
+			ActiveZones |= (1 << i);
 		}
+	}
 
-		if (
-		    Resistance->AffectedTriggers == EInputDeviceTriggerMask::Left ||
-		    Resistance->AffectedTriggers == EInputDeviceTriggerMask::All)
-		{
-			HidOutput->LeftTrigger.Mode = 0x02;
-			HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
-			HidOutput->LeftTrigger.Strengths.StrengthZones = StrengthZones;
-		}
+	if (
+	    Resistance.AffectedTriggers == EInputDeviceTriggerMask::Left ||
+	    Resistance.AffectedTriggers == EInputDeviceTriggerMask::All)
+	{
+		HidOutput->LeftTrigger.Mode = 0x02;
+		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
+		HidOutput->LeftTrigger.Strengths.StrengthZones = StrengthZones;
+	}
 
-		if (
-		    Resistance->AffectedTriggers == EInputDeviceTriggerMask::Right ||
-		    Resistance->AffectedTriggers == EInputDeviceTriggerMask::All)
-		{
-			HidOutput->RightTrigger.Mode = 0x02;
-			HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
-			HidOutput->RightTrigger.Strengths.StrengthZones = StrengthZones;
-		}
+	if (
+	    Resistance.AffectedTriggers == EInputDeviceTriggerMask::Right ||
+	    Resistance.AffectedTriggers == EInputDeviceTriggerMask::All)
+	{
+		HidOutput->RightTrigger.Mode = 0x02;
+		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
+		HidOutput->RightTrigger.Strengths.StrengthZones = StrengthZones;
 	}
 
 	SendOut();

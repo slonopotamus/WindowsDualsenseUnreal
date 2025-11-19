@@ -73,13 +73,12 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 		return;
 	}
 
-	if (Property->Name == "InputDeviceLightColor")
+	if (Property->Name == FInputDeviceLightColorProperty::PropertyName())
 	{
 		const FInputDeviceLightColorProperty* ColorProperty = static_cast<const FInputDeviceLightColorProperty*>(Property);
 		SetLightColor(ControllerId, ColorProperty->Color);
 	}
-
-	if (Property->Name == FName("InputDeviceTriggerResistance"))
+	else if (Property->Name == FInputDeviceTriggerResistanceProperty::PropertyName())
 	{
 		const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 		if (!DeviceId.IsValid())
@@ -92,7 +91,9 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 		{
 			return;
 		}
-		GamepadTrigger->SetTriggers(Property);
+		
+		const FInputDeviceTriggerResistanceProperty* TriggerResistanceProperty = static_cast<const FInputDeviceTriggerResistanceProperty*>(Property);
+		GamepadTrigger->SetTriggerResistance(*TriggerResistanceProperty);
 	}
 }
 
