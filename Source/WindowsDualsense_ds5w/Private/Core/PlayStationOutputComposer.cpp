@@ -117,14 +117,15 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 
 	if (Effect.Mode == 0x21) // Resistance
 	{
-		Trigger[0x1] = 0xf0;
-		Trigger[0x2] = 0x03;
-		Trigger[0x3] = 0x00;
-		Trigger[0x5] = Effect.Strengths.Compose[2];
-		Trigger[0x6] = Effect.Strengths.Compose[3];
+		Trigger[0x1] = Effect.Strengths.Compose[0];
+		Trigger[0x2] = Effect.Strengths.Compose[1];
+		Trigger[0x3] = Effect.Strengths.Compose[2];
+		Trigger[0x5] = Effect.Strengths.Compose[3];
+		Trigger[0x6] = Effect.Strengths.Compose[4];
 		Trigger[0x7] = 0x0;
 		Trigger[0x8] = 0x0;
 		Trigger[0x9] = 0x0;
+		UE_LOG(LogTemp, Warning, TEXT("%02X, %02X, %02X, %02X, %02X"), Trigger[0x1], Trigger[0x2], Trigger[0x3], Trigger[0x4], Trigger[0x5]);
 	}
 
 	if (Effect.Mode == 0x22 || Effect.Mode == 0x02) // Bow

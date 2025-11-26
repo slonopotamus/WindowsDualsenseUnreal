@@ -601,6 +601,14 @@ void UDualSenseLibrary::SetTriggers(const FInputDeviceProperty* Values)
 	SendOut();
 }
 
+
+void UDualSenseLibrary::SetFeedback21(uint8 StartZones, uint8 Amplitude, const EControllerHand& Hand)
+{
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+	// Todo feedbacks
+}
+
 void UDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot,
 									 uint8 Frequency, const EControllerHand& Hand)
 {
@@ -712,6 +720,7 @@ void UDualSenseLibrary::SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Beha
 
 	SendOut();
 }
+
 
 void UDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
 {
@@ -917,6 +926,38 @@ void UDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArr
 		OutBuffer->RightTrigger.Mode = 0xFF;
 		FMemory::Memset(OutBuffer->RightTrigger.Strengths.Compose, 0, 10);
 		FMemory::Memcpy(OutBuffer->RightTrigger.Strengths.Compose, Bytes, 10);
+	}
+
+	SendOut();
+}
+
+void UDualSenseLibrary::SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency,
+	const EControllerHand& Hand)
+{
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
+	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->LeftTrigger.Mode = 0x26;
+		HidOutput->LeftTrigger.Strengths.Compose[0] = 0xf8;
+		HidOutput->LeftTrigger.Strengths.Compose[1] = Behavior > 0 ? 0x03 : 0x00;
+		HidOutput->LeftTrigger.Strengths.Compose[2] = 0x00;
+		HidOutput->LeftTrigger.Strengths.Compose[3] = 0x00;
+		HidOutput->LeftTrigger.Strengths.Compose[4] = Amplitude == 1 ? 0x8F : 0x8a;
+		HidOutput->LeftTrigger.Strengths.Compose[5] = Amplitude == 2 ? 0x3F : 0x1F;
+		HidOutput->LeftTrigger.Strengths.Compose[9] = Frequency;
+	}
+
+	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+	{
+		HidOutput->RightTrigger.Mode = 0x26;
+		HidOutput->RightTrigger.Strengths.Compose[0] = 0xf8;
+		HidOutput->RightTrigger.Strengths.Compose[1] = Behavior > 0 ? 0x03 : 0x00;
+		HidOutput->RightTrigger.Strengths.Compose[2] = 0x00;
+		HidOutput->RightTrigger.Strengths.Compose[3] = 0x00;
+		HidOutput->RightTrigger.Strengths.Compose[4] = Amplitude == 1 ? 0x8F : 0x8a;
+		HidOutput->RightTrigger.Strengths.Compose[5] = Amplitude == 2 ? 0x3F : 0x1F;
+		HidOutput->RightTrigger.Strengths.Compose[9] = Frequency;
 	}
 
 	SendOut();

@@ -20,6 +20,8 @@
 #include <atomic>
 
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
+#include "Core/Interfaces/Segregations/IGamepadTrigger.h"
+#include "Core/Interfaces/Segregations/IGamepadTriggerLegacy.h"
 #include "DualSenseLibrary.generated.h"
 
 /**
@@ -403,8 +405,70 @@ public:
 	 */
 	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
 	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override;
-
-	// ============ BEGIN NEW EFFECTS ========
+	/**
+	 * Configures a custom feedback mechanism with specified amplitude and zone parameters for a gamepad trigger.
+	 *
+	 * @param StartZones A value defining the starting zones of the trigger feedback effect.
+	 * @param Amplitude The amplitude level for the first zone of the feedback effect.
+	 * @param Hand The controller hand (e.g., left or right) for which the feedback configuration is applied.
+	 */
+	virtual void SetFeedback21(uint8 StartZones, uint8 Amplitude, const EControllerHand& Hand) override;
+	/**
+	 * @brief Configures the bow effect settings on a DualSense controller.
+	 *
+	 * This method allows customization of the bow effect by specifying its start zone,
+	 * behavior, force amplitude, and the hand associated with the action.
+	 *
+	 * @param StartZone The starting zone value for the bow effect.
+	 * @param SnapBack The SnapBack of the force applied during the bow effect.
+	 * @param Hand The controller hand (left or right) associated with the bow action.
+	 */
+	virtual void SetBow22(uint8 StartZone, uint8 SnapBack, const EControllerHand& Hand) override;
+	/**
+	 * @brief Configures the galloping trigger feedback behavior on a DualSense controller.
+	 *
+	 * This method sets up the trigger effects on the specified hand of a DualSense controller
+	 * to emulate a "galloping" feedback pattern. It allows customization of start and end positions,
+	 * the characteristics of two feedback "foot" pressures, and the frequency of the effect.
+	 *
+	 * @param StartPosition The beginning position of the galloping effect, represented as a 0-based index.
+	 * @param EndPosition The ending position of the galloping effect, represented as a 0-based index.
+	 * @param FirstFoot The feedback strength value for the first foot during the galloping effect, ranging from 0-8.
+	 * @param SecondFoot The feedback strength value for the second foot during the galloping effect, ranging from 0-8.
+	 * @param Frequency The frequency of the galloping effect, determining how rapidly it alternates or triggers.
+	 * @param Hand Specifies the controller hand (left, right, or any) to apply the galloping effect.
+	 */
+	virtual void SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot, uint8 Frequency, const EControllerHand& Hand) override;
+	/**
+	 * @brief Configures the trigger effect for the DualSense controller's adaptive triggers.
+	 *
+	 * This method sets the advanced bow effect (Mode 0x25) for the specified controller triggers,
+	 * allowing customization of trigger resistance and behavior for enhanced gaming experiences.
+	 *
+	 * @param StartZone Specifies the starting position of the trigger effect.
+	 * @param Amplitude Defines the amplitude or intensity of the resistance effect.
+	 * @param Behavior Determines the behavior of the effect in terms of responsiveness and resistance.
+	 * @param Trigger Specifies an additional parameter for customizing the effect behavior.
+	 * @param Hand Determines which hand (Left, Right, or AnyHand) the configuration applies to.
+	 */
+	virtual void SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EControllerHand& Hand) override;
+	/**
+	 * @brief Configures the machine gun effect on a DualSense controller.
+	 *
+	 * This method controls the haptic feedback pattern to simulate a machine gun-like vibration effect on the controller.
+	 * It allows setting parameters such as the starting zone, behavior, amplitude, frequency, and the specific controller hand.
+	 *
+	 * @details The method enables developers to provide a highly immersive experience by fine-tuning the haptic responses.
+	 * By adjusting the starting zone and behavior, the effect can be customized to simulate different mechanical sensations,
+	 * while the amplitude and frequency control the intensity and oscillation of the feedback.
+	 *
+	 * @param StartZone Specifies the initial zone for the haptic effect.
+	 * @param Behavior Defines the behavioral pattern of the machine gun effect.
+	 * @param Amplitude Sets the vibration amplitude, determining the strength of the feedback.
+	 * @param Frequency Configures the frequency of the haptic pulses to simulate firing intervals.
+	 * @param Hand Indicates which controller hand (left or right) will receive the effect.
+	 */
+	virtual void SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EControllerHand& Hand) override;
 	/**
 	 * @brief Configures the advanced machine effect (Mode 0x27) for DualSense controller triggers.
 	 *
@@ -423,34 +487,24 @@ public:
 	 */
 	virtual void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EControllerHand& Hand) override;
 	/**
-	 * @brief Configures the bow effect settings on a DualSense controller.
+	 * @brief Sets custom trigger behavior for the specified controller hand using custom hexadecimal byte data.
 	 *
-	 * This method allows customization of the bow effect by specifying its start zone,
-	 * behavior, force amplitude, and the hand associated with the action.
+	 * This method allows developers to define custom behaviors for the trigger buttons on a DualSense controller.
+	 * The behavior is specified using an array of 10 hexadecimal byte strings which represent configuration and
+	 * behavior codes that are sent directly to the controller.
 	 *
-	 * @param StartZone The starting zone value for the bow effect.
-	 * @param SnapBack The SnapBack of the force applied during the bow effect.
-	 * @param Hand The controller hand (left or right) associated with the bow action.
+	 * @param Hand The hand designation of the controller (e.g., left, right, or any hand) for which the custom trigger behavior is applied.
+	 * @param HexBytes An array of hexadecimal byte strings defining the custom trigger configuration. Must contain exactly 10 valid values.
 	 */
-	virtual void SetBow22(uint8 StartZone, uint8 SnapBack, const EControllerHand& Hand) override;
+	virtual void SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) override;
 	/**
-	 * @brief Configures the trigger effect for the DualSense controller's adaptive triggers.
+	 * Stops any ongoing adaptive trigger effects on the specified controller hand.
 	 *
-	 * This method sets the advanced bow effect (Mode 0x25) for the specified controller triggers,
-	 * allowing customization of trigger resistance and behavior for enhanced gaming experiences.
-	 *
-	 * @param StartZone Specifies the starting position of the trigger effect.
-	 * @param Amplitude Defines the amplitude or intensity of the resistance effect.
-	 * @param Behavior Determines the behavior of the effect in terms of responsiveness and resistance.
-	 * @param Trigger Specifies an additional parameter for customizing the effect behavior.
-	 * @param Hand Determines which hand (Left, Right, or AnyHand) the configuration applies to.
+	 * @param Hand The hand for which to stop the adaptive trigger effect.
+	 *             Acceptable values are EControllerHand::Left, EControllerHand::Right,
+	 *             or EControllerHand::AnyHand.
 	 */
-	virtual void SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EControllerHand& Hand) override;
-
-	virtual void SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot, uint8 Frequency, const EControllerHand& Hand) override;
-
-	// ============ END NEW EFFECTS ========
-	
+	void StopTrigger(const EControllerHand& Hand);
 	/**
 	 * Retrieves the current battery level of the DualSense controller.
 	 *
@@ -638,21 +692,6 @@ public:
 	 * respective motors.
 	 */
 	virtual void SetVibration(const FForceFeedbackValues& Vibration) override;
-	/**
-	 * Stops any ongoing adaptive trigger effects on the specified controller hand.
-	 *
-	 * @param Hand The hand for which to stop the adaptive trigger effect.
-	 *             Acceptable values are EControllerHand::Left, EControllerHand::Right,
-	 *             or EControllerHand::AnyHand.
-	 */
-	void StopTrigger(const EControllerHand& Hand);
-	/**
-	 * Custom Trigger: directly set raw trigger effect bytes using hex tokens, similar to ds.SetTrigR/L console commands.
-	 * - Accepts up to 10 bytes as 2-digit hex tokens (e.g., 22 3F 08 01).
-	 * - Rejects any token that contains non-hex characters or not 1-2 hex digits (0x prefix optional).
-	 * - Applies to Left, Right, or AnyHand (sets both) based on Hand.
-	 */
-	void SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) override;
 	/**
 	 * @brief Stops all ongoing input and feedback operations on the DualSense controller.
 	 *

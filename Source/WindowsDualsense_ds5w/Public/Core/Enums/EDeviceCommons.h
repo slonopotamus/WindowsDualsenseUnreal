@@ -152,7 +152,21 @@ enum class EDualSenseTriggerSoftnessLevel : uint8
 	VerySoft = 8 UMETA(DisplayName = "Very Soft")
 };
 
-// =========== Triggers ============
+UENUM(BlueprintType)
+enum class ETriggerFeedbackIntensity : uint8
+{
+	/** No force feedback applied */
+	Disabled = 0x00 UMETA(DisplayName = "Disabled"),
+
+	/** Low intensity force feedback */
+	Low = 0x01 UMETA(DisplayName = "Low (25%)"),
+
+	/** Medium intensity force feedback */
+	Medium = 0x02 UMETA(DisplayName = "Medium (50%)"),
+
+	/** High intensity force feedback */
+	High = 0x03 UMETA(DisplayName = "High (100%)")
+};
 
 UENUM(BlueprintType)
 enum class ETriggerForceIntensity : uint8
@@ -234,4 +248,20 @@ enum class ETriggerEffectBehavior : uint8
 
 	/** Effect continues until trigger is fully pressed */
 	Sustained = 1 UMETA(DisplayName = "Sustained (Extend to End)")
+};
+
+UENUM(BlueprintType)
+enum class EAutoGunStrength : uint8
+{
+	Light   = 0 UMETA(DisplayName = "Light Recoil"),
+	Medium  = 1 UMETA(DisplayName = "Medium Recoil"),
+	Heavy   = 2 UMETA(DisplayName = "Heavy Recoil")
+};
+
+UENUM(BlueprintType)
+enum class EGamepadHand : uint8
+{
+	Left,
+	Right,
+	AnyHand
 };

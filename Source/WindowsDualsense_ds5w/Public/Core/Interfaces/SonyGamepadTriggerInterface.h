@@ -6,9 +6,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Segregations/IGamepadAudioHaptics.h"
-#include "Segregations/IGamepadTrigger.h"
-#include "Segregations/IGamepadTriggerLegacy.h"
 #include "Templates/SharedPointer.h"
 #include "UObject/Interface.h"
 #include "SonyGamepadTriggerInterface.generated.h"

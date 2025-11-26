@@ -42,7 +42,7 @@ public:
 	 * @param ControllerId The identifier for the connected DualSense controller.
 	 * @param Submix The audio submix to be registered for haptic feedback on the controller.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense|Audio", meta = (DisplayName = "Register Submix"))
+	UFUNCTION(BlueprintCallable, Category = "DualSense|Audio (Legacy)", meta = (DisplayName = "Register Submix Deprecated v1.2.20"))
 	static void RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix);
 	/**
 	 * @brief Unregisters a submix listener associated with the specified DualSense controller device.
@@ -52,7 +52,7 @@ public:
 	 *
 	 * @param ControllerId The ID of the DualSense controller for which the submix listener will be unregistered.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense|Audio", meta = (DisplayName = "Unregister Submix"))
+	UFUNCTION(BlueprintCallable, Category = "DualSense|Audio", meta = (DisplayName = "Unregister Submix Deprecated v1.2.20"))
 	static void UnregisterSubmixForDevice(int32 ControllerId);
 	/**
 	 * @brief Activates an automatic gun effect on a specified DualSense controller.
@@ -91,7 +91,7 @@ public:
 	 * @param ControllerId The identifier for the DualSense controller to target.
 	 * @param Hand Specifies which hand (left or right) the effect should be applied to.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)|Game Cube")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy) Game Cube", meta = (DisplayName = "GameCube Deprecated v1.2.20"))
 	static void GameCube(
 	    int32 ControllerId,
 	    EControllerHand Hand);
@@ -107,7 +107,7 @@ public:
 	 * @param HexBytes An array of hexadecimal byte strings representing the desired trigger configuration.
 	 *                 Maximum of 10 byte strings is permitted.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "CustomTrigger"))
+	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "CustomTrigger Deprecated v1.2.20"))
 	static void CustomTrigger(
 	    int32 ControllerId,
 	    EControllerHand Hand,
@@ -227,7 +227,6 @@ public:
 	    UPARAM(DisplayName = "Second Foot min: (Greater FirstFoot) max: 9", meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
 	        int32 SecondFoot,
 	    UPARAM(DisplayName = "Frequency Example: 5.0", meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0")) float Frequency,
-
 	    EControllerHand Hand);
 
 	/**
@@ -297,7 +296,6 @@ public:
 	        int32 EndPosition,
 	    UPARAM(DisplayName = "Strength max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
 	        int32 Strength,
-
 	    EControllerHand Hand);
 
 	/**
@@ -307,7 +305,7 @@ public:
 	 * @param Value The LED pattern enum specifying the LED configuration for the player indicator (e.g., Off, Player One, Player Two).
 	 * @param Brightness The brightness level of the LED lights specified by an enum (e.g., Low, Medium, High).
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Led Effects")
+	UFUNCTION(BlueprintCallable, Category = "DualSense Led Effects (Legacy)", meta = (DisplayName = "Deprecated v1.2.20"))
 	static void LedPlayerEffects(int32 ControllerId, ELedPlayerEnum Value, ELedBrightnessEnum Brightness);
 
 	/**
@@ -316,10 +314,8 @@ public:
 	 * @param ControllerId The unique identifier for the DualSense controller.
 	 * @param Hand The hand (left or right) associated with the effect to disable resistance for.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Reset Effects")
-	static void NoResistance(int32 ControllerId,
-
-	                         EControllerHand Hand);
+	UFUNCTION(BlueprintCallable, Category = "DualSense Reset Effects (Legacy)", meta = (DisplayName = "Deprecated v1.2.20"))
+	static void NoResistance(int32 ControllerId, EControllerHand Hand);
 
 	/**
 	 * Stops the trigger effect on a specific controller for the specified hand.
@@ -327,10 +323,8 @@ public:
 	 * @param ControllerId The unique identifier of the controller for which the trigger effect should be stopped.
 	 * @param HandStop Specifies which hand's trigger effect (left or right) should be stopped.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Reset Effects")
-	static void StopTriggerEffect(int32 ControllerId,
-
-	                              EControllerHand HandStop);
+	UFUNCTION(BlueprintCallable, Category = "DualSense Reset Effects (Legacy)", meta = (DisplayName = "Deprecated v1.2.20"))
+	static void StopTriggerEffect(int32 ControllerId, EControllerHand HandStop);
 
 	/**
 	 * Stops all trigger effects currently active for the specified DualSense controller.

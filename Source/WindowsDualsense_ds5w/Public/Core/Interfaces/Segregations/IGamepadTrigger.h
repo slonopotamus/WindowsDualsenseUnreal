@@ -45,6 +45,14 @@ public:
 	 */
 	virtual void SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) = 0;
 	/**
+	 * Configures a custom feedback mechanism with specified amplitude and zone parameters for a gamepad trigger.
+	 *
+	 * @param StartZones A value defining the starting zones of the trigger feedback effect.
+	 * @param Amplitude The amplitude level for the first zone of the feedback effect.
+	 * @param Hand The controller hand (e.g., left or right) for which the feedback configuration is applied.
+	 */
+	virtual void SetFeedback21(uint8 StartZones, uint8 Amplitude, const EControllerHand& Hand) = 0;
+	/**
 	 * Configures the bow tension effect on the gamepad triggers based on specified parameters.
 	 *
 	 * @param StartZone The start position of the effect's activation zone on the trigger.
@@ -73,6 +81,16 @@ public:
 	 * @param Hand The controller hand (left or right) associated with the trigger.
 	 */
 	virtual void SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EControllerHand& Hand) = 0;
+	/**
+	 * Configures the machine gun effect on the gamepad triggers with specific parameters.
+	 *
+	 * @param StartZone The starting position of the trigger's activation zone for the machine gun effect.
+	 * @param Behavior The behavior pattern or mode applied to the trigger.
+	 * @param Amplitude The intensity level of the feedback effect on the trigger.
+	 * @param Frequency The frequency of the feedback effect for the machine gun effect.
+	 * @param Hand The controller hand (left or right) to which the machine gun effect is applied.
+	 */
+	virtual void SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EControllerHand& Hand) = 0;
 	/**
 	 * Configures the behavior and haptic effects for a specific machine profile on a gamepad.
 	 *

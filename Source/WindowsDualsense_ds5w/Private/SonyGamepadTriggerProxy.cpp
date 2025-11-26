@@ -6,18 +6,18 @@
 #include "Core/DeviceRegistry.h"
 
 
-void USonyGamepadTriggerProxy::GameCube(int32 ControllerId, EControllerHand Hand)
+void USonyGamepadTriggerProxy::GameCube(int32 ControllerId, EGamepadHand Hand)
 {
 	IGamepadTrigger* Gamepad = GetGamepadInterface(ControllerId);
 	if (!Gamepad)
 	{
 		return;
 	}
-	Gamepad->SetGameCube(Hand);
+	Gamepad->SetGameCube(static_cast<EControllerHand>(Hand));
 }
 
 void USonyGamepadTriggerProxy::Bow(int32 ControllerId, ETriggerPosition StartZone, EDualSenseSnapBack SnapBack,
-                                   EControllerHand Hand)
+                                   EGamepadHand Hand)
 {
 	IGamepadTrigger* Gamepad = GetGamepadInterface(ControllerId);
 	if (!Gamepad)
@@ -25,12 +25,12 @@ void USonyGamepadTriggerProxy::Bow(int32 ControllerId, ETriggerPosition StartZon
 		return;
 	}
 
-	Gamepad->SetBow22(static_cast<uint8>(StartZone), static_cast<uint8>(SnapBack), Hand);
+	Gamepad->SetBow22(static_cast<uint8>(StartZone), static_cast<uint8>(SnapBack), static_cast<EControllerHand>(Hand));
 }
 
 void USonyGamepadTriggerProxy::Weapon(int32 ControllerId, ETriggerPosition StartZone,
                                       EDualSenseTriggerAmplitude Amplitude, ETriggerEffectBehavior Behavior,
-                                      EDualSenseWeaponTrigger Trigger, EControllerHand Hand)
+                                      EDualSenseWeaponTrigger Trigger, EGamepadHand Hand)
 {
 	IGamepadTrigger* Gamepad = GetGamepadInterface(ControllerId);
 	if (!Gamepad)
@@ -39,13 +39,25 @@ void USonyGamepadTriggerProxy::Weapon(int32 ControllerId, ETriggerPosition Start
 	}
 
 	Gamepad->SetWeapon25(static_cast<uint8>(StartZone), static_cast<uint8>(Amplitude), static_cast<uint8>(Behavior),
-	                     static_cast<uint8>(Trigger), Hand);
+	                     static_cast<uint8>(Trigger), static_cast<EControllerHand>(Hand));
+}
+
+void USonyGamepadTriggerProxy::AutomaticGun(int32 ControllerId, ETriggerPosition StartZone,
+                                            ETriggerEffectBehavior Behavior, EAutoGunStrength Recoil, FSliderPropertyStruct Frequency, EGamepadHand Hand)
+{
+	IGamepadTrigger* Gamepad = GetGamepadInterface(ControllerId);
+	if (!Gamepad)
+	{
+		return;
+	}
+
+	Gamepad->SetMachineGun26(static_cast<uint8>(StartZone), static_cast<uint8>(Behavior), static_cast<uint8>(Recoil), Frequency.Frequency, static_cast<EControllerHand>(Hand));
 }
 
 void USonyGamepadTriggerProxy::Machine(int32 ControllerId, ETriggerPosition StartZone, ETriggerEffectBehavior Behavior,
                                        ETriggerForceIntensity ForceIntensity, EDualSenseTriggerAmplitude Amplitude,
-                                       int32 Period, int32 Frequency,
-                                       EControllerHand Hand)
+                                       FSliderPropertiesStruct Frequency_Period,
+                                       EGamepadHand Hand)
 {
 	IGamepadTrigger* Gamepad = GetGamepadInterface(ControllerId);
 	if (!Gamepad)
@@ -54,7 +66,33 @@ void USonyGamepadTriggerProxy::Machine(int32 ControllerId, ETriggerPosition Star
 	}
 
 	Gamepad->SetMachine27(static_cast<uint8>(StartZone), static_cast<uint8>(Behavior), static_cast<uint8>(ForceIntensity), static_cast<uint8>(Amplitude),
-	                      FMath::Clamp(Period, 0, 20), FMath::Clamp(Frequency, 0, 40), Hand);
+	                      Frequency_Period.Period, Frequency_Period.Frequency, static_cast<EControllerHand>(Hand));
+}
+
+void USonyGamepadTriggerProxy::CustomTrigger(int32 ControllerId, EGamepadHand Hand, const TArray<FString>& HexBytes)
+{
+	IGamepadTrigger* Gamepad = GetGamepadInterface(ControllerId);
+	if (!Gamepad)
+	{
+		return;
+	}
+
+	if (HexBytes.Num() > 10)
+	{
+		return;
+	}
+	Gamepad->SetCustomTrigger(static_cast<EControllerHand>(Hand), HexBytes);
+}
+
+void USonyGamepadTriggerProxy::StopTrigger(int32 ControllerId, EGamepadHand Hand)
+{
+	IGamepadTrigger* Gamepad = GetGamepadInterface(ControllerId);
+	if (!Gamepad)
+	{
+		return;
+	}
+
+	Gamepad->StopTrigger(static_cast<EControllerHand>(Hand));
 }
 
 IGamepadTrigger* USonyGamepadTriggerProxy::GetGamepadInterface(int32 ControllerId)
