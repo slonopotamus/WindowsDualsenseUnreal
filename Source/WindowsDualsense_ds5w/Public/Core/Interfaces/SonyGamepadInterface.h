@@ -6,7 +6,6 @@
 
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Structs/DeviceContext.h"
-#include "Core/Structs/DeviceSettings.h"
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
 #include "Misc/CoreDelegates.h"
