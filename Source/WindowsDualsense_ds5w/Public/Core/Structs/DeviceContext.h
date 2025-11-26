@@ -175,7 +175,7 @@ struct FDeviceContext
 	 * In scenarios such as device discovery or IO operations, ConnectionType
 	 * influences logic such as input report length, output buffering, and connection state updates.
 	 */
-	EDeviceConnection ConnectionType = Unrecognized;
+	EDeviceConnection ConnectionType = EDeviceConnection::Unrecognized;
 	/**
 	 * @brief Represents the type of device in the context of DualSense HID management.
 	 *
@@ -186,7 +186,7 @@ struct FDeviceContext
 	 * It plays a pivotal role in distinguishing devices for operations such as feature
 	 * initialization, compatibility checks, and tailored input/output processing.
 	 */
-	EDeviceType DeviceType = NotFound;
+	EDeviceType DeviceType = EDeviceType::NotFound;
 	/**
 	 * @brief Uniquely identifies an input device within the system.
 	 *
