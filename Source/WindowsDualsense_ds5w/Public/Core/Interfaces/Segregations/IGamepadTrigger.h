@@ -36,6 +36,14 @@ public:
 	 */
 	virtual void SetGameCube(const EControllerHand& Hand) = 0;
 	/**
+	 * Configures the resistance level on a gamepad's trigger for the specified controller hand.
+	 *
+	 * @param StartZones Specifies the starting zones on the trigger where resistance is applied.
+	 * @param Strength The intensity of the resistance effect.
+	 * @param Hand An enum identifying the controller hand to configure.
+	 */
+	virtual void SetResistance(uint8 StartZones, uint8 Strength, const EControllerHand& Hand) = 0;
+	/**
 	 * Activates custom trigger configurations on a gamepad for a specified hand.
 	 *
 	 * @param Hand A reference to the EControllerHand enum specifying the hand
@@ -44,14 +52,6 @@ public:
 	 *                 the trigger configuration parameters.
 	 */
 	virtual void SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) = 0;
-	/**
-	 * Configures a custom feedback mechanism with specified amplitude and zone parameters for a gamepad trigger.
-	 *
-	 * @param StartZones A value defining the starting zones of the trigger feedback effect.
-	 * @param Amplitude The amplitude level for the first zone of the feedback effect.
-	 * @param Hand The controller hand (e.g., left or right) for which the feedback configuration is applied.
-	 */
-	virtual void SetFeedback21(uint8 StartZones, uint8 Amplitude, const EControllerHand& Hand) = 0;
 	/**
 	 * Configures the bow tension effect on the gamepad triggers based on specified parameters.
 	 *

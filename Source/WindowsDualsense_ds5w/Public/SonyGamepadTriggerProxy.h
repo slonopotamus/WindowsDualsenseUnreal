@@ -16,11 +16,11 @@ struct FSliderPropertiesStruct
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slider",
-			  meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
+		meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
 	float Frequency = 5.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slider",
-			  meta = (ClampMin = "0.0", ClampMax = "20.0", UIMin = "0.0", UIMax = "20.0"))
+		meta = (ClampMin = "0.0", ClampMax = "20.0", UIMin = "0.0", UIMax = "20.0"))
 	float Period = 6.0f;
 };
 
@@ -31,19 +31,8 @@ struct FSliderPropertyStruct
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slider",
-			  meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
+		meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
 	float Frequency = 5.0f;
-};
-
-
-USTRUCT(BlueprintType)
-struct FHandPropertyStruct
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hand", DisplayName = "Hand")
-	EControllerHand Hand;
 };
 
 /**
@@ -68,7 +57,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "GameCube (0x02)"))
 	static void GameCube(
 		int32 ControllerId,
-		
+		EGamepadHand Hand);
+
+	/**
+	 * Applies a continuous resistance effect on the adaptive trigger of a DualSense controller.
+	 *
+	 * @param ControllerId The ID of the controller to apply the effect to.
+	 * @param StartPosition The starting position of the resistance effect. Valid range determined by internal validation.
+	 * @param Strength The intensity of the resistance effect. Valid range determined by internal validation.
+	 * @param Hand The controller hand (e.g., left or right) to which the resistance effect applies.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Resistance (0x01)"))
+	static void Resistance(
+		int32 ControllerId,
+		ETriggerPosition StartPosition,
+		ETriggerForceIntensity Strength,
 		EGamepadHand Hand);
 
 	/**
@@ -132,7 +135,7 @@ public:
 		EAutoGunStrength Recoil,
 		FSliderPropertyStruct Frequency,
 		EGamepadHand Hand);
-	
+
 	/**
 	 * @brief Configures the "Machine" trigger effect on a DualSense controller.
 	 *
@@ -179,8 +182,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Stop Trigger (New)"))
 	static void StopTrigger(int32 ControllerId, EGamepadHand Hand);
-	
+
 private:
 	static IGamepadTrigger* GetGamepadInterface(int32 ControllerId);
-	
 };

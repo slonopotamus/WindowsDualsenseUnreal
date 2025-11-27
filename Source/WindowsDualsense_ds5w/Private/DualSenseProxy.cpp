@@ -6,7 +6,6 @@
 #include "Core/DeviceRegistry.h"
 #include "Core/DualSense/DualSenseLibrary.h"
 #include "Core/Interfaces/SonyGamepadInterface.h"
-#include "Core/Interfaces/SonyGamepadTriggerInterface.h"
 #include "Helpers/ValidateHelpers.h"
 
 void UDualSenseProxy::DeviceSettings(int32 ControllerId, FDualSenseFeatureReport Settings)
@@ -72,96 +71,30 @@ void UDualSenseProxy::LedPlayerEffects(int32 ControllerId, ELedPlayerEnum Value,
 void UDualSenseProxy::SetFeedback(int32 ControllerId, int32 BeginStrength,
                                   int32 MiddleStrength, int32 EndStrength, EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength))
-	{
-		BeginStrength = 8;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(MiddleStrength))
-	{
-		MiddleStrength = 8;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(EndStrength))
-	{
-		EndStrength = 8;
-	}
-
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
-	IGamepadTriggerLegacy* Gamepad = Cast<IGamepadTriggerLegacy>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	return Gamepad->SetResistance(BeginStrength, MiddleStrength, EndStrength, Hand);
 }
 
 void UDualSenseProxy::Resistance(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 Strength, EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition))
-	{
-		StartPosition = 0;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition))
-	{
-		EndPosition = 0;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(Strength))
-	{
-		Strength = 0;
-	}
-
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
-	IGamepadTriggerLegacy* Gamepad = Cast<IGamepadTriggerLegacy>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->SetResistance(StartPosition, EndPosition, Strength, Hand);
 }
 
 void UDualSenseProxy::AutomaticGun(int32 ControllerId, int32 BeginStrength, int32 MiddleStrength, int32 EndStrength, EControllerHand Hand, bool KeepEffect, float Frequency)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength))
-	{
-		BeginStrength = 6;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(MiddleStrength))
-	{
-		MiddleStrength = 8;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(EndStrength))
-	{
-		EndStrength = 8;
-	}
+}
 
+void UDualSenseProxy::GameCube(int32 ControllerId, EControllerHand Hand)
+{
 	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
 	if (!DeviceId.IsValid())
 	{
 		return;
 	}
 
-	IGamepadTriggerLegacy* Gamepad = Cast<IGamepadTriggerLegacy>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
+	IGamepadTrigger* Gamepad = Cast<IGamepadTrigger>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
 		return;
 	}
-
-	Gamepad->SetAutomaticGun(BeginStrength, MiddleStrength, EndStrength, Hand, KeepEffect, Frequency);
-}
-
-void UDualSenseProxy::GameCube(int32 ControllerId, EControllerHand Hand)
-{
+	Gamepad->SetGameCube(Hand);
 }
 
 void UDualSenseProxy::CustomTrigger(int32 ControllerId, EControllerHand Hand, const TArray<FString>& HexBytes)
@@ -202,49 +135,19 @@ void UDualSenseProxy::ContinuousResistance(int32 ControllerId, int32 StartPositi
 		return;
 	}
 
-	IGamepadTriggerLegacy* Gamepad = Cast<IGamepadTriggerLegacy>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
+	IGamepadTrigger* Gamepad = Cast<IGamepadTrigger>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
 	if (!Gamepad)
 	{
 		return;
 	}
 
-	Gamepad->SetContinuousResistance(StartPosition, Strength, Hand);
+	Gamepad->SetResistance(StartPosition, Strength, Hand);
 }
 
 void UDualSenseProxy::Galloping(
     int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
     int32 SecondFoot, float Frequency, EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition, 8, 1))
-	{
-		StartPosition = 1;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition, 9, StartPosition + 1))
-	{
-		EndPosition = 9;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(FirstFoot, 8))
-	{
-		FirstFoot = 1;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(SecondFoot, 9, FirstFoot + 1))
-	{
-		SecondFoot = 9;
-	}
-
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
-	IGamepadTriggerLegacy* Gamepad = Cast<IGamepadTriggerLegacy>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->SetGalloping(StartPosition, EndPosition, FirstFoot, SecondFoot, Frequency, Hand);
 }
 
 void UDualSenseProxy::Machine(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
@@ -255,67 +158,11 @@ void UDualSenseProxy::Machine(int32 ControllerId, int32 StartPosition, int32 End
 void UDualSenseProxy::Weapon(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 Strength,
                              EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition))
-	{
-		StartPosition = 0;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition))
-	{
-		EndPosition = 8;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(Strength))
-	{
-		Strength = 8;
-	}
-
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
-	IGamepadTriggerLegacy* Gamepad = Cast<IGamepadTriggerLegacy>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->SetWeapon(StartPosition, EndPosition, Strength, Hand);
 }
 
 void UDualSenseProxy::Bow(int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 BeginStrength, int32 EndStrength,
                           EControllerHand Hand)
 {
-	if (!FValidateHelpers::ValidateMaxPosition(StartPosition))
-	{
-		StartPosition = 2;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(BeginStrength))
-	{
-		BeginStrength = 8;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(EndPosition))
-	{
-		EndPosition = 8;
-	}
-	if (!FValidateHelpers::ValidateMaxPosition(EndStrength))
-	{
-		EndStrength = 8;
-	}
-
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
-	IGamepadTriggerLegacy* Gamepad = Cast<IGamepadTriggerLegacy>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->SetBow(StartPosition, EndPosition, BeginStrength, EndStrength, Hand);
 }
 
 void UDualSenseProxy::MachineAdvanced(int32 ControllerId, ETriggerPosition StartZone,
@@ -324,19 +171,6 @@ void UDualSenseProxy::MachineAdvanced(int32 ControllerId, ETriggerPosition Start
                                       EDualSenseTriggerAmplitude Amplitude,
                                       int32 Period, int32 Frequency, EControllerHand Hand)
 {
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
-	IGamepadTrigger* Gamepad = Cast<IGamepadTrigger>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->SetMachine27(static_cast<uint8>(StartZone), static_cast<uint8>(Behavior), static_cast<uint8>(ForceIntensity), static_cast<uint8>(Amplitude), static_cast<uint8>(Period), static_cast<uint8>(Frequency), Hand);
 }
 
 void UDualSenseProxy::NoResistance(int32 ControllerId, EControllerHand Hand)

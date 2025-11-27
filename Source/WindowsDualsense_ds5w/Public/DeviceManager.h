@@ -116,7 +116,6 @@ public:
 	 * @return Pointer to the current instance as an IHapticDevice interface.
 	 */
 	virtual IHapticDevice* GetHapticDevice() override { return this; }
-
 	/**
 	 * Determines whether a gamepad is currently attached.
 	 * This method always indicates that a DualSense gamepad is attached.
@@ -124,14 +123,13 @@ public:
 	 * @return True if a gamepad is attached; false otherwise.
 	 */
 	virtual bool IsGamepadAttached() const override;
-
 	/**
 	 * Handles user login state changes
 	 * @param bLoggedIn Whether a User is logged in
 	 * @param UserId Platform-specific user identifier
 	 * @param UserIndex Index of the user
 	 */
-	void OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex) const;
+	void OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex);
 	/**
 	 * Sends controller input events to the appropriate systems for processing.
 	 * This method is overridden to handle specific input events from the DualSense controller,
@@ -159,7 +157,7 @@ public:
 	}
 
 private:
-	FInputDeviceId GetGamepadInterface(int32 ControllerId);
+	static FInputDeviceId GetGamepadInterface(int32 ControllerId);
 	/**
 	 * Tracks the accumulated time or events between periodic polling operations.
 	 * This variable is typically used to manage timing or frequency of polling processes.
@@ -185,10 +183,4 @@ private:
 	 * within the application.
 	 */
 	const TSharedRef<FGenericApplicationMessageHandler>& MessageHandler;
-	// /**
-	//  * Represents a shared reference to the audio haptics listener, used for managing
-	//  * audio-driven haptic feedback functionality. This reference allows reactive haptic
-	//  * responses synchronized with audio events or signals.
-	//  */
-	// const TSharedRef<FAudioHapticsListener>& AudioHapticsListener;
 };

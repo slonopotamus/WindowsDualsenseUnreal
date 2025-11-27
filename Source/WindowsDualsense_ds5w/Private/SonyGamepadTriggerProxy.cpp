@@ -16,6 +16,19 @@ void USonyGamepadTriggerProxy::GameCube(int32 ControllerId, EGamepadHand Hand)
 	Gamepad->SetGameCube(static_cast<EControllerHand>(Hand));
 }
 
+void USonyGamepadTriggerProxy::Resistance(int32 ControllerId, ETriggerPosition StartPosition,
+	ETriggerForceIntensity Strength, EGamepadHand Hand)
+{
+	IGamepadTrigger* Gamepad = GetGamepadInterface(ControllerId);
+	if (!Gamepad)
+	{
+		return;
+	}
+
+	Gamepad->SetResistance(static_cast<uint8>(StartPosition), static_cast<uint8>(Strength), static_cast<EControllerHand>(Hand));
+}
+
+
 void USonyGamepadTriggerProxy::Bow(int32 ControllerId, ETriggerPosition StartZone, EDualSenseSnapBack SnapBack,
                                    EGamepadHand Hand)
 {

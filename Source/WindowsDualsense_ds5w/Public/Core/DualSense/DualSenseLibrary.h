@@ -20,7 +20,6 @@
 
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
-#include "Core/Interfaces/Segregations/IGamepadTriggerLegacy.h"
 #include "DualSenseLibrary.generated.h"
 
 /**
@@ -306,7 +305,7 @@ struct FSensorBounds
  * the DualSense controller programmatically within an application.
  */
 UCLASS()
-class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISonyGamepadInterface, public ISonyGamepadTriggerInterface, public IGamepadTrigger, public IGamepadTriggerLegacy, public IGamepadAudioHaptics
+class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISonyGamepadInterface, public ISonyGamepadTriggerInterface, public IGamepadTrigger, public IGamepadAudioHaptics
 {
 	GENERATED_BODY()
 
@@ -405,13 +404,38 @@ public:
 	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
 	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override;
 	/**
-	 * Configures a custom feedback mechanism with specified amplitude and zone parameters for a gamepad trigger.
+	 * Stops any ongoing adaptive trigger effects on the specified controller hand.
 	 *
-	 * @param StartZones A value defining the starting zones of the trigger feedback effect.
-	 * @param Amplitude The amplitude level for the first zone of the feedback effect.
-	 * @param Hand The controller hand (e.g., left or right) for which the feedback configuration is applied.
+	 * @param Hand The hand for which to stop the adaptive trigger effect.
+	 *             Acceptable values are EControllerHand::Left, EControllerHand::Right,
+	 *             or EControllerHand::AnyHand.
 	 */
-	virtual void SetFeedback21(uint8 StartZones, uint8 Amplitude, const EControllerHand& Hand) override;
+	virtual void StopTrigger(const EControllerHand& Hand) override;
+	/**
+	 * @brief Configures the trigger settings on a DualSense controller for GameCube-style behavior.
+	 *
+	 * This method configures the triggers on the DualSense controller to emulate
+	 * a GameCube-style response based on the specified controller hand.
+	 * It adjusts the trigger's mode and strengths for the desired effects.
+	 *
+	 * @param Hand The hand (left, right, or both) corresponding to the controller
+	 * side where the GameCube-style trigger behavior should be applied. Must be
+	 * a value of the EControllerHand enumeration.
+	 */
+	virtual void SetGameCube(const EControllerHand& Hand) override;
+	/**
+	 * @brief Sets the trigger resistance properties for a specific controller hand.
+	 *
+	 * This method configures the adaptive trigger resistance on a controller,
+	 * specifying the starting zones and strength of the resistance based on input parameters.
+	 * It applies the settings to the designated controller hand, allowing for precise
+	 * customization of trigger feedback in gameplay or applications.
+	 *
+	 * @param StartZones Specifies the starting zones in which the resistance should be applied.
+	 * @param Strength Determines the intensity or strength of the resistance.
+	 * @param Hand Indicates the controller hand (e.g., left or right) where the resistance should be configured.
+	 */
+	virtual void SetResistance(uint8 StartZones, uint8 Strength, const EControllerHand& Hand) override;
 	/**
 	 * @brief Configures the bow effect settings on a DualSense controller.
 	 *
@@ -497,14 +521,6 @@ public:
 	 */
 	virtual void SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) override;
 	/**
-	 * Stops any ongoing adaptive trigger effects on the specified controller hand.
-	 *
-	 * @param Hand The hand for which to stop the adaptive trigger effect.
-	 *             Acceptable values are EControllerHand::Left, EControllerHand::Right,
-	 *             or EControllerHand::AnyHand.
-	 */
-	void StopTrigger(const EControllerHand& Hand);
-	/**
 	 * Retrieves the current battery level of the DualSense controller.
 	 *
 	 * @return The battery level as a floating-point value, representing the charge percentage or level.
@@ -514,143 +530,19 @@ public:
 		return LevelBattery;
 	}
 	/**
-	 * @brief Sets the haptic feedback values for the specified hand of the DualSense controller.
-	 *
-	 * This function configures the haptic feedback characteristics (e.g., frequency) for either
-	 * the left or right hand side of the controller, or for both hands when applicable.
-	 *
-	 * It allows developers to adjust the haptic feedback strength and feel dynamically
-	 * during gameplay to enhance the user's immersive experience.
-	 *
-	 * @param Hand Specifies the hand for which the haptic feedback should be applied.
-	 *             Possible values include:
-	 *             - EControllerHand::Left for the left hand.
-	 *             - EControllerHand::Right for the right hand.
-	 *             - EControllerHand::AnyHand for both hands.
-	 * @param Values Pointer to the structure containing haptic feedback parameters to be applied,
-	 *               including properties such as frequency of the vibration.
-	 */
-	virtual void SetHapticFeedback(int32 Hand, const FHapticFeedbackValues* Values);
-	/**
-	 * @brief Configures and applies an automatic gun effect to the specified controller hand using DualSense triggers.
-	 *
-	 * This function is designed to simulate an automatic gun effect by dynamically adjusting the trigger resistance
-	 * and strength profiles of the DualSense controller based on input parameters. It provides a customizable
-	 * experience by setting specific strengths for the beginning, middle, and end of the trigger zone, as well as
-	 * determining whether the effect should persist.
-	 *
-	 * @param BeginStrength The initial resistance strength when the trigger is pressed.
-	 * @param MiddleStrength The resistance strength at the middle range of the trigger press.
-	 * @param EndStrength The resistance strength at the end range of the trigger press.
-	 * @param Hand Specifies the target controller hand (e.g., left, right, or both).
-	 * @param KeepEffect If true, maintains a predefined effect regardless of the end strength; otherwise, uses the provided strength values.
-	 *
-	 * @details The function calculates resistance strengths for ten distinct zones of the trigger and applies
-	 * them to either the left or right trigger, or both, based on the specified hand. It adjusts the outputs
-	 * of the DualSense controller's internal hardware to create the desired effect. The trigger's feedback is
-	 * configured in terms of positional amplitudes and strength zones, allowing precise control over the
-	 * haptic experience. This method is particularly useful for implementing haptic feedback in shooting mechanics.
-	 */
-	virtual void SetAutomaticGun(int32 BeginStrength, int32 MiddleStrength, int32 EndStrength,
-	                             const EControllerHand& Hand, bool KeepEffect, float Frequency) override;
-
-	/**
-	 * @brief Configures the trigger settings on a DualSense controller for GameCube-style behavior.
-	 *
-	 * This method configures the triggers on the DualSense controller to emulate
-	 * a GameCube-style response based on the specified controller hand.
-	 * It adjusts the trigger's mode and strengths for the desired effects.
-	 *
-	 * @param Hand The hand (left, right, or both) corresponding to the controller
-	 * side where the GameCube-style trigger behavior should be applied. Must be
-	 * a value of the EControllerHand enumeration.
-	 */
-	virtual void SetGameCube(const EControllerHand& Hand) override;
-	/**
-	 * Configures the adaptive trigger on a DualSense controller to apply continuous resistance.
-	 *
-	 * @param StartPosition The starting position for the resistance in the adaptive trigger (range: 0-8).
-	 * @param Strength The intensity of the resistance in the adaptive trigger (range: 0-9).
-	 * @param Hand Specifies which controller hand (left, right, or both) the resistance should be applied to.
-	 */
-	void SetContinuousResistance(int32 StartPosition, int32 Strength, const EControllerHand& Hand);
-	/**
-	 * @brief Sets the resistance parameters for the DualSense controller's adaptive triggers.
-	 *
-	 * This method configures the adaptive triggers with the specified resistance values for distinct
-	 * positions (beginning, middle, and end strength zones) and applies the settings to the specified
-	 * controller hand(s).
-	 *
-	 * @param BeginStrength The strength value for the beginning zone of the trigger.
-	 * @param MiddleStrength The strength value for the middle zone of the trigger.
-	 * @param EndStrength The strength value for the end zone of the trigger.
-	 * @param Hand The controller hand (left, right, or both) to which the resistance will be applied.
-	 */
-	void SetResistance(int32 BeginStrength, int32 MiddleStrength, int32 EndStrength, const EControllerHand& Hand);
-	/**
-	 * Sets the weapon effect on the adaptive triggers of the DualSense controller. This method configures
-	 * the trigger mode and strength for the specified trigger zones.
-	 *
-	 * @param StartPosition The starting position of the trigger zone. Must be within the valid range [0, 8].
-	 * @param EndPosition The ending position of the trigger zone. Must be within the valid range [0, 8].
-	 * @param Strength The strength of the trigger resistance. Must be within the valid range [0, 8].
-	 * @param Hand Specifies which controller hand (left, right, or both) the effect should be applied to.
-	 */
-	void SetWeapon(int32 StartPosition, int32 EndPosition, int32 Strength, const EControllerHand& Hand);
-	/**
-	 * Configures the bow effects for the DualSense adaptive triggers based on specified parameters.
-	 *
-	 * @param StartPosition The starting position of the trigger effect range (0-8).
-	 * @param EndPosition The ending position of the trigger effect range (0-8).
-	 * @param BegingStrength The strength of the trigger at the starting position (1-8).
-	 * @param EndStrength The strength of the trigger at the ending position (1-8).
-	 * @param Hand The controller hand (Left, Right, or AnyHand) to apply the effect to.
-	 */
-	void SetBow(int32 StartPosition, int32 EndPosition, int32 BegingStrength, int32 EndStrength,
-	            const EControllerHand& Hand);
-	/**
-	 * Sets machine effects for the DualSense controller's adaptive triggers.
-	 *
-	 * @param StartPosition The starting position of the effect, where the haptic feedback begins.
-	 * @param EndPosition The ending position of the effect, where the haptic feedback stops.
-	 * @param AmplitudeBegin The amplitude value at the start of the effect, determining the vibration strength.
-	 * @param AmplitudeEnd The amplitude value at the end of the effect, determining the vibration strength.
-	 * @param Frequency The frequency of the vibration, controlling the oscillation speed.
-	 * @param Period The time period of the vibration effect, influencing its duration.
-	 * @param Hand The hand (Left, Right, or AnyHand) to apply the effect to.
-	 */
-	void SetMachine(int32 StartPosition, int32 EndPosition, int32 AmplitudeBegin, int32 AmplitudeEnd,
-	                float Frequency, float Period, const EControllerHand& Hand);
-	/**
-	 * @brief Configures the galloping effect for a controller's trigger.
-	 *
-	 * This method sets up a galloping haptic effect on the specified controller hand.
-	 * It allows customization of the effect parameters such as the start and end positions,
-	 * the intensity at specific points (FirstFoot and SecondFoot), and the frequency of the effect.
-	 *
-	 * @param StartPosition The starting position of the effect zone on the trigger (range-dependent on controller configuration).
-	 * @param EndPosition The ending position of the effect zone on the trigger (range-dependent on controller configuration).
-	 * @param FirstFoot Intensity of the first foot in the galloping effect, represented as an integer.
-	 * @param SecondFoot Intensity of the second foot in the galloping effect, represented as an integer.
-	 * @param Frequency The frequency of the galloping effect, typically a value between 0.0 and 1.0 representing normalized intensity.
-	 * @param Hand Specifies which controller hand the effect applies to (Left, Right, or AnyHand).
-	 */
-	void SetGalloping(int32 StartPosition, int32 EndPosition, int32 FirstFoot, int32 SecondFoot, float Frequency,
-	                  const EControllerHand& Hand);
-	/**
 	 * Sets the LED player indicator effects based on the desired player LED pattern and brightness intensity.
 	 *
 	 * @param Led The LED pattern to be displayed on the device, represented by the ELedPlayerEnum enumeration.
 	 * @param Brightness The brightness intensity for the LED, represented by the ELedBrightnessEnum enumeration.
 	 */
-	void SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness);
+	virtual void SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness) override;
 	/**
 	 * Sets the microphone LED effects on the DualSense controller.
 	 *
 	 * @param Led The desired LED microphone effect to be applied. It is defined by the ELedMicEnum enumeration,
 	 *               which includes options such as MicOff, MicOn, and Pulse.
 	 */
-	void SetMicrophoneLed(ELedMicEnum Led);
+	virtual void SetMicrophoneLed(ELedMicEnum Led) override;
 	/**
 	 * @brief Sets the lightbar color and behavior on the device.
 	 *
@@ -708,7 +600,7 @@ public:
 	 * to the hardware. This can be used in scenarios where the controller must be brought
 	 * into a neutral state, such as when pausing gameplay or shutting down the system.
 	 */
-	void StopAll();
+	virtual void StopAll() override;
 	/**
 	 * @brief Retrieves the connection type of the device.
 	 *
@@ -832,7 +724,19 @@ public:
 	 * It is reset during library shutdown to clear all stored button states.
 	 */
 	TMap<const FName, bool> ButtonStates;
-
+	/**
+	 * @typedef AnalogStates
+	 * @brief Represents a mapping of analog input states in the DualSense library.
+	 *
+	 * AnalogStates is a container that maps unique input identifiers, represented by FName,
+	 * to their respective float values, which typically denote the state or intensity of analog inputs.
+	 *
+	 * This map is used to handle and store the state of analog inputs, such as triggers or sticks,
+	 * providing a mechanism to track their values for input handling or processing purposes in an application.
+	 *
+	 * @details The keys in this map (FName) are designed to uniquely identify different analog input sources,
+	 * while the associated float values represent their corresponding state, usually on a normalized scale.
+	 */
 	TMap<const FName, float> AnalogStates;
 
 protected:

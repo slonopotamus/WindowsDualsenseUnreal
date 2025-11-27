@@ -99,19 +99,6 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 
 void DeviceManager::SetHapticFeedbackValues(const int32 ControllerId, const int32 Hand, const FHapticFeedbackValues& Values)
 {
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
-	ISonyGamepadTriggerInterface* GamepadTrigger = Cast<ISonyGamepadTriggerInterface>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId));
-	if (!GamepadTrigger)
-	{
-		return;
-	}
-
-	GamepadTrigger->SetHapticFeedback(Hand, &Values);
 }
 
 void DeviceManager::SetChannelValues(int32 ControllerId, const FForceFeedbackValues& Values)
@@ -170,7 +157,7 @@ bool DeviceManager::IsGamepadAttached() const
 	return FDeviceRegistry::Get()->GetAllocatedDevices() > 0;
 }
 
-void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex) const
+void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex)
 {
 	const FPlatformUserId PlatformUserId = FPlatformUserId::CreateFromInternalId(UserId);
 	if (!bLoggedIn)

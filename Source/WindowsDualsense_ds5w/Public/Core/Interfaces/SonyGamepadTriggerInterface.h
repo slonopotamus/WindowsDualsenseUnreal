@@ -24,13 +24,4 @@ class WINDOWSDUALSENSE_DS5W_API ISonyGamepadTriggerInterface
 	GENERATED_BODY()
 public:
 	virtual void SetTriggerResistance(const FInputDeviceTriggerResistanceProperty& Resistance) = 0;
-	/**
-	 * Sets the haptic feedback for a specific hand on the gamepad.
-	 *
-	 * @param Hand The hand to which the haptic feedback will be applied.
-	 *             Typically, 0 represents the left hand, and 1 represents the right hand.
-	 * @param Values A pointer to an FHapticFeedbackValues structure containing the haptic feedback details.
-	 */
-	virtual void SetHapticFeedback(int32 Hand, const FHapticFeedbackValues* Values) = 0;
-	
 };
