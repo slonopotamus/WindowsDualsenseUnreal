@@ -22,21 +22,21 @@
 
 /**
  * @class FTouchPoint1
- * @brief Represents a touch point in a touch-based input system.
+ * @brief Represents a touchpoint in a touch-based input system.
  *
  * The FTouchPoint1 class is designed to encapsulate the properties and behavior
- * of a single touch point detected on a touch-sensitive surface. It provides
- * information such as the position, pressure, and state of the touch point,
+ * of a single touchpoint detected on a touch-sensitive surface. It provides
+ * information such as the position, pressure, and state of the touchpoint,
  * which can be used to build touch interactions within an application.
  *
- * This class is typically used in systems that handle multi-touch input,
- * providing the data necessary to track individual touch points and their
+ * This class is typically used in systems that handle multitouch input,
+ * providing the data necessary to track individual touchpoints and their
  * specific attributes.
  *
- * @details The class may store information about the position of the touch point
+ * @details The class may store information about the position of the touchpoint
  * in screen coordinates, the pressure or force of the touch, and the current state
  * of the touch event (e.g., touch began, moved, or ended). It may be used in
- * conjunction with other similar touch point objects for multi-touch gesture recognition
+ * conjunction with other similar touchpoint objects for multitouch gesture recognition
  * or input processing.
  */
 struct FTouchPoint1
@@ -62,7 +62,7 @@ struct FTouchPoint1
 	 * - n! = n * (n-1)!, where n > 0
 	 *
 	 * @param n The non-negative integer for which the factorial is to be computed.
-	 * @return The factorial of the input number. If the input is 0, returns 1.
+	 * @return The factorial of the input number. If input  0, returns 1.
 	 * @throw std::invalid_argument If the input is a negative number.
 	 */
 	uint16_t Y;
@@ -83,7 +83,7 @@ struct FTouchPoint1
 	 * validate, and compare unique ID values.
 	 *
 	 * @details
-	 * The Id class can be used in scenarios where unique identification
+	 * They'd class can be used in scenarios where unique identification
 	 * is required, such as database keys, UUID generation, and other
 	 * similar functionalities. It ensures that each instance represents
 	 * a distinct identifier.
@@ -95,10 +95,10 @@ struct FTouchPoint1
  * @class FTouchPoint2
  * @brief Represents a point of contact on a touch-sensitive surface with additional properties.
  *
- * The FTouchPoint2 class is used to encapsulate the state and properties of a touch point
+ * The FTouchPoint2 class is used to encapsulate the state and properties of a touchpoint
  * as it interacts with a touch-sensitive interface. Each instance of this class provides
- * detailed information about the current state of the touch point, including its position,
- * pressure, and movement. This is typically used in multi-touch systems to track and manage
+ * detailed information about the current state of the touchpoint, including its position,
+ * pressure, and movement. This is typically used in multitouch systems to track and manage
  * touch inputs across a surface.
  *
  * The FTouchPoint2 class is particularly useful in applications like gesture recognition,
@@ -119,7 +119,7 @@ struct FTouchPoint2
 	 */
 	uint16_t X;
 	/**
-	 * @brief Represents a variable 'Y' with unspecified type and purpose.
+	 * @brief Represents a variable 'Y' with an unspecified type and purpose.
 	 *
 	 * This variable is declared as 'Y' and may be assigned or used in various contexts
 	 * depending on the implementation or application where it is defined. The specific
@@ -140,7 +140,7 @@ struct FTouchPoint2
 	 *
 	 * This variable is used to store a unique value that can be assigned
 	 * to distinguish between different entities or objects in a system.
-	 * It is typically used for identification purposes.
+	 * It is typically used for identification.
 	 */
 	unsigned char Id;
 };
@@ -150,8 +150,8 @@ struct FTouchPoint2
  * @brief Represents an accelerometer component that tracks and provides data related to acceleration.
  *
  * The FAccelerometer class is responsible for handling acceleration readings
- * and providing utility functions to process and retrieve those readings in a
- * meaningful way. This class can be used to monitor motion in three-dimensional
+ * and providing utility functions to process and retrieve those readings 
+ * meaningfully. This class can be used to monitor motion in three-dimensional
  * space and calculate relevant metrics based on the gathered data.
  *
  * @details
@@ -319,7 +319,7 @@ public:
 	 * It is typically overridden to provide device-specific configuration
 	 * logic.
 	 *
-	 * @param Settings A reference to a FDeviceSettings object that holds
+	 * @param Settings A reference to an FDeviceSettings object that holds
 	 * the device's configuration options to be adjusted or updated.
 	 */
 	virtual void Settings(const FDualSenseFeatureReport& Settings);
@@ -416,7 +416,7 @@ public:
 	 * @brief Configures the trigger settings on a DualSense controller for GameCube-style behavior.
 	 *
 	 * This method configures the triggers on the DualSense controller to emulate
-	 * a GameCube-style response based on the specified controller hand.
+	 * a GameCube-style response, based on the specified controller hand.
 	 * It adjusts the trigger's mode and strengths for the desired effects.
 	 *
 	 * @param Hand The hand (left, right, or both) corresponding to the controller
@@ -479,7 +479,7 @@ public:
 	/**
 	 * @brief Configures the machine gun effect on a DualSense controller.
 	 *
-	 * This method controls the haptic feedback pattern to simulate a machine gun-like vibration effect on the controller.
+	 * This method controls the haptic feedback pattern to simulate a machine-gun-like vibration effect on the controller.
 	 * It allows setting parameters such as the starting zone, behavior, amplitude, frequency, and the specific controller hand.
 	 *
 	 * @details The method enables developers to provide a highly immersive experience by fine-tuning the haptic responses.
@@ -499,7 +499,7 @@ public:
 	 * This function sets the parameters for the Mode 0x27 advanced effect on the adaptive triggers
 	 * of a DualSense controller. It specifies the behavior of the effect, including starting zone,
 	 * force, amplitude, period, and frequency, and applies these configurations to the left, right,
-	 * or both triggers based on the specified hand.
+	 * or both triggers, based on the specified hand.
 	 *
 	 * @param StartZone Specifies the starting zone of the trigger effect. Defines the point where the effect begins.
 	 * @param BehaviorFlag Indicates the behavior type of the trigger effect. Determines specific effect adjustments (e.g., feedback type).
@@ -549,7 +549,7 @@ public:
 	 * @brief Sets the lightbar color and behavior on the device.
 	 *
 	 * This method allows customizing the lightbar by specifying its color,
-	 * brightness transition duration, and toggle interval. It is used
+	 * brightness, transition duration, and toggle interval. It is used
 	 * to control the visual feedback on devices that have a lightbar feature.
 	 *
 	 * @param Color The desired color of the lightbar, represented as an FColor.
@@ -650,8 +650,8 @@ public:
 	 *
 	 * @param Duration The duration, in seconds, to collect sensor data for calibration.
 	 *                 Values are clamped between 1.0 and 10.0 seconds.
-	 * @param DeadZone The threshold for sensor dead zone to filter out small motion or drift.
-	 *                 Valid range is from 0.0 to 1.0.
+	 * @param DeadZone The threshold for the sensor dead zone to filter out small motion or drift.
+	 *                 The valid range is from 0.0 to 1.0.
 	 */
 	virtual void StartMotionSensorCalibration(float Duration, float DeadZone) override;
 	/**
@@ -742,7 +742,7 @@ protected:
 	 * Typical use cases include mapping device identifiers, translating input codes, and
 	 * adapting platform-specific input behavior to match application requirements.
 	 *
-	 * The PlatformInputDeviceMapper handles tasks such as:
+	 * The PlatformInputDeviceMapper handles tasks such as
 	 * - Mapping raw input device identifiers to application-specific identifiers.
 	 * - Normalizing input event data across diverse platforms and devices.
 	 * - Facilitating cross-platform input device compatibility.
@@ -790,12 +790,12 @@ private:
 	 *
 	 * Represents a boolean state that tracks if the first touch input (Touch1)
 	 * was detected as being down (pressed or active) during the last frame.
-	 * This variable is useful for identifying changes in touch state, such as
-	 * transitions between touch down and touch up events, or for implementing
+	 * This variable is useful for identifying changes in the touch state, such as
+	 * transitions between touchdown and touch up events, or for implementing
 	 * touch-based controls in applications.
 	 *
 	 * @details This flag is often utilized within systems handling touch input
-	 * to determine the prior state of a touch point. By comparing its current
+	 * to determine the prior state of a touchpoint. By comparing its current
 	 * and previous states, developers can detect touch events such as presses,
 	 * holds, or releases for the primary touch interaction.
 	 */
@@ -810,7 +810,7 @@ private:
 	 * to detect changes in the touch interaction.
 	 *
 	 * @details This variable is typically part of an input handling system, where it plays
-	 * a role in monitoring touch events, such as detecting when the second touch point
+	 * a role in monitoring touch events, such as detecting when the second touchpoint
 	 * transitions between active (down) and inactive (up) states. It may be utilized
 	 * in gesture recognition or other forms of touch-based interaction management.
 	 */
