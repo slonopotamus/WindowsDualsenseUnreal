@@ -261,13 +261,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 			if (!bWasTouch1Down)
 			{
 				const FVector2D TouchVectorStart = FVector2D(Touch.X, Touch.Y);
-				InMessageHandler->OnTouchStarted(
-					nullptr,
-					TouchVectorStart,
-					1.0f,
-					Touch.Id,
-					UserId,
-					InputDeviceId);
+				InMessageHandler->OnTouchStarted(nullptr, TouchVectorStart,1.0f, Touch.Id, UserId, InputDeviceId);
 			}
 			else
 			{
@@ -278,11 +272,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		else if (!bIsTouchDown && bWasTouch1Down)
 		{
 			const FVector2D TouchVectorEnded = FVector2D(Touch.X, Touch.Y);
-			InMessageHandler->OnTouchEnded(
-				TouchVectorEnded,
-				Touch.Id,
-				UserId,
-				InputDeviceId);
+			InMessageHandler->OnTouchEnded(TouchVectorEnded,Touch.Id,UserId,InputDeviceId);
 		}
 
 		bWasTouch1Down = bIsTouchDown;
@@ -311,11 +301,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		else if (!bIsTouch2Down && bWasTouch2Down)
 		{
 			const FVector2D Touch2VectorEnded = FVector2D(Touch2.X, Touch2.Y);
-			InMessageHandler->OnTouchEnded(
-				Touch2VectorEnded,
-				Touch2.Id,
-				UserId,
-				InputDeviceId);
+			InMessageHandler->OnTouchEnded(Touch2VectorEnded, Touch2.Id, UserId, InputDeviceId);
 		}
 
 		bWasTouch2Down = bIsTouch2Down;
