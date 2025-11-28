@@ -2,8 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
-
-class ISonyGamepadInterface;
+#include "Core/Interfaces/ISonyGamepad.h"
 
 /**
  * CommandHelpers centralizes all in-game console commands (ds.*) previously located in DualSenseLibrary.
@@ -39,7 +38,7 @@ public:
 
 private:
 	static bool ParseDeviceId(const TArray<FString>& Args, FInputDeviceId& OutDeviceId);
-	static ISonyGamepadInterface* GetGamepad(const FInputDeviceId& DeviceId);
+	static ISonyGamepad* GetGamepad(const FInputDeviceId& DeviceId);
 	static uint8 ClampByte(int32 V) { return static_cast<uint8>(FMath::Clamp(V, 0, 255)); }
 	static bool ParseHexByte(const FString& Token, uint8& OutByte);
 };

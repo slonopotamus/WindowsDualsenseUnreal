@@ -12,7 +12,7 @@
 #include <Windows.h>
 #endif
 
-#include "../../Interfaces/PlatformHardwareInfoInterface.h"
+#include "../../Interfaces/IPlatformHardwareInfo.h"
 #include "../../Structs/DeviceContext.h"
 #include "CoreMinimal.h"
 
@@ -37,7 +37,7 @@ enum class EPollResult
  * This class encapsulates various tasks related to managing multiple HID devices, including handling connections,
  * transmitting and receiving data, detecting device presence, and managing device-specific states or contexts.
  */
-class FWindowsDeviceInfo final : public IPlatformHardwareInfoInterface
+class FWindowsDeviceInfo final : public IPlatformHardwareInfo
 {
 
 public:

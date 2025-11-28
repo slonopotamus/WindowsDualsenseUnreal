@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "Core/Enums/EDeviceCommons.h"
-#include "Core/Interfaces/SonyGamepadInterface.h"
 #include "CoreMinimal.h"
+#include "Core/Enums/EDeviceCommons.h"
 #include "DualSenseFeatureReport.generated.h"
 
 /**
@@ -29,7 +28,7 @@
  * Category: DualSense Settings
  */
 USTRUCT(BlueprintType)
-struct FDualSenseFeatureReport : public FFeatureReport
+struct FDualSenseFeatureReport
 {
 	GENERATED_BODY()
 

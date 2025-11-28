@@ -2,7 +2,7 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-#include "../../../Public/Core/Interfaces/PlatformHardwareInfoInterface.h"
+#include "../../../Public/Core/Interfaces/IPlatformHardwareInfo.h"
 
 #if PLATFORM_WINDOWS
 #include "Core/Platforms/Windows/WindowsDeviceInfo.h"
@@ -12,7 +12,7 @@
 #include "Core/Platforms/Sony/FNullHardwareInterface.h"
 #endif
 
-TUniquePtr<IPlatformHardwareInfoInterface> IPlatformHardwareInfoInterface::PlatformInfoInstance = nullptr;
+TUniquePtr<IPlatformHardwareInfo> IPlatformHardwareInfo::PlatformInfoInstance = nullptr;
 
 /**
  * Retrieves a reference to the platform-specific hardware information interface instance.
@@ -25,7 +25,7 @@ TUniquePtr<IPlatformHardwareInfoInterface> IPlatformHardwareInfoInterface::Platf
  * @return A reference to the platform-specific hardware information interface instance.
  *         If the platform is unsupported, dereferencing will result in undefined behavior as nullptr is returned.
  */
-IPlatformHardwareInfoInterface& IPlatformHardwareInfoInterface::Get()
+IPlatformHardwareInfo& IPlatformHardwareInfo::Get()
 {
 	if (!PlatformInfoInstance)
 	{
@@ -47,7 +47,7 @@ IPlatformHardwareInfoInterface& IPlatformHardwareInfoInterface::Get()
 		// Note: PLATFORM_SONY implementation is reserved for licensed PlayStation developers only
 		// Example:
 		// To implement for PlayStation platforms, create a class in Platforms/Sony directory:
-		// class FPlayStationDeviceInfo : public IPlatformHardwareInfoInterface
+		// class FPlayStationDeviceInfo : public IIPlatformHardwareInfo
 		// {
 		//	// Implement required interface methods
 		// };

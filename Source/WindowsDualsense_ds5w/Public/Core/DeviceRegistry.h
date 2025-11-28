@@ -12,7 +12,7 @@
 #endif
 
 #include "Async/TaskGraphInterfaces.h"
-#include "Interfaces/SonyGamepadInterface.h"
+#include "Interfaces/ISonyGamepad.h"
 
 /**
  * A manager class that handles the creation, storage, and lifecycle management of device library
@@ -55,13 +55,13 @@ public:
 	 * @return A pointer to the ISonyGamepadInterface instance corresponding to the specified
 	 *         controller ID, or nullptr if no matching instance exists.
 	 */
-	ISonyGamepadInterface* GetLibraryInstance(const FInputDeviceId& DeviceId);
+	ISonyGamepad* GetLibraryInstance(const FInputDeviceId& DeviceId);
 	/**
 	 * Retrieves the map of allocated device library instances. This map associates unique integer
 	 * keys with instances implementing the Sony gamepad interface, allowing access to the currently
 	 * managed devices.
 	 */
-	TMap<FInputDeviceId, ISonyGamepadInterface*> GetAllocatedDevicesMap();
+	TMap<FInputDeviceId, ISonyGamepad*> GetAllocatedDevicesMap();
 	/**
 	 * Removes a library instance associated with the specified controller ID, disconnecting the
 	 * corresponding input device if it is currently connected. Ensures proper removal and cleanup
@@ -114,7 +114,7 @@ private:
 	 * This map is used to store and manage the lifecycle of gamepad interface objects, enabling efficient lookup and access
 	 * to the respective implementations for handling Sony gamepad interactions.
 	 */
-	static TMap<FInputDeviceId, ISonyGamepadInterface*> LibraryInstances;
+	static TMap<FInputDeviceId, ISonyGamepad*> LibraryInstances;
 	/**
 	 * A static map that associates device paths represented as strings with unique input device
 	 * identifiers. This serves as a lookup mechanism to manage and track known device connections

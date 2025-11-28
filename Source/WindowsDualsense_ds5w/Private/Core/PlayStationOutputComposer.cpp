@@ -3,7 +3,7 @@
 // Planned Release Year: 2025
 
 #include "Core/PlayStationOutputComposer.h"
-#include "Core/Interfaces/PlatformHardwareInfoInterface.h"
+#include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Structs/DeviceContext.h"
 
 const uint32 FPlayStationOutputComposer::CRCSeed = 0xeada2d49;
@@ -49,7 +49,7 @@ void FPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
 		DeviceContext->BufferOutput[0x4D] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
 	}
 
-	IPlatformHardwareInfoInterface::Get().Write(DeviceContext);
+	IPlatformHardwareInfo::Get().Write(DeviceContext);
 }
 
 void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
@@ -102,7 +102,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 		DeviceContext->BufferOutput[0x4D] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
 	}
 
-	IPlatformHardwareInfoInterface::Get().Write(DeviceContext);
+	IPlatformHardwareInfo::Get().Write(DeviceContext);
 }
 
 void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapticTriggers& Effect)
@@ -111,8 +111,8 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 
 	if (Effect.Mode == 0x01) // Continuous Resistance
 	{
-		Trigger[0x1] = ((Effect.Strengths.ActiveZones >> 0) & 0xFF);
-		Trigger[0x2] = ((Effect.Strengths.StrengthZones >> 0) & 0xFF);
+		Trigger[0x1] = Effect.Strengths.Compose[0];
+		Trigger[0x2] = Effect.Strengths.Compose[1];
 	}
 
 	if (Effect.Mode == 0x21) // Resistance
@@ -125,7 +125,6 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x7] = 0x0;
 		Trigger[0x8] = 0x0;
 		Trigger[0x9] = 0x0;
-		UE_LOG(LogTemp, Warning, TEXT("%02X, %02X, %02X, %02X, %02X"), Trigger[0x1], Trigger[0x2], Trigger[0x3], Trigger[0x4], Trigger[0x5]);
 	}
 
 	if (Effect.Mode == 0x22 || Effect.Mode == 0x02) // Bow
@@ -133,12 +132,14 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x1] = Effect.Strengths.Compose[0];
 		Trigger[0x2] = Effect.Strengths.Compose[1];
 		Trigger[0x3] = Effect.Strengths.Compose[2];
-		Trigger[0x4] = 0x0;
-		Trigger[0x5] = 0x0;
+		Trigger[0x4] = Effect.Strengths.Compose[3];
+		Trigger[0x5] = Effect.Strengths.Compose[4];
 		Trigger[0x6] = 0x0;
 		Trigger[0x7] = 0x0;
 		Trigger[0x8] = 0x0;
 		Trigger[0x9] = 0x0;
+
+		UE_LOG(LogTemp, Warning, TEXT("PlayStation. %02X, %02X, %02X, %02X"), Trigger[1], Trigger[2], Trigger[3], Trigger[4]);
 	}
 
 	if (Effect.Mode == 0x23) // Gallopping
@@ -237,7 +238,7 @@ void FPlayStationOutputComposer::SendAudioHapticAdvanced(FDeviceContext* DeviceC
 		DeviceContext->BufferAudio[CrcOffset + 1] = static_cast<unsigned char>((CrcChecksum & 0x0000FF00) >> 8UL);
 		DeviceContext->BufferAudio[CrcOffset + 2] = static_cast<unsigned char>((CrcChecksum & 0x00FF0000) >> 16UL);
 		DeviceContext->BufferAudio[CrcOffset + 3] = static_cast<unsigned char>((CrcChecksum & 0xFF000000) >> 24UL);
-		IPlatformHardwareInfoInterface::Get().ProcessAudioHapitc(DeviceContext);
+		IPlatformHardwareInfo::Get().ProcessAudioHapitc(DeviceContext);
 	}
 }
 

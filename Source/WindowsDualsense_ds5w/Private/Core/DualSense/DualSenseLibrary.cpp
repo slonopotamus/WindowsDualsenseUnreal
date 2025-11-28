@@ -6,13 +6,13 @@
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Algorithms/MadgwickAhrs.h"
-#include "Core/Interfaces/PlatformHardwareInfoInterface.h"
+#include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Structs/OutputContext.h"
 #include "Helpers/ValidateHelpers.h"
 #include "InputCoreTypes.h"
 
-bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
+bool FDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
 	HIDDeviceContexts = Context;
 	if (HIDDeviceContexts.ConnectionType == EDeviceConnection::Bluetooth)
@@ -37,22 +37,22 @@ bool UDualSenseLibrary::InitializeLibrary(const FDeviceContext& Context)
 		HIDDeviceContexts.BufferAudio[9] = 50;
 	}
 
-	StopAll();
+	ResetLights();
 	return true;
 }
 
-void UDualSenseLibrary::ShutdownLibrary()
+void FDualSenseLibrary::ShutdownLibrary()
 {
 	ButtonStates.Reset();
-	IPlatformHardwareInfoInterface::Get().InvalidateHandle(&HIDDeviceContexts);
+	IPlatformHardwareInfo::Get().InvalidateHandle(&HIDDeviceContexts);
 }
 
-bool UDualSenseLibrary::IsConnected()
+bool FDualSenseLibrary::IsConnected()
 {
 	return HIDDeviceContexts.IsConnected;
 }
 
-void UDualSenseLibrary::SendOut()
+void FDualSenseLibrary::SendOut()
 {
 	if (!HIDDeviceContexts.IsConnected)
 	{
@@ -62,7 +62,7 @@ void UDualSenseLibrary::SendOut()
 	FPlayStationOutputComposer::OutputDualSense(&HIDDeviceContexts);
 }
 
-void UDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
+void FDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	if (Settings.VibrationMode == EDualSenseDeviceFeatureReport::Off)
@@ -78,20 +78,20 @@ void UDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 	HidOutput->Audio.SpeakerVolume = static_cast<uint8>(Settings.AudioVolume);
 	HidOutput->Audio.Mode = 0x08;
 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::On && Settings.AudioSpeaker ==
-	                                                                     EDualSenseAudioFeatureReport::Off)
+	    EDualSenseAudioFeatureReport::Off)
 	{
 		HidOutput->Audio.Mode = 0x31;
 	}
 
 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::Off && Settings.AudioSpeaker ==
-	                                                                      EDualSenseAudioFeatureReport::On)
+	    EDualSenseAudioFeatureReport::On)
 	{
 		HidOutput->Audio.Mode = 0x21;
 	}
 	SendOut();
 }
 
-void UDualSenseLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
+void FDualSenseLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
                                          const FPlatformUserId UserId, const FInputDeviceId InputDeviceId,
                                          const FName ButtonName, const bool IsButtonPressed)
 {
@@ -109,12 +109,12 @@ void UDualSenseLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMes
 	ButtonStates.Add(ButtonName, IsButtonPressed);
 }
 
-void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
+void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
                                     const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta)
 {
 	FDeviceContext* Context = &HIDDeviceContexts;
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]() {
-		IPlatformHardwareInfoInterface::Get().Read(NewContext);
+		IPlatformHardwareInfo::Get().Read(NewContext);
 	});
 
 	const size_t Padding = HIDDeviceContexts.ConnectionType == EDeviceConnection::Bluetooth ? 2 : 1;
@@ -169,31 +169,23 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 	switch (HIDInput[0x07] & 0x0F)
 	{
-		case 0x0:
-			ButtonsMask |= BTN_DPAD_UP;
+		case 0x0: ButtonsMask |= BTN_DPAD_UP;
 			break;
-		case 0x4:
-			ButtonsMask |= BTN_DPAD_DOWN;
+		case 0x4: ButtonsMask |= BTN_DPAD_DOWN;
 			break;
-		case 0x6:
-			ButtonsMask |= BTN_DPAD_LEFT;
+		case 0x6: ButtonsMask |= BTN_DPAD_LEFT;
 			break;
-		case 0x2:
-			ButtonsMask |= BTN_DPAD_RIGHT;
+		case 0x2: ButtonsMask |= BTN_DPAD_RIGHT;
 			break;
-		case 0x5:
-			ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
+		case 0x5: ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
 			break;
-		case 0x7:
-			ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
+		case 0x7: ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
 			break;
-		case 0x1:
-			ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
+		case 0x1: ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
 			break;
-		case 0x3:
-			ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
+		case 0x3: ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
 			break;
-		default:;
+		default: ;
 	}
 	const bool bDPadLeft = ButtonsMask & BTN_DPAD_LEFT;
 	const bool bDPadDown = ButtonsMask & BTN_DPAD_DOWN;
@@ -270,12 +262,12 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 			{
 				const FVector2D TouchVectorStart = FVector2D(Touch.X, Touch.Y);
 				InMessageHandler->OnTouchStarted(
-				    nullptr,
-				    TouchVectorStart,
-				    1.0f,
-				    Touch.Id,
-				    UserId,
-				    InputDeviceId);
+					nullptr,
+					TouchVectorStart,
+					1.0f,
+					Touch.Id,
+					UserId,
+					InputDeviceId);
 			}
 			else
 			{
@@ -287,10 +279,10 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		{
 			const FVector2D TouchVectorEnded = FVector2D(Touch.X, Touch.Y);
 			InMessageHandler->OnTouchEnded(
-			    TouchVectorEnded,
-			    Touch.Id,
-			    UserId,
-			    InputDeviceId);
+				TouchVectorEnded,
+				Touch.Id,
+				UserId,
+				InputDeviceId);
 		}
 
 		bWasTouch1Down = bIsTouchDown;
@@ -320,10 +312,10 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		{
 			const FVector2D Touch2VectorEnded = FVector2D(Touch2.X, Touch2.Y);
 			InMessageHandler->OnTouchEnded(
-			    Touch2VectorEnded,
-			    Touch2.Id,
-			    UserId,
-			    InputDeviceId);
+				Touch2VectorEnded,
+				Touch2.Id,
+				UserId,
+				InputDeviceId);
 		}
 
 		bWasTouch2Down = bIsTouch2Down;
@@ -414,7 +406,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 			float FinalAccelValueZ = 0.0f;
 			if (FMath::Abs(Acc.Z) > (Bounds.Accel_Z_Bounds.Y - Bounds.Accel_Z_Bounds.X) *
-			                            SensorsDeadZone)
+			    SensorsDeadZone)
 			{
 				FinalAccelValueZ = Acc.Z;
 			}
@@ -496,8 +488,8 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		FVector Accel_MS2 = FVector(ax, az, ay);
 		const float GravityMagnitude = Accel_MS2.Size();
 		FVector Gravity = (GravityMagnitude > KINDA_SMALL_NUMBER)
-		                      ? (Accel_MS2 / GravityMagnitude) * G_TO_MS2
-		                      : FVector::ZeroVector;
+			                  ? (Accel_MS2 / GravityMagnitude) * G_TO_MS2
+			                  : FVector::ZeroVector;
 
 		InMessageHandler.Get().OnMotionDetected(Tilt, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
 	}
@@ -506,7 +498,7 @@ void UDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	SetLevelBattery(((HIDInput[0x34] & 0x0F) / 10.0) * 100, (HIDInput[0x35] & 0x00), (HIDInput[0x36] & 0x20));
 }
 
-void UDualSenseLibrary::SetVibration(const FForceFeedbackValues& Vibration)
+void FDualSenseLibrary::SetVibration(const FForceFeedbackValues& Vibration)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	const float LeftRumble = FMath::Max(Vibration.LeftLarge, Vibration.LeftSmall);
@@ -521,60 +513,7 @@ void UDualSenseLibrary::SetVibration(const FForceFeedbackValues& Vibration)
 	}
 }
 
-void UDualSenseLibrary::SetTriggerResistance(const FInputDeviceTriggerResistanceProperty& Resistance)
-{
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-
-	const uint8_t Start = Resistance.StartPosition;
-	const uint8_t End = Resistance.EndPosition;
-	const float StartStr = static_cast<float>(Resistance.StartStrengh);
-	const float EndStr = static_cast<float>(Resistance.EndStrengh);
-
-	constexpr int NumZones = 10;
-	uint8_t Strengths[NumZones] = {0};
-	if (End > Start)
-	{
-		for (int i = Start; i <= End && i < NumZones; ++i)
-		{
-			const float Alpha = (End == Start) ? 0.0f : (i - Start) / (End - Start);
-			Strengths[i] = static_cast<uint8>(StartStr + Alpha * (EndStr - StartStr));
-		}
-	}
-
-	int32 ActiveZones = 0;
-	int64 StrengthZones = 0;
-	for (int i = 0; i < 10; i++)
-	{
-		if (Strengths[i] > 0)
-		{
-			const uint64_t StrengthValue = static_cast<uint64_t>((Strengths[i] - 1) & 0x07);
-			StrengthZones |= static_cast<int64>(StrengthValue << (3 * i));
-			ActiveZones |= (1 << i);
-		}
-	}
-
-	if (
-	    Resistance.AffectedTriggers == EInputDeviceTriggerMask::Left ||
-	    Resistance.AffectedTriggers == EInputDeviceTriggerMask::All)
-	{
-		HidOutput->LeftTrigger.Mode = 0x02;
-		HidOutput->LeftTrigger.Strengths.ActiveZones = ActiveZones;
-		HidOutput->LeftTrigger.Strengths.StrengthZones = StrengthZones;
-	}
-
-	if (
-	    Resistance.AffectedTriggers == EInputDeviceTriggerMask::Right ||
-	    Resistance.AffectedTriggers == EInputDeviceTriggerMask::All)
-	{
-		HidOutput->RightTrigger.Mode = 0x02;
-		HidOutput->RightTrigger.Strengths.ActiveZones = ActiveZones;
-		HidOutput->RightTrigger.Strengths.StrengthZones = StrengthZones;
-	}
-
-	SendOut();
-}
-
-void UDualSenseLibrary::SetResistance(uint8 StartZones, uint8 Strength, const EControllerHand& Hand)
+void FDualSenseLibrary::SetResistance(uint8 StartZones, uint8 Strength, const EControllerHand& Hand)
 {
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
@@ -582,19 +521,20 @@ void UDualSenseLibrary::SetResistance(uint8 StartZones, uint8 Strength, const EC
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->LeftTrigger.Mode = 0x01;
-		HidOutput->LeftTrigger.Strengths.ActiveZones = 1 << StartZones;
-		HidOutput->LeftTrigger.Strengths.StrengthZones = (1 << StartZones) << (3 * StartZones);
+		HidOutput->LeftTrigger.Strengths.Compose[0] = StartZones;
+		HidOutput->LeftTrigger.Strengths.Compose[1] = Strength;
+
 	}
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
 		HidOutput->RightTrigger.Mode = 0x01;
-		HidOutput->RightTrigger.Strengths.ActiveZones = 1 << StartZones;
-		HidOutput->RightTrigger.Strengths.StrengthZones = (1 << StartZones) << (3 * StartZones);
+		HidOutput->RightTrigger.Strengths.Compose[0] = StartZones;
+		HidOutput->RightTrigger.Strengths.Compose[1] = Strength;
 	}
 	SendOut();
 }
 
-void UDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot,
+void FDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot,
                                        uint8 Frequency, const EControllerHand& Hand)
 {
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
@@ -611,7 +551,7 @@ void UDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, u
 		HidOutput->LeftTrigger.Strengths.Compose[0] = PositionMask & 0xFF;
 		HidOutput->LeftTrigger.Strengths.Compose[1] = (PositionMask >> 8) & 0xFF;
 		HidOutput->LeftTrigger.Strengths.Compose[2] = ((FirstFootNib & 0x0F) << 4) | (SecondFootNib & 0x0F);
-		HidOutput->LeftTrigger.Strengths.Compose[3] = static_cast<uint8>(Frequency);
+		HidOutput->LeftTrigger.Strengths.Compose[3] = Frequency;
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
@@ -620,14 +560,15 @@ void UDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, u
 		HidOutput->RightTrigger.Strengths.Compose[0] = PositionMask & 0xFF;
 		HidOutput->RightTrigger.Strengths.Compose[1] = (PositionMask >> 8) & 0xFF;
 		HidOutput->RightTrigger.Strengths.Compose[2] = ((FirstFootNib & 0x0F) << 4) | (SecondFootNib & 0x0F);
-		HidOutput->RightTrigger.Strengths.Compose[3] = static_cast<uint8>(Frequency);
+		HidOutput->RightTrigger.Strengths.Compose[3] = Frequency;
 	}
 
 	SendOut();
 }
 
-void UDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
+void FDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
 {
+	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
@@ -642,7 +583,7 @@ void UDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
 	SendOut();
 }
 
-void UDualSenseLibrary::SetGameCube(const EControllerHand& Hand)
+void FDualSenseLibrary::SetGameCube(const EControllerHand& Hand)
 {
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
@@ -665,7 +606,7 @@ void UDualSenseLibrary::SetGameCube(const EControllerHand& Hand)
 	SendOut();
 }
 
-void UDualSenseLibrary::SetBow22(uint8 StartZone,  uint8 SnapBack, const EControllerHand& Hand)
+void FDualSenseLibrary::SetBow22(uint8 StartZone, uint8 SnapBack, const EControllerHand& Hand)
 {
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
@@ -690,7 +631,7 @@ void UDualSenseLibrary::SetBow22(uint8 StartZone,  uint8 SnapBack, const EContro
 	SendOut();
 }
 
-void UDualSenseLibrary::SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EControllerHand& Hand)
+void FDualSenseLibrary::SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EControllerHand& Hand)
 {
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
@@ -715,8 +656,8 @@ void UDualSenseLibrary::SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Beha
 	SendOut();
 }
 
-void UDualSenseLibrary::SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency,
-	const EControllerHand& Hand)
+void FDualSenseLibrary::SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency,
+                                        const EControllerHand& Hand)
 {
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
@@ -747,8 +688,8 @@ void UDualSenseLibrary::SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 A
 	SendOut();
 }
 
-void UDualSenseLibrary::SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period,
-									 uint8 Frequency, const EControllerHand& Hand)
+void FDualSenseLibrary::SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period,
+                                     uint8 Frequency, const EControllerHand& Hand)
 {
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
@@ -777,7 +718,7 @@ void UDualSenseLibrary::SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 
 	SendOut();
 }
 
-void UDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes)
+void FDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes)
 {
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* OutBuffer = &HIDDeviceContexts.Output;
@@ -797,18 +738,16 @@ void UDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArr
 	bool bIsValid;
 	switch (Bytes[0])
 	{
-	case 0x01:
-	case 0x02:
-	case 0x21:
-	case 0x22:
-	case 0x23:
-	case 0x25:
-	case 0x26:
-	case 0x27:
-		bIsValid = true;
-		break;
-	default:
-		bIsValid = false;
+		case 0x01:
+		case 0x02:
+		case 0x21:
+		case 0x22:
+		case 0x23:
+		case 0x25:
+		case 0x26:
+		case 0x27: bIsValid = true;
+			break;
+		default: bIsValid = false;
 	}
 
 	if (!bIsValid)
@@ -834,7 +773,7 @@ void UDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArr
 	SendOut();
 }
 
-void UDualSenseLibrary::AudioHapticUpdate(TArray<int8> Data)
+void FDualSenseLibrary::AudioHapticUpdate(TArray<int8> Data)
 {
 	FDeviceContext* Context = &HIDDeviceContexts;
 	if (!Context || !Context->IsConnected)
@@ -850,7 +789,7 @@ void UDualSenseLibrary::AudioHapticUpdate(TArray<int8> Data)
 	FPlayStationOutputComposer::SendAudioHapticAdvanced(Context);
 }
 
-bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
+bool FDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 {
 	if (!bIsCalibrating)
 	{
@@ -881,7 +820,7 @@ bool UDualSenseLibrary::GetMotionSensorCalibrationStatus(float& OutProgress)
 	return true;
 }
 
-void UDualSenseLibrary::StartMotionSensorCalibration(float Duration, float DeadZone)
+void FDualSenseLibrary::StartMotionSensorCalibration(float Duration, float DeadZone)
 {
 	bIsCalibrating = true;
 	CalibrationSampleCount = 0;
@@ -896,7 +835,7 @@ void UDualSenseLibrary::StartMotionSensorCalibration(float Duration, float DeadZ
 	CalibrationStartTime = FPlatformTime::Seconds();
 }
 
-void UDualSenseLibrary::SetMicrophoneLed(ELedMicEnum Led)
+void FDualSenseLibrary::SetMicrophoneLed(ELedMicEnum Led)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	if (HidOutput->MicLight.Mode != static_cast<unsigned char>(Led))
@@ -906,7 +845,7 @@ void UDualSenseLibrary::SetMicrophoneLed(ELedMicEnum Led)
 	}
 }
 
-void UDualSenseLibrary::StopAll()
+void FDualSenseLibrary::ResetLights()
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	if (
@@ -921,7 +860,7 @@ void UDualSenseLibrary::StopAll()
 	SendOut();
 }
 
-void UDualSenseLibrary::SetLightbar(FColor Color, float BrithnessTime, float ToggleTime)
+void FDualSenseLibrary::SetLightbar(FColor Color, float BrithnessTime, float ToggleTime)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	if ((HidOutput->Lightbar.R != Color.R) || (HidOutput->Lightbar.G != Color.G) || (HidOutput->Lightbar.B != Color.B))
@@ -933,11 +872,11 @@ void UDualSenseLibrary::SetLightbar(FColor Color, float BrithnessTime, float Tog
 	}
 }
 
-void UDualSenseLibrary::SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness)
+void FDualSenseLibrary::SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	if ((HidOutput->PlayerLed.Led != static_cast<unsigned char>(Led)) || (HidOutput->PlayerLed.Brightness !=
-																		  static_cast<unsigned char>(Brightness)))
+	                                                                      static_cast<unsigned char>(Brightness)))
 	{
 		HidOutput->PlayerLed.Led = static_cast<unsigned char>(Led);
 		HidOutput->PlayerLed.Brightness = static_cast<unsigned char>(Brightness);
@@ -945,27 +884,27 @@ void UDualSenseLibrary::SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brig
 	}
 }
 
-void UDualSenseLibrary::EnableTouch(const bool bIsTouch)
+void FDualSenseLibrary::EnableTouch(const bool bIsTouch)
 {
 	bEnableTouch = bIsTouch;
 }
 
-void UDualSenseLibrary::EnableMotionSensor(bool bIsMotionSensor)
+void FDualSenseLibrary::EnableMotionSensor(bool bIsMotionSensor)
 {
 	bEnableAccelerometerAndGyroscope = bIsMotionSensor;
 }
 
-void UDualSenseLibrary::ResetGyroOrientation()
+void FDualSenseLibrary::ResetGyroOrientation()
 {
 	bIsResetGyroscope = true;
 }
 
-void UDualSenseLibrary::SetHasPhoneConnected(const bool HasConnected)
+void FDualSenseLibrary::SetHasPhoneConnected(const bool HasConnected)
 {
 	HasPhoneConnected = HasConnected;
 }
 
-void UDualSenseLibrary::SetLevelBattery(const float Level, bool FullyCharged, bool Charging)
+void FDualSenseLibrary::SetLevelBattery(const float Level, bool FullyCharged, bool Charging)
 {
 	if (Level > 100.f)
 	{

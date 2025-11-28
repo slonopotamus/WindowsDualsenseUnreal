@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "Core/Structs/DeviceContext.h"
 #include "CoreMinimal.h"
+#include "Core/Structs/DeviceContext.h"
 
 #define PLATFORM_SONY (PLATFORM_PS4 || PLATFORM_PS5)
 
@@ -22,10 +22,10 @@
  * or invalidation. Additionally, it provides a mechanism for accessing a
  * singleton instance for the platform-specific implementation of the interface.
  */
-class IPlatformHardwareInfoInterface
+class WINDOWSDUALSENSE_DS5W_API IPlatformHardwareInfo
 {
 	/**
-	 * Provides access to the singleton instance of the IPlatformHardwareInfoInterface.
+	 * Provides access to the singleton instance of the IPlatformHardwareInfo.
 	 *
 	 * This method returns a reference to the singleton instance of the platform-specific hardware
 	 * interface. If the instance does not exist, it is created depending on the platform.
@@ -39,9 +39,9 @@ class IPlatformHardwareInfoInterface
 	 *       undefined behavior (e.g., dereferencing a null pointer).
 	 */
 public:
-	static IPlatformHardwareInfoInterface& Get();
+	static IPlatformHardwareInfo& Get();
 	/**
-	 * Virtual destructor for the IPlatformHardwareInfoInterface.
+	 * Virtual destructor for the IIPlatformHardwareInfo.
 	 *
 	 * This destructor ensures that derived classes are properly cleaned up when
 	 * an object is deleted through a pointer to this interface. Being a virtual
@@ -51,7 +51,7 @@ public:
 	 * @note The default implementation of the destructor is empty, as specific
 	 *       cleanup should be handled in the derived implementations.
 	 */
-	virtual ~IPlatformHardwareInfoInterface() = default;
+	virtual ~IPlatformHardwareInfo() = default;
 	/**
 	 * Reads data from the hardware device using the provided context.
 	 *
@@ -124,7 +124,7 @@ public:
 	 */
 	virtual void ProcessAudioHapitc(FDeviceContext* Context) = 0;
 	/**
-	 * Default constructor for the IPlatformHardwareInfoInterface.
+	 * Default constructor for the IIPlatformHardwareInfo.
 	 *
 	 * This protected constructor ensures that instances of the interface cannot
 	 * be created directly. Derived classes can utilize this default constructor
@@ -133,17 +133,17 @@ public:
 	 * @return An initialized instance of IPlatformHardwareInfoInterface.
 	 */
 protected:
-	IPlatformHardwareInfoInterface() = default;
+	IPlatformHardwareInfo() = default;
 
 	/**
 	 * Initializes the singleton instance of the platform hardware information interface to nullptr.
 	 *
-	 * This static member is used to store the singleton instance of the IPlatformHardwareInfoInterface
+	 * This static member is used to store the singleton instance of the IIPlatformHardwareInfo
 	 * for the current platform. Initially, it is set to nullptr, and it will be instantiated with a
 	 * platform-specific implementation when accessed via the appropriate getter method.
 	 *
 	 * @note The actual instance is platform-dependent and will be created as required during runtime.
 	 */
 private:
-	static TUniquePtr<IPlatformHardwareInfoInterface> PlatformInfoInstance;
+	static TUniquePtr<IPlatformHardwareInfo> PlatformInfoInstance;
 };

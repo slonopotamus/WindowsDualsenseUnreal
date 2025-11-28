@@ -4,23 +4,19 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Containers/Queue.h"
-#include "Core/Enums/EDeviceCommons.h"
-#include "Core/Interfaces/SonyGamepadInterface.h"
-#include "Core/Interfaces/SonyGamepadTriggerInterface.h"
-#include "Core/Structs/DeviceContext.h"
-#include "Core/Structs/DualSenseFeatureReport.h"
-#include "CoreMinimal.h"
 #include "InputCoreTypes.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
-#include "UObject/Object.h"
 #include <atomic>
-
+#include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
-#include "DualSenseLibrary.generated.h"
+#include "Core/Enums/EDeviceCommons.h"
+#include "Core/Structs/DeviceContext.h"
+#include "Core/Structs/DualSenseFeatureReport.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 
 /**
  * @class FTouchPoint1
@@ -248,27 +244,18 @@ struct FGyro
 	int16_t Z;
 };
 
-USTRUCT()
 struct FSensorBounds
 {
-	GENERATED_BODY()
-
-	UPROPERTY()
 	FVector2D Gyro_X_Bounds; // X = Min, Y = Max
 
-	UPROPERTY()
 	FVector2D Gyro_Y_Bounds; // X = Min, Y = Max
 
-	UPROPERTY()
 	FVector2D Gyro_Z_Bounds; // X = Min, Y = Max
 
-	UPROPERTY()
 	FVector2D Accel_X_Bounds; // X = Min, Y = Max
 
-	UPROPERTY()
 	FVector2D Accel_Y_Bounds; // X = Min, Y = Max
 
-	UPROPERTY()
 	FVector2D Accel_Z_Bounds; // X = Min, Y = Max
 
 	FSensorBounds()
@@ -283,7 +270,7 @@ struct FSensorBounds
 };
 
 /**
- * @class UDualSenseLibrary
+ * @class FDualSenseLibrary
  * @brief Utility class for interfacing with the PlayStation DualSense controller.
  *
  * This class provides a collection of static functions and utilities specific to
@@ -304,12 +291,24 @@ struct FSensorBounds
  * The library is designed for developers seeking to leverage unique features of
  * the DualSense controller programmatically within an application.
  */
-UCLASS()
-class WINDOWSDUALSENSE_DS5W_API UDualSenseLibrary : public UObject, public ISonyGamepadInterface, public ISonyGamepadTriggerInterface, public IGamepadTrigger, public IGamepadAudioHaptics
+class WINDOWSDUALSENSE_DS5W_API FDualSenseLibrary : public ISonyGamepad, public IGamepadTrigger, public IGamepadAudioHaptics
 {
-	GENERATED_BODY()
 
 public:
+	FDualSenseLibrary() : bEnableTouch(false), bWasTouch1Down(false), bWasTouch2Down(false), HasPhoneConnected(false), LevelBattery(0), LeftTriggerFeedback(0), RightTriggerFeedback(0), bEnableAccelerometerAndGyroscope(false), bHasMotionSensorBaseline(false), bIsCalibrating(false), CalibrationStartTime(0), CalibrationDuration(0), CalibrationSampleCount(0), AudioVibrationSequence(0)
+	{
+	}
+
+	virtual IGamepadTrigger* GetIGamepadTrigger() override
+	{
+		return this;
+	}
+
+	virtual IGamepadAudioHaptics* GetIGamepadHaptics() override
+	{
+		return this;
+	}
+	
 	/**
 	 * @brief Configures device settings for a connected device.
 	 *
@@ -556,21 +555,6 @@ public:
 	 */
 	virtual void SetLightbar(FColor Color, float BrithnessTime = 0.0f, float ToggleTime = 0.0f) override;
 	/**
-	 * @brief Configures trigger properties for a DualSense controller.
-	 *
-	 * This method adjusts the input trigger resistance or behavior based on the
-	 * properties provided in the `Values` parameter. It specifically processes
-	 * configurations for left and right triggers, setting their resistance zones,
-	 * activation strength, and associated levels.
-	 *
-	 * @param Resistance An `FInputDeviceTriggerResistanceProperty` structure that defines
-	 *        the desired properties to configure the triggers. It may include
-	 *        attributes such as the start and end positions of resistance zones,
-	 *        strength levels, and the specific triggers to be affected (e.g., left,
-	 *        right, or both triggers).
-	 */
-	virtual void SetTriggerResistance(const FInputDeviceTriggerResistanceProperty& Resistance) override;
-	/**
 	 * @brief Updates the vibration feedback for a DualSense controller using force feedback values.
 	 *
 	 * This method takes in force feedback values and applies the corresponding vibration settings
@@ -600,7 +584,7 @@ public:
 	 * to the hardware. This can be used in scenarios where the controller must be brought
 	 * into a neutral state, such as when pausing gameplay or shutting down the system.
 	 */
-	virtual void StopAll() override;
+	virtual void ResetLights() override;
 	/**
 	 * @brief Retrieves the connection type of the device.
 	 *

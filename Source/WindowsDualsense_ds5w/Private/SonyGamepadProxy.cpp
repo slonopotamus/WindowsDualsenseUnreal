@@ -5,7 +5,7 @@
 #include "SonyGamepadProxy.h"
 #include "Core/DeviceRegistry.h"
 #include "Core/DualSense/DualSenseLibrary.h"
-#include "Core/Interfaces/SonyGamepadInterface.h"
+#include "Core/Interfaces/ISonyGamepad.h"
 #include "Misc/CoreDelegates.h"
 
 EDeviceType USonyGamepadProxy::GetDeviceType(int32 ControllerId)
@@ -16,7 +16,7 @@ EDeviceType USonyGamepadProxy::GetDeviceType(int32 ControllerId)
 		return EDeviceType::NotFound;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return EDeviceType::NotFound;
@@ -33,7 +33,7 @@ EDeviceConnection USonyGamepadProxy::GetConnectionType(int32 ControllerId)
 		return EDeviceConnection::Unrecognized;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return EDeviceConnection::Unrecognized;
@@ -50,7 +50,7 @@ bool USonyGamepadProxy::DeviceIsConnected(int32 ControllerId)
 		return false;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return false;
@@ -67,7 +67,7 @@ float USonyGamepadProxy::LevelBatteryDevice(int32 ControllerId)
 		return 0.0f;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return 0.0f;
@@ -84,7 +84,7 @@ void USonyGamepadProxy::LedColorEffects(int32 ControllerId, FColor Color, float 
 		return;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return;
@@ -101,7 +101,7 @@ void USonyGamepadProxy::LedMicEffects(int32 ControllerId, ELedMicEnum Value)
 		return;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return;
@@ -118,7 +118,7 @@ void USonyGamepadProxy::StartMotionSensorCalibration(int32 ControllerId, float D
 		return;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return;
@@ -134,7 +134,7 @@ void USonyGamepadProxy::ResetGyroOrientation(int32 ControllerId)
 		return;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return;
@@ -150,19 +150,14 @@ bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, flo
 		return false;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	IGamepadSensors* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Gamepad not found"));
 		return false;
 	}
 
-	if (UDualSenseLibrary* DsLibrary = Cast<UDualSenseLibrary>(Gamepad))
-	{
-		return DsLibrary->GetMotionSensorCalibrationStatus(Progress);
-	}
-
-	return false;
+	return Gamepad->GetMotionSensorCalibrationStatus(Progress);
 }
 
 void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
@@ -173,7 +168,7 @@ void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 		return;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return;
@@ -190,7 +185,7 @@ void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGy
 		return;
 	}
 
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (!Gamepad)
 	{
 		return;

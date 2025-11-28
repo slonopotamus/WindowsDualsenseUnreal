@@ -26,7 +26,7 @@ public:
 	 * @param InMessageHandler The message handler responsible for capturing and processing input events.
 	 */
 	explicit DeviceManager(
-	    const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler);
+		const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler);
 	/**
 	 * Called every frame to update Controller-State
 	 *
@@ -43,6 +43,7 @@ public:
 	{
 		return true;
 	}
+
 	/**
 	 * Sets the force feedback values for a specific controller.
 	 * Updates the intensity of vibration or other force effects on the specified DualSense controller.
@@ -101,7 +102,10 @@ public:
 	 * @param MinFrequency Reference to a float where the minimum frequency will be stored.
 	 * @param MaxFrequency Reference to a float where the maximum frequency will be stored.
 	 */
-	virtual void GetHapticFrequencyRange(float& MinFrequency, float& MaxFrequency) const override {}
+	virtual void GetHapticFrequencyRange(float& MinFrequency, float& MaxFrequency) const override
+	{
+	}
+
 	/**
 	 * Retrieves the scale factor applied to haptic amplitude for the device.
 	 * Used to control the intensity of haptic feedback.
@@ -144,6 +148,7 @@ public:
 	virtual void SetMessageHandler(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler) override
 	{
 	}
+
 	/**
 	 * Sets the force feedback intensity for a specific channel on a particular controller.
 	 * Used to deliver haptic feedback through the given channel.

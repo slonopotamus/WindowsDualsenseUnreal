@@ -4,23 +4,21 @@
 
 #pragma once
 
-#include "Async/TaskGraphInterfaces.h"
-#include "Core/Interfaces/SonyGamepadInterface.h"
-#include "Core/Structs/DualShockFeatureReport.h"
 #include "CoreMinimal.h"
-#include "UObject/Object.h"
-#include "DualShockLibrary.generated.h"
+#include "Async/TaskGraphInterfaces.h"
+#include "Core/Interfaces/ISonyGamepad.h"
+#include "Core/Structs/DualShockFeatureReport.h"
 
-/**
- *
- */
-UCLASS()
-class WINDOWSDUALSENSE_DS5W_API UDualShockLibrary : public UObject, public ISonyGamepadInterface
+class WINDOWSDUALSENSE_DS5W_API FDualShockLibrary : public ISonyGamepad
 {
-	GENERATED_BODY()
 
 public:
-	// Expose nullptr for direct buffer access (not supported on DS4)
+	FDualShockLibrary() : ControllerID(0), LevelBattery(0), bEnableTouch(false), EnableAccelerometerAndGyroscope(false)
+	{
+	}
+
+	virtual IGamepadTrigger* GetIGamepadTrigger() override { return nullptr; }
+	virtual IGamepadAudioHaptics* GetIGamepadHaptics() override { return nullptr; }
 	virtual FDeviceContext* GetMutableDeviceContext() override { return nullptr; }
 	/**
 	 * @brief Configures device settings for a connected device.
@@ -148,7 +146,7 @@ public:
 	 * This method must be implemented by any derived class to handle the termination
 	 * of all ongoing processes.
 	 */
-	virtual void StopAll() override;
+	virtual void ResetLights() override;
 	/**
 	 * Sets the vibration effect for the Sony gamepad.
 	 *

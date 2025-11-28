@@ -26,7 +26,7 @@ bool FSonyInputProcessor::HandleAnalogInputEvent(FSlateApplication& SlateApp,
 
 bool FSonyInputProcessor::IsSonyController(const FInputDeviceId& DeviceId) const
 {
-	ISonyGamepadInterface* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
+	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
 	if (Gamepad)
 	{
 		return true;

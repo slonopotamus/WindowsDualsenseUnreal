@@ -52,7 +52,7 @@ public:
 	 * @return A shared pointer to the created input device instance, or nullptr if initialization fails.
 	 */
 	virtual TSharedPtr<IInputDevice> CreateInputDevice(
-	    const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler) override;
+		const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler) override;
 
 	/**
 	 * A shared pointer that manages an instance of the DualSense input device.

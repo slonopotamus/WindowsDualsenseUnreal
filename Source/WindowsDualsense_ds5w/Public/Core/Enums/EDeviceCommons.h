@@ -204,6 +204,31 @@ enum class ETriggerPosition : uint8
 };
 
 UENUM(BlueprintType)
+enum class ETriggerPositionMask : uint8
+{
+	Off = 0x00 UMETA(DisplayName = "Off (No Resistance)"),
+	Start = 0x00 UMETA(DisplayName = "Start (0%)"),
+	Early = 0x40 UMETA(DisplayName = "Early (25%)"),
+	Middle = 0x80 UMETA(DisplayName = "Middle (50%)"),
+	Late = 0xC0 UMETA(DisplayName = "Late (75%)"),
+	End = 0xFF UMETA(DisplayName = "End (100%)"),
+};
+
+UENUM(BlueprintType)
+enum class ETriggerForceMask : uint8
+{
+	Off = 0x00 UMETA(DisplayName = "Off (No Resistance)"),
+	VeryLow = 0x20 UMETA(DisplayName = "Very Low (~12%)"),
+	Low = 0x40 UMETA(DisplayName = "Low (25%)"),
+	MediumLow = 0x60 UMETA(DisplayName = "Medium-Low (37%)"),
+	Medium = 0x80 UMETA(DisplayName = "Medium (50%)"),
+	MediumHigh = 0xA0 UMETA(DisplayName = "Medium-High (62%)"),
+	High = 0xC0 UMETA(DisplayName = "High (75%)"),
+	VeryHigh = 0xE0 UMETA(DisplayName = "Very High (87%)"),
+	Max = 0xFF UMETA(DisplayName = "Max (100%)"),
+};
+
+UENUM(BlueprintType)
 enum class EDualSenseTriggerAmplitude : uint8
 {
 	/** No amplitude - Effect disabled */
@@ -234,7 +259,7 @@ enum class EDualSenseWeaponTrigger : uint8
 {
 	/** No WeaponClick - Effect disabled */
 	None = 0x00 UMETA(DisplayName = "None (0%)"),
-	Low =  0x02 UMETA(DisplayName = "Low (~40%)"),
+	Low = 0x02 UMETA(DisplayName = "Low (~40%)"),
 	Medium = 0x04 UMETA(DisplayName = "Medium (~50%)"),
 	High = 0x0A UMETA(DisplayName = "High (~75%)"),
 	Max = 0x0F UMETA(DisplayName = "Max (100%)"),
@@ -253,9 +278,9 @@ enum class ETriggerEffectBehavior : uint8
 UENUM(BlueprintType)
 enum class EAutoGunStrength : uint8
 {
-	Light   = 0 UMETA(DisplayName = "Light Recoil"),
-	Medium  = 1 UMETA(DisplayName = "Medium Recoil"),
-	Heavy   = 2 UMETA(DisplayName = "Heavy Recoil")
+	Light = 0 UMETA(DisplayName = "Light Recoil"),
+	Medium = 1 UMETA(DisplayName = "Medium Recoil"),
+	Heavy = 2 UMETA(DisplayName = "Heavy Recoil")
 };
 
 UENUM(BlueprintType)

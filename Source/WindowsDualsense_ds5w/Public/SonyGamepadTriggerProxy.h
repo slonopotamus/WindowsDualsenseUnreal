@@ -70,8 +70,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Resistance (0x01)"))
 	static void Resistance(
 		int32 ControllerId,
-		ETriggerPosition StartPosition,
-		ETriggerForceIntensity Strength,
+		ETriggerPositionMask StartPosition,
+		ETriggerForceMask Strength,
 		EGamepadHand Hand);
 
 	/**

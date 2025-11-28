@@ -16,8 +16,8 @@ void USonyGamepadTriggerProxy::GameCube(int32 ControllerId, EGamepadHand Hand)
 	Gamepad->SetGameCube(static_cast<EControllerHand>(Hand));
 }
 
-void USonyGamepadTriggerProxy::Resistance(int32 ControllerId, ETriggerPosition StartPosition,
-	ETriggerForceIntensity Strength, EGamepadHand Hand)
+void USonyGamepadTriggerProxy::Resistance(int32 ControllerId, ETriggerPositionMask StartPosition,
+	ETriggerForceMask Strength, EGamepadHand Hand)
 {
 	IGamepadTrigger* Gamepad = GetGamepadInterface(ControllerId);
 	if (!Gamepad)
@@ -114,16 +114,13 @@ IGamepadTrigger* USonyGamepadTriggerProxy::GetGamepadInterface(int32 ControllerI
 	check(IsInGameThread());
 
 	TArray<FInputDeviceId> Devices;
-
 	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(FPlatformUserId::CreateFromInternalId(ControllerId), Devices);
-
 	for (const FInputDeviceId& DeviceId : Devices)
 	{
-		if (IGamepadTrigger* IGamepad = Cast<IGamepadTrigger>(FDeviceRegistry::Get()->GetLibraryInstance(DeviceId)))
+		if (ISonyGamepad* IGamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId))
 		{
-			return IGamepad;
+			return IGamepad->GetIGamepadTrigger();
 		}
 	}
-
 	return nullptr;
 }

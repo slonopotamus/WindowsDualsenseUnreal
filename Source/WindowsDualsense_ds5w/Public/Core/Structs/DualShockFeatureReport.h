@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Core/Interfaces/SonyGamepadInterface.h"
+#include "Core/Interfaces/ISonyGamepad.h"
 #include "CoreMinimal.h"
 #include "DualShockFeatureReport.generated.h"
 
@@ -20,7 +20,7 @@
  * integration with Blueprint scripting environments.
  */
 USTRUCT(BlueprintType)
-struct FDualShockFeatureReport : public FFeatureReport
+struct FDualShockFeatureReport
 {
 	GENERATED_BODY()
 };

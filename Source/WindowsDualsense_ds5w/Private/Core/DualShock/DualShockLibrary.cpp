@@ -5,35 +5,36 @@
 #include "Core/DualShock/DualShockLibrary.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "Core/Interfaces/PlatformHardwareInfoInterface.h"
+#include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Structs/OutputContext.h"
 #include "Helpers/ValidateHelpers.h"
 #include "InputCoreTypes.h"
+#include "Core/Enums/EDeviceCommons.h"
 
-void UDualShockLibrary::Settings(const FDualShockFeatureReport& Settings)
+void FDualShockLibrary::Settings(const FDualShockFeatureReport& Settings)
 {
 }
 
-bool UDualShockLibrary::InitializeLibrary(const FDeviceContext& Context)
+bool FDualShockLibrary::InitializeLibrary(const FDeviceContext& Context)
 {
 	HIDDeviceContexts = Context;
 	SetLightbar(FColor::Blue, 0.0f, 0.0f);
 	return true;
 }
 
-void UDualShockLibrary::ShutdownLibrary()
+void FDualShockLibrary::ShutdownLibrary()
 {
 	ButtonStates.Reset();
-	IPlatformHardwareInfoInterface::Get().InvalidateHandle(&HIDDeviceContexts);
+	IPlatformHardwareInfo::Get().InvalidateHandle(&HIDDeviceContexts);
 }
 
-bool UDualShockLibrary::IsConnected()
+bool FDualShockLibrary::IsConnected()
 {
 	return HIDDeviceContexts.IsConnected;
 }
 
-void UDualShockLibrary::SendOut()
+void FDualShockLibrary::SendOut()
 {
 	if (!HIDDeviceContexts.IsConnected)
 	{
@@ -43,7 +44,7 @@ void UDualShockLibrary::SendOut()
 	FPlayStationOutputComposer::OutputDualShock(&HIDDeviceContexts);
 }
 
-void UDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
+void FDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
                                          const FPlatformUserId UserId, const FInputDeviceId InputDeviceId,
                                          const FName ButtonName,
                                          const bool IsButtonPressed)
@@ -62,12 +63,12 @@ void UDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMes
 	ButtonStates.Add(ButtonName, IsButtonPressed);
 }
 
-void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
+void FDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
                                     const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta)
 {
 	FDeviceContext* Context = &HIDDeviceContexts;
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]() {
-		IPlatformHardwareInfoInterface::Get().Read(NewContext);
+		IPlatformHardwareInfo::Get().Read(NewContext);
 	});
 
 	const unsigned char* HIDInput;
@@ -138,31 +139,23 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 	switch (HIDInput[0x04] & 0x0F)
 	{
-		case 0x0:
-			ButtonsMask |= BTN_DPAD_UP;
+		case 0x0: ButtonsMask |= BTN_DPAD_UP;
 			break;
-		case 0x4:
-			ButtonsMask |= BTN_DPAD_DOWN;
+		case 0x4: ButtonsMask |= BTN_DPAD_DOWN;
 			break;
-		case 0x6:
-			ButtonsMask |= BTN_DPAD_LEFT;
+		case 0x6: ButtonsMask |= BTN_DPAD_LEFT;
 			break;
-		case 0x2:
-			ButtonsMask |= BTN_DPAD_RIGHT;
+		case 0x2: ButtonsMask |= BTN_DPAD_RIGHT;
 			break;
-		case 0x5:
-			ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
+		case 0x5: ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
 			break;
-		case 0x7:
-			ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
+		case 0x7: ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
 			break;
-		case 0x1:
-			ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
+		case 0x1: ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
 			break;
-		case 0x3:
-			ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
+		case 0x3: ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
 			break;
-		default:;
+		default: ;
 	}
 	const bool bDPadLeft = ButtonsMask & BTN_DPAD_LEFT;
 	const bool bDPadDown = ButtonsMask & BTN_DPAD_DOWN;
@@ -196,7 +189,7 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::SpecialLeft, Select);
 }
 
-void UDualShockLibrary::SetVibration(const FForceFeedbackValues& Values)
+void FDualShockLibrary::SetVibration(const FForceFeedbackValues& Values)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	const float LeftRumble = FMath::Max(Values.LeftLarge, Values.LeftSmall);
@@ -211,7 +204,7 @@ void UDualShockLibrary::SetVibration(const FForceFeedbackValues& Values)
 	}
 }
 
-void UDualShockLibrary::SetLightbar(FColor Color, float BrithnessTime, float ToggleTime)
+void FDualShockLibrary::SetLightbar(FColor Color, float BrithnessTime, float ToggleTime)
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 	HidOutput->Lightbar.R = Color.R;
@@ -223,25 +216,25 @@ void UDualShockLibrary::SetLightbar(FColor Color, float BrithnessTime, float Tog
 	SendOut();
 }
 
-void UDualShockLibrary::SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness)
+void FDualShockLibrary::SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness)
 {
 }
 
-void UDualShockLibrary::SetMicrophoneLed(ELedMicEnum Led)
+void FDualShockLibrary::SetMicrophoneLed(ELedMicEnum Led)
 {
 }
 
-void UDualShockLibrary::EnableTouch(const bool bIsTouch)
+void FDualShockLibrary::EnableTouch(const bool bIsTouch)
 {
 	bEnableTouch = bIsTouch;
 }
 
-void UDualShockLibrary::EnableMotionSensor(bool bIsMotionSensor)
+void FDualShockLibrary::EnableMotionSensor(bool bIsMotionSensor)
 {
 	EnableAccelerometerAndGyroscope = bIsMotionSensor;
 }
 
-void UDualShockLibrary::StopAll()
+void FDualShockLibrary::ResetLights()
 {
 	SendOut();
 }
