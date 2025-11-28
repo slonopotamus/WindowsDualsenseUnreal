@@ -84,10 +84,8 @@ void FDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	// Triggers
 	const bool bLeftTriggerThreshold = HIDInput[0x05] & BTN_LEFT_TRIGGER;
 	const bool bRightTriggerThreshold = HIDInput[0x05] & BTN_RIGHT_TRIGGER;
-	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftTriggerThreshold,
-	                 bLeftTriggerThreshold);
-	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightTriggerThreshold,
-	                 bRightTriggerThreshold);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::LeftTriggerThreshold, bLeftTriggerThreshold);
+	CheckButtonInput(InMessageHandler, UserId, InputDeviceId, FGamepadKeyNames::RightTriggerThreshold, bRightTriggerThreshold);
 
 	// Triggers Analog 1D
 	const float TriggerL = HIDInput[0x07] / 256.0f;
