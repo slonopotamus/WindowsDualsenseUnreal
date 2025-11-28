@@ -32,7 +32,7 @@ TSharedPtr<FHapticsRegistry> FHapticsRegistry::Get()
 		Instance = MakeShared<FHapticsRegistry>();
 
 		Instance->GameThreadTickerHandle = FTSTicker::GetCoreTicker().AddTicker(
-		    FTickerDelegate::CreateSP(Instance.Get(), &FHapticsRegistry::Tick));
+			FTickerDelegate::CreateSP(Instance.Get(), &FHapticsRegistry::Tick));
 	}
 	return Instance;
 }
@@ -48,7 +48,7 @@ void FHapticsRegistry::CreateListenerForDevice(const FInputDeviceId& DeviceId, U
 	{
 		UE_LOG(LogTemp, Log, TEXT("Haptics listener already registered for device %d"), DeviceId.GetId());
 		RemoveListenerForDevice(DeviceId);
-	};
+	}
 
 	const TSharedPtr<FAudioHapticsListener> Listener = MakeShared<FAudioHapticsListener>(DeviceId, Submix);
 	if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())

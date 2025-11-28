@@ -122,6 +122,7 @@ public:
 	{
 		return LevelBattery;
 	}
+
 	/**
 	 * Sets the color of the lightbar on the Sony gamepad.
 	 *
@@ -168,6 +169,7 @@ public:
 	{
 		return HIDDeviceContexts.ConnectionType;
 	}
+
 	/**
 	 * @brief Retrieves the type of device associated with the current context.
 	 *
@@ -181,6 +183,7 @@ public:
 	{
 		return HIDDeviceContexts.DeviceType;
 	}
+
 	/**
 	 * Sets the touch state for the device.
 	 *
@@ -204,7 +207,10 @@ public:
 	 * @param DeadZone The threshold value to filter minor unintended movements
 	 * during calibration.
 	 */
-	virtual void StartMotionSensorCalibration(float Duration, float DeadZone) override {}
+	virtual void StartMotionSensorCalibration(float Duration, float DeadZone) override
+	{
+	}
+
 	/**
 	 * Retrieves the current calibration status of the motion sensors.
 	 *
@@ -220,7 +226,10 @@ public:
 	 * to recalibrate it or correct drift. It should be invoked when
 	 * a new reference orientation is needed.
 	 */
-	virtual void ResetGyroOrientation() override {}
+	virtual void ResetGyroOrientation() override
+	{
+	}
+
 	/**
 	 * Represents the unique identifier assigned to a specific DualSense controller.
 	 *

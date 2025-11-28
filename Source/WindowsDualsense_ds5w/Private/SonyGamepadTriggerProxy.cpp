@@ -17,7 +17,7 @@ void USonyGamepadTriggerProxy::GameCube(int32 ControllerId, EGamepadHand Hand)
 }
 
 void USonyGamepadTriggerProxy::Resistance(int32 ControllerId, ETriggerPositionMask StartPosition,
-	ETriggerForceMask Strength, EGamepadHand Hand)
+                                          ETriggerForceMask Strength, EGamepadHand Hand)
 {
 	IGamepadTrigger* Gamepad = GetGamepadInterface(ControllerId);
 	if (!Gamepad)

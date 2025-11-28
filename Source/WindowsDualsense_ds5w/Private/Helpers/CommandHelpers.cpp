@@ -6,52 +6,53 @@
 #include "HAL/IConsoleManager.h"
 
 static FAutoConsoleCommand GCmd_SetAudioByte(
-    TEXT("ds.SetAudioByte"),
-    TEXT("ds.SetAudioByte <DeviceId> <Index 0-9> <Value 0-255>"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleSetAudioByte));
+	TEXT("ds.SetAudioByte"),
+	TEXT("ds.SetAudioByte <DeviceId> <Index 0-9> <Value 0-255>"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleSetAudioByte));
 static FAutoConsoleCommand GCmd_SetAudioLR(
-    TEXT("ds.SetAudioLR"),
-    TEXT("ds.SetAudioLR <DeviceId> <L1> <L2> <R1> <R2> <Master> (0-255)"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleSetAudioLR));
+	TEXT("ds.SetAudioLR"),
+	TEXT("ds.SetAudioLR <DeviceId> <L1> <L2> <R1> <R2> <Master> (0-255)"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleSetAudioLR));
 static FAutoConsoleCommand GCmd_DumpAudioBytes(
-    TEXT("ds.DumpAudioBytes"),
-    TEXT("ds.DumpAudioBytes <DeviceId>"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleDumpAudioBytes));
+	TEXT("ds.DumpAudioBytes"),
+	TEXT("ds.DumpAudioBytes <DeviceId>"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleDumpAudioBytes));
 static FAutoConsoleCommand GCmd_SetTrigR(
-    TEXT("ds.SetTrigR"),
-    TEXT("ds.SetTrigR <DeviceId> <hex bytes up to 10> e.g. 22 3F 08 01"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleSetTrigR));
+	TEXT("ds.SetTrigR"),
+	TEXT("ds.SetTrigR <DeviceId> <hex bytes up to 10> e.g. 22 3F 08 01"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleSetTrigR));
 static FAutoConsoleCommand GCmd_SetTrigL(
-    TEXT("ds.SetTrigL"),
-    TEXT("ds.SetTrigL <DeviceId> <hex bytes up to 10> e.g. 22 3F 08 01"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleSetTrigL));
+	TEXT("ds.SetTrigL"),
+	TEXT("ds.SetTrigL <DeviceId> <hex bytes up to 10> e.g. 22 3F 08 01"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleSetTrigL));
 static FAutoConsoleCommand GCmd_DumpTrig(
-    TEXT("ds.DumpTrig"),
-    TEXT("ds.DumpTrig <DeviceId>"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleDumpTrig));
+	TEXT("ds.DumpTrig"),
+	TEXT("ds.DumpTrig <DeviceId>"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleDumpTrig));
 static FAutoConsoleCommand GCmd_ClearTrig(
-    TEXT("ds.ClearTrig"),
-    TEXT("ds.ClearTrig <DeviceId>"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleClearTrig));
+	TEXT("ds.ClearTrig"),
+	TEXT("ds.ClearTrig <DeviceId>"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleClearTrig));
 static FAutoConsoleCommand GCmd_BowR(
-    TEXT("ds.BowR"),
-    TEXT("ds.BowR <DeviceId> <Start 0-7> <End 0-8> <ResistancePos 0-8> <ForcePos 0-8>"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleBowTrigR));
+	TEXT("ds.BowR"),
+	TEXT("ds.BowR <DeviceId> <Start 0-7> <End 0-8> <ResistancePos 0-8> <ForcePos 0-8>"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleBowTrigR));
 static FAutoConsoleCommand GCmd_BowL(
-    TEXT("ds.BowL"),
-    TEXT("ds.BowL <DeviceId> <Start 0-7> <End 0-8> <ResistancePos 0-8> <ForcePos 0-8>"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleBowTrigL));
+	TEXT("ds.BowL"),
+	TEXT("ds.BowL <DeviceId> <Start 0-7> <End 0-8> <ResistancePos 0-8> <ForcePos 0-8>"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleBowTrigL));
 static FAutoConsoleCommand GCmd_GallopR(
-    TEXT("ds.GallopR"),
-    TEXT("ds.GallopR <DeviceId> <Start 0-8> <End 1-9> <FirstFoot 0-8> <SecondFoot 1-9> <Freq 0-255>"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleGallopTrigR));
+	TEXT("ds.GallopR"),
+	TEXT("ds.GallopR <DeviceId> <Start 0-8> <End 1-9> <FirstFoot 0-8> <SecondFoot 1-9> <Freq 0-255>"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleGallopTrigR));
 static FAutoConsoleCommand GCmd_GallopL(
-    TEXT("ds.GallopL"),
-    TEXT("ds.GallopL <DeviceId> <Start 0-8> <End 1-9> <FirstFoot 0-8> <SecondFoot 1-9> <Freq 0-255>"),
-    FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleGallopTrigL));
+	TEXT("ds.GallopL"),
+	TEXT("ds.GallopL <DeviceId> <Start 0-8> <End 1-9> <FirstFoot 0-8> <SecondFoot 1-9> <Freq 0-255>"),
+	FConsoleCommandWithArgsDelegate::CreateStatic(&FCommandHelpers::HandleGallopTrigL));
 
 void FCommandHelpers::Register()
-{ /* static commands auto-register */
+{
+	/* static commands auto-register */
 }
 
 bool FCommandHelpers::ParseDeviceId(const TArray<FString>& Args, FInputDeviceId& OutDeviceId)
@@ -310,8 +311,8 @@ void FCommandHelpers::HandleDumpTrig(const TArray<FString>& Args)
 	FString RStr, LStr;
 	for (int32 i = 0; i < 10; ++i)
 	{
-		RStr += FString::Printf(TEXT("%02X "), (uint8)R[i]);
-		LStr += FString::Printf(TEXT("%02X "), (uint8)L[i]);
+		RStr += FString::Printf(TEXT("%02X "), static_cast<uint8>(R[i]));
+		LStr += FString::Printf(TEXT("%02X "), static_cast<uint8>(L[i]));
 	}
 	UE_LOG(LogTemp, Log, TEXT("R[10..19]: %s"), *RStr);
 	UE_LOG(LogTemp, Log, TEXT("L[21..30]: %s"), *LStr);

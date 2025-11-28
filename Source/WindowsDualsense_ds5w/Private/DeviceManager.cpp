@@ -9,8 +9,8 @@
 #include "Misc/CoreDelegates.h"
 
 DeviceManager::DeviceManager(
-    const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler)
-    : MessageHandler(InMessageHandler)
+	const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler)
+	: MessageHandler(InMessageHandler)
 {
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
 }
@@ -71,7 +71,7 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 	{
 		return;
 	}
-	
+
 	if (Property->Name == FInputDeviceLightColorProperty::PropertyName())
 	{
 		const FInputDeviceLightColorProperty* ColorProperty = static_cast<const FInputDeviceLightColorProperty*>(Property);

@@ -20,7 +20,10 @@ class FCommonsDeviceInfo : public IPlatformHardwareInfoInterface
 	 * of derived class objects through base class pointers.
 	 */
 public:
-	virtual ~FCommonsDeviceInfo() override {}
+	virtual ~FCommonsDeviceInfo() override
+	{
+	}
+
 	/**
 	 * Processes audio haptic feedback using the given device context.
 	 *

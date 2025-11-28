@@ -151,10 +151,8 @@ public:
 			case ERROR_INVALID_HANDLE:
 			case ERROR_BAD_COMMAND:
 			case ERROR_FILE_NOT_FOUND:
-			case ERROR_ACCESS_DENIED:
-				return true;
-			default:
-				return false;
+			case ERROR_ACCESS_DENIED: return true;
+			default: return false;
 		}
 	}
 };

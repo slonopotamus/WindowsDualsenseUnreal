@@ -308,7 +308,7 @@ public:
 	{
 		return this;
 	}
-	
+
 	/**
 	 * @brief Configures device settings for a connected device.
 	 *
@@ -528,6 +528,7 @@ public:
 	{
 		return LevelBattery;
 	}
+
 	/**
 	 * Sets the LED player indicator effects based on the desired player LED pattern and brightness intensity.
 	 *
@@ -599,6 +600,7 @@ public:
 	{
 		return HIDDeviceContexts.ConnectionType;
 	}
+
 	/**
 	 * @brief Retrieves the type of device associated with the current context.
 	 *
@@ -612,6 +614,7 @@ public:
 	{
 		return HIDDeviceContexts.DeviceType;
 	}
+
 	/**
 	 * @brief Enables or disables the touch functionality for the DualSense library.
 	 *

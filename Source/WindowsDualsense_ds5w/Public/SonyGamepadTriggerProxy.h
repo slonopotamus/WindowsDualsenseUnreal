@@ -14,7 +14,6 @@ struct FSliderPropertiesStruct
 {
 	GENERATED_BODY()
 
-public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slider",
 		meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
 	float Frequency = 5.0f;
@@ -29,7 +28,6 @@ struct FSliderPropertyStruct
 {
 	GENERATED_BODY()
 
-public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slider",
 		meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
 	float Frequency = 5.0f;

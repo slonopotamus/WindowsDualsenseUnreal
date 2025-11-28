@@ -744,8 +744,7 @@ void FDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArr
 		case 0x23:
 		case 0x25:
 		case 0x26:
-		case 0x27:
-			break;
+		case 0x27: break;
 		default: return;
 	}
 

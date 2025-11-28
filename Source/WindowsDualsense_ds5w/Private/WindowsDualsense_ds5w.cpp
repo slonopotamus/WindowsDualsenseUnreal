@@ -17,7 +17,7 @@
 
 void FWindowsDualsense_ds5wModule::StartupModule()
 {
-	IModularFeatures::Get().RegisterModularFeature(IInputDeviceModule::GetModularFeatureName(), this);
+	IModularFeatures::Get().RegisterModularFeature(GetModularFeatureName(), this);
 	RegisterCustomKeys();
 #if PLATFORM_LINUX || PLATFORM_MAC
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
@@ -46,7 +46,7 @@ void FWindowsDualsense_ds5wModule::ShutdownModule()
 }
 
 TSharedPtr<IInputDevice> FWindowsDualsense_ds5wModule::CreateInputDevice(
-    const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler)
+	const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler)
 {
 	return MakeShareable(new DeviceManager(InCustomMessageHandler));
 }
@@ -66,59 +66,59 @@ void FWindowsDualsense_ds5wModule::RegisterCustomKeys()
 	const FKey PS_PaddleR("PS_PaddleR");
 
 	EKeys::AddKey(FKeyDetails(
-	    PS_FunctionL,
-	    FText::FromString("PlayStation Left Function Button"),
-	    FKeyDetails::GamepadKey));
+		PS_FunctionL,
+		FText::FromString("PlayStation Left Function Button"),
+		FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-	    PS_FunctionR,
-	    FText::FromString("PlayStation Right Function Button"),
-	    FKeyDetails::GamepadKey));
+		PS_FunctionR,
+		FText::FromString("PlayStation Right Function Button"),
+		FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-	    PS_PaddleL,
-	    FText::FromString("PlayStation Left Paddle"),
-	    FKeyDetails::GamepadKey));
+		PS_PaddleL,
+		FText::FromString("PlayStation Left Paddle"),
+		FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-	    PS_PaddleR,
-	    FText::FromString("PlayStation Right Paddle"),
-	    FKeyDetails::GamepadKey));
+		PS_PaddleR,
+		FText::FromString("PlayStation Right Paddle"),
+		FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-	    PS_PushLeftStick,
-	    FText::FromString("PlayStation Left Thumbstick Button"),
-	    FKeyDetails::GamepadKey));
+		PS_PushLeftStick,
+		FText::FromString("PlayStation Left Thumbstick Button"),
+		FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-	    PS_PushRightStick,
-	    FText::FromString("PlayStation Right Thumbstick Button"),
-	    FKeyDetails::GamepadKey));
+		PS_PushRightStick,
+		FText::FromString("PlayStation Right Thumbstick Button"),
+		FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-	    Shared,
-	    FText::FromString("PlayStation Share"),
-	    FKeyDetails::GamepadKey));
+		Shared,
+		FText::FromString("PlayStation Share"),
+		FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-	    Menu,
-	    FText::FromString("PlayStation Menu"),
-	    FKeyDetails::GamepadKey));
+		Menu,
+		FText::FromString("PlayStation Menu"),
+		FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-	    PlayStationButton,
-	    FText::FromString("PlayStation Button"),
-	    FKeyDetails::GamepadKey));
+		PlayStationButton,
+		FText::FromString("PlayStation Button"),
+		FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-	    Mic,
-	    FText::FromString("PlayStation Mic"),
-	    FKeyDetails::GamepadKey));
+		Mic,
+		FText::FromString("PlayStation Mic"),
+		FKeyDetails::GamepadKey));
 
 	EKeys::AddKey(FKeyDetails(
-	    TouchButtom,
-	    FText::FromString("PlayStation Touchpad Button"),
-	    FKeyDetails::GamepadKey));
+		TouchButtom,
+		FText::FromString("PlayStation Touchpad Button"),
+		FKeyDetails::GamepadKey));
 }
 
 IMPLEMENT_MODULE(FWindowsDualsense_ds5wModule, WindowsDualsense_ds5w)

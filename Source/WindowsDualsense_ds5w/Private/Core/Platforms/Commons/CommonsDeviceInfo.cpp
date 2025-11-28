@@ -88,10 +88,10 @@ void FCommonsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	Devices.Empty();
 
 	const TSet<uint16> SupportedPIDs = {
-	    DUALSHOCK4_PID_V1,
-	    DUALSHOCK4_PID_V2,
-	    DUALSENSE_PID,
-	    DUALSENSE_EDGE_PID};
+		DUALSHOCK4_PID_V1,
+		DUALSHOCK4_PID_V2,
+		DUALSENSE_PID,
+		DUALSENSE_EDGE_PID};
 
 	SDL_hid_device_info* Devs = SDL_hid_enumerate(SONY_VENDOR_ID, 0);
 	if (!Devs)
@@ -110,15 +110,12 @@ void FCommonsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 			switch (CurrentDevice->product_id)
 			{
 				case DUALSHOCK4_PID_V1:
-				case DUALSHOCK4_PID_V2:
-					NewDeviceContext.DeviceType = EDeviceType::DualShock4;
+				case DUALSHOCK4_PID_V2: NewDeviceContext.DeviceType = EDeviceType::DualShock4;
 					break;
-				case DUALSENSE_EDGE_PID:
-					NewDeviceContext.DeviceType = EDeviceType::DualSenseEdge;
+				case DUALSENSE_EDGE_PID: NewDeviceContext.DeviceType = EDeviceType::DualSenseEdge;
 					break;
 				case DUALSENSE_PID:
-				default:
-					NewDeviceContext.DeviceType = EDeviceType::DualSense;
+				default: NewDeviceContext.DeviceType = EDeviceType::DualSense;
 					break;
 			}
 
