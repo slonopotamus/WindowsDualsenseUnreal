@@ -47,7 +47,7 @@ IPlatformHardwareInfo& IPlatformHardwareInfo::Get()
 		// Note: PLATFORM_SONY implementation is reserved for licensed PlayStation developers only
 		// Example:
 		// To implement for PlayStation platforms, create a class in Platforms/Sony directory:
-		// class FPlayStationDeviceInfo : public IIPlatformHardwareInfo
+		// class FPlayStationDeviceInfo: public IIPlatformHardwareInfo
 		// {
 		//	// Implement required interface methods
 		// };

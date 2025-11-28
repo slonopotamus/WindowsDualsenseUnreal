@@ -256,7 +256,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		Touch.Id = (Touchpad1Raw & 127) % 10;
 
 		bool bIsTouchDown = Touch.Down;
-		if (bIsTouchDown) // pressed
+		if (bIsTouchDown)
 		{
 			if (!bWasTouch1Down)
 			{
