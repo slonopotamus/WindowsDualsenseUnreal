@@ -4,19 +4,21 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Containers/Queue.h"
-#include "InputCoreTypes.h"
-#include <atomic>
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Structs/DeviceContext.h"
 #include "Core/Structs/DualSenseFeatureReport.h"
+#include "CoreMinimal.h"
+#include "InputCoreTypes.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
+#include <atomic>
+
+
 
 /**
  * @class FTouchPoint1

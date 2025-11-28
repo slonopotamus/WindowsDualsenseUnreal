@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Core/Enums/EDeviceCommons.h"
 #include "CoreMinimal.h"
 
 class WINDOWSDUALSENSE_DS5W_API IGamepadLightbar

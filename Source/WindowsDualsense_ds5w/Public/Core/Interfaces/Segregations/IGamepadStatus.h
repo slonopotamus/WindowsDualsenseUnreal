@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Core/Enums/EDeviceConnection.h"
+#include "CoreMinimal.h"
 
 class WINDOWSDUALSENSE_DS5W_API IGamepadStatus
 {

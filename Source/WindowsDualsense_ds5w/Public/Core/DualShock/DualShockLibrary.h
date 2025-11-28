@@ -4,16 +4,20 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Structs/DualShockFeatureReport.h"
+#include "CoreMinimal.h"
 
 class WINDOWSDUALSENSE_DS5W_API FDualShockLibrary : public ISonyGamepad
 {
 
 public:
-	FDualShockLibrary() : ControllerID(0), LevelBattery(0), bEnableTouch(false), EnableAccelerometerAndGyroscope(false)
+	FDualShockLibrary()
+		: ControllerID(0)
+		, LevelBattery(0)
+		, bEnableTouch(false)
+		, EnableAccelerometerAndGyroscope(false)
 	{
 	}
 

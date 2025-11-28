@@ -4,17 +4,17 @@
 
 #pragma once
 
+#include "Core/Structs/DeviceContext.h"
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
 #include "Misc/CoreDelegates.h"
-#include "Core/Structs/DeviceContext.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
+#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
+#include "Segregations/IGamepadAudioHaptics.h"
 #include "Segregations/IGamepadStatus.h"
 #include "Segregations/IGamepadTouch.h"
 #include "Segregations/IGamepadLightbar.h"
 #include "Segregations/IGamepadSensors.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
-#include "Segregations/IGamepadAudioHaptics.h"
 #include "Segregations/IGamepadTrigger.h"
 
 /**
