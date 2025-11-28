@@ -537,10 +537,8 @@ void FDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, u
 	HIDDeviceContexts.bOverrideTriggerBytes = false;
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
 
-	const uint8 FirstFootNib = static_cast<uint8>(
-		FMath::Clamp(FMath::RoundToInt((FirstFoot / 8.0f) * 15.0f), 1, 15));
-	const uint8 SecondFootNib = static_cast<uint8>(
-		FMath::Clamp(FMath::RoundToInt((SecondFoot / 8.0f) * 15.0f), 1, 15));
+	const uint8 FirstFootNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((FirstFoot / 8.0f) * 15.0f), 1, 15));
+	const uint8 SecondFootNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((SecondFoot / 8.0f) * 15.0f), 1, 15));
 	const uint16 PositionMask = (1 << StartPosition) | (1 << EndPosition);
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
@@ -835,10 +833,7 @@ void FDualSenseLibrary::SetMicrophoneLed(ELedMicEnum Led)
 void FDualSenseLibrary::ResetLights()
 {
 	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	if (
-		HidOutput->Lightbar.A == 0 &&
-		HidOutput->Lightbar.B == 0 &&
-		HidOutput->Lightbar.R == 0)
+	if (HidOutput->Lightbar.A == 0 && HidOutput->Lightbar.B == 0 && HidOutput->Lightbar.R == 0)
 	{
 		HidOutput->Lightbar.B = 255;
 	}
