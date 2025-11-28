@@ -10,15 +10,17 @@ NamespaceIndentation:                           All
 AccessModifierOffset:                           -4
 AlignAfterOpenBracket:                          Align
 AlignEscapedNewlines:                           DontAlign
-AlignTrailingComments:                          true
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 2
 AllowShortCaseLabelsOnASingleLine:              true
 AllowShortFunctionsOnASingleLine:               InlineOnly
-BreakConstructorInitializersBeforeComma:        true
+BreakConstructorInitializers:                   BeforeComma
 RemoveSemicolon: true
 InsertBraces: true
 InsertNewlineAtEOF: true
 
-# We have to to set BeforeLambdaBody = false, because in other case it makes incorrect indention
+# We have to set BeforeLambdaBody = false, because in another case it makes incorrect indention
 BreakBeforeBraces:                              Custom
 
 BraceWrapping:
@@ -41,7 +43,7 @@ AllowShortLambdasOnASingleLine:                 Inline
 ColumnLimit:                                    0
 PointerAlignment:                               Left
 SpaceAfterTemplateKeyword:                      false
-SpacesInAngles:                                 false
+SpacesInAngles:                                 Never
 ContinuationIndentWidth:                        4
 IndentCaseLabels:                               true
 IncludeBlocks:                                  Merge

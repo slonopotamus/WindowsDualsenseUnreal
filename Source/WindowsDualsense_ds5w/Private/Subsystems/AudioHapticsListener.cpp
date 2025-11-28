@@ -47,7 +47,7 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 	}
 
 	constexpr float alpha = 0.2f;
-	const float one_minus_alpha = 0.5f - alpha;
+	 constexpr float one_minus_alpha = 0.5f - alpha;
 
 	float* Data = ResampledAudioBuffer.GetData();
 	const int32 NumFrames = OutputFramesWritten; // Serão 64 frames
