@@ -735,7 +735,6 @@ void FDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArr
 		Bytes[i] = B;
 	}
 
-	bool bIsValid;
 	switch (Bytes[0])
 	{
 		case 0x01:
@@ -745,28 +744,20 @@ void FDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArr
 		case 0x23:
 		case 0x25:
 		case 0x26:
-		case 0x27: bIsValid = true;
+		case 0x27:
 			break;
-		default: bIsValid = false;
-	}
-
-	if (!bIsValid)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CustomTrigger: invalid hex token at index %d: '%s'"), 0, *HexBytes[0]);
-		return;
+		default: return;
 	}
 
 	if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 	{
 		OutBuffer->LeftTrigger.Mode = 0xFF;
-		FMemory::Memset(OutBuffer->LeftTrigger.Strengths.Compose, 0, 10);
 		FMemory::Memcpy(OutBuffer->LeftTrigger.Strengths.Compose, Bytes, 10);
 	}
 
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
 		OutBuffer->RightTrigger.Mode = 0xFF;
-		FMemory::Memset(OutBuffer->RightTrigger.Strengths.Compose, 0, 10);
 		FMemory::Memcpy(OutBuffer->RightTrigger.Strengths.Compose, Bytes, 10);
 	}
 
