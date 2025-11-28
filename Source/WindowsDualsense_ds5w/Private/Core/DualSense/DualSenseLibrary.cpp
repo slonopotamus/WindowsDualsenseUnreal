@@ -427,7 +427,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		static FMadgwickAhrs MadgwickFilter(200.0f, 0.08f);
 		static bool bMadgwickInitialized = false;
 
-		// Official PlayStation DualSense scaling constants (from kernel driver)
+		// Official PlayStation DualSense scaling constants (from a kernel driver)
 		constexpr float DS_ACC_RES_PER_G = 8192.0f;      // counts per 1 g
 		constexpr float DS_GYRO_RES_PER_DEG_S = 1024.0f; // counts per 1 deg/s
 		constexpr float G_TO_MS2 = 9.80665f;
@@ -476,7 +476,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		const FQuat SensorQuat(qx, qy, qz, qw);
 		const FRotator ControlRotation = SensorQuat.Rotator();
 
-		// Compose Tilt vector using same layout your code used before (Pitch, Yaw, Roll) in degrees
+		// Compose Tilt vector using the same layout your code used before (Pitch, Yaw, Roll) in degrees
 		const FVector Tilt = FVector(ControlRotation.Pitch,
 		                             ControlRotation.Yaw,
 		                             ControlRotation.Roll);
@@ -487,10 +487,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 		FVector Accel_MS2 = FVector(ax, az, ay);
 		const float GravityMagnitude = Accel_MS2.Size();
-		FVector Gravity = (GravityMagnitude > KINDA_SMALL_NUMBER)
-			                  ? (Accel_MS2 / GravityMagnitude) * G_TO_MS2
-			                  : FVector::ZeroVector;
-
+		FVector Gravity = (GravityMagnitude > KINDA_SMALL_NUMBER) ? (Accel_MS2 / GravityMagnitude) * G_TO_MS2 : FVector::ZeroVector;
 		InMessageHandler.Get().OnMotionDetected(Tilt, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
 	}
 
