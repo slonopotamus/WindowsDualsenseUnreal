@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "SonyGamepadProxy.h"
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
+#include "CoreMinimal.h"
+#include "SonyGamepadProxy.h"
 #include "UObject/Object.h"
 #include "SonyGamepadTriggerProxy.generated.h"
 
@@ -15,11 +15,11 @@ struct FSliderPropertiesStruct
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slider",
-		meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
+	          meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
 	float Frequency = 5.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slider",
-		meta = (ClampMin = "0.0", ClampMax = "20.0", UIMin = "0.0", UIMax = "20.0"))
+	          meta = (ClampMin = "0.0", ClampMax = "20.0", UIMin = "0.0", UIMax = "20.0"))
 	float Period = 6.0f;
 };
 
@@ -29,12 +29,12 @@ struct FSliderPropertyStruct
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slider",
-		meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
+	          meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
 	float Frequency = 5.0f;
 };
 
 /**
- * 
+ *
  */
 UCLASS()
 class WINDOWSDUALSENSE_DS5W_API USonyGamepadTriggerProxy : public UObject
@@ -54,8 +54,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "GameCube (0x02)"))
 	static void GameCube(
-		int32 ControllerId,
-		EGamepadHand Hand);
+	    int32 ControllerId,
+	    EGamepadHand Hand);
 
 	/**
 	 * Applies a continuous resistance effect on the adaptive trigger of a DualSense controller.
@@ -67,10 +67,10 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Resistance (0x01)"))
 	static void Resistance(
-		int32 ControllerId,
-		ETriggerPositionMask StartPosition,
-		ETriggerForceMask Strength,
-		EGamepadHand Hand);
+	    int32 ControllerId,
+	    ETriggerPositionMask StartPosition,
+	    ETriggerForceMask Strength,
+	    EGamepadHand Hand);
 
 	/**
 	 * @brief Configures the "Bow" trigger effect on a DualSense controller.
@@ -87,10 +87,10 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Bow (0x22)"))
 	static void Bow(
-		int32 ControllerId,
-		ETriggerPosition StartZone,
-		EDualSenseSnapBack SnapBack,
-		EGamepadHand Hand);
+	    int32 ControllerId,
+	    ETriggerPosition StartZone,
+	    EDualSenseSnapBack SnapBack,
+	    EGamepadHand Hand);
 
 	/**
 	 * @brief Configures the "Weapon" trigger effect on a DualSense controller.
@@ -127,12 +127,12 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Automatic Gun (0x26)"))
 	static void AutomaticGun(
-		int32 ControllerId,
-		ETriggerPosition StartZone,
-		ETriggerEffectBehavior Behavior,
-		EAutoGunStrength Recoil,
-		FSliderPropertyStruct Frequency,
-		EGamepadHand Hand);
+	    int32 ControllerId,
+	    ETriggerPosition StartZone,
+	    ETriggerEffectBehavior Behavior,
+	    EAutoGunStrength Recoil,
+	    FSliderPropertyStruct Frequency,
+	    EGamepadHand Hand);
 
 	/**
 	 * @brief Configures the "Machine" trigger effect on a DualSense controller.
@@ -152,14 +152,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Machine (0x27)"))
 	static void Machine(
-		int32 ControllerId,
-		ETriggerPosition StartZone,
-		ETriggerEffectBehavior Behavior,
-		ETriggerForceIntensity ForceIntensity,
-		EDualSenseTriggerAmplitude Amplitude,
-		UPARAM(DisplayName = "Frequency & Period (0-40, 0-20)")
-		FSliderPropertiesStruct Frequency_Period,
-		EGamepadHand Hand);
+	    int32 ControllerId,
+	    ETriggerPosition StartZone,
+	    ETriggerEffectBehavior Behavior,
+	    ETriggerForceIntensity ForceIntensity,
+	    EDualSenseTriggerAmplitude Amplitude,
+	    UPARAM(DisplayName = "Frequency & Period (0-40, 0-20)")
+	        FSliderPropertiesStruct Frequency_Period,
+	    EGamepadHand Hand);
 
 	/**
 	 * @brief Applies a custom trigger effect on a DualSense controller.
@@ -174,9 +174,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Custom Trigger (New)"))
 	static void CustomTrigger(
-		int32 ControllerId,
-		EGamepadHand Hand,
-		const TArray<FString>& HexBytes);
+	    int32 ControllerId,
+	    EGamepadHand Hand,
+	    const TArray<FString>& HexBytes);
 
 	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Stop Trigger (New)"))
 	static void StopTrigger(int32 ControllerId, EGamepadHand Hand);

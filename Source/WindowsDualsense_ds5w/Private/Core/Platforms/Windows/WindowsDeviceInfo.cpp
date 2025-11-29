@@ -44,8 +44,8 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 		                                    nullptr, nullptr))
 		{
 			const HANDLE TempDeviceHandle = CreateFileW(
-				DetailDataBuffer->DevicePath,
-				GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr);
+			    DetailDataBuffer->DevicePath,
+			    GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr);
 
 			if (TempDeviceHandle != INVALID_HANDLE_VALUE)
 			{
@@ -55,11 +55,11 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 				if (HidD_GetAttributes(TempDeviceHandle, &Attributes))
 				{
 					if (
-						Attributes.VendorID == 0x054C &&
-						(Attributes.ProductID == 0x0CE6 ||
-						 Attributes.ProductID == 0x0DF2 ||
-						 Attributes.ProductID == 0x05C4 ||
-						 Attributes.ProductID == 0x09CC))
+					    Attributes.VendorID == 0x054C &&
+					    (Attributes.ProductID == 0x0CE6 ||
+					     Attributes.ProductID == 0x0DF2 ||
+					     Attributes.ProductID == 0x05C4 ||
+					     Attributes.ProductID == 0x09CC))
 					{
 						FDeviceContext Context = {};
 						WCHAR DeviceProductString[260];
@@ -73,9 +73,11 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 								switch (Attributes.ProductID)
 								{
 									case 0x05C4:
-									case 0x09CC: Context.DeviceType = EDeviceType::DualShock4;
+									case 0x09CC:
+										Context.DeviceType = EDeviceType::DualShock4;
 										break;
-									case 0x0DF2: Context.DeviceType = EDeviceType::DualSenseEdge;
+									case 0x0DF2:
+										Context.DeviceType = EDeviceType::DualSenseEdge;
 										break;
 									default: Context.DeviceType = EDeviceType::DualSense;
 								}
@@ -167,8 +169,8 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 {
 	const HANDLE DeviceHandle = CreateFileW(
-		*DeviceContext->Path,
-		GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr);
+	    *DeviceContext->Path,
+	    GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr);
 
 	if (DeviceHandle == INVALID_HANDLE_VALUE)
 	{

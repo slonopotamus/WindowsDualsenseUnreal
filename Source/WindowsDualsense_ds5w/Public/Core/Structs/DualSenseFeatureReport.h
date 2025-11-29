@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Core/Enums/EDeviceCommons.h"
+#include "CoreMinimal.h"
 #include "DualSenseFeatureReport.generated.h"
 
 /**
@@ -91,11 +91,11 @@ struct FDualSenseFeatureReport
 	 * Display Name: Soft haptic feedback, advanced vibrate
 	 */
 	UPROPERTY(
-		EditAnywhere,
-		BlueprintReadWrite,
-		Category = "DualSense Settings",
-		meta = (DisplayName = "Enables vibration mode",
-			ToolTip = "Advanced vibration that are directly generated from real-time audio analysis for a more immersive haptic experience. Note: This feature is only supported when the controller is connected via USB."))
+	    EditAnywhere,
+	    BlueprintReadWrite,
+	    Category = "DualSense Settings",
+	    meta = (DisplayName = "Enables vibration mode",
+	            ToolTip = "Advanced vibration that are directly generated from real-time audio analysis for a more immersive haptic experience. Note: This feature is only supported when the controller is connected via USB."))
 	EDualSenseDeviceFeatureReport VibrationMode;
 
 	/**
@@ -113,7 +113,7 @@ struct FDualSenseFeatureReport
 	 *   - UIMax: 100
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings",
-		meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100"))
+	          meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100"))
 	int32 MicVolume;
 	/**
 	 * Represents the audio volume setting for a DualSense device.
@@ -133,7 +133,7 @@ struct FDualSenseFeatureReport
 	 * - UIMax: 100 (Maximum value shown in UI sliders)
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings",
-		meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100"))
+	          meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100"))
 	int32 AudioVolume;
 
 	/**
@@ -154,7 +154,7 @@ struct FDualSenseFeatureReport
 	 * - UIMax: 15
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings",
-		meta = (ClampMin = "0", ClampMax = "15", UIMin = "0", UIMax = "15"))
+	          meta = (ClampMin = "0", ClampMax = "15", UIMin = "0", UIMax = "15"))
 	int32 SoftRumbleReduce;
 	/**
 	 * Specifies the softness level of the adaptive triggers on a DualSense controller.
@@ -172,7 +172,7 @@ struct FDualSenseFeatureReport
 	 * Category: DualSense Settings
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings",
-		meta = (ClampMin = "0", ClampMax = "15", UIMin = "0", UIMax = "15"))
+	          meta = (ClampMin = "0", ClampMax = "15", UIMin = "0", UIMax = "15"))
 	EDualSenseTriggerSoftnessLevel TriggerSoftnessLevel;
 
 	/**
@@ -184,14 +184,14 @@ struct FDualSenseFeatureReport
 	 * @return A default-initialized instance of FDualSenseFeatureReport.
 	 */
 	FDualSenseFeatureReport()
-		: MicStatus(EDualSenseAudioFeatureReport::Off)
-		  , AudioHeadset(EDualSenseAudioFeatureReport::Off)
-		  , AudioSpeaker(EDualSenseAudioFeatureReport::On)
-		  , VibrationMode(EDualSenseDeviceFeatureReport::DefaultRumble)
-		  , MicVolume(0)
-		  , AudioVolume(0)
-		  , SoftRumbleReduce(0)
-		  , TriggerSoftnessLevel(EDualSenseTriggerSoftnessLevel::Medium)
+	    : MicStatus(EDualSenseAudioFeatureReport::Off)
+	    , AudioHeadset(EDualSenseAudioFeatureReport::Off)
+	    , AudioSpeaker(EDualSenseAudioFeatureReport::On)
+	    , VibrationMode(EDualSenseDeviceFeatureReport::DefaultRumble)
+	    , MicVolume(0)
+	    , AudioVolume(0)
+	    , SoftRumbleReduce(0)
+	    , TriggerSoftnessLevel(EDualSenseTriggerSoftnessLevel::Medium)
 	{
 	}
 };

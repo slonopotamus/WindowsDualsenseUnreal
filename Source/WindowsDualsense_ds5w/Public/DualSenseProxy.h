@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Core/Enums/EDeviceCommons.h"
 #include "Core/HapticsRegistry.h"
+#include "Core/Structs/DualSenseFeatureReport.h"
+#include "CoreMinimal.h"
 #include "InputCoreTypes.h"
 #include "SonyGamepadProxy.h"
-#include "Core/Enums/EDeviceCommons.h"
-#include "Core/Structs/DualSenseFeatureReport.h"
 #include "DualSenseProxy.generated.h"
 
 /**
@@ -71,16 +71,16 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "AutomaticGun Deprecated v1.2.20"))
 	static void AutomaticGun(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Begin Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 BeginStrength,
-		UPARAM(DisplayName = "Middle Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 MiddleStrength,
-		UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndStrength,
-		EControllerHand Hand,
-		bool KeepEffect,
-		float Frequency = 5.0f);
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Begin Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 BeginStrength,
+	    UPARAM(DisplayName = "Middle Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 MiddleStrength,
+	    UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndStrength,
+	    EControllerHand Hand,
+	    bool KeepEffect,
+	    float Frequency = 5.0f);
 
 	/**
 	 * @brief Sets the GameCube trigger effect for the specified controller and hand.
@@ -93,8 +93,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy) Game Cube", meta = (DisplayName = "GameCube Deprecated v1.2.20"))
 	static void GameCube(
-		int32 ControllerId,
-		EControllerHand Hand);
+	    int32 ControllerId,
+	    EControllerHand Hand);
 
 	/**
 	 * @brief Configures custom trigger effects for a PlayStation DualSense controller.
@@ -109,9 +109,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "CustomTrigger Deprecated v1.2.20"))
 	static void CustomTrigger(
-		int32 ControllerId,
-		EControllerHand Hand,
-		const TArray<FString>& HexBytes);
+	    int32 ControllerId,
+	    EControllerHand Hand,
+	    const TArray<FString>& HexBytes);
 
 	/**
 	 * Sets haptic feedback for a DualSense controller.
@@ -124,14 +124,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "SetFeedback Deprecated v1.2.20"))
 	static void SetFeedback(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Begin Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 BeginStrength,
-		UPARAM(DisplayName = "Middle Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 MiddleStrength,
-		UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndStrength,
-		EControllerHand Hand);
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Begin Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 BeginStrength,
+	    UPARAM(DisplayName = "Middle Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 MiddleStrength,
+	    UPARAM(DisplayName = "End Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndStrength,
+	    EControllerHand Hand);
 
 	/**
 	 * Applies a resistance effect to the trigger of a PlayStation DualSense controller.
@@ -148,14 +148,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "Resistance Deprecated v1.2.20"))
 	static void Resistance(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Start Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(DisplayName = "End Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndPosition,
-		UPARAM(DisplayName = "Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 Strength,
-		EControllerHand Hand);
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Start Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(DisplayName = "End Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndPosition,
+	    UPARAM(DisplayName = "Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 Strength,
+	    EControllerHand Hand);
 
 	/**
 	 * Applies a continuous resistance effect on the adaptive trigger of a DualSense controller.
@@ -167,13 +167,13 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "ContinuousResistance Deprecated v1.2.20"))
 	static void ContinuousResistance(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Start Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(DisplayName = "Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 Strength,
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Start Position min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(DisplayName = "Strength min: 0 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 Strength,
 
-		EControllerHand Hand);
+	    EControllerHand Hand);
 
 	/**
 	 * Configures the bow effect on a DualSense controller.
@@ -187,16 +187,16 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "Bow Deprecated v1.2.20"))
 	static void Bow(
-		int32 ControllerId,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndPosition,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 BeginStrength,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndStrength,
-		EControllerHand Hand);
+	    int32 ControllerId,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndPosition,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 BeginStrength,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndStrength,
+	    EControllerHand Hand);
 
 	/**
 	 * @brief Triggers a galloping vibration effect on a DualSense controller.
@@ -215,18 +215,17 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "Galloping Deprecated v1.2.20"))
 	static void Galloping(
-		int32 ControllerId,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
-		int32 EndPosition,
-		UPARAM(DisplayName = "First Foot min: 2 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 FirstFoot,
-		UPARAM(DisplayName = "Second Foot min: (Greater FirstFoot) max: 9", meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
-		int32 SecondFoot,
-		UPARAM(DisplayName = "Frequency Example: 5.0", meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0"))
-		float Frequency,
-		EControllerHand Hand);
+	    int32 ControllerId,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
+	        int32 EndPosition,
+	    UPARAM(DisplayName = "First Foot min: 2 max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 FirstFoot,
+	    UPARAM(DisplayName = "Second Foot min: (Greater FirstFoot) max: 9", meta = (ClampMin = "0", ClampMax = "9", UIMin = "0", UIMax = "9"))
+	        int32 SecondFoot,
+	    UPARAM(DisplayName = "Frequency Example: 5.0", meta = (ClampMin = "0.0", ClampMax = "40.0", UIMin = "0.0", UIMax = "40.0")) float Frequency,
+	    EControllerHand Hand);
 
 	/**
 	 * Novo efeito Machine avançado (opcode 0x27).
@@ -238,16 +237,16 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "Machine Advanced (0x27)"))
 	static void MachineAdvanced(
-		int32 ControllerId,
-		ETriggerPosition StartZone,
-		ETriggerEffectBehavior Behavior,
-		ETriggerForceIntensity ForceIntensity,
-		EDualSenseTriggerAmplitude Amplitude,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "20", UIMin = "0", UIMax = "20"))
-		int32 Period,
-		UPARAM(meta = (ClampMin = "0", ClampMax = "40", UIMin = "0", UIMax = "40"))
-		int32 Frequency,
-		EControllerHand Hand);
+	    int32 ControllerId,
+	    ETriggerPosition StartZone,
+	    ETriggerEffectBehavior Behavior,
+	    ETriggerForceIntensity ForceIntensity,
+	    EDualSenseTriggerAmplitude Amplitude,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "20", UIMin = "0", UIMax = "20"))
+	        int32 Period,
+	    UPARAM(meta = (ClampMin = "0", ClampMax = "40", UIMin = "0", UIMax = "40"))
+	        int32 Frequency,
+	    EControllerHand Hand);
 
 	/**
 	 * Configures a weapon effect on the DualSense controller using specified parameters.
@@ -260,14 +259,14 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Effects (Legacy)", meta = (DisplayName = "Deprecated v1.2.20"))
 	static void Weapon(
-		int32 ControllerId,
-		UPARAM(DisplayName = "Start Position min: 2", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 StartPosition,
-		UPARAM(DisplayName = "End Position max: 7", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 EndPosition,
-		UPARAM(DisplayName = "Strength max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
-		int32 Strength,
-		EControllerHand Hand);
+	    int32 ControllerId,
+	    UPARAM(DisplayName = "Start Position min: 2", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 StartPosition,
+	    UPARAM(DisplayName = "End Position max: 7", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 EndPosition,
+	    UPARAM(DisplayName = "Strength max: 8", meta = (ClampMin = "0", ClampMax = "8", UIMin = "0", UIMax = "8"))
+	        int32 Strength,
+	    EControllerHand Hand);
 
 	/**
 	 * Controls the LED player light effects on the DualSense controller.

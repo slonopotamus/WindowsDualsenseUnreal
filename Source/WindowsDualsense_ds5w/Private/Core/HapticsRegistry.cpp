@@ -32,7 +32,7 @@ TSharedPtr<FHapticsRegistry> FHapticsRegistry::Get()
 		Instance = MakeShared<FHapticsRegistry>();
 
 		Instance->GameThreadTickerHandle = FTSTicker::GetCoreTicker().AddTicker(
-			FTickerDelegate::CreateSP(Instance.Get(), &FHapticsRegistry::Tick));
+		    FTickerDelegate::CreateSP(Instance.Get(), &FHapticsRegistry::Tick));
 	}
 	return Instance;
 }

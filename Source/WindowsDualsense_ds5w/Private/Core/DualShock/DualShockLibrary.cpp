@@ -5,12 +5,12 @@
 #include "Core/DualShock/DualShockLibrary.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
+#include "Core/Enums/EDeviceCommons.h"
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/PlayStationOutputComposer.h"
 #include "Core/Structs/OutputContext.h"
 #include "Helpers/ValidateHelpers.h"
 #include "InputCoreTypes.h"
-#include "Core/Enums/EDeviceCommons.h"
 
 void FDualShockLibrary::Settings(const FDualShockFeatureReport& Settings)
 {
@@ -137,23 +137,31 @@ void FDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 	switch (HIDInput[0x04] & 0x0F)
 	{
-		case 0x0: ButtonsMask |= BTN_DPAD_UP;
+		case 0x0:
+			ButtonsMask |= BTN_DPAD_UP;
 			break;
-		case 0x4: ButtonsMask |= BTN_DPAD_DOWN;
+		case 0x4:
+			ButtonsMask |= BTN_DPAD_DOWN;
 			break;
-		case 0x6: ButtonsMask |= BTN_DPAD_LEFT;
+		case 0x6:
+			ButtonsMask |= BTN_DPAD_LEFT;
 			break;
-		case 0x2: ButtonsMask |= BTN_DPAD_RIGHT;
+		case 0x2:
+			ButtonsMask |= BTN_DPAD_RIGHT;
 			break;
-		case 0x5: ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
+		case 0x5:
+			ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
 			break;
-		case 0x7: ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
+		case 0x7:
+			ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
 			break;
-		case 0x1: ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
+		case 0x1:
+			ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
 			break;
-		case 0x3: ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
+		case 0x3:
+			ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
 			break;
-		default: ;
+		default:;
 	}
 	const bool bDPadLeft = ButtonsMask & BTN_DPAD_LEFT;
 	const bool bDPadDown = ButtonsMask & BTN_DPAD_DOWN;

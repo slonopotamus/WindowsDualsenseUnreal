@@ -207,7 +207,7 @@ struct FDeviceContext
 	FDeviceContext() = default;
 
 	explicit FDeviceContext(const FInputDeviceId InUniqueInputDeviceId)
-		: UniqueInputDeviceId(InUniqueInputDeviceId)
+	    : UniqueInputDeviceId(InUniqueInputDeviceId)
 	{
 	}
 };

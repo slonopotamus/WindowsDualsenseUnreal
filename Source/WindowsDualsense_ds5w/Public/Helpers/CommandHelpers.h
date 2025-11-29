@@ -1,8 +1,8 @@
 ﻿#pragma once
 
+#include "Core/Interfaces/ISonyGamepad.h"
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
-#include "Core/Interfaces/ISonyGamepad.h"
 
 /**
  * CommandHelpers centralizes all in-game console commands (ds.*) previously located in DualSenseLibrary.

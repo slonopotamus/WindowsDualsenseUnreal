@@ -183,7 +183,7 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	check(IsInGameThread());
 
 	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
-		IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
+	    IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
 
 	bool AllocateDeviceToDefaultUser = false;
 	if (Devices.Num() <= 1)
@@ -209,16 +209,16 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 
 	FInputDeviceId GamepadId = Context.UniqueInputDeviceId;
 	if (
-		IPlatformInputDeviceMapper::Get().GetInputDeviceConnectionState(GamepadId) !=
-		EInputDeviceConnectionState::Connected)
+	    IPlatformInputDeviceMapper::Get().GetInputDeviceConnectionState(GamepadId) !=
+	    EInputDeviceConnectionState::Connected)
 	{
 		FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(GamepadId);
 		if (!UserId.IsValid())
 		{
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 6
 			UserId = AllocateDeviceToDefaultUser
-				         ? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
-				         : IPlatformInputDeviceMapper::Get().AllocateNewUserId();
+			             ? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
+			             : IPlatformInputDeviceMapper::Get().AllocateNewUserId();
 
 #else
 			UserId = IPlatformInputDeviceMapper::Get().GetPlatformUserForNewlyConnectedDevice();

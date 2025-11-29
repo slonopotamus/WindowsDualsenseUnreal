@@ -6,9 +6,8 @@
 
 #include "CoreMinimal.h"
 
-
 /**
- * 
+ *
  */
 class WINDOWSDUALSENSE_DS5W_API IGamepadAudioHaptics
 {

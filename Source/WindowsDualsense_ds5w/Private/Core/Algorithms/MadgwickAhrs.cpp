@@ -1,6 +1,12 @@
 ﻿#include "Core/Algorithms/MadgwickAhrs.h"
 
-FMadgwickAhrs::FMadgwickAhrs(const float SampleFreq, const float Beta) : Beta(Beta), SampleFreq(SampleFreq), q0(1.0f), q1(0.0f), q2(0.0f), q3(0.0f)
+FMadgwickAhrs::FMadgwickAhrs(const float SampleFreq, const float Beta)
+    : Beta(Beta)
+    , SampleFreq(SampleFreq)
+    , q0(1.0f)
+    , q1(0.0f)
+    , q2(0.0f)
+    , q3(0.0f)
 {
 }
 

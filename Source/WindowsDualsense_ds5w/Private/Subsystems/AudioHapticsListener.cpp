@@ -7,8 +7,8 @@
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 
 FAudioHapticsListener::FAudioHapticsListener(FInputDeviceId InDeviceId, USoundSubmix* InSubmix)
-	: Submix(InSubmix)
-	  , DeviceId(InDeviceId)
+    : Submix(InSubmix)
+    , DeviceId(InDeviceId)
 {
 	ResampledAudioBuffer.SetNumUninitialized(64);
 }
@@ -21,9 +21,9 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 		const float Ratio = 3000.0f / SampleRate;
 		ResamplerImpl = MakeUnique<Audio::FResampler>();
 		ResamplerImpl->Init(
-			Audio::EResamplingMethod::BestSinc,
-			Ratio,
-			NumChannels);
+		    Audio::EResamplingMethod::BestSinc,
+		    Ratio,
+		    NumChannels);
 	}
 	const int32 NumInputFrames = NumSamples / NumChannels; // (2048 samples / 2 channels = 1024 frames)
 
@@ -33,12 +33,12 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 
 	int32 OutputFramesWritten = 0;
 	ResamplerImpl->ProcessAudio(
-		AudioData,
-		NumInputFrames,
-		false,
-		ResampledAudioBuffer.GetData(),
-		ResampledAudioBuffer.Num() / NumChannels,
-		OutputFramesWritten);
+	    AudioData,
+	    NumInputFrames,
+	    false,
+	    ResampledAudioBuffer.GetData(),
+	    ResampledAudioBuffer.Num() / NumChannels,
+	    OutputFramesWritten);
 
 	if (OutputFramesWritten != 64)
 	{
@@ -47,7 +47,7 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 	}
 
 	constexpr float alpha = 0.2f;
-	 constexpr float one_minus_alpha = 0.5f - alpha;
+	constexpr float one_minus_alpha = 0.5f - alpha;
 
 	float* Data = ResampledAudioBuffer.GetData();
 	const int32 NumFrames = OutputFramesWritten; // Serão 64 frames

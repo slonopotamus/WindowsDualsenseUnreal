@@ -6,10 +6,10 @@
 
 #include "Async/TaskGraphInterfaces.h"
 #include "Containers/Queue.h"
+#include "Core/Enums/EDeviceCommons.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
-#include "Core/Enums/EDeviceCommons.h"
 #include "Core/Structs/DeviceContext.h"
 #include "Core/Structs/DualSenseFeatureReport.h"
 #include "CoreMinimal.h"
@@ -17,8 +17,6 @@
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include <atomic>
-
-
 
 /**
  * @class FTouchPoint1
@@ -150,7 +148,7 @@ struct FTouchPoint2
  * @brief Represents an accelerometer component that tracks and provides data related to acceleration.
  *
  * The FAccelerometer class is responsible for handling acceleration readings
- * and providing utility functions to process and retrieve those readings 
+ * and providing utility functions to process and retrieve those readings
  * meaningfully. This class can be used to monitor motion in three-dimensional
  * space and calculate relevant metrics based on the gathered data.
  *
@@ -297,7 +295,21 @@ class WINDOWSDUALSENSE_DS5W_API FDualSenseLibrary : public ISonyGamepad, public 
 {
 
 public:
-	FDualSenseLibrary() : bEnableTouch(false), bWasTouch1Down(false), bWasTouch2Down(false), HasPhoneConnected(false), LevelBattery(0), LeftTriggerFeedback(0), RightTriggerFeedback(0), bEnableAccelerometerAndGyroscope(false), bHasMotionSensorBaseline(false), bIsCalibrating(false), CalibrationStartTime(0), CalibrationDuration(0), CalibrationSampleCount(0), AudioVibrationSequence(0)
+	FDualSenseLibrary()
+	    : bEnableTouch(false)
+	    , bWasTouch1Down(false)
+	    , bWasTouch2Down(false)
+	    , HasPhoneConnected(false)
+	    , LevelBattery(0)
+	    , LeftTriggerFeedback(0)
+	    , RightTriggerFeedback(0)
+	    , bEnableAccelerometerAndGyroscope(false)
+	    , bHasMotionSensorBaseline(false)
+	    , bIsCalibrating(false)
+	    , CalibrationStartTime(0)
+	    , CalibrationDuration(0)
+	    , CalibrationSampleCount(0)
+	    , AudioVibrationSequence(0)
 	{
 	}
 

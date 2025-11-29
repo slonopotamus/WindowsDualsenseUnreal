@@ -8,7 +8,8 @@
 #include "Core/DeviceRegistry.h"
 #include "Misc/CoreDelegates.h"
 
-DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler): MessageHandler(InMessageHandler)
+DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler)
+    : MessageHandler(InMessageHandler)
 {
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
 }

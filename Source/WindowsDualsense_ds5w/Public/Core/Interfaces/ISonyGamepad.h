@@ -11,10 +11,10 @@
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Segregations/IGamepadAudioHaptics.h"
-#include "Segregations/IGamepadStatus.h"
-#include "Segregations/IGamepadTouch.h"
 #include "Segregations/IGamepadLightbar.h"
 #include "Segregations/IGamepadSensors.h"
+#include "Segregations/IGamepadStatus.h"
+#include "Segregations/IGamepadTouch.h"
 #include "Segregations/IGamepadTrigger.h"
 
 /**

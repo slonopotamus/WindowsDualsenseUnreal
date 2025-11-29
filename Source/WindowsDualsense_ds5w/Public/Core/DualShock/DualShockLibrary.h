@@ -14,10 +14,10 @@ class WINDOWSDUALSENSE_DS5W_API FDualShockLibrary : public ISonyGamepad
 
 public:
 	FDualShockLibrary()
-		: ControllerID(0)
-		, LevelBattery(0)
-		, bEnableTouch(false)
-		, EnableAccelerometerAndGyroscope(false)
+	    : ControllerID(0)
+	    , LevelBattery(0)
+	    , bEnableTouch(false)
+	    , EnableAccelerometerAndGyroscope(false)
 	{
 	}
 

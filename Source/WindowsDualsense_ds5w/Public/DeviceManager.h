@@ -26,7 +26,7 @@ public:
 	 * @param InMessageHandler The message handler responsible for capturing and processing input events.
 	 */
 	explicit DeviceManager(
-		const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler);
+	    const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler);
 	/**
 	 * Called every frame to update Controller-State
 	 *

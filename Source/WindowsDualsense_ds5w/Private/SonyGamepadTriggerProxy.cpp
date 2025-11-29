@@ -1,10 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "SonyGamepadTriggerProxy.h"
-#include "Core/Enums/EDeviceCommons.h"
 #include "Core/DeviceRegistry.h"
-
+#include "Core/Enums/EDeviceCommons.h"
 
 void USonyGamepadTriggerProxy::GameCube(int32 ControllerId, EGamepadHand Hand)
 {
@@ -27,7 +25,6 @@ void USonyGamepadTriggerProxy::Resistance(int32 ControllerId, ETriggerPositionMa
 
 	Gamepad->SetResistance(static_cast<uint8>(StartPosition), static_cast<uint8>(Strength), static_cast<EControllerHand>(Hand));
 }
-
 
 void USonyGamepadTriggerProxy::Bow(int32 ControllerId, ETriggerPosition StartZone, EDualSenseSnapBack SnapBack,
                                    EGamepadHand Hand)

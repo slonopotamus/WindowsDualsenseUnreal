@@ -117,8 +117,8 @@ void UDualSenseProxy::ContinuousResistance(int32 ControllerId, int32 StartPositi
 }
 
 void UDualSenseProxy::Galloping(
-	int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
-	int32 SecondFoot, float Frequency, EControllerHand Hand)
+    int32 ControllerId, int32 StartPosition, int32 EndPosition, int32 FirstFoot,
+    int32 SecondFoot, float Frequency, EControllerHand Hand)
 {
 }
 

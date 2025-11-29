@@ -78,13 +78,13 @@ void FDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 	HidOutput->Audio.SpeakerVolume = static_cast<uint8>(Settings.AudioVolume);
 	HidOutput->Audio.Mode = 0x08;
 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::On && Settings.AudioSpeaker ==
-	    EDualSenseAudioFeatureReport::Off)
+	                                                                     EDualSenseAudioFeatureReport::Off)
 	{
 		HidOutput->Audio.Mode = 0x31;
 	}
 
 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::Off && Settings.AudioSpeaker ==
-	    EDualSenseAudioFeatureReport::On)
+	                                                                      EDualSenseAudioFeatureReport::On)
 	{
 		HidOutput->Audio.Mode = 0x21;
 	}
@@ -169,23 +169,31 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 	switch (HIDInput[0x07] & 0x0F)
 	{
-		case 0x0: ButtonsMask |= BTN_DPAD_UP;
+		case 0x0:
+			ButtonsMask |= BTN_DPAD_UP;
 			break;
-		case 0x4: ButtonsMask |= BTN_DPAD_DOWN;
+		case 0x4:
+			ButtonsMask |= BTN_DPAD_DOWN;
 			break;
-		case 0x6: ButtonsMask |= BTN_DPAD_LEFT;
+		case 0x6:
+			ButtonsMask |= BTN_DPAD_LEFT;
 			break;
-		case 0x2: ButtonsMask |= BTN_DPAD_RIGHT;
+		case 0x2:
+			ButtonsMask |= BTN_DPAD_RIGHT;
 			break;
-		case 0x5: ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
+		case 0x5:
+			ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
 			break;
-		case 0x7: ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
+		case 0x7:
+			ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
 			break;
-		case 0x1: ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
+		case 0x1:
+			ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
 			break;
-		case 0x3: ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
+		case 0x3:
+			ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
 			break;
-		default: ;
+		default:;
 	}
 	const bool bDPadLeft = ButtonsMask & BTN_DPAD_LEFT;
 	const bool bDPadDown = ButtonsMask & BTN_DPAD_DOWN;
@@ -261,7 +269,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 			if (!bWasTouch1Down)
 			{
 				const FVector2D TouchVectorStart = FVector2D(Touch.X, Touch.Y);
-				InMessageHandler->OnTouchStarted(nullptr, TouchVectorStart,1.0f, Touch.Id, UserId, InputDeviceId);
+				InMessageHandler->OnTouchStarted(nullptr, TouchVectorStart, 1.0f, Touch.Id, UserId, InputDeviceId);
 			}
 			else
 			{
@@ -272,7 +280,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		else if (!bIsTouchDown && bWasTouch1Down)
 		{
 			const FVector2D TouchVectorEnded = FVector2D(Touch.X, Touch.Y);
-			InMessageHandler->OnTouchEnded(TouchVectorEnded,Touch.Id,UserId,InputDeviceId);
+			InMessageHandler->OnTouchEnded(TouchVectorEnded, Touch.Id, UserId, InputDeviceId);
 		}
 
 		bWasTouch1Down = bIsTouchDown;
@@ -392,7 +400,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 			float FinalAccelValueZ = 0.0f;
 			if (FMath::Abs(Acc.Z) > (Bounds.Accel_Z_Bounds.Y - Bounds.Accel_Z_Bounds.X) *
-			    SensorsDeadZone)
+			                            SensorsDeadZone)
 			{
 				FinalAccelValueZ = Acc.Z;
 			}
@@ -506,7 +514,6 @@ void FDualSenseLibrary::SetResistance(uint8 StartZones, uint8 Strength, const EC
 		HidOutput->LeftTrigger.Mode = 0x01;
 		HidOutput->LeftTrigger.Strengths.Compose[0] = StartZones;
 		HidOutput->LeftTrigger.Strengths.Compose[1] = Strength;
-
 	}
 	if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 	{
