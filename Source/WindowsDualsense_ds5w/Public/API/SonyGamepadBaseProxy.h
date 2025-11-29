@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Types/Enums/EDeviceCommons.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
-#include "Core/Interfaces/ISonyGamepad.h"
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #if PLATFORM_WINDOWS

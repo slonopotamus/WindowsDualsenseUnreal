@@ -4,8 +4,8 @@
 
 #include "Implementations/Utils/PlayStationOutputComposer.h"
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
-#include "Core/Types/Structs/DeviceContext.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
+#include "Core/Types/Structs/DeviceContext.h"
 
 const uint32 FPlayStationOutputComposer::CRCSeed = 0xeada2d49;
 

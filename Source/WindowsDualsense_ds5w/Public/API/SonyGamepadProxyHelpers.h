@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "Core/Managers/DeviceRegistry.h"
 #include "Core/Interfaces/ISonyGamepad.h"
+#include "Core/Managers/DeviceRegistry.h"
 #include "CoreMinimal.h"
 #include "GenericPlatform/GenericApplicationMessageHandler.h"
 

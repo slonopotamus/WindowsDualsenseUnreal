@@ -3,8 +3,8 @@
 // Planned Release Year: 2025
 
 #include "API/SonyGamepadTriggerProxy.h"
-#include "Core/Types/Enums/EDeviceCommons.h"
 #include "API/SonyGamepadProxyHelpers.h"
+#include "Core/Types/Enums/EDeviceCommons.h"
 
 using namespace SonyGamepadProxyHelpers;
 
