@@ -1,0 +1,248 @@
+// Copyright (c) 2025 Rafael Valoto/Publisher. All rights reserved.
+// Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
+// Planned Release Year: 2025
+
+#include "Core/Managers/DeviceRegistry.h"
+#include "Async/Async.h"
+#include "Async/TaskGraphInterfaces.h"
+#include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
+#include "Implementations/Libraries/DualShock/DualShockLibrary.h"
+#include "Core/Interfaces/IPlatformHardwareInfo.h"
+#include "Core/Interfaces/ISonyGamepad.h"
+#include "Core/Types/Structs/DeviceContext.h"
+#include "Core/Types/Structs/OutputContext.h"
+#include "GameFramework/InputSettings.h"
+#include "HAL/PlatformProcess.h"
+#include "Runtime/Launch/Resources/Version.h"
+
+TSharedPtr<FDeviceRegistry> FDeviceRegistry::Instance;
+TMap<FString, FInputDeviceId> FDeviceRegistry::KnownDevicePaths;
+TMap<FString, FInputDeviceId> FDeviceRegistry::HistoryDevices;
+
+bool PrimaryTick = true;
+std::atomic<bool> bIsDeviceDetectionInProgress{false};
+
+void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
+{
+	if (!PrimaryTick)
+	{
+		AccumulatorDelta += DeltaTime;
+		if (bIsDeviceDetectionInProgress.exchange(true))
+		{
+			return;
+		}
+		
+		if (AccumulatorDelta < 2.0f)
+		{
+			return;
+		}
+
+		AccumulatorDelta = 0.0f;
+	}
+
+	PrimaryTick = false;
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [WeakManager = AsWeak()]() {
+		TArray<FDeviceContext> DetectedDevices;
+		DetectedDevices.Reset();
+
+		IPlatformHardwareInfo::Get().Detect(DetectedDevices);
+		AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable {
+			const TSharedPtr<FDeviceRegistry> Manager = WeakManager.Pin();
+			if (!Manager)
+			{
+				return;
+			}
+
+			TSet<FString> CurrentlyConnectedPaths;
+			for (const FDeviceContext& Context : DetectedDevices)
+			{
+				CurrentlyConnectedPaths.Add(Context.Path);
+			}
+
+			TArray<FString> DisconnectedPaths;
+			for (const TPair<FString, FInputDeviceId>& KnownDevice : Manager->KnownDevicePaths)
+			{
+				const FString& Path = KnownDevice.Key;
+				const FInputDeviceId& DeviceId = KnownDevice.Value;
+				if (!CurrentlyConnectedPaths.Contains(Path))
+				{
+					if (Manager->LibraryInstances.Contains(DeviceId))
+					{
+						Manager->RemoveLibraryInstance(DeviceId);
+						DisconnectedPaths.Add(Path);
+					}
+				}
+			}
+
+			for (const FString& Path : DisconnectedPaths)
+			{
+				if (Manager->KnownDevicePaths.Contains(Path))
+				{
+					Manager->KnownDevicePaths.Remove(Path);
+				}
+			}
+
+			for (FDeviceContext& Context : DetectedDevices)
+			{
+				if (!Manager->KnownDevicePaths.Contains(Context.Path))
+				{
+					Context.Output = FOutputContext();
+					if (!IPlatformHardwareInfo::Get().CreateHandle(&Context))
+					{
+						UE_LOG(LogTemp, Log, TEXT("DualSense: DeviceManager Failed to create handle for device %s."), *Context.Path);
+						continue;
+					}
+
+					if (Context.Handle == INVALID_PLATFORM_HANDLE)
+					{
+						continue;
+					}
+					Manager->CreateLibraryInstance(Context);
+				}
+			}
+
+			bIsDeviceDetectionInProgress.store(false);
+		});
+	});
+}
+
+TSharedPtr<FDeviceRegistry> FDeviceRegistry::Get()
+{
+	if (!Instance)
+	{
+		check(IsInGameThread());
+		Instance = MakeShared<FDeviceRegistry>();
+	}
+	return Instance;
+}
+
+FDeviceRegistry::~FDeviceRegistry()
+{
+	TArray<FInputDeviceId> WatcherKeys;
+	LibraryInstances.GetKeys(WatcherKeys);
+
+	for (const FInputDeviceId& ControllerId : WatcherKeys)
+	{
+		RemoveLibraryInstance(ControllerId);
+	}
+}
+
+ISonyGamepad* FDeviceRegistry::GetLibraryInstance(const FInputDeviceId& DeviceId)
+{
+	// TUniquePtr<ISonyGamepad>* é um ponteiro para o unique_ptr dentro do map
+	if (TSharedPtr<ISonyGamepad>* FoundGamepadPtr = LibraryInstances.Find(DeviceId))
+	{
+		// FoundGamepadPtr->Get() acessa o ISonyGamepad* bruto dentro do TUniquePtr
+		if (ISonyGamepad* Gamepad = FoundGamepadPtr->Get())
+		{
+			if (Gamepad->IsConnected())
+			{
+				return Gamepad;
+			}
+		}
+	}
+	return nullptr;
+}
+
+void FDeviceRegistry::RemoveLibraryInstance(const FInputDeviceId& GamepadId)
+{
+	// We should never call into IPlatformInputDeviceMapper from non-game thread because it is not thread-safe
+	check(IsInGameThread());
+
+	if (!LibraryInstances.Contains(GamepadId))
+	{
+		return;
+	}
+
+	IPlatformInputDeviceMapper::Get().Internal_SetInputDeviceConnectionState(GamepadId, EInputDeviceConnectionState::Disconnected);
+
+	LibraryInstances[GamepadId]->ShutdownLibrary();
+	LibraryInstances.Remove(GamepadId);
+}
+
+void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
+{
+	TSharedPtr<ISonyGamepad> SonyGamepad = nullptr;
+	if (Context.DeviceType == EDeviceType::DualSense || Context.DeviceType == EDeviceType::DualSenseEdge)
+	{
+		SonyGamepad = MakeShared<FDualSenseLibrary>();
+	}
+
+	if (Context.DeviceType == EDeviceType::DualShock4)
+	{
+		SonyGamepad = MakeShared<FDualShockLibrary>();
+	}
+
+	if (!SonyGamepad)
+	{
+		return;
+	}
+
+	TArray<FInputDeviceId> Devices;
+	Devices.Reset();
+
+	// We should never call into IPlatformInputDeviceMapper from non-game thread because it is not thread-safe
+	check(IsInGameThread());
+
+	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
+	    IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
+
+	bool AllocateDeviceToDefaultUser = false;
+	if (Devices.Num() <= 1)
+	{
+		AllocateDeviceToDefaultUser = true;
+	}
+
+	const FName UniqueNamespace = TEXT("DeviceManager.WindowsDualsense");
+	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, *Context.Path);
+	if (HistoryDevices.Contains(Context.Path))
+	{
+		Context.UniqueInputDeviceId = HistoryDevices[Context.Path];
+	}
+	else
+	{
+		Context.UniqueInputDeviceId = IPlatformInputDeviceMapper::Get().AllocateNewInputDeviceId();
+		HistoryDevices.Add(Context.Path, Context.UniqueInputDeviceId);
+	}
+
+	if (!SonyGamepad->InitializeLibrary(Context))
+	{
+		return;
+	}
+
+	KnownDevicePaths.Add(Context.Path, Context.UniqueInputDeviceId);
+	LibraryInstances.Add(Context.UniqueInputDeviceId, SonyGamepad);
+
+	FInputDeviceId GamepadId = Context.UniqueInputDeviceId;
+	if (
+	    IPlatformInputDeviceMapper::Get().GetInputDeviceConnectionState(GamepadId) !=
+	    EInputDeviceConnectionState::Connected)
+	{
+		FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(GamepadId);
+		if (!UserId.IsValid())
+		{
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION < 6
+			UserId = AllocateDeviceToDefaultUser
+			             ? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
+			             : IPlatformInputDeviceMapper::Get().AllocateNewUserId();
+
+#else
+			UserId = IPlatformInputDeviceMapper::Get().GetPlatformUserForNewlyConnectedDevice();
+#endif
+		}
+
+		IPlatformInputDeviceMapper::Get().Internal_MapInputDeviceToUser(Context.UniqueInputDeviceId,
+		                                                                UserId,
+		                                                                EInputDeviceConnectionState::Connected);
+	}
+}
+
+int32 FDeviceRegistry::GetAllocatedDevices()
+{
+	return LibraryInstances.Num();
+}
+
+TMap<FInputDeviceId, TSharedPtr<ISonyGamepad>> FDeviceRegistry::GetAllocatedDevicesMap()
+{
+	return LibraryInstances;
+}

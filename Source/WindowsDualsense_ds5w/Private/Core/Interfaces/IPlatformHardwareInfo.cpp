@@ -2,14 +2,14 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-#include "../../../Public/Core/Interfaces/IPlatformHardwareInfo.h"
+#include "Core/Interfaces/IPlatformHardwareInfo.h"
 
 #if PLATFORM_WINDOWS
-#include "Core/Platforms/Windows/WindowsDeviceInfo.h"
+#include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
 #elif PLATFORM_MAC || PLATFORM_LINUX
-#include "Core/Platforms/Commons/CommonsDeviceInfo.h"
+#include "Implementations/Platforms/Commons/CommonsDeviceInfo.h"
 #elif PLATFORM_SONY
-#include "Core/Platforms/Sony/FNullHardwareInterface.h"
+#include "Implementations/Platforms/Sony/FNullHardwareInterface.h"
 #endif
 
 TUniquePtr<IPlatformHardwareInfo> IPlatformHardwareInfo::PlatformInfoInstance = nullptr;

@@ -5,7 +5,8 @@
 #include "DeviceManager.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "Core/DeviceRegistry.h"
+#include "Core/Managers/DeviceRegistry.h"
+#include "Core/Types/Enums/EDeviceConnection.h"
 #include "Misc/CoreDelegates.h"
 
 DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler)

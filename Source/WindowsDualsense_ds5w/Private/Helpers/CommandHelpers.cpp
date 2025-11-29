@@ -1,8 +1,12 @@
-﻿#include "Helpers/CommandHelpers.h"
-#include "Core/DeviceRegistry.h"
+﻿// Copyright (c) 2025 Rafael Valoto/Publisher. All rights reserved.
+// Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
+// Planned Release Year: 2025
+
+#include "Helpers/CommandHelpers.h"
+#include "Core/Managers/DeviceRegistry.h"
 #include "Core/Interfaces/ISonyGamepad.h"
-#include "Core/PlayStationOutputComposer.h"
-#include "Core/Structs/DeviceContext.h"
+#include "Implementations/Utils/PlayStationOutputComposer.h"
+#include "Core/Types/Structs/DeviceContext.h"
 #include "HAL/IConsoleManager.h"
 
 static FAutoConsoleCommand GCmd_SetAudioByte(

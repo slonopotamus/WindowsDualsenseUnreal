@@ -3,7 +3,7 @@
 // Planned Release Year: 2025
 
 #include "Subsystems/SonyInputProcessor.h"
-#include "Core/DeviceRegistry.h"
+#include "Core/Managers/DeviceRegistry.h"
 
 bool FSonyInputProcessor::HandleKeyDownEvent(FSlateApplication& SlateApp, const FKeyEvent& InKeyEvent)
 {

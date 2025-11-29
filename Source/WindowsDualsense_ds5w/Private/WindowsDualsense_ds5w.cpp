@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #include "WindowsDualsense_ds5w/Public/WindowsDualsense_ds5w.h"
+#include "API/SonyGamepadProxyHelpers.h"
 
 #if PLATFORM_LINUX || PLATFORM_MAC
 #include "Framework/Application/SlateApplication.h"
@@ -13,6 +14,7 @@
 #include "InputCoreTypes.h"
 #include "Misc/Paths.h"
 
+DEFINE_LOG_CATEGORY(LogDualSense);
 #define LOCTEXT_NAMESPACE "FWindowsDualsense_ds5wModule"
 
 void FWindowsDualsense_ds5wModule::StartupModule()

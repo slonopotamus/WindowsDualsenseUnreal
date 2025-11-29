@@ -2,10 +2,10 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-#include "../../Public/Subsystems/AudioHapticsListener.h"
-#include "Core/DeviceRegistry.h"
+#include "Subsystems/AudioHapticsListener.h"
+#include "Core/Managers/DeviceRegistry.h"
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
-#include "Gamepad/SonyGamepadProxyHelpers.h"
+#include "API/SonyGamepadProxyHelpers.h"
 
 FAudioHapticsListener::FAudioHapticsListener(FInputDeviceId InDeviceId, USoundSubmix* InSubmix)
     : Submix(InSubmix)

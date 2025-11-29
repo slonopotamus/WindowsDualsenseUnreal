@@ -1,7 +1,8 @@
 {
   "FileVersion": 3,
-  "VersionName": "1.2.20",
-  "FriendlyName": "WindowsDualsense_ds5w",
+  "Version": 2,
+  "VersionName": "2.0.0",
+  "FriendlyName": "Dualsense Unreal Engine Plugin",
   "Description": "DualSense & DualShock 4 devices for Unreal Engine platforms. Supports settings of triggers, force feedback, vibrations, leds, battery level, microphone",
   "Category": "Input Devices",
   "CreatedBy": "Rafael Valoto",
