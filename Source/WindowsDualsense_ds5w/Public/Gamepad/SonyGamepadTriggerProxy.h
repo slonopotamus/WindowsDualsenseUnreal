@@ -5,7 +5,7 @@
 #include "Core/Enums/EDeviceCommons.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
 #include "CoreMinimal.h"
-#include "SonyGamepadProxy.h"
+#include "SonyGamepadBaseProxy.h"
 #include "UObject/Object.h"
 #include "SonyGamepadTriggerProxy.generated.h"
 
@@ -52,7 +52,7 @@ public:
 	 * @param ControllerId The ID of the controller on which the effect is to be applied.
 	 * @param Hand Specifies the hand (left or right) to which the trigger effect should be targeted.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "GameCube (0x02)"))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTrigger", meta = (DisplayName = "GameCube (0x02)"))
 	static void GameCube(
 	    int32 ControllerId,
 	    EGamepadHand Hand);
@@ -65,7 +65,7 @@ public:
 	 * @param Strength The intensity of the resistance effect. Valid range determined by internal validation.
 	 * @param Hand The controller hand (e.g., left or right) to which the resistance effect applies.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Resistance (0x01)"))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTrigger", meta = (DisplayName = "Resistance (0x01)"))
 	static void Resistance(
 	    int32 ControllerId,
 	    ETriggerPositionMask StartPosition,
@@ -85,7 +85,7 @@ public:
 	 * @param SnapBack Defines the snap-back behavior of the trigger after it is released.
 	 * @param Hand Indicates the hand (left or right) where the trigger effect is applied.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Bow (0x22)"))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTrigger", meta = (DisplayName = "Bow (0x22)", ToolTip = "Configures the response of a bow, targeting the specified start zone, snap-back behavior"))
 	static void Bow(
 	    int32 ControllerId,
 	    ETriggerPosition StartZone,
@@ -106,7 +106,7 @@ public:
 	 * @param Trigger Specifies the weapon effect type to emulate (e.g., pistol, shotgun).
 	 * @param Hand Indicates the hand (left or right) where the trigger effect is applied.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Weapon (0x25)"))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTrigger", meta = (DisplayName = "Weapon (0x25)", ToolTip = "Configures the Weapon (0x25) trigger effect on a DualSense controller."))
 	static void Weapon(int32 ControllerId, ETriggerPosition StartZone, EDualSenseTriggerAmplitude Amplitude,
 	                   ETriggerEffectBehavior Behavior,
 	                   EDualSenseWeaponTrigger Trigger, EGamepadHand Hand);
@@ -125,7 +125,7 @@ public:
 	 * @param Frequency The frequency of the effect, with a range of 0 to 40.
 	 * @param Hand Specifies the hand (left or right) where the trigger effect should be applied.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Automatic Gun (0x26)"))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTrigger", meta = (DisplayName = "Automatic Gun (0x26)", ToolTip = "Configures the Automatic Gun (0x26) trigger effect on a DualSense controller."))
 	static void AutomaticGun(
 	    int32 ControllerId,
 	    ETriggerPosition StartZone,
@@ -150,7 +150,7 @@ public:
 	 * @param Frequency_Period Defines the duration of each feedback cycle Frequency & Period (0-40, 0-20).
 	 * @param Hand Identifies the hand (left or right) where the trigger effect should be applied.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Machine (0x27)"))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTrigger", meta = (DisplayName = "Machine (0x27)", ToolTip = "Configures the Machine (0x27) trigger effect on a DualSense controller."))
 	static void Machine(
 	    int32 ControllerId,
 	    ETriggerPosition StartZone,
@@ -172,15 +172,21 @@ public:
 	 * @param Hand Specifies whether the effect is to be applied to the left or right trigger.
 	 * @param HexBytes An array of hexadecimal byte strings that define the custom trigger effect.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Custom Trigger (New)"))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTrigger", meta = (DisplayName = "Custom Trigger (New)", ToolTip = "This function sets a user-defined trigger effect by accepting a series of hexadecimal byte strings that define the desired behavior or feedback. The effect can be customized and applied to the left or right trigger on the specified controller."))
 	static void CustomTrigger(
 	    int32 ControllerId,
 	    EGamepadHand Hand,
 	    const TArray<FString>& HexBytes);
 
-	UFUNCTION(BlueprintCallable, Category = "DualSense Trigger", meta = (DisplayName = "Stop Trigger (New)"))
+	/**
+	 * @brief Stops the active trigger effect on a specified hand of the given DualSense controller.
+	 *
+	 * This function disables any currently active trigger effect for the specified hand
+	 * on the identified DualSense controller.
+	 *
+	 * @param ControllerId The ID of the controller where the trigger effect is to be stopped.
+	 * @param Hand Specifies the hand (left or right) on which the trigger effect should be disabled.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTrigger", meta = (DisplayName = "Stop Trigger (New)"))
 	static void StopTrigger(int32 ControllerId, EGamepadHand Hand);
-
-private:
-	static IGamepadTrigger* GetGamepadInterface(int32 ControllerId);
 };

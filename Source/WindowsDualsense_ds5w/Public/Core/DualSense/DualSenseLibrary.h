@@ -313,11 +313,27 @@ public:
 	{
 	}
 
+	/**
+	 * @brief Retrieves the current gamepad trigger implementation.
+	 *
+	 * Returns a pointer to the current instance implementing the IGamepadTrigger interface.
+	 * This method allows access to the gamepad trigger behavior and state.
+	 *
+	 * @return A pointer to the IGamepadTrigger implementing object, typically this instance.
+	 */
 	virtual IGamepadTrigger* GetIGamepadTrigger() override
 	{
 		return this;
 	}
 
+	/**
+	 * @brief Retrieves the interface for handling gamepad audio haptics.
+	 *
+	 * This method returns a pointer to an object that implements the IGamepadAudioHaptics interface,
+	 * which provides functionalities related to the audio haptics of a gamepad.
+	 *
+	 * @return A pointer to the IGamepadAudioHaptics instance.
+	 */
 	virtual IGamepadAudioHaptics* GetIGamepadHaptics() override
 	{
 		return this;

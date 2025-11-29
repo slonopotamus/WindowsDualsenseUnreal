@@ -36,7 +36,10 @@ public:
 	 *
 	 * @return A pointer to the IGamepadTrigger interface instance for the gamepad.
 	 */
-	virtual IGamepadTrigger* GetIGamepadTrigger() = 0;
+	virtual IGamepadTrigger* GetIGamepadTrigger()
+	{
+		return nullptr;
+	}
 	/**
 	 * Provides access to the gamepad audio haptics interface for managing audio-driven
 	 * haptic feedback effects.
@@ -47,7 +50,10 @@ public:
 	 *
 	 * @return A pointer to the IGamepadAudioHaptics interface instance for the gamepad.
 	 */
-	virtual IGamepadAudioHaptics* GetIGamepadHaptics() = 0;
+	virtual IGamepadAudioHaptics* GetIGamepadHaptics()
+	{
+		return nullptr;
+	}
 	/**
 	 * Initializes the gamepad library using the specified device context.
 	 *

@@ -5,6 +5,7 @@
 #include "../../Public/Subsystems/AudioHapticsListener.h"
 #include "Core/DeviceRegistry.h"
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
+#include "Gamepad/SonyGamepadProxyHelpers.h"
 
 FAudioHapticsListener::FAudioHapticsListener(FInputDeviceId InDeviceId, USoundSubmix* InSubmix)
     : Submix(InSubmix)
@@ -114,19 +115,16 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 
 void FAudioHapticsListener::ConsumeHapticsQueue()
 {
-	ISonyGamepad* ISonyGamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
-	if (ISonyGamepad)
+	using namespace SonyGamepadProxyHelpers;
+	IGamepadAudioHaptics* AudioHaptics = GetAudioHapticsInterface(DeviceId.GetId());
+	if (AudioHaptics)
 	{
-		IGamepadAudioHaptics* AudioHaptics = ISonyGamepad->GetIGamepadHaptics();
-		if (AudioHaptics)
+		TArray<int8> PacketToProcess;
+		while (AudioPacketQueue.Dequeue(PacketToProcess))
 		{
-			TArray<int8> PacketToProcess;
-			while (AudioPacketQueue.Dequeue(PacketToProcess))
-			{
-				AudioHaptics->AudioHapticUpdate(PacketToProcess);
-			}
-			return;
+			AudioHaptics->AudioHapticUpdate(PacketToProcess);
 		}
-		AudioPacketQueue.Empty();
+		return;
 	}
+	AudioPacketQueue.Empty();
 }

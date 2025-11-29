@@ -46,19 +46,17 @@ void FHapticsRegistry::CreateListenerForDevice(const FInputDeviceId& DeviceId, U
 
 	if (ControllerListeners.Contains(DeviceId))
 	{
-		UE_LOG(LogTemp, Log, TEXT("Haptics listener already registered for device %d"), DeviceId.GetId());
 		RemoveListenerForDevice(DeviceId);
 	}
 
 	const TSharedPtr<FAudioHapticsListener> Listener = MakeShared<FAudioHapticsListener>(DeviceId, Submix);
 	if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
 	{
-#if ENGINE_MINOR_VERSION > 3 && ENGINE_MAJOR_VERSION == 5
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION > 3
 		AudioDevice->RegisterSubmixBufferListener(Listener.ToSharedRef(), *Submix);
 #else
 		AudioDevice->RegisterSubmixBufferListener(Listener.Get(), Submix);
 #endif
-		UE_LOG(LogTemp, Log, TEXT("Registering listener for device %d num %d"), DeviceId.GetId(), ControllerListeners.Num());
 
 		ControllerListeners.Add(DeviceId, Listener);
 	}
@@ -70,7 +68,7 @@ void FHapticsRegistry::RemoveAllListeners()
 	{
 		for (auto& Pair : ControllerListeners)
 		{
-#if ENGINE_MINOR_VERSION > 3 && ENGINE_MAJOR_VERSION == 5
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION > 3
 			AudioDevice->UnregisterSubmixBufferListener(Pair.Value.ToSharedRef(), *Pair.Value.ToSharedRef()->GetSubmix());
 #else
 			AudioDevice->UnregisterSubmixBufferListener(Pair.Value.Get());
@@ -101,12 +99,11 @@ void FHapticsRegistry::RemoveListenerForDevice(const FInputDeviceId& DeviceId)
 	{
 		if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
 		{
-#if ENGINE_MINOR_VERSION > 3 && ENGINE_MAJOR_VERSION == 5
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION > 3
 			AudioDevice->UnregisterSubmixBufferListener(ExistingListener->ToSharedRef(), *ExistingListener->ToSharedRef()->GetSubmix());
 #else
 			AudioDevice->UnregisterSubmixBufferListener(ExistingListener->Get());
 #endif
-			UE_LOG(LogTemp, Log, TEXT("Unregistered haptics listener for device %d"), DeviceId.GetId());
 		}
 		ControllerListeners.Remove(DeviceId);
 	}

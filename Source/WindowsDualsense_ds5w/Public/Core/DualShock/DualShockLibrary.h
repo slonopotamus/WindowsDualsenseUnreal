@@ -21,8 +21,6 @@ public:
 	{
 	}
 
-	virtual IGamepadTrigger* GetIGamepadTrigger() override { return nullptr; }
-	virtual IGamepadAudioHaptics* GetIGamepadHaptics() override { return nullptr; }
 	virtual FDeviceContext* GetMutableDeviceContext() override { return nullptr; }
 	/**
 	 * @brief Configures device settings for a connected device.
