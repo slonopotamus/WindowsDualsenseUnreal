@@ -5,14 +5,14 @@
 #include "Core/Managers/DeviceRegistry.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
-#include "Implementations/Libraries/DualShock/DualShockLibrary.h"
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Types/Structs/DeviceContext.h"
 #include "Core/Types/Structs/OutputContext.h"
 #include "GameFramework/InputSettings.h"
 #include "HAL/PlatformProcess.h"
+#include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
+#include "Implementations/Libraries/DualShock/DualShockLibrary.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 TSharedPtr<FDeviceRegistry> FDeviceRegistry::Instance;
@@ -31,7 +31,7 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 		{
 			return;
 		}
-		
+
 		if (AccumulatorDelta < 2.0f)
 		{
 			return;

@@ -3,9 +3,9 @@
 // Planned Release Year: 2025
 
 #include "Subsystems/AudioHapticsListener.h"
-#include "Core/Managers/DeviceRegistry.h"
-#include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "API/SonyGamepadProxyHelpers.h"
+#include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
+#include "Core/Managers/DeviceRegistry.h"
 
 FAudioHapticsListener::FAudioHapticsListener(FInputDeviceId InDeviceId, USoundSubmix* InSubmix)
     : Submix(InSubmix)

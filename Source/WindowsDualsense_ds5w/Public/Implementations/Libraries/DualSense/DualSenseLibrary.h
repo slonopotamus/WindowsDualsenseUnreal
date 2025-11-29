@@ -6,10 +6,10 @@
 
 #include "Async/TaskGraphInterfaces.h"
 #include "Containers/Queue.h"
-#include "Core/Types/Enums/EDeviceCommons.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
+#include "Core/Types/Enums/EDeviceCommons.h"
 #include "Core/Types/Structs/DeviceContext.h"
 #include "Core/Types/Structs/DualSenseFeatureReport.h"
 #include "CoreMinimal.h"

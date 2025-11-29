@@ -3,11 +3,11 @@
 // Planned Release Year: 2025
 
 #include "Helpers/CommandHelpers.h"
-#include "Core/Managers/DeviceRegistry.h"
 #include "Core/Interfaces/ISonyGamepad.h"
-#include "Implementations/Utils/PlayStationOutputComposer.h"
+#include "Core/Managers/DeviceRegistry.h"
 #include "Core/Types/Structs/DeviceContext.h"
 #include "HAL/IConsoleManager.h"
+#include "Implementations/Utils/PlayStationOutputComposer.h"
 
 static FAutoConsoleCommand GCmd_SetAudioByte(
     TEXT("ds.SetAudioByte"),
