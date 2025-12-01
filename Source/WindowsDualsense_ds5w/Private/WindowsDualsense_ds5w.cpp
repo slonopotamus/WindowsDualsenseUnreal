@@ -24,7 +24,7 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 #if PLATFORM_LINUX || PLATFORM_MAC
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to initialize subsystems of SDL: %s"), UTF8_TO_TCHAR(SDL_GetError()));
+		UE_LOG(LogDualSense, Error, TEXT("Failed to initialize subsystems of SDL: %s"), UTF8_TO_TCHAR(SDL_GetError()));
 	}
 
 	if (FSlateApplication::IsInitialized())

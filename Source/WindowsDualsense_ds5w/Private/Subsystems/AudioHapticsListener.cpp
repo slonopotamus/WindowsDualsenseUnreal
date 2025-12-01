@@ -43,7 +43,7 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 
 	if (OutputFramesWritten != 64)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("OutputFramesWritten not 64 bytes! (%d)"), OutputFramesWritten);
+		UE_LOG(LogDualSense, Warning, TEXT("OutputFramesWritten not 64 bytes! (%d)"), OutputFramesWritten);
 		return;
 	}
 

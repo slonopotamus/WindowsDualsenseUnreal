@@ -43,7 +43,7 @@ struct FDualSenseFeatureReport
 	 *   - EDualSenseAudioFeatureReport::On: Enables the microphone.
 	 *   - EDualSenseAudioFeatureReport::Off: Disables the microphone.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings", meta = (ToolTip = "Enables the microphone.", DisplayName = "Microphone"))
 	EDualSenseAudioFeatureReport MicStatus;
 	/**
 	 * Specifies the operational state of the audio headset on a DualSense controller.
@@ -60,7 +60,7 @@ struct FDualSenseFeatureReport
 	 * - EDualSenseAudioFeatureReport::On: Enables headset audio.
 	 * - EDualSenseAudioFeatureReport::Off: Disables headset audio.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings", meta = (ToolTip = "Enables headset audio.", DisplayName = "Headset Audio"))
 	EDualSenseAudioFeatureReport AudioHeadset;
 	/**
 	 * Represents the audio speaker settings for a DualSense device.
@@ -72,7 +72,7 @@ struct FDualSenseFeatureReport
 	 * Category: DualSense Settings
 	 * Access: Readable and writable in Blueprints
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings", meta = (ToolTip = "Enables the speaker.", DisplayName = "Speaker Audio"))
 	EDualSenseAudioFeatureReport AudioSpeaker;
 	/**
 	 * Specifies the vibration mode for the DualSense device. Controls the type of haptic feedback
@@ -94,8 +94,8 @@ struct FDualSenseFeatureReport
 	    EditAnywhere,
 	    BlueprintReadWrite,
 	    Category = "DualSense Settings",
-	    meta = (DisplayName = "Enables vibration mode",
-	            ToolTip = "Advanced vibration that are directly generated from real-time audio analysis for a more immersive haptic experience. Note: This feature is only supported when the controller is connected via USB."))
+	    meta = (DisplayName = "Vibration mode",
+	            ToolTip = "Advanced vibration that are directly generated from real-time audio analysis for a more immersive haptic experience."))
 	EDualSenseDeviceFeatureReport VibrationMode;
 
 	/**
@@ -113,7 +113,7 @@ struct FDualSenseFeatureReport
 	 *   - UIMax: 100
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings",
-	          meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100"))
+	          meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100", ToolTip = "Adjusts the microphone volume level.", DisplayName = "Microphone Volume"))
 	int32 MicVolume;
 	/**
 	 * Represents the audio volume setting for a DualSense device.
@@ -133,7 +133,7 @@ struct FDualSenseFeatureReport
 	 * - UIMax: 100 (Maximum value shown in UI sliders)
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings",
-	          meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100"))
+	          meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100", ToolTip = "Adjusts the audio output volume level.", DisplayName = "Audio Volume"))
 	int32 AudioVolume;
 
 	/**
@@ -154,7 +154,7 @@ struct FDualSenseFeatureReport
 	 * - UIMax: 15
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings",
-	          meta = (ClampMin = "0", ClampMax = "15", UIMin = "0", UIMax = "15"))
+	          meta = (ClampMin = "0", ClampMax = "15", UIMin = "0", UIMax = "15", ToolTip = "Adjusts the soft rumble effect intensity.", DisplayName = "Soft Rumble Reduction"))
 	int32 SoftRumbleReduce;
 	/**
 	 * Specifies the softness level of the adaptive triggers on a DualSense controller.
@@ -172,7 +172,7 @@ struct FDualSenseFeatureReport
 	 * Category: DualSense Settings
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings",
-	          meta = (ClampMin = "0", ClampMax = "15", UIMin = "0", UIMax = "15"))
+	          meta = (ClampMin = "0", ClampMax = "15", UIMin = "0", UIMax = "15", ToolTip = "Adjusts the trigger pressure resistance.", DisplayName = "Trigger Softness Level"))
 	EDualSenseTriggerSoftnessLevel TriggerSoftnessLevel;
 
 	/**

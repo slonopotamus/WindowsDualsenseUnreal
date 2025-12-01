@@ -69,14 +69,6 @@ public:
 	 */
 	virtual void SetLightColor(int32 ControllerId, FColor Color) override;
 	/**
-	 * Resets the light color of the specified DualSense controller to its default state.
-	 * This function is a no-op if lazy loading mode is enabled or if the controller
-	 * library instance cannot be retrieved for the given controller ID.
-	 *
-	 * @param ControllerId The ID of the controller whose light color is to be reset.
-	 */
-	virtual void ResetLightColor(int32 ControllerId) override;
-	/**
 	 * Executes a command in the context of the provided world.
 	 * This function is typically used for handling console commands.
 	 *
@@ -162,7 +154,6 @@ public:
 	}
 
 private:
-	static FInputDeviceId GetGamepadInterface(int32 ControllerId);
 	/**
 	 * Tracks the accumulated time or events between periodic polling operations.
 	 * This variable is typically used to manage timing or frequency of polling processes.

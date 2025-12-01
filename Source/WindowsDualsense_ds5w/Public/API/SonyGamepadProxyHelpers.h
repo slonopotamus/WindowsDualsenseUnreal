@@ -15,7 +15,7 @@ class IGamepadAudioHaptics;
 
 /**
  * Logging category for the DualSense plugin.
- * Use this instead of LogTemp for production code.
+ * Use this instead of LogDualSense for production code.
  */
 DECLARE_LOG_CATEGORY_EXTERN(LogDualSense, Log, All);
 

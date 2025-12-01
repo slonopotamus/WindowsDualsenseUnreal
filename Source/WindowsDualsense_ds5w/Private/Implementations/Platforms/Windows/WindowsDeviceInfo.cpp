@@ -3,8 +3,9 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
+#include "API/SonyGamepadProxyHelpers.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
-#include "Core/Types/Structs/DeviceContext.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include <hidsdi.h>
@@ -19,7 +20,7 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	                                                   DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 	if (DeviceInfoSet == INVALID_HANDLE_VALUE)
 	{
-		UE_LOG(LogTemp, Error, TEXT("HIDManager: Falha ao obter informações dos dispositivos HID."));
+		UE_LOG(LogDualSense, Error, TEXT("HIDManager: Falha ao obter informações dos dispositivos HID."));
 		return;
 	}
 
@@ -37,7 +38,7 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 		const auto DetailDataBuffer = static_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA>(malloc(RequiredSize));
 		if (!DetailDataBuffer)
 		{
-			UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to allocate memory for device details."));
+			UE_LOG(LogDualSense, Error, TEXT("HIDManager: Failed to allocate memory for device details."));
 			continue;
 		}
 
@@ -94,7 +95,7 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 									Context.ConnectionType = EDeviceConnection::Bluetooth;
 									if (!ConfigureBluetoothFeatures(TempDeviceHandle))
 									{
-										UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to configure Bluetooth features."));
+										UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to configure Bluetooth features."));
 									}
 								}
 								Devices.Add(Context);
@@ -102,7 +103,7 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 						}
 						else
 						{
-							UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to obtain device path for the DualSense."));
+							UE_LOG(LogDualSense, Error, TEXT("HIDManager: Failed to obtain device path for the DualSense."));
 						}
 					}
 				}
@@ -119,19 +120,19 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 {
 	if (!Context)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Context nto found!"));
+		UE_LOG(LogDualSense, Error, TEXT("Context nto found!"));
 		return;
 	}
 
 	if (Context->Handle == INVALID_HANDLE_VALUE)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Invalid device handle before attempting to read"));
+		UE_LOG(LogDualSense, Error, TEXT("Invalid device handle before attempting to read"));
 		return;
 	}
 
 	if (!Context->IsConnected)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
+		UE_LOG(LogDualSense, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
 		return;
 	}
 
@@ -163,7 +164,7 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to write output report 0x02/0x31 data to device. report %llu error Code: %d"),
+		UE_LOG(LogDualSense, Error, TEXT("Failed to write output report 0x02/0x31 data to device. report %llu error Code: %d"),
 		       OutputReportLength, GetLastError());
 	}
 }
@@ -177,7 +178,7 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 	if (DeviceHandle == INVALID_HANDLE_VALUE)
 	{
 		DeviceContext->Handle = DeviceHandle;
-		UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to open device handle for the DualSense."));
+		UE_LOG(LogDualSense, Error, TEXT("HIDManager: Failed to open device handle for the DualSense."));
 		return false;
 	}
 
@@ -211,7 +212,7 @@ void FWindowsDeviceInfo::InvalidateHandle(HANDLE Handle)
 	if (Handle != INVALID_PLATFORM_HANDLE)
 	{
 		CloseHandle(Handle);
-		UE_LOG(LogTemp, Log, TEXT("HIDManager: Invalidate Handle."));
+		UE_LOG(LogDualSense, Log, TEXT("HIDManager: Invalidate Handle."));
 	}
 }
 
@@ -271,7 +272,7 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		const DWORD Error = GetLastError();
 		if (Error != ERROR_IO_PENDING)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
+			UE_LOG(LogDualSense, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
 		}
 	}
 }
@@ -285,7 +286,7 @@ bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
 	if (!HidD_GetFeature(DeviceHandle, FeatureBuffer, 41))
 	{
 		const DWORD Error = GetLastError();
-		UE_LOG(LogTemp, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
+		UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
 		return false;
 	}
 

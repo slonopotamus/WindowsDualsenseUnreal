@@ -10,7 +10,7 @@
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
 #include "Core/Types/Enums/EDeviceCommons.h"
-#include "Core/Types/Structs/DeviceContext.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 #include "Core/Types/Structs/DualSenseFeatureReport.h"
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"

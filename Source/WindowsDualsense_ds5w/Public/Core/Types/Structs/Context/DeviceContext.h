@@ -24,7 +24,6 @@ using FPlatformDeviceHandle = void*;
 #include "Core/Types/Enums/EDeviceConnection.h"
 #include "CoreMinimal.h"
 #include "OutputContext.h"
-#include "DeviceContext.generated.h"
 
 /**
  * @brief Represents the context and state of a connected device.
@@ -36,10 +35,8 @@ using FPlatformDeviceHandle = void*;
  * It is a crucial component for detecting, initializing, and managing devices
  * using related library systems.
  */
-USTRUCT()
 struct FDeviceContext
 {
-	GENERATED_BODY()
 	/**
 	 * @brief Raw device handle used for communication with a specific input/output hardware device.
 	 *

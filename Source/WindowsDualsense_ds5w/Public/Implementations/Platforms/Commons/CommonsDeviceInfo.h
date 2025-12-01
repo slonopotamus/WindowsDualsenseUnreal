@@ -7,6 +7,7 @@
 #if PLATFORM_WINDOWS
 #else
 #include "Core/Interfaces/PlatformHardwareInfoInterface.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 class FCommonsDeviceInfo : public IPlatformHardwareInfoInterface
 {
 	/**
