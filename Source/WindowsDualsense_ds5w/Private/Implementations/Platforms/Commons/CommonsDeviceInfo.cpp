@@ -28,7 +28,7 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 		BytesRead = SDL_hid_read(Context->Handle, Context->BufferDS4, InputReportLength);
 		if (BytesRead < 0)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("hid_api: Failed to read from device (likely disconnected)"));
+			UE_LOG(LogDualSense, Warning, TEXT("hid_api: Failed to read from device (likely disconnected)"));
 			InvalidateHandle(Context);
 		}
 		return;
@@ -37,7 +37,7 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 	const size_t InputReportLength = (Context->ConnectionType == Bluetooth) ? 78 : 64;
 	if (sizeof(Context->Buffer) < InputReportLength)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("hid_api: Main buffer is too small for report input."));
+		UE_LOG(LogDualSense, Warning, TEXT("hid_api: Main buffer is too small for report input."));
 		InvalidateHandle(Context);
 		return;
 	}
@@ -45,7 +45,7 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 	BytesRead = SDL_hid_read(Context->Handle, Context->Buffer, InputReportLength);
 	if (BytesRead < 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("hid_api: Failed to read from device (likely disconnected)"));
+		UE_LOG(LogDualSense, Warning, TEXT("hid_api: Failed to read from device (likely disconnected)"));
 		InvalidateHandle(Context);
 	}
 }
@@ -61,7 +61,7 @@ void FCommonsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 	int BytesWritten = SDL_hid_write(Context->Handle, Context->BufferAudio, Report);
 	if (BytesWritten < 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("hid_api: Failed to write audio device"));
+		UE_LOG(LogDualSense, Warning, TEXT("hid_api: Failed to write audio device"));
 	}
 }
 
@@ -78,7 +78,7 @@ void FCommonsDeviceInfo::Write(FDeviceContext* Context)
 	int BytesWritten = SDL_hid_write(Context->Handle, Context->BufferOutput, OutputReportLength);
 	if (BytesWritten < 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("hid_api: Failed to write to device"));
+		UE_LOG(LogDualSense, Warning, TEXT("hid_api: Failed to write to device"));
 		InvalidateHandle(Context);
 	}
 }

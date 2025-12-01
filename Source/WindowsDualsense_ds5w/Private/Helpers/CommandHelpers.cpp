@@ -3,9 +3,10 @@
 // Planned Release Year: 2025
 
 #include "Helpers/CommandHelpers.h"
+#include "API/SonyGamepadProxyHelpers.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Managers/DeviceRegistry.h"
-#include "Core/Types/Structs/DeviceContext.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 #include "HAL/IConsoleManager.h"
 #include "Implementations/Utils/PlayStationOutputComposer.h"
 
@@ -63,14 +64,14 @@ bool FCommandHelpers::ParseDeviceId(const TArray<FString>& Args, FInputDeviceId&
 {
 	if (Args.Num() < 1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Missing <DeviceId> as first argument"));
+		UE_LOG(LogDualSense, Warning, TEXT("Missing <DeviceId> as first argument"));
 		return false;
 	}
 	int32 Id = FCString::Atoi(*Args[0]);
 	OutDeviceId = FInputDeviceId::CreateFromInternalId(Id);
 	if (!OutDeviceId.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid DeviceId: %d"), Id);
+		UE_LOG(LogDualSense, Warning, TEXT("Invalid DeviceId: %d"), Id);
 		return false;
 	}
 	return true;
@@ -140,23 +141,23 @@ void FCommandHelpers::HandleSetAudioByte(const TArray<FString>& Args)
 	FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
 	if (!Ctx || !Ctx->IsConnected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Device not ready/connected"));
+		UE_LOG(LogDualSense, Warning, TEXT("Device not ready/connected"));
 		return;
 	}
 	if (Args.Num() < 3)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Usage: ds.SetAudioByte <DeviceId> <Index 0-9> <Value 0-255>"));
+		UE_LOG(LogDualSense, Warning, TEXT("Usage: ds.SetAudioByte <DeviceId> <Index 0-9> <Value 0-255>"));
 		return;
 	}
 	int32 Index = FCString::Atoi(*Args[1]);
 	int32 Value = FCString::Atoi(*Args[2]);
 	if (Index < 0 || Index > 9)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Index out of range (0-9)"));
+		UE_LOG(LogDualSense, Warning, TEXT("Index out of range (0-9)"));
 		return;
 	}
 	Ctx->BufferAudio[Index] = ClampByte(Value);
-	UE_LOG(LogTemp, Log, TEXT("Audio byte[%d] = %d"), Index, (int32)Ctx->BufferAudio[Index]);
+	UE_LOG(LogDualSense, Log, TEXT("Audio byte[%d] = %d"), Index, (int32)Ctx->BufferAudio[Index]);
 	FPlayStationOutputComposer::OutputDualSense(Ctx);
 }
 
@@ -175,12 +176,12 @@ void FCommandHelpers::HandleSetAudioLR(const TArray<FString>& Args)
 	FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
 	if (!Ctx || !Ctx->IsConnected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Device not ready/connected"));
+		UE_LOG(LogDualSense, Warning, TEXT("Device not ready/connected"));
 		return;
 	}
 	if (Args.Num() < 6)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Usage: ds.SetAudioLR <DeviceId> <L1> <L2> <R1> <R2> <Master>"));
+		UE_LOG(LogDualSense, Warning, TEXT("Usage: ds.SetAudioLR <DeviceId> <L1> <L2> <R1> <R2> <Master>"));
 		return;
 	}
 	int32 L1 = FCString::Atoi(*Args[1]);
@@ -193,7 +194,7 @@ void FCommandHelpers::HandleSetAudioLR(const TArray<FString>& Args)
 	Ctx->BufferAudio[7] = ClampByte(R1);
 	Ctx->BufferAudio[8] = ClampByte(R2);
 	Ctx->BufferAudio[9] = ClampByte(X);
-	UE_LOG(LogTemp, Log, TEXT("Audio [5..9] = %d, %d, %d, %d, %d"), (int32)Ctx->BufferAudio[5], (int32)Ctx->BufferAudio[6], (int32)Ctx->BufferAudio[7], (int32)Ctx->BufferAudio[8], (int32)Ctx->BufferAudio[9]);
+	UE_LOG(LogDualSense, Log, TEXT("Audio [5..9] = %d, %d, %d, %d, %d"), (int32)Ctx->BufferAudio[5], (int32)Ctx->BufferAudio[6], (int32)Ctx->BufferAudio[7], (int32)Ctx->BufferAudio[8], (int32)Ctx->BufferAudio[9]);
 	FPlayStationOutputComposer::OutputDualSense(Ctx);
 }
 
@@ -212,12 +213,12 @@ void FCommandHelpers::HandleDumpAudioBytes(const TArray<FString>& Args)
 	FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
 	if (!Ctx || !Ctx->IsConnected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Device not ready/connected"));
+		UE_LOG(LogDualSense, Warning, TEXT("Device not ready/connected"));
 		return;
 	}
 	for (int32 i = 0; i < 10; ++i)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Audio byte[%d] = %d"), i, (int32)Ctx->BufferAudio[i]);
+		UE_LOG(LogDualSense, Log, TEXT("Audio byte[%d] = %d"), i, (int32)Ctx->BufferAudio[i]);
 	}
 }
 
@@ -236,7 +237,7 @@ void FCommandHelpers::HandleSetTrigR(const TArray<FString>& Args)
 	FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
 	if (!Ctx || !Ctx->IsConnected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Device not ready/connected"));
+		UE_LOG(LogDualSense, Warning, TEXT("Device not ready/connected"));
 		return;
 	}
 	FMemory::Memset(Ctx->OverrideTriggerRight, 0, 10);
@@ -245,13 +246,13 @@ void FCommandHelpers::HandleSetTrigR(const TArray<FString>& Args)
 		uint8 B = 0;
 		if (!ParseHexByte(Args[i + 1], B))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Invalid hex at pos %d"), i);
+			UE_LOG(LogDualSense, Warning, TEXT("Invalid hex at pos %d"), i);
 			return;
 		}
 		Ctx->OverrideTriggerRight[i] = B;
 	}
 	Ctx->bOverrideTriggerBytes = true;
-	UE_LOG(LogTemp, Log, TEXT("Right trigger override updated."));
+	UE_LOG(LogDualSense, Log, TEXT("Right trigger override updated."));
 	FPlayStationOutputComposer::OutputDualSense(Ctx);
 }
 
@@ -270,7 +271,7 @@ void FCommandHelpers::HandleSetTrigL(const TArray<FString>& Args)
 	FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
 	if (!Ctx || !Ctx->IsConnected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Device not ready/connected"));
+		UE_LOG(LogDualSense, Warning, TEXT("Device not ready/connected"));
 		return;
 	}
 	FMemory::Memset(Ctx->OverrideTriggerLeft, 0, 10);
@@ -279,13 +280,13 @@ void FCommandHelpers::HandleSetTrigL(const TArray<FString>& Args)
 		uint8 B = 0;
 		if (!ParseHexByte(Args[i + 1], B))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Invalid hex at pos %d"), i);
+			UE_LOG(LogDualSense, Warning, TEXT("Invalid hex at pos %d"), i);
 			return;
 		}
 		Ctx->OverrideTriggerLeft[i] = B;
 	}
 	Ctx->bOverrideTriggerBytes = true;
-	UE_LOG(LogTemp, Log, TEXT("Left trigger override updated."));
+	UE_LOG(LogDualSense, Log, TEXT("Left trigger override updated."));
 	FPlayStationOutputComposer::OutputDualSense(Ctx);
 }
 
@@ -304,22 +305,22 @@ void FCommandHelpers::HandleDumpTrig(const TArray<FString>& Args)
 	FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
 	if (!Ctx || !Ctx->IsConnected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Device not ready/connected"));
+		UE_LOG(LogDualSense, Warning, TEXT("Device not ready/connected"));
 		return;
 	}
 	char R[10] = {0};
 	char L[10] = {0};
 	FMemory::Memcpy(R, Ctx->OverrideTriggerRight, 10);
 	FMemory::Memcpy(L, Ctx->OverrideTriggerLeft, 10);
-	UE_LOG(LogTemp, Log, TEXT("Dumping OVERRIDE trigger bytes (HEX):"));
+	UE_LOG(LogDualSense, Log, TEXT("Dumping OVERRIDE trigger bytes (HEX):"));
 	FString RStr, LStr;
 	for (int32 i = 0; i < 10; ++i)
 	{
 		RStr += FString::Printf(TEXT("%02X "), static_cast<uint8>(R[i]));
 		LStr += FString::Printf(TEXT("%02X "), static_cast<uint8>(L[i]));
 	}
-	UE_LOG(LogTemp, Log, TEXT("R[10..19]: %s"), *RStr);
-	UE_LOG(LogTemp, Log, TEXT("L[21..30]: %s"), *LStr);
+	UE_LOG(LogDualSense, Log, TEXT("R[10..19]: %s"), *RStr);
+	UE_LOG(LogDualSense, Log, TEXT("L[21..30]: %s"), *LStr);
 }
 
 void FCommandHelpers::HandleClearTrig(const TArray<FString>& Args)
@@ -342,7 +343,7 @@ void FCommandHelpers::HandleClearTrig(const TArray<FString>& Args)
 	Ctx->bOverrideTriggerBytes = false;
 	FMemory::Memset(Ctx->OverrideTriggerRight, 0, 10);
 	FMemory::Memset(Ctx->OverrideTriggerLeft, 0, 10);
-	UE_LOG(LogTemp, Log, TEXT("Trigger overrides cleared."));
+	UE_LOG(LogDualSense, Log, TEXT("Trigger overrides cleared."));
 	if (Ctx->IsConnected)
 	{
 		FPlayStationOutputComposer::OutputDualSense(Ctx);
@@ -450,12 +451,12 @@ void FCommandHelpers::HandleBowTrigR(const TArray<FString>& Args)
 	FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
 	if (!Ctx || !Ctx->IsConnected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Device not ready/connected"));
+		UE_LOG(LogDualSense, Warning, TEXT("Device not ready/connected"));
 		return;
 	}
 	if (Args.Num() < 5)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Usage: ds.BowR <DeviceId> <Start 0-7> <End 0-8> <ResistancePos 0-8> <ForcePos 0-8>"));
+		UE_LOG(LogDualSense, Warning, TEXT("Usage: ds.BowR <DeviceId> <Start 0-7> <End 0-8> <ResistancePos 0-8> <ForcePos 0-8>"));
 		return;
 	}
 	int32 Start = FCString::Atoi(*Args[1]);
@@ -465,12 +466,12 @@ void FCommandHelpers::HandleBowTrigR(const TArray<FString>& Args)
 	uint8 Bytes[10] = {0};
 	if (!ComposeBowBytes(Bytes, Start, End, Resistance, Force))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid parameter range."));
+		UE_LOG(LogDualSense, Warning, TEXT("Invalid parameter range."));
 		return;
 	}
 	FMemory::Memcpy(Ctx->OverrideTriggerRight, Bytes, 10);
 	Ctx->bOverrideTriggerBytes = true;
-	UE_LOG(LogTemp, Log, TEXT("Right trigger set to Bow effect: [%02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3]);
+	UE_LOG(LogDualSense, Log, TEXT("Right trigger set to Bow effect: [%02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3]);
 	FPlayStationOutputComposer::OutputDualSense(Ctx);
 }
 
@@ -489,12 +490,12 @@ void FCommandHelpers::HandleBowTrigL(const TArray<FString>& Args)
 	FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
 	if (!Ctx || !Ctx->IsConnected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Device not ready/connected"));
+		UE_LOG(LogDualSense, Warning, TEXT("Device not ready/connected"));
 		return;
 	}
 	if (Args.Num() < 5)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Usage: ds.BowL <DeviceId> <Start 0-7> <End 0-8> <ResistancePos 0-8> <ForcePos 0-8>"));
+		UE_LOG(LogDualSense, Warning, TEXT("Usage: ds.BowL <DeviceId> <Start 0-7> <End 0-8> <ResistancePos 0-8> <ForcePos 0-8>"));
 		return;
 	}
 	int32 Start = FCString::Atoi(*Args[1]);
@@ -504,12 +505,12 @@ void FCommandHelpers::HandleBowTrigL(const TArray<FString>& Args)
 	uint8 Bytes[10] = {0};
 	if (!ComposeBowBytes(Bytes, Start, End, Resistance, Force))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid parameter range."));
+		UE_LOG(LogDualSense, Warning, TEXT("Invalid parameter range."));
 		return;
 	}
 	FMemory::Memcpy(Ctx->OverrideTriggerLeft, Bytes, 10);
 	Ctx->bOverrideTriggerBytes = true;
-	UE_LOG(LogTemp, Log, TEXT("Left trigger set to Bow effect: [%02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3]);
+	UE_LOG(LogDualSense, Log, TEXT("Left trigger set to Bow effect: [%02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3]);
 	FPlayStationOutputComposer::OutputDualSense(Ctx);
 }
 
@@ -528,12 +529,12 @@ void FCommandHelpers::HandleGallopTrigR(const TArray<FString>& Args)
 	FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
 	if (!Ctx || !Ctx->IsConnected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Device not ready/connected"));
+		UE_LOG(LogDualSense, Warning, TEXT("Device not ready/connected"));
 		return;
 	}
 	if (Args.Num() < 6)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Usage: ds.GallopR <DeviceId> <Start 0-8> <End 1-9> <FirstFoot 0-8> <SecondFoot 1-9> <Freq 0-255>"));
+		UE_LOG(LogDualSense, Warning, TEXT("Usage: ds.GallopR <DeviceId> <Start 0-8> <End 1-9> <FirstFoot 0-8> <SecondFoot 1-9> <Freq 0-255>"));
 		return;
 	}
 	int32 Start = FCString::Atoi(*Args[1]);
@@ -544,12 +545,12 @@ void FCommandHelpers::HandleGallopTrigR(const TArray<FString>& Args)
 	uint8 Bytes[10] = {0};
 	if (!ComposeGallopBytes(Bytes, Start, End, FirstFoot, SecondFoot, Freq))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid parameter range."));
+		UE_LOG(LogDualSense, Warning, TEXT("Invalid parameter range."));
 		return;
 	}
 	FMemory::Memcpy(Ctx->OverrideTriggerRight, Bytes, 10);
 	Ctx->bOverrideTriggerBytes = true;
-	UE_LOG(LogTemp, Log, TEXT("Right trigger set to Gallop effect: [%02X %02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3], Bytes[4]);
+	UE_LOG(LogDualSense, Log, TEXT("Right trigger set to Gallop effect: [%02X %02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3], Bytes[4]);
 	FPlayStationOutputComposer::OutputDualSense(Ctx);
 }
 
@@ -568,12 +569,12 @@ void FCommandHelpers::HandleGallopTrigL(const TArray<FString>& Args)
 	FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
 	if (!Ctx || !Ctx->IsConnected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Device not ready/connected"));
+		UE_LOG(LogDualSense, Warning, TEXT("Device not ready/connected"));
 		return;
 	}
 	if (Args.Num() < 6)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Usage: ds.GallopL <DeviceId> <Start 0-8> <End 1-9> <FirstFoot 0-8> <SecondFoot 1-9> <Freq 0-255>"));
+		UE_LOG(LogDualSense, Warning, TEXT("Usage: ds.GallopL <DeviceId> <Start 0-8> <End 1-9> <FirstFoot 0-8> <SecondFoot 1-9> <Freq 0-255>"));
 		return;
 	}
 	int32 Start = FCString::Atoi(*Args[1]);
@@ -584,11 +585,11 @@ void FCommandHelpers::HandleGallopTrigL(const TArray<FString>& Args)
 	uint8 Bytes[10] = {0};
 	if (!ComposeGallopBytes(Bytes, Start, End, FirstFoot, SecondFoot, Freq))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid parameter range."));
+		UE_LOG(LogDualSense, Warning, TEXT("Invalid parameter range."));
 		return;
 	}
 	FMemory::Memcpy(Ctx->OverrideTriggerLeft, Bytes, 10);
 	Ctx->bOverrideTriggerBytes = true;
-	UE_LOG(LogTemp, Log, TEXT("Left trigger set to Gallop effect: [%02X %02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3], Bytes[4]);
+	UE_LOG(LogDualSense, Log, TEXT("Left trigger set to Gallop effect: [%02X %02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3], Bytes[4]);
 	FPlayStationOutputComposer::OutputDualSense(Ctx);
 }

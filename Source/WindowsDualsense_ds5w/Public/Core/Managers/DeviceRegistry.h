@@ -13,7 +13,7 @@
 
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Interfaces/ISonyGamepad.h"
-#include "Core/Types/Structs/DeviceContext.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 
 /**
  * A manager class that handles the creation, storage, and lifecycle management of device library
@@ -93,6 +93,7 @@ public:
 	void DetectedChangeConnections(float DeltaTime);
 
 private:
+	bool bIsDeviceDetectionInProgress = false;
 	/**
 	 * A floating-point variable that represents the change or difference in the accumulator value over time.
 	 * Typically used to measure incremental adjustments or deltas in processing or calculations.

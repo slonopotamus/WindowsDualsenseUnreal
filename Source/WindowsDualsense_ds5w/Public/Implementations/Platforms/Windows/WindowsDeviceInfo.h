@@ -13,7 +13,7 @@
 #endif
 
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
-#include "Core/Types/Structs/DeviceContext.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 #include "CoreMinimal.h"
 
 /**

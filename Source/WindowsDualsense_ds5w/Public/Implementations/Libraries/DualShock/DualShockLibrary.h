@@ -7,7 +7,7 @@
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Types/Enums/EDeviceCommons.h"
-#include "Core/Types/Structs/DeviceContext.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 #include "Core/Types/Structs/DualShockFeatureReport.h"
 #include "CoreMinimal.h"
 

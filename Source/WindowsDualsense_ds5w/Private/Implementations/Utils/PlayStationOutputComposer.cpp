@@ -3,9 +3,10 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Utils/PlayStationOutputComposer.h"
+#include "API/SonyGamepadProxyHelpers.h"
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
-#include "Core/Types/Structs/DeviceContext.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 
 const uint32 FPlayStationOutputComposer::CRCSeed = 0xeada2d49;
 
@@ -73,7 +74,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 	Output[6] = HidOut->Audio.MicVolume;
 	Output[7] = HidOut->Audio.Mode;
 	Output[9] = HidOut->Audio.MicStatus;
-	Output[8] = HidOut->MicLight.Mode;
+	Output[8] = 0x00;
 	Output[36] = (HidOut->Feature.TriggerSoftnessLevel << 4) | (HidOut->Feature.SoftRumbleReduce & 0x0F);
 	Output[38] = 0x07;
 	Output[41] = 0x02;
@@ -106,7 +107,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 	IPlatformHardwareInfo::Get().Write(DeviceContext);
 }
 
-void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapticTriggers& Effect)
+void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FGamepadTriggersHaptic& Effect)
 {
 	Trigger[0x0] = Effect.Mode;
 
@@ -139,8 +140,6 @@ void FPlayStationOutputComposer::SetTriggerEffects(unsigned char* Trigger, FHapt
 		Trigger[0x7] = 0x0;
 		Trigger[0x8] = 0x0;
 		Trigger[0x9] = 0x0;
-
-		UE_LOG(LogTemp, Warning, TEXT("PlayStation. %02X, %02X, %02X, %02X"), Trigger[1], Trigger[2], Trigger[3], Trigger[4]);
 	}
 
 	if (Effect.Mode == 0x23) // Gallopping

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Core/Types/Structs/DeviceContext.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 #include "CoreMinimal.h"
 
 /**
@@ -78,7 +78,7 @@ public:
 	 * @param Effect A reference to an FHapticTriggers structure containing the haptic effect details such as mode, strengths,
 	 *               and additional properties for defining the behavior of the trigger.
 	 */
-	static void SetTriggerEffects(unsigned char* Trigger, FHapticTriggers& Effect);
+	static void SetTriggerEffects(unsigned char* Trigger, FGamepadTriggersHaptic& Effect);
 	/**
 	 * Sends advanced audio haptic feedback data to a specified device context.
 	 * This method prepares, formats, and processes audio haptic data, including

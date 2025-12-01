@@ -77,7 +77,7 @@ public:
 			HexString += FString::Printf(TEXT("%02X "), Buffer[i]);
 		}
 
-		UE_LOG(LogTemp, Log, TEXT("Buffer Device: %s String: %s"), *Device, *HexString);
+		UE_LOG(LogDualSense, Log, TEXT("Buffer Device: %s String: %s"), *Device, *HexString);
 	}
 
 	/**

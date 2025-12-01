@@ -3,13 +3,13 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
+#include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Algorithms/MadgwickAhrs.h"
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
-#include "Core/Types/Structs/DeviceContext.h"
-#include "Core/Types/Structs/OutputContext.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 #include "Helpers/ValidateHelpers.h"
 #include "Implementations/Utils/PlayStationOutputComposer.h"
 #include "InputCoreTypes.h"
@@ -719,7 +719,7 @@ void FDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArr
 		uint8 B = 0;
 		if (!FValidateHelpers::ParseHexByte_Local(HexBytes[i], B))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("CustomTrigger: invalid hex token at index %d: '%s'"), i, *HexBytes[i]);
+			UE_LOG(LogDualSense, Warning, TEXT("CustomTrigger: invalid hex token at index %d: '%s'"), i, *HexBytes[i]);
 			return;
 		}
 		Bytes[i] = B;
@@ -817,12 +817,6 @@ void FDualSenseLibrary::StartMotionSensorCalibration(float Duration, float DeadZ
 
 void FDualSenseLibrary::SetMicrophoneLed(ELedMicEnum Led)
 {
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
-	if (HidOutput->MicLight.Mode != static_cast<unsigned char>(Led))
-	{
-		HidOutput->MicLight.Mode = static_cast<unsigned char>(Led);
-		SendOut();
-	}
 }
 
 void FDualSenseLibrary::ResetLights()

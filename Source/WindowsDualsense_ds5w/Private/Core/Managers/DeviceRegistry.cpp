@@ -3,12 +3,13 @@
 // Planned Release Year: 2025
 
 #include "Core/Managers/DeviceRegistry.h"
+#include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Interfaces/ISonyGamepad.h"
-#include "Core/Types/Structs/DeviceContext.h"
-#include "Core/Types/Structs/OutputContext.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
+#include "Core/Types/Structs/Context/OutputContext.h"
 #include "GameFramework/InputSettings.h"
 #include "HAL/PlatformProcess.h"
 #include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
@@ -20,24 +21,23 @@ TMap<FString, FInputDeviceId> FDeviceRegistry::KnownDevicePaths;
 TMap<FString, FInputDeviceId> FDeviceRegistry::HistoryDevices;
 
 bool PrimaryTick = true;
-std::atomic<bool> bIsDeviceDetectionInProgress{false};
 
 void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 {
 	if (!PrimaryTick)
 	{
 		AccumulatorDelta += DeltaTime;
-		if (bIsDeviceDetectionInProgress.exchange(true))
-		{
-			return;
-		}
-
 		if (AccumulatorDelta < 2.0f)
 		{
 			return;
 		}
-
 		AccumulatorDelta = 0.0f;
+
+		if (bIsDeviceDetectionInProgress)
+		{
+			return;
+		}
+		bIsDeviceDetectionInProgress = true;
 	}
 
 	PrimaryTick = false;
@@ -89,7 +89,7 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 					Context.Output = FOutputContext();
 					if (!IPlatformHardwareInfo::Get().CreateHandle(&Context))
 					{
-						UE_LOG(LogTemp, Log, TEXT("DualSense: DeviceManager Failed to create handle for device %s."), *Context.Path);
+						UE_LOG(LogDualSense, Log, TEXT("DualSense: DeviceManager Failed to create handle for device %s."), *Context.Path);
 						continue;
 					}
 
@@ -101,7 +101,7 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 				}
 			}
 
-			bIsDeviceDetectionInProgress.store(false);
+			Manager->bIsDeviceDetectionInProgress = false;
 		});
 	});
 }

@@ -3,11 +3,14 @@
 // Planned Release Year: 2025
 
 #include "DeviceManager.h"
+#include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Managers/DeviceRegistry.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
 #include "Misc/CoreDelegates.h"
+
+using namespace SonyGamepadProxyHelpers;
 
 DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler)
     : MessageHandler(InMessageHandler)
@@ -77,6 +80,72 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 		const FInputDeviceLightColorProperty* ColorProperty = static_cast<const FInputDeviceLightColorProperty*>(Property);
 		SetLightColor(ControllerId, ColorProperty->Color);
 	}
+
+	if (Property->Name == FInputDeviceTriggerFeedbackProperty::PropertyName())
+	{
+		if (const FInputDeviceTriggerFeedbackProperty* FeedbackProperty = static_cast<const FInputDeviceTriggerFeedbackProperty*>(Property))
+		{
+			EInputDeviceTriggerMask HandMask = FeedbackProperty->AffectedTriggers;
+			if (IGamepadTrigger* GamepadTrigger = GetTriggerInterface(ControllerId))
+			{
+				GamepadTrigger->SetResistance(FeedbackProperty->Position, FeedbackProperty->Strengh, static_cast<EControllerHand>(HandMask));
+			}
+		}
+	}
+
+	if (Property->Name == FInputDeviceTriggerResistanceProperty::PropertyName())
+	{
+		if (const FInputDeviceTriggerResistanceProperty* FeedbackAdvancedProperty = static_cast<const FInputDeviceTriggerResistanceProperty*>(Property))
+		{
+			EInputDeviceTriggerMask HandMask = FeedbackAdvancedProperty->AffectedTriggers;
+			if (IGamepadTrigger* GamepadTrigger = GetTriggerInterface(ControllerId))
+			{
+				TArray<FString> HexBytes;
+				HexBytes.Reserve(10);
+
+				const double P1 = (FMath::Clamp(FeedbackAdvancedProperty->StartPosition, 0.f, 9.f) / 9.f) * 1023.0f;
+				const double P2 = (FMath::Clamp(FeedbackAdvancedProperty->EndPosition, P1, 9.f) / 9.f) * 1023.0f;
+				const double F1 = (FMath::Clamp(FeedbackAdvancedProperty->StartStrengh, 0.f, 8.f) / 8.f) * 255.f;
+				const double F2 = (FMath::Clamp(FeedbackAdvancedProperty->EndStrengh, 0.f, 8.f) / 8.f) * 255.f;
+
+				const int PIndex = FeedbackAdvancedProperty->StartPosition;
+				const int PIndexEnd = FeedbackAdvancedProperty->EndPosition;
+
+				uint32 Force = 0;
+				const double Slope = ((F2 - F1) / (P2 - P1));
+				for (int i = PIndex; i < PIndexEnd; i++)
+				{
+					Force |= static_cast<uint32>((F1 + (Slope * i)) * 1023.0f);
+				}
+
+				uint8 RawPos;
+				if (PIndex < 3)
+				{
+					RawPos = 255;
+				}
+				else if (PIndex < 5 && PIndex > 3)
+				{
+					RawPos = 230;
+				}
+				else
+				{
+					RawPos = 200;
+				}
+
+				HexBytes.Add("0x21");
+				HexBytes.Add(FString::Printf(TEXT("0x%02X"), RawPos & 0xf0));
+				HexBytes.Add(FString::Printf(TEXT("0x%02X"), 0x03));
+				HexBytes.Add(FString::Printf(TEXT("0x%02X"), Force >> 24 & 0xff));
+				HexBytes.Add(FString::Printf(TEXT("0x%02X"), Force >> 16 & 0xff));
+				HexBytes.Add(FString::Printf(TEXT("0x%02X"), Force >> 8 & 0xff));
+				HexBytes.Add(FString::Printf(TEXT("0x%02X"), Force >> 0 & 0x3f));
+				HexBytes.Add("0x00");
+				HexBytes.Add("0x00");
+				HexBytes.Add("0x00");
+				GamepadTrigger->SetCustomTrigger(static_cast<EControllerHand>(HandMask), HexBytes);
+			}
+		}
+	}
 }
 
 void DeviceManager::SetHapticFeedbackValues(const int32 ControllerId, const int32 Hand, const FHapticFeedbackValues& Values)
@@ -85,53 +154,18 @@ void DeviceManager::SetHapticFeedbackValues(const int32 ControllerId, const int3
 
 void DeviceManager::SetChannelValues(int32 ControllerId, const FForceFeedbackValues& Values)
 {
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
+	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		return;
+		Gamepad->SetVibration(Values);
 	}
-
-	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->SetVibration(Values);
 }
 
 void DeviceManager::SetLightColor(const int32 ControllerId, const FColor Color)
 {
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
+	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		return;
+		Gamepad->SetLightbar(Color);
 	}
-
-	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->SetLightbar(Color);
-}
-
-void DeviceManager::ResetLightColor(const int32 ControllerId)
-{
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
-	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->SetLightbar(FColor::Blue);
 }
 
 bool DeviceManager::IsGamepadAttached() const
@@ -153,21 +187,4 @@ void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 
 			IPlatformInputDeviceMapper::Get().Internal_MapInputDeviceToUser(DeviceId, PlatformUserId, EInputDeviceConnectionState::Disconnected);
 		}
 	}
-}
-
-FInputDeviceId DeviceManager::GetGamepadInterface(int32 ControllerId)
-{
-	TArray<FInputDeviceId> Devices;
-
-	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(FPlatformUserId::CreateFromInternalId(ControllerId), Devices);
-
-	for (const FInputDeviceId& DeviceId : Devices)
-	{
-		if (FDeviceRegistry::Get()->GetLibraryInstance(DeviceId))
-		{
-			return DeviceId;
-		}
-	}
-
-	return FInputDeviceId::CreateFromInternalId(INDEX_NONE);
 }
