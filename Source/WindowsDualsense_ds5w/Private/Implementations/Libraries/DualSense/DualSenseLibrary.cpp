@@ -3,7 +3,6 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
-#include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Algorithms/MadgwickAhrs.h"
@@ -14,6 +13,8 @@
 #include "Implementations/Utils/DualSenseTriggerComposer.h"
 #include "Implementations/Utils/PlayStationOutputComposer.h"
 #include "InputCoreTypes.h"
+
+using namespace DualSenseTriggerComposer;
 
 void FDualSenseLibrary::SetVibration(const FForceFeedbackValues& Values)
 {
@@ -518,7 +519,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 void FDualSenseLibrary::SetResistance(uint8 StartZones, uint8 Strength, const EControllerHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
-	DualSenseTriggerComposer::Resistance(Context, StartZones, Strength, Hand);
+	Resistance(Context, StartZones, Strength, Hand);
 	UpdateOutput();
 }
 
@@ -526,56 +527,56 @@ void FDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, u
                                        uint8 Frequency, const EControllerHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
-	DualSenseTriggerComposer::Galloping23(Context, StartPosition, EndPosition, FirstFoot, SecondFoot, Frequency, Hand);
+	Galloping23(Context, StartPosition, EndPosition, FirstFoot, SecondFoot, Frequency, Hand);
 	UpdateOutput();
 }
 
 void FDualSenseLibrary::StopTrigger(const EControllerHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
-	DualSenseTriggerComposer::Off(Context, Hand);
+	Off(Context, Hand);
 	UpdateOutput();
 }
 
 void FDualSenseLibrary::SetGameCube(const EControllerHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
-	DualSenseTriggerComposer::GameCube(Context, Hand);
+	GameCube(Context, Hand);
 	UpdateOutput();
 }
 
 void FDualSenseLibrary::SetBow22(uint8 StartZone, uint8 SnapBack, const EControllerHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
-	DualSenseTriggerComposer::Bow22(Context, StartZone, SnapBack, Hand);
+	Bow22(Context, StartZone, SnapBack, Hand);
 	UpdateOutput();
 }
 
 void FDualSenseLibrary::SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EControllerHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
-	DualSenseTriggerComposer::Weapon25(Context, StartZone, Amplitude, Behavior, Trigger, Hand);
+	Weapon25(Context, StartZone, Amplitude, Behavior, Trigger, Hand);
 	UpdateOutput();
 }
 
 void FDualSenseLibrary::SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EControllerHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
-	DualSenseTriggerComposer::MachineGun26(Context, StartZone, Behavior, Amplitude, Frequency, Hand);
+	MachineGun26(Context, StartZone, Behavior, Amplitude, Frequency, Hand);
 	UpdateOutput();
 }
 
 void FDualSenseLibrary::SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EControllerHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
-	DualSenseTriggerComposer::Machine27(Context, StartZone, BehaviorFlag, Force, Amplitude, Period, Frequency, Hand);
+	Machine27(Context, StartZone, BehaviorFlag, Force, Amplitude, Period, Frequency, Hand);
 	UpdateOutput();
 }
 
 void FDualSenseLibrary::SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
-	DualSenseTriggerComposer::CustomTrigger(Context, Hand, HexBytes);
+	CustomTrigger(Context, Hand, HexBytes);
 
 	UpdateOutput();
 }
