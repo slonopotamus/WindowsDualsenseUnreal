@@ -205,7 +205,7 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 		HistoryDevices.Add(Context.Path, Context.UniqueInputDeviceId);
 	}
 
-	if (!SonyGamepad->InitializeLibrary(Context))
+	if (!SonyGamepad->Initialize(Context))
 	{
 		return;
 	}

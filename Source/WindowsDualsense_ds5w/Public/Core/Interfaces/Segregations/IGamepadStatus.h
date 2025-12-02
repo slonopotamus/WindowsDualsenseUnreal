@@ -18,6 +18,14 @@ public:
 	 */
 	virtual bool IsConnected() = 0;
 	/**
+	 * Retrieves the current battery level of the Sony gamepad.
+	 *
+	 * @return The battery level as a floating-point value, where the exact range
+	 *         and representation are dependent on the implementation. Typically,
+	 *         values may range between 0.0 (empty) and 1.0 (full).
+	 */
+	virtual float GetBattery() const = 0;
+	/**
 	 * Retrieves the type of the device.
 	 *
 	 * @return The type of the device as an EDeviceType enumeration.
@@ -29,12 +37,14 @@ public:
 	 * @return The connection type of the device as an EDeviceConnection enumeration.
 	 */
 	virtual EDeviceConnection GetConnectionType() = 0;
+
 	/**
-	 * Retrieves the current battery level of the Sony gamepad.
+	 * @brief Retrieves a mutable device context associated with the object.
 	 *
-	 * @return The battery level as a floating-point value, where the exact range
-	 *         and representation are dependent on the implementation. Typically,
-	 *         values may range between 0.0 (empty) and 1.0 (full).
+	 * This method provides access to the device context in a mutable form, allowing modifications to the underlying
+	 * hardware interface descriptor (HID) data specific to the device.
+	 *
+	 * @return A pointer to the mutable FDeviceContext object corresponding to the device's HID context.
 	 */
-	virtual float GetBattery() const = 0;
+	virtual FDeviceContext* GetMutableDeviceContext() = 0;
 };

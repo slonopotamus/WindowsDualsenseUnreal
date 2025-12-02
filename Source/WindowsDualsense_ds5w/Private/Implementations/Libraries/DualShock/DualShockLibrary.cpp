@@ -13,73 +13,40 @@
 #include "Implementations/Utils/PlayStationOutputComposer.h"
 #include "InputCoreTypes.h"
 
-void FDualShockLibrary::Settings(const FDualShockFeatureReport& Settings)
+bool FDualShockLibrary::Initialize(const FDeviceContext& Context)
 {
-}
-
-bool FDualShockLibrary::InitializeLibrary(const FDeviceContext& Context)
-{
-	HIDDeviceContexts = Context;
+	SetDeviceContexts(Context);
 	SetLightbar(FColor::Blue, 0.0f, 0.0f);
 	return true;
 }
 
-void FDualShockLibrary::ShutdownLibrary()
+void FDualShockLibrary::UpdateOutput()
 {
-	ButtonStates.Reset();
-	IPlatformHardwareInfo::Get().InvalidateHandle(&HIDDeviceContexts);
-}
-
-bool FDualShockLibrary::IsConnected()
-{
-	return HIDDeviceContexts.IsConnected;
-}
-
-void FDualShockLibrary::SendOut()
-{
-	if (!HIDDeviceContexts.IsConnected)
+	FDeviceContext* Context = GetMutableDeviceContext();
+	if (!Context->IsConnected)
 	{
 		return;
 	}
 
-	FPlayStationOutputComposer::OutputDualShock(&HIDDeviceContexts);
-}
-
-void FDualShockLibrary::CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-                                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId,
-                                         const FName ButtonName,
-                                         const bool IsButtonPressed)
-{
-	const bool PreviousState = ButtonStates.Contains(ButtonName) ? ButtonStates[ButtonName] : false;
-	if (IsButtonPressed && !PreviousState)
-	{
-		InMessageHandler.Get().OnControllerButtonPressed(ButtonName, UserId, InputDeviceId, false);
-	}
-
-	if (!IsButtonPressed && PreviousState)
-	{
-		InMessageHandler.Get().OnControllerButtonReleased(ButtonName, UserId, InputDeviceId, false);
-	}
-
-	ButtonStates.Add(ButtonName, IsButtonPressed);
+	FPlayStationOutputComposer::OutputDualShock(Context);
 }
 
 void FDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
                                     const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta)
 {
-	FDeviceContext* Context = &HIDDeviceContexts;
+	FDeviceContext* Context = GetMutableDeviceContext();
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]() {
 		IPlatformHardwareInfo::Get().Read(NewContext);
 	});
 
 	const unsigned char* HIDInput;
-	if (HIDDeviceContexts.ConnectionType == EDeviceConnection::Bluetooth)
+	if (Context->ConnectionType == EDeviceConnection::Bluetooth)
 	{
-		HIDInput = &HIDDeviceContexts.BufferDS4[3];
+		HIDInput = &Context->BufferDS4[3];
 	}
 	else
 	{
-		HIDInput = &HIDDeviceContexts.Buffer[1];
+		HIDInput = &Context->Buffer[1];
 	}
 
 	// Triggers
@@ -96,7 +63,7 @@ void FDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 	// Analogs
 	const auto HandleAnalogInput = [&](const FName& AnalogKey, const FName& ButtonKeyPositive, const FName& ButtonKeyNegative, float NewAxisValue) {
-		if (FMath::Abs(NewAxisValue) < AnalogDeadZone)
+		if (FMath::Abs(NewAxisValue) < GetAnalogDeadZone())
 		{
 			NewAxisValue = 0;
 		}
@@ -198,7 +165,8 @@ void FDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 void FDualShockLibrary::SetVibration(const FForceFeedbackValues& Values)
 {
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+	FDeviceContext* Context = GetMutableDeviceContext();
+	FOutputContext* HidOutput = &Context->Output;
 	const float LeftRumble = FMath::Max(Values.LeftLarge, Values.LeftSmall);
 	const float RightRumble = FMath::Max(Values.RightLarge, Values.RightSmall);
 
@@ -207,41 +175,24 @@ void FDualShockLibrary::SetVibration(const FForceFeedbackValues& Values)
 	if (HidOutput->Rumbles.Left != OutputLeft || HidOutput->Rumbles.Right != OutputRight)
 	{
 		HidOutput->Rumbles = {OutputLeft, OutputRight};
-		SendOut();
+		UpdateOutput();
 	}
 }
 
 void FDualShockLibrary::SetLightbar(FColor Color, float BrithnessTime, float ToggleTime)
 {
-	FOutputContext* HidOutput = &HIDDeviceContexts.Output;
+	FDeviceContext* Context = GetMutableDeviceContext();
+	FOutputContext* HidOutput = &Context->Output;
 	HidOutput->Lightbar.R = Color.R;
 	HidOutput->Lightbar.G = Color.G;
 	HidOutput->Lightbar.B = Color.B;
 
 	HidOutput->FlashLigthbar.Bright_Time = static_cast<unsigned char>(FValidateHelpers::To255(BrithnessTime));
 	HidOutput->FlashLigthbar.Toggle_Time = static_cast<unsigned char>(FValidateHelpers::To255(ToggleTime));
-	SendOut();
-}
-
-void FDualShockLibrary::SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness)
-{
-}
-
-void FDualShockLibrary::SetMicrophoneLed(ELedMicEnum Led)
-{
-}
-
-void FDualShockLibrary::EnableTouch(const bool bIsTouch)
-{
-	bEnableTouch = bIsTouch;
-}
-
-void FDualShockLibrary::EnableMotionSensor(bool bIsMotionSensor)
-{
-	EnableAccelerometerAndGyroscope = bIsMotionSensor;
+	UpdateOutput();
 }
 
 void FDualShockLibrary::ResetLights()
 {
-	SendOut();
+	SetLightbar(FColor::Blue, 0.0f, 0.0f);
 }
