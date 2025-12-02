@@ -1,3 +1,7 @@
+// Copyright (c) 2025 Rafael Valoto/Publisher. All rights reserved.
+// Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
+// Planned Release Year: 2025
+
 #pragma once
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
@@ -5,6 +9,12 @@
 
 namespace DualSenseTriggerComposer
 {
+	/**
+	 * Disables the trigger functionality for the specified hand or hands on the provided device context.
+	 *
+	 * @param Context A pointer to the device context which holds the trigger state to be modified.
+	 * @param Hand An enumeration specifying which hand's trigger functionality to disable (Left, Right, or AnyHand).
+	 */
 	inline void Off(FDeviceContext* Context, const EControllerHand& Hand)
 	{
 		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
@@ -18,6 +28,14 @@ namespace DualSenseTriggerComposer
 		}
 	}
 
+	/**
+	 * Configures resistance for the trigger functionality on the specified hand or hands in the given device context.
+	 *
+	 * @param Context A pointer to the device context that holds the trigger settings to be modified.
+	 * @param StartZones The starting position of the resistance zone for the trigger.
+	 * @param Strength The level of resistance to be applied within the defined zone.
+	 * @param Hand An enumeration specifying which hand's trigger functionality to configure (Left, Right, or AnyHand).
+	 */
 	inline void Resistance(FDeviceContext* Context, uint8 StartZones, uint8 Strength, const EControllerHand& Hand)
 	{
 		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
@@ -34,6 +52,12 @@ namespace DualSenseTriggerComposer
 		}
 	}
 
+	/**
+	 * Configures the trigger functionality on the specified hand or hands to emulate a GameCube-style resistance.
+	 *
+	 * @param Context A pointer to the device context that holds the trigger settings to be modified.
+	 * @param Hand An enumeration specifying which hand's trigger functionality to configure (Left, Right, or AnyHand).
+	 */
 	inline void GameCube(FDeviceContext* Context, const EControllerHand& Hand)
 	{
 		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
