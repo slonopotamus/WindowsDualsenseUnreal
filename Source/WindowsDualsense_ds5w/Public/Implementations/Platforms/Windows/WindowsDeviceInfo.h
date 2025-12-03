@@ -42,7 +42,16 @@ class FWindowsDeviceInfo final : public IPlatformHardwareInfo
 
 public:
 	virtual void ProcessAudioHapitc(FDeviceContext* Context) override;
-	static bool ConfigureBluetoothFeatures(HANDLE DeviceHandle);
+	/**
+	 * @brief Configures Bluetooth-specific features for a given HID device.
+	 *
+	 * This method is used to initialize and set up Bluetooth-related features on a HID device.
+	 * It communicates with the device using a feature report and updates the provided device context accordingly.
+	 *
+	 * @param Context A reference to the device context object that holds device-specific settings and state information.
+	 * @return A boolean indicating whether the Bluetooth feature configuration was successful (true) or failed (false).
+	 */
+	static bool ConfigureFeatures(FDeviceContext* Context);
 	/**
 	 * @brief Reads data from the specified HID device context.
 	 *

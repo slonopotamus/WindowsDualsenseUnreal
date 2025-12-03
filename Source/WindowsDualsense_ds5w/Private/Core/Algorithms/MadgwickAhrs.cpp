@@ -4,9 +4,8 @@
 
 #include "Core/Algorithms/MadgwickAhrs.h"
 
-FMadgwickAhrs::FMadgwickAhrs(const float SampleFreq, const float Beta)
+FMadgwickAhrs::FMadgwickAhrs(const float Beta)
     : Beta(Beta)
-    , SampleFreq(SampleFreq)
     , q0(1.0f)
     , q1(0.0f)
     , q2(0.0f)
@@ -20,8 +19,6 @@ void FMadgwickAhrs::UpdateImu(float gx, float gy, float gz, float ax, float ay, 
 	{
 		return;
 	}
-	SampleFreq = 0.99f * SampleFreq + 0.01f * (1.0f / dt);
-
 	float q0_ = q0, q1_ = q1, q2_ = q2, q3_ = q3;
 
 	float norm = std::sqrt(ax * ax + ay * ay + az * az);
@@ -72,7 +69,7 @@ void FMadgwickAhrs::UpdateImu(float gx, float gy, float gz, float ax, float ay, 
 
 void FMadgwickAhrs::GetQuaternion(float& Nq0, float& Nq1, float& Nq2, float& Nq3) const
 {
-	Nq0 = this->q0; // ou simplesmente q0 = FMadgwickAhrs::q0;
+	Nq0 = this->q0;
 	Nq1 = this->q1;
 	Nq2 = this->q2;
 	Nq3 = this->q3;
@@ -86,20 +83,7 @@ void FMadgwickAhrs::Reset()
 	q3 = 0.0f;
 }
 
-void FMadgwickAhrs::GetEuler(float& Roll, float& Yaw, float& Pitch)
-{
-	Roll = std::atan2(2.0f * (q0 * q1 + q2 * q3), 1.0f - 2.0f * (q1 * q1 + q2 * q2));
-	const float Sinp = 2.0f * (q0 * q2 - q3 * q1);
-	Pitch = (std::fabs(Sinp) >= 1.0f) ? (copysignf(1.5707963f, Sinp)) : std::asin(Sinp);
-	Yaw = std::atan2(2.0f * (q0 * q3 + q1 * q2), 1.0f - 2.0f * (q2 * q2 + q3 * q3));
-}
-
 void FMadgwickAhrs::SetBeta(const float BetaValue)
 {
 	Beta = BetaValue;
-}
-
-void FMadgwickAhrs::SetSampleFreq(const float Freq)
-{
-	SampleFreq = Freq;
 }

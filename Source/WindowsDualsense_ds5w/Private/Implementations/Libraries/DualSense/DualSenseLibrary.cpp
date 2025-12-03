@@ -11,6 +11,7 @@
 #include "Core/Types/Structs/Context/DeviceContext.h"
 #include "Helpers/ValidateHelpers.h"
 #include "Implementations/Utils/DualSenseTriggerComposer.h"
+#include "Implementations/Utils/GamepadCalibrationSensors.h"
 #include "Implementations/Utils/PlayStationOutputComposer.h"
 #include "InputCoreTypes.h"
 
@@ -336,180 +337,46 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 	if (IsEnableAccelerometerAndGyroscope())
 	{
-		FGyro Gyro;
-		Gyro.X = static_cast<int16_t>((HIDInput[16]) | (HIDInput[17] << 8));
-		Gyro.Y = static_cast<int16_t>((HIDInput[18]) | (HIDInput[19] << 8));
-		Gyro.Z = static_cast<int16_t>((HIDInput[20]) | (HIDInput[21] << 8));
+		FVector GyroDeg;
+		FVector AccelG;
+		
+		using namespace GamepadCalibrationSensors;
+		ProcessMotionData(HIDInput, Context->Calibration, GyroDeg, AccelG);
 
-		FAccelerometer Acc;
-		Acc.X = static_cast<int16_t>((HIDInput[22]) | (HIDInput[23] << 8));
-		Acc.Y = static_cast<int16_t>((HIDInput[24]) | (HIDInput[25] << 8));
-		Acc.Z = static_cast<int16_t>((HIDInput[26]) | (HIDInput[27] << 8));
+		float gx = FMath::DegreesToRadians(GyroDeg.Z); // Gyroscope.X * GRAVITY_MS2;
+		float gy = FMath::DegreesToRadians(GyroDeg.Y); // Gyroscope.Y * GRAVITY_MS2;
+		float gz = FMath::DegreesToRadians(GyroDeg.X); // Gyroscope.Z * GRAVITY_MS2;
 
-		if (IsCalibrating())
-		{
-			FVector AccGyro = GetAccumulatedGyro();
-			AccGyro.X += Gyro.X;
-			AccGyro.Y += Gyro.Y;
-			AccGyro.Z += Gyro.Z;
-			SetAccumulatedGyro(AccGyro);
+		float ax = AccelG.Z;
+		float ay = AccelG.Y;
+		float az = AccelG.X;
 
-			FVector AccAccel = GetAccumulatedGyro();
-			AccAccel.X += Acc.X;
-			AccAccel.Y += Acc.Y;
-			AccAccel.Z += Acc.Z;
-			SetAccumulatedAccel(AccAccel);
-
-			FSensorBounds SBounds = GetBounds();
-			SBounds.Gyro_X_Bounds.X = FMath::Min(SBounds.Gyro_X_Bounds.X, Gyro.X);
-			SBounds.Gyro_X_Bounds.Y = FMath::Max(SBounds.Gyro_X_Bounds.Y, Gyro.X);
-
-			SBounds.Gyro_Y_Bounds.X = FMath::Min(SBounds.Gyro_Y_Bounds.X, Gyro.Y);
-			SBounds.Gyro_Y_Bounds.Y = FMath::Max(SBounds.Gyro_Y_Bounds.Y, Gyro.Y);
-
-			SBounds.Gyro_Z_Bounds.X = FMath::Min(SBounds.Gyro_Z_Bounds.X, Gyro.Z);
-			SBounds.Gyro_Z_Bounds.Y = FMath::Max(SBounds.Gyro_Z_Bounds.Y, Gyro.Z);
-
-			SBounds.Accel_X_Bounds.X = FMath::Min(SBounds.Accel_X_Bounds.X, Acc.X);
-			SBounds.Accel_X_Bounds.Y = FMath::Max(SBounds.Accel_X_Bounds.Y, Acc.X);
-
-			SBounds.Accel_Y_Bounds.X = FMath::Min(SBounds.Accel_Y_Bounds.X, Acc.Y);
-			SBounds.Accel_Y_Bounds.Y = FMath::Max(SBounds.Accel_Y_Bounds.Y, Acc.Y);
-
-			SBounds.Accel_Z_Bounds.X = FMath::Min(SBounds.Accel_Z_Bounds.X, Acc.Z);
-			SBounds.Accel_Z_Bounds.Y = FMath::Max(SBounds.Accel_Z_Bounds.Y, Acc.Z);
-			SetBounds(SBounds);
-
-			IncrementCalibrationSampleCount();
-		}
-
-		if (IsHasMotionSensorBaseline())
-		{
-			FSensorBounds SBounds = GetBounds();
-			FVector GyroLine = GetGyroBaseline();
-			Gyro.X -= GyroLine.X;
-			Gyro.Y -= GyroLine.Y;
-			Gyro.Z -= GyroLine.Z;
-
-			float FinalGyroValueX = 0.0f;
-			if (FMath::Abs(Gyro.X) > (SBounds.Gyro_X_Bounds.Y - SBounds.Gyro_X_Bounds.X) * GetSensorsDeadZone())
-			{
-				FinalGyroValueX = Gyro.X;
-			}
-
-			float FinalGyroValueY = 0.0f;
-			if (FMath::Abs(Gyro.Y) > (SBounds.Gyro_Y_Bounds.Y - SBounds.Gyro_Y_Bounds.X) * GetSensorsDeadZone())
-			{
-				FinalGyroValueY = Gyro.Y;
-			}
-
-			float FinalGyroValueZ = 0.0f;
-			if (FMath::Abs(Gyro.Z) > (SBounds.Gyro_Z_Bounds.Y - SBounds.Gyro_Z_Bounds.X) * GetSensorsDeadZone())
-			{
-				FinalGyroValueZ = Gyro.Z;
-			}
-
-			FVector AccLine = GetAccelBaseline();
-			Acc.X -= AccLine.X;
-			Acc.Y -= AccLine.Y;
-			Acc.Z -= AccLine.Z;
-
-			float FinalAccelValueX = 0.0f;
-			if (FMath::Abs(Acc.X) > (SBounds.Accel_X_Bounds.Y - SBounds.Accel_X_Bounds.X) * GetSensorsDeadZone())
-			{
-				FinalAccelValueX = Acc.X;
-			}
-
-			float FinalAccelValueY = 0.0f;
-			if (FMath::Abs(Acc.Y) > (SBounds.Accel_Y_Bounds.Y - SBounds.Accel_Y_Bounds.X) * GetSensorsDeadZone())
-			{
-				FinalAccelValueY = Acc.Y;
-			}
-
-			float FinalAccelValueZ = 0.0f;
-			if (FMath::Abs(Acc.Z) > (SBounds.Accel_Z_Bounds.Y - SBounds.Accel_Z_Bounds.X) * GetSensorsDeadZone())
-			{
-				FinalAccelValueZ = Acc.Z;
-			}
-
-			Gyro.X = FinalGyroValueX;
-			Gyro.Y = FinalGyroValueY;
-			Gyro.Z = FinalGyroValueZ;
-
-			Acc.X = FinalAccelValueX;
-			Acc.Y = FinalAccelValueY;
-			Acc.Z = FinalAccelValueZ;
-		}
-
-		// We now use the Madgwick AHRS (IMU-only) and feed it with values
-		// converted from raw counts to SI using the official DS constants.
-		// The Madgwick instance and initialization are static locals so that
-		// we don't need to change the class header right away.
-		static FMadgwickAhrs MadgwickFilter(200.0f, 0.08f);
-		static bool bMadgwickInitialized = false;
-
-		// Official PlayStation DualSense scaling constants (from a kernel driver)
-		constexpr float DS_ACC_RES_PER_G = 8192.0f;      // counts per 1 g
-		constexpr float DS_GYRO_RES_PER_DEG_S = 1024.0f; // counts per 1 deg/s
-		constexpr float G_TO_MS2 = 9.80665f;
-		constexpr float DEG2RAD = 3.14159265358979323846f / 180.0f;
-
-		// Convert gyro raw (counts) -> deg/s -> rad/s
-		float gx_dps = static_cast<float>(Gyro.X) / DS_GYRO_RES_PER_DEG_S;
-		float gy_dps = static_cast<float>(Gyro.Y) / DS_GYRO_RES_PER_DEG_S;
-		float gz_dps = static_cast<float>(Gyro.Z) / DS_GYRO_RES_PER_DEG_S;
-
-		float gx = gx_dps * DEG2RAD;
-		float gy = gy_dps * DEG2RAD;
-		float gz = gz_dps * DEG2RAD;
-
-		float ax_g = static_cast<float>(Acc.X) / DS_ACC_RES_PER_G;
-		float ay_g = static_cast<float>(Acc.Y) / DS_ACC_RES_PER_G;
-		float az_g = static_cast<float>(Acc.Z) / DS_ACC_RES_PER_G;
-
-		float ax = ax_g * G_TO_MS2;
-		float ay = ay_g * G_TO_MS2;
-		float az = az_g * G_TO_MS2;
-
-		if (!bMadgwickInitialized)
-		{
-			const float safeDt = FMath::Max(Delta, 0.001f);
-			MadgwickFilter.SetSampleFreq(1.0f / safeDt);
-			MadgwickFilter.SetBeta(0.08f);
-			bMadgwickInitialized = true;
-		}
-
-		if (IsResetGyroscope())
-		{
-			MadgwickFilter.Reset();
-			SetIsResetGyroscope(false);
-		}
-
+		// if (IsResetGyroscope())
+		// {
+		// 	MadgwickFilter.Reset();
+		// 	SetIsResetGyroscope(false);
+		// }
+		
 		// Update Madgwick filter (IMU-only)
-		MadgwickFilter.UpdateImu(gx, gy, -gz, ax, ay, -az, Delta);
+		MadgwickFilter.UpdateImu(gx, gy, gz, ax, ay, az, Delta);
 
 		// Get quaternion directly to avoid Gimbal Lock
 		float qw, qx, qy, qz;
 		MadgwickFilter.GetQuaternion(qw, qx, qy, qz);
 
-		// Create Unreal quaternion and extract Euler angles
-		// Note: FQuat constructor is (X, Y, Z, W)
+		// Create Unreal quaternion
 		const FQuat SensorQuat(qx, qy, qz, qw);
 		const FRotator ControlRotation = SensorQuat.Rotator();
 
-		// Compose Tilt vector using the same layout your code used before (Pitch, Yaw, Roll) in degrees
-		const FVector Tilt = FVector(ControlRotation.Pitch,
-		                             ControlRotation.Yaw,
-		                             ControlRotation.Roll);
-
-		// Keep the same output vectors you already used elsewhere
-		const FVector Gyroscope = FVector(Gyro.X, Gyro.Z, Gyro.Y);
-		const FVector Accelerometer = FVector(Acc.X, Acc.Z, Acc.Y);
-
-		FVector Accel_MS2 = FVector(ax, az, ay);
-		const float GravityMagnitude = Accel_MS2.Size();
-		FVector Gravity = (GravityMagnitude > KINDA_SMALL_NUMBER) ? (Accel_MS2 / GravityMagnitude) * G_TO_MS2 : FVector::ZeroVector;
-		InMessageHandler.Get().OnMotionDetected(Tilt, Gyroscope, Gravity, Accelerometer, UserId, InputDeviceId);
+		// Compose Tilt (Pitch, Yaw, Roll) in degrees
+		const FVector Tilt = FVector(ControlRotation.Roll,
+									 ControlRotation.Yaw,
+									 ControlRotation.Pitch);
+		
+		FVector GravityVector = SensorQuat.GetUpVector();
+		
+		
+		InMessageHandler.Get().OnMotionDetected(Tilt, GyroDeg, GravityVector, AccelG, UserId, InputDeviceId);
 	}
 
 	SetHasPhoneConnected(HIDInput[0x35] & 0x01);

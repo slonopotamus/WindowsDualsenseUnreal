@@ -5,7 +5,9 @@
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
+#include "Core/Types/Structs/Config/GamepadCalibration.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
+#include "Implementations/Utils/GamepadCalibrationSensors.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include <hidsdi.h>
@@ -93,10 +95,6 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 								    DevicePath.Contains(TEXT("BTHENUM")))
 								{
 									Context.ConnectionType = EDeviceConnection::Bluetooth;
-									if (!ConfigureBluetoothFeatures(TempDeviceHandle))
-									{
-										UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to configure Bluetooth features."));
-									}
 								}
 								Devices.Add(Context);
 							}
@@ -183,6 +181,11 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 	}
 
 	DeviceContext->Handle = DeviceHandle;
+	
+	if (!ConfigureFeatures(DeviceContext))
+	{
+		UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to calibration sensors features."));
+	}
 	return true;
 }
 
@@ -277,18 +280,24 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 	}
 }
 
-bool FWindowsDeviceInfo::ConfigureBluetoothFeatures(HANDLE DeviceHandle)
+bool FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 {
-	// Feature Report 0x05 - Enables advanced Bluetooth features
+	using namespace GamepadCalibrationSensors;
+	
 	unsigned char FeatureBuffer[41];
 	FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
+	
 	FeatureBuffer[0] = 0x05;
-	if (!HidD_GetFeature(DeviceHandle, FeatureBuffer, 41))
+	if (!HidD_GetFeature(Context->Handle, FeatureBuffer, 41))
 	{
 		const DWORD Error = GetLastError();
 		UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
 		return false;
 	}
-
+	
+	FGamepadCalibration Calibration;
+	DualSenseCalibrationSensors(FeatureBuffer, Calibration);
+	
+	Context->Calibration = Calibration;
 	return true;
 }

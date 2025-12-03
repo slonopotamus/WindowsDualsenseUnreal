@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include "Core/Types/Structs/Config/GamepadCalibration.h"
 
 #if PLATFORM_WINDOWS
 
@@ -131,6 +132,17 @@ struct FDeviceContext
 	 *       data handling capabilities.
 	 */
 	unsigned char BufferOutput[78] = {};
+	/**
+	 * @brief Holds calibration data for a gamepad device.
+	 *
+	 * This structure is utilized to store and manage calibration parameters
+	 * such as offset, sensitivity, and range for gamepad inputs. The calibration
+	 * ensures accurate and responsive control by compensating for hardware variances.
+	 *
+	 * Typically used during the initialization and configuration phase of a gamepad device
+	 * to align input response with expected behavior.
+	 */
+	FGamepadCalibration Calibration;
 	/**
 	 * Indicates whether the device is connected.
 	 *

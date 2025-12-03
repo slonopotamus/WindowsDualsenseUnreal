@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include "Core/Algorithms/MadgwickAhrs.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
 
@@ -442,9 +443,12 @@ public:
 	 * @return A pointer to the mutable FDeviceContext object corresponding to the device's HID context.
 	 */
 	virtual FDeviceContext* GetMutableDeviceContext() override { return &HIDDeviceContexts; }
+	
+	FMadgwickAhrs MadgwickFilter;
 
 	SonyGamepadAbstract()
-	    : bEnableTouch(false)
+	    : MadgwickFilter(0.8)
+	    , bEnableTouch(false)
 	    , bWasTouch1Down(false)
 	    , bWasTouch2Down(false)
 	    , bHasPhoneConnected(false)
@@ -454,7 +458,7 @@ public:
 	    , bIsCalibrating(false)
 	    , CalibrationStartTime(0)
 	    , CalibrationDuration(0)
-	    , CalibrationSampleCount(0)
+		, CalibrationSampleCount(0)
 	{}
 
 protected:
