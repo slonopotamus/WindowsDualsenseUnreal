@@ -339,7 +339,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	{
 		FVector GyroDeg;
 		FVector AccelG;
-		
+
 		using namespace GamepadCalibrationSensors;
 		ProcessMotionData(HIDInput, Context->Calibration, GyroDeg, AccelG);
 
@@ -356,7 +356,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		// 	MadgwickFilter.Reset();
 		// 	SetIsResetGyroscope(false);
 		// }
-		
+
 		// Update Madgwick filter (IMU-only)
 		MadgwickFilter.UpdateImu(gx, gy, gz, ax, ay, az, Delta);
 
@@ -370,12 +370,11 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 
 		// Compose Tilt (Pitch, Yaw, Roll) in degrees
 		const FVector Tilt = FVector(ControlRotation.Roll,
-									 ControlRotation.Yaw,
-									 ControlRotation.Pitch);
-		
+		                             ControlRotation.Yaw,
+		                             ControlRotation.Pitch);
+
 		FVector GravityVector = SensorQuat.GetUpVector();
-		
-		
+
 		InMessageHandler.Get().OnMotionDetected(Tilt, GyroDeg, GravityVector, AccelG, UserId, InputDeviceId);
 	}
 

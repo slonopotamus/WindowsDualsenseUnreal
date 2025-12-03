@@ -38,7 +38,7 @@ namespace GamepadCalibrationSensors
 		OutCalibration.GyroBiasX = GyroPitchBias;
 		OutCalibration.GyroBiasY = GyroYawBias;
 		OutCalibration.GyroBiasZ = GyroRollBias;
-	
+
 		const float Speed2x = static_cast<float>(GyroSpeedPlus + GyroSpeedMinus);
 		float DenomX = static_cast<float>(abs(GyroPitchPlus - GyroPitchBias) + abs(GyroPitchMinus - GyroPitchBias));
 		OutCalibration.GyroFactorX = (DenomX != 0.0f) ? (Speed2x / DenomX) : 1.0f;
@@ -63,20 +63,20 @@ namespace GamepadCalibrationSensors
 		float RangeZ = static_cast<float>(AccelZPlus - AccelZMinus);
 		OutCalibration.AccelBiasZ = AccelZPlus - (RangeZ / 2.0f);
 		OutCalibration.AccelFactorZ = 1.0f;
-		
+
 		UE_LOG(LogDualSense, Log, TEXT("AccelBias: %d  AccelFactorZ: %f"), OutCalibration.AccelBiasZ, OutCalibration.AccelFactorZ);
 		UE_LOG(LogDualSense, Log, TEXT("AccelBiasY: %d GyroFactorZ: %f"), OutCalibration.GyroBiasZ, OutCalibration.GyroFactorZ);
 	}
-	
+
 	inline void ProcessMotionData(const uint8* Buffer, const FGamepadCalibration& Calibration, FVector& FinalGyro, FVector& FinalAccel)
 	{
 		const int16 RawGyroX = static_cast<int16>(Buffer[16] | (Buffer[17] << 8));
 		const int16 RawGyroY = static_cast<int16>(Buffer[18] | (Buffer[19] << 8));
 		const int16 RawGyroZ = static_cast<int16>(Buffer[20] | (Buffer[21] << 8));
 
-		const int16 RawAccX  = static_cast<int16>(Buffer[22] | (Buffer[23] << 8));
-		const int16 RawAccY  = static_cast<int16>(Buffer[24] | (Buffer[25] << 8));
-		const int16 RawAccZ  = static_cast<int16>(Buffer[26] | (Buffer[27] << 8));
+		const int16 RawAccX = static_cast<int16>(Buffer[22] | (Buffer[23] << 8));
+		const int16 RawAccY = static_cast<int16>(Buffer[24] | (Buffer[25] << 8));
+		const int16 RawAccZ = static_cast<int16>(Buffer[26] | (Buffer[27] << 8));
 
 		FinalGyro.X = ((RawGyroX - Calibration.GyroBiasX) * Calibration.GyroFactorX);
 		FinalGyro.Y = ((RawGyroY - Calibration.GyroBiasY) * Calibration.GyroFactorY);

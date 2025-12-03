@@ -181,7 +181,7 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 	}
 
 	DeviceContext->Handle = DeviceHandle;
-	
+
 	if (!ConfigureFeatures(DeviceContext))
 	{
 		UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to calibration sensors features."));
@@ -283,10 +283,10 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 bool FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 {
 	using namespace GamepadCalibrationSensors;
-	
+
 	unsigned char FeatureBuffer[41];
 	FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
-	
+
 	FeatureBuffer[0] = 0x05;
 	if (!HidD_GetFeature(Context->Handle, FeatureBuffer, 41))
 	{
@@ -294,10 +294,10 @@ bool FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 		UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
 		return false;
 	}
-	
+
 	FGamepadCalibration Calibration;
 	DualSenseCalibrationSensors(FeatureBuffer, Calibration);
-	
+
 	Context->Calibration = Calibration;
 	return true;
 }
