@@ -75,6 +75,20 @@ public:
 	{
 		return this;
 	}
+	
+	/**
+	 * @brief Updates the output state of the gamepad.
+	 *
+	 * This method is responsible for refreshing or modifying the output-related
+	 * functionality of the Sony gamepad. It overrides the UpdateOutput method
+	 * defined in the ISonyGamepad interface and provides a customized implementation
+	 * specific to derived classes.
+	 *
+	 * The UpdateOutput functionality may include updating lightbar states,
+	 * haptic feedback, audio output, or other gamepad output features based on
+	 * the current state or input from the system.
+	 */
+	virtual void UpdateOutput() override;
 
 	/**
 	 * @brief Configures the settings of the DualSense controller based on the provided feature report.

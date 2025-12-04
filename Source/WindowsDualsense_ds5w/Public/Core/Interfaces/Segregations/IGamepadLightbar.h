@@ -15,6 +15,12 @@ public:
 	 * Sets the lightbar color and associated timing parameters on the gamepad.
 	 *
 	 * @param Color The color to set the lightbar to, represented as an FColor.
+	 */
+	virtual void SetLightbar(FColor Color) = 0;
+	/**
+	 * Sets the lightbar color and associated timing parameters on the gamepad.
+	 *
+	 * @param Color The color to set the lightbar to, represented as an FColor.
 	 * @param BrithnessTime The time duration for setting the brightness effect. Defaults to 0.0f.
 	 * @param ToggleTime The time interval for toggling the lightbar. Defaults to 0.0f.
 	 */

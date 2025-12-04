@@ -7,13 +7,6 @@
 
 using namespace SonyGamepadProxyHelpers;
 
-void USonyGamepadSenorsProxy::StartMotionSensorCalibration(int32 ControllerId, float Duration, float DeadZone)
-{
-	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
-	{
-		Gamepad->StartMotionSensorCalibration(Duration, DeadZone);
-	}
-}
 void USonyGamepadSenorsProxy::ResetGyroOrientation(int32 ControllerId)
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
@@ -21,15 +14,7 @@ void USonyGamepadSenorsProxy::ResetGyroOrientation(int32 ControllerId)
 		Gamepad->ResetGyroOrientation();
 	}
 }
-bool USonyGamepadSenorsProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress)
-{
-	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
-	if (!Gamepad)
-	{
-		return false;
-	}
-	return Gamepad->GetMotionSensorCalibrationStatus(Progress);
-}
+
 void USonyGamepadSenorsProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope)
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))

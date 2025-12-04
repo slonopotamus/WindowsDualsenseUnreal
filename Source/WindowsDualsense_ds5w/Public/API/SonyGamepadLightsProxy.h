@@ -24,6 +24,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepadLights", meta = (AdvancedDisplay = "Ligthbar Color (R,G,B)", ToolTip = "Sets the lightbar color on a controller."))
 	static void Ligthbar(int32 ControllerId, FColor Color);
 	/**
+	 * Sets the lightbar color on a controller.
+	 *
+	 * @param ControllerId The ID of the DualSense controller to be affected.
+	 * @param Color The desired lightbar color, represented as an FColor value.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadLights", meta = (AdvancedDisplay = "Ligthbar Flash (DualShock4)", ToolTip = "Sets the flash lightbar toogle."))
+	static void LigthbarFlash(int32 ControllerId, FColor Color);
+	/**
 	 * Controls the LED and microphone visual effects on a DualSense controller.
 	 *
 	 * @param ControllerId The ID of the DualSense controller to be affected.

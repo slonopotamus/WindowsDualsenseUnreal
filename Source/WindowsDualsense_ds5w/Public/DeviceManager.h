@@ -164,7 +164,7 @@ private:
 	 * This variable determines how often certain tasks, such as device state checks
 	 * or updates, are performed within the system.
 	 */
-	float PollInterval = 0.016f;
+	float PollInterval = 0.033f;
 	/**
 	 * Stores a mapping of connection states for devices, where the key represents
 	 * a device ID (int32) and the value indicates whether a connection change

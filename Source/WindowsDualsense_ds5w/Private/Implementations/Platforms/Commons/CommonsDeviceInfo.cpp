@@ -4,9 +4,10 @@
 
 #include "Implementations/Platforms/Commons/CommonsDeviceInfo.h"
 
-#if PLATFORM_WINDOWS
-#else
+#if PLATFORM_LINUX
 #include "SDL_hidapi.h"
+#include "API/SonyGamepadProxyHelpers.h"
+#include "Implementations/Utils/GamepadCalibrationSensors.h"
 
 static const uint16 SONY_VENDOR_ID = 0x054C;
 static const uint16 DUALSHOCK4_PID_V1 = 0x05C4;
@@ -22,7 +23,7 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 	}
 
 	int BytesRead = 0;
-	if (Context->ConnectionType == Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
+	if (Context->ConnectionType == EDeviceConnection::Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
 	{
 		const size_t InputReportLength = 547;
 		BytesRead = SDL_hid_read(Context->Handle, Context->BufferDS4, InputReportLength);
@@ -34,7 +35,7 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 		return;
 	}
 
-	const size_t InputReportLength = (Context->ConnectionType == Bluetooth) ? 78 : 64;
+	const size_t InputReportLength = (Context->ConnectionType == EDeviceConnection::Bluetooth) ? 78 : 64;
 	if (sizeof(Context->Buffer) < InputReportLength)
 	{
 		UE_LOG(LogDualSense, Warning, TEXT("hid_api: Main buffer is too small for report input."));
@@ -65,6 +66,27 @@ void FCommonsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 	}
 }
 
+bool FCommonsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
+{
+	using namespace GamepadCalibrationSensors;
+
+	unsigned char FeatureBuffer[41];
+	FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
+
+	FeatureBuffer[0] = 0x05;
+	if (!SDL_hid_get_feature_report(Context->Handle, FeatureBuffer, 41))
+	{
+		UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error"));
+		return false;
+	}
+
+	FGamepadCalibration Calibration;
+	DualSenseCalibrationSensors(FeatureBuffer, Calibration);
+
+	Context->Calibration = Calibration;
+	return true;
+}
+
 void FCommonsDeviceInfo::Write(FDeviceContext* Context)
 {
 	if (!Context || !Context->Handle)
@@ -73,7 +95,7 @@ void FCommonsDeviceInfo::Write(FDeviceContext* Context)
 	}
 
 	const size_t InReportLength = (Context->DeviceType == EDeviceType::DualShock4) ? 32 : 74;
-	const size_t OutputReportLength = (Context->ConnectionType == Bluetooth) ? 78 : InReportLength;
+	const size_t OutputReportLength = (Context->ConnectionType == EDeviceConnection::Bluetooth) ? 78 : InReportLength;
 
 	int BytesWritten = SDL_hid_write(Context->Handle, Context->BufferOutput, OutputReportLength);
 	if (BytesWritten < 0)
@@ -125,11 +147,11 @@ void FCommonsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 			NewDeviceContext.IsConnected = true;
 			if (CurrentDevice->interface_number == -1)
 			{
-				NewDeviceContext.ConnectionType = Bluetooth;
+				NewDeviceContext.ConnectionType = EDeviceConnection::Bluetooth;
 			}
 			else
 			{
-				NewDeviceContext.ConnectionType = Usb;
+				NewDeviceContext.ConnectionType = EDeviceConnection::Usb;
 			}
 			NewDeviceContext.Handle = nullptr;
 			Devices.Add(NewDeviceContext);
@@ -154,6 +176,8 @@ bool FCommonsDeviceInfo::CreateHandle(FDeviceContext* Context)
 
 	SDL_hid_set_nonblocking(Handle, 1);
 	Context->Handle = Handle;
+	
+	ConfigureFeatures(Context);
 	return true;
 }
 

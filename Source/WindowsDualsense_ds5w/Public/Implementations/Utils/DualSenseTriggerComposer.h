@@ -126,7 +126,7 @@ namespace DualSenseTriggerComposer
 		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0x25;
-			Context->Output.LeftTrigger.Strengths.Compose[0] = StartZone << 4 | Amplitude & 0x0F;
+			Context->Output.LeftTrigger.Strengths.Compose[0] = StartZone << 4 | (Amplitude & 0x0F);
 			Context->Output.LeftTrigger.Strengths.Compose[1] = Behavior;
 			Context->Output.LeftTrigger.Strengths.Compose[2] = Trigger & 0x0F;
 		}
@@ -134,7 +134,7 @@ namespace DualSenseTriggerComposer
 		if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0x25;
-			Context->Output.RightTrigger.Strengths.Compose[0] = StartZone << 4 | Amplitude & 0x0F;
+			Context->Output.RightTrigger.Strengths.Compose[0] = StartZone << 4 | (Amplitude & 0x0F);
 			Context->Output.RightTrigger.Strengths.Compose[1] = Behavior;
 			Context->Output.RightTrigger.Strengths.Compose[2] = Trigger & 0x0F;
 		}
@@ -174,7 +174,7 @@ namespace DualSenseTriggerComposer
 			Context->Output.LeftTrigger.Mode = 0x27;
 			Context->Output.LeftTrigger.Strengths.Compose[0] = StartZone;
 			Context->Output.LeftTrigger.Strengths.Compose[1] = BehaviorFlag > 0 ? 0x02 : 0x01;
-			Context->Output.LeftTrigger.Strengths.Compose[2] = Force << 4 | Amplitude & 0x0F;
+			Context->Output.LeftTrigger.Strengths.Compose[2] = Force << 4 | (Amplitude & 0x0F);;
 			Context->Output.LeftTrigger.Strengths.Compose[3] = Period;
 			Context->Output.LeftTrigger.Strengths.Compose[4] = Frequency;
 		}
@@ -184,7 +184,7 @@ namespace DualSenseTriggerComposer
 			Context->Output.RightTrigger.Mode = 0x27;
 			Context->Output.RightTrigger.Strengths.Compose[0] = StartZone;
 			Context->Output.RightTrigger.Strengths.Compose[1] = BehaviorFlag > 0 ? 0x02 : 0x00;
-			Context->Output.RightTrigger.Strengths.Compose[2] = Force << 4 | Amplitude & 0x0F;
+			Context->Output.RightTrigger.Strengths.Compose[2] = Force << 4 | (Amplitude & 0x0F);
 			Context->Output.RightTrigger.Strengths.Compose[3] = Period;
 			Context->Output.RightTrigger.Strengths.Compose[4] = Frequency;
 		}

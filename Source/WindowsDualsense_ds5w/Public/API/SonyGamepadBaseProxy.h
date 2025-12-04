@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Types/Enums/EDeviceCommons.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
 #include "CoreMinimal.h"
@@ -47,7 +46,7 @@ public:
 	 * @param ControllerId The ID of the controller whose connection type is being queried.
 	 * @return The connection type of the device, which can be USB, Bluetooth, or Unrecognized.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepad Status", meta = (DisplayName = "Connection Type (USB, Bluetooth, Unknown)"))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad Status", meta = (DisplayName = "Connection Type (e.g., USB, Bluetooth, Unknown)"))
 	static EDeviceConnection GetConnectionType(int32 ControllerId);
 	/**
 	 * Retrieves the battery level of the DualSense or DualShock controller for the specified controller ID.
@@ -60,6 +59,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad Status", meta = (DisplayName = "Battery Level (0.0f-100.0f)"))
 	static float LevelBatteryDevice(int32 ControllerId);
+	
+#pragma DEPRECATED METHODS
 	/**
 	 * Enables or disables the touch functionality on a specified DualSense controller.
 	 *
@@ -67,7 +68,7 @@ public:
 	 * @param bEnableTouch A boolean indicating whether to enable (true) or disable (false) the touch functionality.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Touch (Legacy)", meta = (AdvancedDisplay = "EnableTouch Deprecated v1.2.20"))
-	static void EnableTouch(int32 ControllerId, bool bEnableTouch);
+	static void EnableTouch(int32 ControllerId, bool bEnableTouch) {}
 	/**
 	 * Updates the LED color effects on a DualSense controller using the specified color.
 	 *
@@ -81,7 +82,7 @@ public:
 	    UPARAM(DisplayName = "(DualShock 4) transition time max: 2.5f", meta = (ClampMin = "0.0", ClampMax = "2.5", UIMin = "0.0", UIMax = "2.5", ToolTip = "(DualShock) LED brightness transition time, in seconds."))
 	        const float BrightnessTime = 0.0f,
 	    UPARAM(DisplayName = "(DualShock 4) Toggle transition max: 2.5f", meta = (ClampMin = "0.0", ClampMax = "2.5", UIMin = "0.0", UIMax = "2.5", ToolTip = "(DualShock) Toggle transition time, in seconds."))
-	        const float ToogleTime = 0.0f);
+	        const float ToogleTime = 0.0f) {}
 	/**
 	 * Controls the LED and microphone visual effects on a DualSense controller.
 	 *
@@ -89,7 +90,7 @@ public:
 	 * @param Value The desired LED and microphone effect to apply, represented as an ELedMicEnum value.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad (Legacy)", meta = (AdvancedDisplay = "LedMicEffects Deprecated v1.2.20"))
-	static void LedMicEffects(int32 ControllerId, ELedMicEnum Value);
+	static void LedMicEffects(int32 ControllerId, ELedMicEnum Value) {}
 	/**
 	 * Initiates the motion sensor calibration process for the specified controller.
 	 * The calibration adjusts the motion sensor sensitivity and dead zone settings.
@@ -104,7 +105,8 @@ public:
 	    UPARAM(DisplayName = "Calibration Duration (Seconds)", meta = (ClampMin = "1.0", ClampMax = "10.0", UIMin = "1.0", UIMax = "10.0",
 	                                                                   ToolTip = "The time in seconds to collect sensor data for calculating the stable center (baseline). Longer durations can provide a more accurate baseline.")) float Duration = 2.0f,
 	    UPARAM(DisplayName = "Noise Deadzone Percentage", meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0",
-	                                                              ToolTip = "A percentage (0.0 to 1.0) of the sensor noise range to ignore after calibration. A higher value creates a larger deadzone, filtering out more residual noise but potentially ignoring very subtle movements.")) float DeadZone = 0.5f);
+	                                                              ToolTip = "A percentage (0.0 to 1.0) of the sensor noise range to ignore after calibration. A higher value creates a larger deadzone, filtering out more residual noise but potentially ignoring very subtle movements.")) float DeadZone = 0.5f)
+	{}
 	/**
 	 * Resets the gyroscope orientation for the specified controller.
 	 * This aligns the gyroscope orientation to match the current physical orientation of the controller.
@@ -112,7 +114,7 @@ public:
 	 * @param ControllerId The ID of the controller whose gyroscope orientation is to be reset.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad (Legacy)", meta = (AdvancedDisplay = "GyroOrientation Deprecated v1.2.20"))
-	static void ResetGyroOrientation(int32 ControllerId);
+	static void ResetGyroOrientation(int32 ControllerId) {}
 	/**
 	 * Retrieves the calibration status of the motion sensor for the specified controller.
 	 *
@@ -121,7 +123,7 @@ public:
 	 * @return True if the calibration process is in progress, false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad (Legacy)", meta = (AdvancedDisplay = "CalibrationStatus Deprecated v1.2.20"))
-	static bool GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress);
+	static bool GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress) {}
 	/**
 	 * Enables or disables the gyroscope functionality for a specified controller.
 	 *
@@ -129,5 +131,5 @@ public:
 	 * @param bEnableGyroscope Set to true to enable the gyroscope, or false to disable it.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad (Legacy)", meta = (AdvancedDisplay = "GyroscopeValues Deprecated v1.2.20"))
-	static void EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope);
+	static void EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope) {}
 };

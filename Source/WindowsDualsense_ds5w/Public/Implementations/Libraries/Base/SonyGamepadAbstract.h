@@ -349,6 +349,7 @@ public:
 	 * @param ToggleTime The time interval for toggling the lightbar. Defaults to 0.0f.
 	 */
 	virtual void SetLightbar(FColor Color, float BrithnessTime = 0.0f, float ToggleTime = 0.0f) override {}
+
 	/**
 	 * Sets the LED associated with the player on the Sony gamepad to a specified brightness level.
 	 *
@@ -444,7 +445,25 @@ public:
 	 */
 	virtual FDeviceContext* GetMutableDeviceContext() override { return &HIDDeviceContexts; }
 
+	/**
+	 * @class FMadgwickAhrs
+	 * @brief Implements the Madgwick filter algorithm for sensor fusion in orientation tracking.
+	 *
+	 * The FMadgwickAhrs class is designed to process data from an IMU (Inertial Measurement Unit),
+	 * applying the Madgwick filter algorithm to estimate orientation (roll, pitch, and yaw).
+	 * It fuses accelerometer, gyroscope, and optionally magnetometer data to provide
+	 * reliable orientation estimations.
+	 *
+	 * This class is commonly utilized in applications requiring real-time orientation tracking,
+	 * such as motion sensing, virtual reality systems, and robotics.
+	 *
+	 * @details The algorithm is specifically optimized for low computational overhead while
+	 * maintaining accurate results. It is well-suited for embedded systems or devices with
+	 * constrained processing resources. Using this class, applications can achieve smooth
+	 * and responsive 6-DOF (Degrees of Freedom) motion and orientation tracking.
+	 */
 	FMadgwickAhrs MadgwickFilter;
+	
 	SonyGamepadAbstract()
 	    : MadgwickFilter(0.8)
 	    , bEnableTouch(false)

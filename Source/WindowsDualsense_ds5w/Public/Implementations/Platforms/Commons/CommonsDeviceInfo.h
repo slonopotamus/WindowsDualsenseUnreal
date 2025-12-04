@@ -4,11 +4,9 @@
 
 #pragma once
 
-#if PLATFORM_WINDOWS
-#else
-#include "Core/Interfaces/PlatformHardwareInfoInterface.h"
+#include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
-class FCommonsDeviceInfo : public IPlatformHardwareInfoInterface
+class FCommonsDeviceInfo : public IPlatformHardwareInfo
 {
 	/**
 	 * Virtual destructor for the FCommonsDeviceInfo class.
@@ -39,6 +37,16 @@ public:
 	 *                pointer.
 	 */
 	virtual void ProcessAudioHapitc(FDeviceContext* Context) override;
+	/**
+	 * @brief Configures Bluetooth-specific features for a given HID device.
+	 *
+	 * This method is used to initialize and set up Bluetooth-related features on a HID device.
+	 * It communicates with the device using a feature report and updates the provided device context accordingly.
+	 *
+	 * @param Context A reference to the device context object that holds device-specific settings and state information.
+	 * @return A boolean indicating whether the Bluetooth feature configuration was successful (true) or failed (false).
+	 */
+	static bool ConfigureFeatures(FDeviceContext* Context);
 	/**
 	 * Reads device information using the provided device context.
 	 *
@@ -97,4 +105,3 @@ public:
 	 */
 	virtual void InvalidateHandle(FDeviceContext* Context) override;
 };
-#endif

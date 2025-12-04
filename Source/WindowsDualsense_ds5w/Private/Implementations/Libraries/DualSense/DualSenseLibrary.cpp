@@ -101,8 +101,17 @@ bool FDualSenseLibrary::Initialize(const FDeviceContext& Context)
 	}
 
 	ResetLights();
-
 	return true;
+}
+
+void FDualSenseLibrary::UpdateOutput()
+{
+	FDeviceContext* Context = GetMutableDeviceContext();
+	if (!Context || !Context->IsConnected)
+	{
+		return;
+	}
+	FPlayStationOutputComposer::OutputDualSense(Context);
 }
 
 void FDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
@@ -348,7 +357,7 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		constexpr float DegToRad = PI / 180.0f;
 		FVector GyroRad = GyroDeg * DegToRad; // deg/s -> rad/s
 		FVector AccelRad = AccelG * GToMSq;
-		MadgwickFilter.UpdateImu(GyroRad.Z, GyroRad.Y, -GyroRad.X, AccelRad.Z, AccelRad.Y, -AccelRad.X, 0.016f);
+		MadgwickFilter.UpdateImu(GyroRad.Z, GyroRad.Y, -GyroRad.X, AccelRad.Z, AccelRad.Y, -AccelRad.X, 0.033f);
 
 		float qw, qx, qy, qz;
 		MadgwickFilter.GetQuaternion(qw, qx, qy, qz);
@@ -398,6 +407,7 @@ void FDualSenseLibrary::SetGameCube(const EControllerHand& Hand)
 void FDualSenseLibrary::SetBow22(uint8 StartZone, uint8 SnapBack, const EControllerHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
+	Context->bOverrideTriggerBytes = false;
 	Bow22(Context, StartZone, SnapBack, Hand);
 	UpdateOutput();
 }
