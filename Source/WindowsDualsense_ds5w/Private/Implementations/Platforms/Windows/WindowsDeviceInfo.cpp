@@ -135,8 +135,6 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 	}
 
 	DWORD BytesRead = 0;
-	HidD_FlushQueue(Context->Handle);
-
 	if (Context->ConnectionType == EDeviceConnection::Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
 	{
 		constexpr size_t InputReportLength = 547;

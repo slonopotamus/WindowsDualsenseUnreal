@@ -445,7 +445,6 @@ public:
 	virtual FDeviceContext* GetMutableDeviceContext() override { return &HIDDeviceContexts; }
 
 	FMadgwickAhrs MadgwickFilter;
-
 	SonyGamepadAbstract()
 	    : MadgwickFilter(0.8)
 	    , bEnableTouch(false)

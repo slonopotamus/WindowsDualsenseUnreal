@@ -101,6 +101,7 @@ bool FDualSenseLibrary::Initialize(const FDeviceContext& Context)
 	}
 
 	ResetLights();
+
 	return true;
 }
 
@@ -343,39 +344,22 @@ void FDualSenseLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 		using namespace GamepadCalibrationSensors;
 		ProcessMotionData(HIDInput, Context->Calibration, GyroDeg, AccelG);
 
-		float gx = FMath::DegreesToRadians(GyroDeg.Z); // Gyroscope.X * GRAVITY_MS2;
-		float gy = FMath::DegreesToRadians(GyroDeg.Y); // Gyroscope.Y * GRAVITY_MS2;
-		float gz = FMath::DegreesToRadians(GyroDeg.X); // Gyroscope.Z * GRAVITY_MS2;
+		constexpr float GToMSq = GRAVITY_MS2;
+		constexpr float DegToRad = PI / 180.0f;
+		FVector GyroRad = GyroDeg * DegToRad; // deg/s -> rad/s
+		FVector AccelRad = AccelG * GToMSq;
+		MadgwickFilter.UpdateImu(GyroRad.Z, GyroRad.Y, -GyroRad.X, AccelRad.Z, AccelRad.Y, -AccelRad.X, 0.016f);
 
-		float ax = AccelG.Z;
-		float ay = AccelG.Y;
-		float az = AccelG.X;
-
-		// if (IsResetGyroscope())
-		// {
-		// 	MadgwickFilter.Reset();
-		// 	SetIsResetGyroscope(false);
-		// }
-
-		// Update Madgwick filter (IMU-only)
-		MadgwickFilter.UpdateImu(gx, gy, gz, ax, ay, az, Delta);
-
-		// Get quaternion directly to avoid Gimbal Lock
 		float qw, qx, qy, qz;
 		MadgwickFilter.GetQuaternion(qw, qx, qy, qz);
 
-		// Create Unreal quaternion
-		const FQuat SensorQuat(qx, qy, qz, qw);
+		const FQuat RawQuat(qx, qy, qz, qw);
+		const FQuat CorrectionQuat(FVector::ForwardVector, PI);
+		const FQuat SensorQuat = CorrectionQuat * RawQuat;
+
 		const FRotator ControlRotation = SensorQuat.Rotator();
-
-		// Compose Tilt (Pitch, Yaw, Roll) in degrees
-		const FVector Tilt = FVector(ControlRotation.Roll,
-		                             ControlRotation.Yaw,
-		                             ControlRotation.Pitch);
-
-		FVector GravityVector = SensorQuat.GetUpVector();
-
-		InMessageHandler.Get().OnMotionDetected(Tilt, GyroDeg, GravityVector, AccelG, UserId, InputDeviceId);
+		const FVector Tilt = FVector(ControlRotation.Roll, ControlRotation.Yaw, ControlRotation.Pitch);
+		InMessageHandler.Get().OnMotionDetected(Tilt, GyroDeg, SensorQuat.GetUpVector(), AccelG, UserId, InputDeviceId);
 	}
 
 	SetHasPhoneConnected(HIDInput[0x35] & 0x01);

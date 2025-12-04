@@ -29,9 +29,9 @@ struct FGamepadCalibration
 	int16 GyroBiasY = 0;
 	int16 GyroBiasZ = 0;
 
-	int16 AccelBiasX = 0;
-	int16 AccelBiasY = 0;
-	int16 AccelBiasZ = 0;
+	float AccelBiasX = 0;
+	float AccelBiasY = 0;
+	float AccelBiasZ = 0;
 
 	float GyroFactorX = 1.0f;
 	float GyroFactorY = 1.0f;

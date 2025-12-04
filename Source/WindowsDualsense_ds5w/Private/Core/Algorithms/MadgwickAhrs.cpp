@@ -10,15 +10,15 @@ FMadgwickAhrs::FMadgwickAhrs(const float Beta)
     , q1(0.0f)
     , q2(0.0f)
     , q3(0.0f)
-{
-}
+{}
 
 void FMadgwickAhrs::UpdateImu(float gx, float gy, float gz, float ax, float ay, float az, float dt)
 {
-	if (dt <= 0.0f)
-	{
-		return;
-	}
+	// if (dt <= 0.0f)
+	// {
+	// 	return;
+	// }
+
 	float q0_ = q0, q1_ = q1, q2_ = q2, q3_ = q3;
 
 	float norm = std::sqrt(ax * ax + ay * ay + az * az);
@@ -69,7 +69,7 @@ void FMadgwickAhrs::UpdateImu(float gx, float gy, float gz, float ax, float ay, 
 
 void FMadgwickAhrs::GetQuaternion(float& Nq0, float& Nq1, float& Nq2, float& Nq3) const
 {
-	Nq0 = this->q0;
+	Nq0 = this->q0; // ou simplesmente q0 = FMadgwickAhrs::q0;
 	Nq1 = this->q1;
 	Nq2 = this->q2;
 	Nq3 = this->q3;
