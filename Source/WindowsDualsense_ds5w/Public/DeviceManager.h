@@ -155,7 +155,7 @@ public:
 	}
 
 protected:
-	void CheckEvents(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) const;
+	void CheckEvents(FDeviceContext* Context, const FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) const;
 	/**
 	 * @brief Handles button input events for a DualSense controller.
 	 *

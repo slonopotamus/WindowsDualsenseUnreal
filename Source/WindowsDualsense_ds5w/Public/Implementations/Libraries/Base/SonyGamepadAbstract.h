@@ -212,7 +212,7 @@ public:
 	 *         and representation are dependent on the implementation. Typically,
 	 *         values may range between 0.0 (empty) and 1.0 (full).
 	 */
-	virtual float GetBattery() const override;
+	virtual float GetBattery() override;
 	/**
 	 * Stops all currently active operations or actions associated with the interface.
 	 * This method must be implemented by any derived class to handle the termination

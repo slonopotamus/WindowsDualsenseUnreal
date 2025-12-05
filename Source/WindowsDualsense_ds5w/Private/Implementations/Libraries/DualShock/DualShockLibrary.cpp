@@ -31,15 +31,16 @@ void FDualShockLibrary::UpdateInput(float Delta)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	IPlatformHardwareInfo::Get().Read(Context);
-
+	FInputContext* InputToFill = Context->GetBackBuffer();
+	
 	using namespace GamepadProcessInput;
 	if (Context->ConnectionType == EDeviceConnection::Bluetooth)
 	{
-		DualShockRaw(&Context->Buffer[3], &Context->Input);
+		DualShockRaw(&Context->BufferDS4[3], InputToFill);
 	}
 	else
 	{
-		DualShockRaw(&Context->Buffer[1], &Context->Input);
+		DualShockRaw(&Context->Buffer[1], InputToFill);
 	}
 }
 

@@ -170,11 +170,13 @@ void FDualSenseLibrary::UpdateInput(float Delta)
 	{
 		return;
 	}
+	
 	IPlatformHardwareInfo::Get().Read(Context);
+	FInputContext* InputToFill = Context->GetBackBuffer();
 	const size_t Padding = Context->ConnectionType == EDeviceConnection::Bluetooth ? 2 : 1;
-
+	
 	using namespace GamepadProcessInput;
-	DualSenseRaw(&Context->Buffer[Padding], &Context->Input);
+	DualSenseRaw(&Context->Buffer[Padding], InputToFill);
 	
 	if (IsEnableAccelerometerAndGyroscope())
 	{
@@ -197,14 +199,14 @@ void FDualSenseLibrary::UpdateInput(float Delta)
 		const FQuat SensorQuat = CorrectionQuat * RawQuat;
 
 		const FRotator ControlRotation = SensorQuat.Rotator();
-		Context->Input.Gyroscope = GyroDeg;
-		Context->Input.Accelerometer = AccelG;
+		InputToFill->Gyroscope = GyroDeg;
+		InputToFill->Accelerometer = AccelG;
 		
-		Context->Input.Gravity = SensorQuat.GetUpVector();
-		Context->Input.Tilt = FVector(ControlRotation.Roll, ControlRotation.Yaw, ControlRotation.Pitch);
+		InputToFill->Gravity = SensorQuat.GetUpVector();
+		InputToFill->Tilt = FVector(ControlRotation.Roll, ControlRotation.Yaw, ControlRotation.Pitch);
 	}
 
-	
+	Context->SwapInputBuffers();
 }
 
 void FDualSenseLibrary::UpdateOutput()

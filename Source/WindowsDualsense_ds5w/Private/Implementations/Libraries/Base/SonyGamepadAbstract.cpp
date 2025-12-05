@@ -25,9 +25,9 @@ void SonyGamepadAbstract::EnableMotionSensor(bool bIsMotionSensor)
 	bEnableAccelerometerAndGyroscope = bIsMotionSensor;
 }
 
-float SonyGamepadAbstract::GetBattery() const
+float SonyGamepadAbstract::GetBattery()
 {
-	return HIDDeviceContexts.Input.BatteryLevel;
+	return HIDDeviceContexts.GetInputState().BatteryLevel;
 }
 
 bool SonyGamepadAbstract::IsConnected()

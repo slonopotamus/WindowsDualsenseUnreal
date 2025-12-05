@@ -5,6 +5,7 @@
 #pragma once
 #include "Core/Types/Structs/Config/GamepadCalibration.h"
 #include "InputContext.h"
+#include <mutex>
 
 #if PLATFORM_WINDOWS
 
@@ -148,14 +149,6 @@ struct FDeviceContext
 	 */
 	FOutputContext Output;
 	/**
-	 * @brief Handles input-specific operations and data for connected devices.
-	 *
-	 * This structure is responsible for managing input-related contexts such as
-	 * capturing, processing, and routing input data from connected devices. It plays a
-	 * central role in the integration of user-device interactions within the system.
-	 */
-	FInputContext Input;
-	/**
 	 * Specifies the type of connection used by a device.
 	 *
 	 * ConnectionType is an instance of the EDeviceConnection enumeration,
@@ -221,6 +214,95 @@ struct FDeviceContext
 	 * while the associated float values represent their corresponding state, usually on a normalized scale.
 	 */
 	TMap<const FName, float> AnalogStates;
+	
+	
+protected:
+	/**
+	 * @brief Handles input-specific operations and data for connected devices.
+	 *
+	 * This structure is responsible for managing input-related contexts such as
+	 * capturing, processing, and routing input data from connected devices. It plays a
+	 * central role in the integration of user-device interactions within the system.
+	 */
+	FInputContext Input;
 
-	FDeviceContext() = default;
+	/**
+	 * @brief Represents the input processing context running on the game thread.
+	 *
+	 * This variable is utilized to manage and coordinate input-related operations
+	 * specifically executed on the game thread. It ensures that input handling remains
+	 * synchronized with the game loop, providing a stable and consistent flow for processing
+	 * player inputs and system events.
+	 *
+	 * It is a critical component for maintaining thread safety and proper execution
+	 * of input logic within the game engine.
+	 */
+	FInputContext InputGameThread;
+	
+	/**
+	 * @brief Ensures thread-safe access to shared input resources.
+	 *
+	 * This mutex is used to synchronize access to input-related data or operations,
+	 * preventing race conditions in multithreaded environments. It is essential for
+	 * maintaining data consistency and avoiding concurrent modification issues.
+	 */
+	mutable std::mutex InputMutex;
+
+public:
+    FDeviceContext() = default;
+
+    FDeviceContext(const FDeviceContext& Other)
+    {
+        *this = Other;
+    }
+
+    FDeviceContext& operator=(const FDeviceContext& Other)
+    {
+        if (this != &Other)
+        {
+            Handle = Other.Handle;
+            Path = Other.Path;
+            
+            FMemory::Memcpy(Buffer, Other.Buffer, sizeof(Buffer));
+            FMemory::Memcpy(BufferDS4, Other.BufferDS4, sizeof(BufferDS4));
+            FMemory::Memcpy(BufferAudio, Other.BufferAudio, sizeof(BufferAudio));
+            FMemory::Memcpy(BufferOutput, Other.BufferOutput, sizeof(BufferOutput));
+            
+            Calibration = Other.Calibration;
+            IsConnected = Other.IsConnected;
+        	DeviceType = Other.DeviceType;
+        	ConnectionType = Other.ConnectionType;
+            
+            bOverrideTriggerBytes = Other.bOverrideTriggerBytes;
+            FMemory::Memcpy(OverrideTriggerRight, Other.OverrideTriggerRight, sizeof(OverrideTriggerRight));
+            FMemory::Memcpy(OverrideTriggerLeft, Other.OverrideTriggerLeft, sizeof(OverrideTriggerLeft));
+            
+            ButtonStates = Other.ButtonStates;
+            AnalogStates = Other.AnalogStates;
+           
+        	Output = Other.Output;
+        	Input = Other.Input;
+            InputGameThread = Other.InputGameThread;
+        }
+        return *this;
+    }
+	
+	FInputContext GetInputState()
+	{
+		std::lock_guard<std::mutex> Lock(InputMutex);
+		return InputGameThread;
+	}
+
+	// [BackgroundThread]
+	FInputContext* GetBackBuffer()
+	{
+		return &Input;
+	}
+
+	// [BackgroundThread] change buffers
+	void SwapInputBuffers()
+	{
+		std::lock_guard<std::mutex> Lock(InputMutex);
+		InputGameThread = Input;
+	}
 };

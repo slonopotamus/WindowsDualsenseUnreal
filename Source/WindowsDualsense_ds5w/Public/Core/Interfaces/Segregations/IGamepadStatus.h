@@ -23,7 +23,7 @@ public:
 	 *         and representation are dependent on the implementation. Typically,
 	 *         values may range between 0.0 (empty) and 1.0 (full).
 	 */
-	virtual float GetBattery() const = 0;
+	virtual float GetBattery() = 0;
 	/**
 	 * Retrieves the type of the device.
 	 *
