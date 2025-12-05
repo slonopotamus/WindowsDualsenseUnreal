@@ -8,9 +8,6 @@
 #include "Core/Types/Enums/EDeviceConnection.h"
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#if PLATFORM_WINDOWS
-#include "Windows/WindowsApplication.h"
-#endif
 #include "SonyGamepadBaseProxy.generated.h"
 
 /**
@@ -60,7 +57,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad Status", meta = (DisplayName = "Battery Level (0.0f-100.0f)"))
 	static float LevelBatteryDevice(int32 ControllerId);
 	
-#pragma DEPRECATED METHODS
+#pragma deprecated()
 	/**
 	 * Enables or disables the touch functionality on a specified DualSense controller.
 	 *
@@ -123,7 +120,7 @@ public:
 	 * @return True if the calibration process is in progress, false otherwise.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad (Legacy)", meta = (AdvancedDisplay = "CalibrationStatus Deprecated v1.2.20"))
-	static bool GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress) {}
+	static bool GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress) { return false; }
 	/**
 	 * Enables or disables the gyroscope functionality for a specified controller.
 	 *

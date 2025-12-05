@@ -4,19 +4,12 @@
 
 #pragma once
 
-#include "Async/TaskGraphInterfaces.h"
-#include "Containers/Queue.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
 #include "Core/Types/Enums/EDeviceCommons.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
-#include "Core/Types/Structs/DualSenseFeatureReport.h"
-#include "CoreMinimal.h"
 #include "Implementations/Libraries/Base/SonyGamepadAbstract.h"
-#include "InputCoreTypes.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include <atomic>
 
 /**
@@ -89,19 +82,6 @@ public:
 	 * the current state or input from the system.
 	 */
 	virtual void UpdateOutput() override;
-
-	/**
-	 * @brief Configures the settings of the DualSense controller based on the provided feature report.
-	 *
-	 * This method applies a variety of feature configurations to the controller, such as
-	 * vibration modes, audio settings, and trigger softness levels. It modifies the output
-	 * context of the connected controller to reflect the desired state based on input data.
-	 *
-	 * @param Settings A constant reference to an FDualSenseFeatureReport object that encapsulates
-	 *                 various feature configurations such as vibration mode, audio settings,
-	 *                 mic status, and trigger softness level.
-	 */
-	virtual void Settings(const FDualSenseFeatureReport& Settings);
 	/**
 	 * @brief Initializes the DualSense library with the specified device context.
 	 *
@@ -122,22 +102,17 @@ public:
 	 * This method processes input data received from a DualSense controller and updates
 	 * the application's state via the provided message handler. It ensures that the input
 	 * is correctly mapped and associated with the specified platform user and input device.
-	 *
-	 * @param InMessageHandler A shared reference to the application's message handler that processes input events.
-	 * @param UserId The identifier for the platform user associated with the input device.
-	 * @param InputDeviceId The unique identifier of the input device to be updated.
 	 * @return A boolean value indicating whether the input update was successful.
 	 */
-	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler,
-	                         const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override;
+	virtual void UpdateInput(float Delta) override;
 	/**
 	 * Stops any ongoing adaptive trigger effects on the specified controller hand.
 	 *
 	 * @param Hand The hand for which to stop the adaptive trigger effect.
-	 *             Acceptable values are EControllerHand::Left, EControllerHand::Right,
-	 *             or EControllerHand::AnyHand.
+	 *             Acceptable values are EGamepadHand::Left, EGamepadHand::Right,
+	 *             or EGamepadHand::AnyHand.
 	 */
-	virtual void StopTrigger(const EControllerHand& Hand) override;
+	virtual void StopTrigger(const EGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the trigger settings on a DualSense controller for GameCube-style behavior.
 	 *
@@ -147,9 +122,9 @@ public:
 	 *
 	 * @param Hand The hand (left, right, or both) corresponding to the controller
 	 * side where the GameCube-style trigger behavior should be applied. Must be
-	 * a value of the EControllerHand enumeration.
+	 * a value of the EGamepadHand enumeration.
 	 */
-	virtual void SetGameCube(const EControllerHand& Hand) override;
+	virtual void SetGameCube(const EGamepadHand& Hand) override;
 	/**
 	 * @brief Sets the trigger resistance properties for a specific controller hand.
 	 *
@@ -162,7 +137,7 @@ public:
 	 * @param Strength Determines the intensity or strength of the resistance.
 	 * @param Hand Indicates the controller hand (e.g., left or right) where the resistance should be configured.
 	 */
-	virtual void SetResistance(uint8 StartZones, uint8 Strength, const EControllerHand& Hand) override;
+	virtual void SetResistance(uint8 StartZones, uint8 Strength, const EGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the bow effect settings on a DualSense controller.
 	 *
@@ -173,7 +148,7 @@ public:
 	 * @param SnapBack The SnapBack of the force applied during the bow effect.
 	 * @param Hand The controller hand (left or right) associated with the bow action.
 	 */
-	virtual void SetBow22(uint8 StartZone, uint8 SnapBack, const EControllerHand& Hand) override;
+	virtual void SetBow22(uint8 StartZone, uint8 SnapBack, const EGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the galloping trigger feedback behavior on a DualSense controller.
 	 *
@@ -188,7 +163,7 @@ public:
 	 * @param Frequency The frequency of the galloping effect, determining how rapidly it alternates or triggers.
 	 * @param Hand Specifies the controller hand (left, right, or any) to apply the galloping effect.
 	 */
-	virtual void SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot, uint8 Frequency, const EControllerHand& Hand) override;
+	virtual void SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot, uint8 Frequency, const EGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the trigger effect for the DualSense controller's adaptive triggers.
 	 *
@@ -201,7 +176,7 @@ public:
 	 * @param Trigger Specifies an additional parameter for customizing the effect behavior.
 	 * @param Hand Determines which hand (Left, Right, or AnyHand) the configuration applies to.
 	 */
-	virtual void SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EControllerHand& Hand) override;
+	virtual void SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the machine gun effect on a DualSense controller.
 	 *
@@ -218,7 +193,7 @@ public:
 	 * @param Frequency Configures the frequency of the haptic pulses to simulate firing intervals.
 	 * @param Hand Indicates which controller hand (left or right) will receive the effect.
 	 */
-	virtual void SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EControllerHand& Hand) override;
+	virtual void SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the advanced machine effect (Mode 0x27) for DualSense controller triggers.
 	 *
@@ -235,7 +210,7 @@ public:
 	 * @param Frequency Determines the frequency for the trigger vibration or repeated effect.
 	 * @param Hand Identifies the controller hand (left, right, or both) for applying the trigger effect.
 	 */
-	virtual void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EControllerHand& Hand) override;
+	virtual void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EGamepadHand& Hand) override;
 	/**
 	 * @brief Sets custom trigger behavior for the specified controller hand using custom hexadecimal byte data.
 	 *
@@ -246,7 +221,7 @@ public:
 	 * @param Hand The hand designation of the controller (e.g., left, right, or any hand) for which the custom trigger behavior is applied.
 	 * @param HexBytes An array of hexadecimal byte strings defining the custom trigger configuration. Must contain exactly 10 valid values.
 	 */
-	virtual void SetCustomTrigger(const EControllerHand& Hand, const TArray<FString>& HexBytes) override;
+	virtual void SetCustomTrigger(const EGamepadHand& Hand, const TArray<FString>& HexBytes) override;
 
 	/**
 	 * Sets the LED player indicator effects based on the desired player LED pattern and brightness intensity.
@@ -304,7 +279,7 @@ public:
 	 * @param BrithnessTime The duration for the lightbar's brightness transition.
 	 * @param ToggleTime The duration for toggling the lightbar state.
 	 */
-	virtual void SetLightbar(FColor Color, float BrithnessTime, float ToggleTime) override;
+	virtual void SetLightbar(FColor Color, float BrithnessTime = 0.f, float ToggleTime = 0.f) override;
 	/**
 	 * @brief Updates the haptic feedback system of the DualSense controller with audio data.
 	 *

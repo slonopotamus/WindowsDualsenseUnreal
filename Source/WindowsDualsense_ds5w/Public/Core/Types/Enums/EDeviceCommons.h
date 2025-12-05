@@ -7,37 +7,6 @@
 #include "CoreMinimal.h"
 #include "EDeviceCommons.generated.h"
 
-#define BTN_FN1 0x10
-#define BTN_FN2 0x20
-#define BTN_PADDLE_LEFT 0x40
-#define BTN_PADDLE_RIGHT 0x80
-
-#define BTN_DPAD_UP 0x8
-#define BTN_DPAD_DOWN 0x02
-#define BTN_DPAD_LEFT 0x01
-#define BTN_DPAD_RIGHT 0x04
-
-#define BTN_CROSS 0x20
-#define BTN_SQUARE 0x10
-#define BTN_CIRCLE 0x40
-#define BTN_TRIANGLE 0x80
-
-#define BTN_START 0x20
-#define BTN_SELECT 0x10
-
-#define BTN_LEFT_STICK 0x40
-#define BTN_RIGHT_STICK 0x80
-
-#define BTN_LEFT_SHOLDER 0x01
-#define BTN_RIGHT_SHOLDER 0x02
-
-#define BTN_LEFT_TRIGGER 0x04
-#define BTN_RIGHT_TRIGGER 0x08
-
-#define BTN_PAD_BUTTON 0x02
-#define BTN_MIC_BUTTON 0x04
-#define BTN_PLAYSTATION_LOGO 0x01
-
 #define PLAYER_LED_LEFT 0x01
 #define PLAYER_LED_RIGHT 0x10
 #define PLAYER_LED_MIDDLE 0x04

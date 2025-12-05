@@ -4,10 +4,11 @@
 
 #pragma once
 
+#include "Core/Types/Structs/Context/DeviceContext.h"
 #include "CoreMinimal.h"
 #include "IHapticDevice.h"
 #include "IInputDevice.h"
-#include "Subsystems/AudioHapticsListener.h"
+#include "InputCoreTypes.h"
 
 /**
  * Manages DualSense controllers, providing input and haptic feedback functionality.
@@ -153,6 +154,21 @@ public:
 	{
 	}
 
+protected:
+	void CheckEvents(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) const;
+	/**
+	 * @brief Handles button input events for a DualSense controller.
+	 *
+	 * This function checks the current state of a button on a DualSense controller and triggers
+	 * appropriate input events (button press or release) based on the change in its state.
+	 *
+	 * @param UserId The platform user ID associated with the controller.
+	 * @param InputDeviceId The unique identifier for the DualSense input device.
+	 * @param ButtonName The name of the button being checked.
+	 * @param IsButtonPressed A boolean indicating the current pressed state of the button (true if pressed, false otherwise).
+	 */
+	void CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const;
+	
 private:
 	/**
 	 * Tracks the accumulated time or events between periodic polling operations.

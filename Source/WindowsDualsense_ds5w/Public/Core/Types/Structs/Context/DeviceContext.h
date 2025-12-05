@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Core/Types/Structs/Config/GamepadCalibration.h"
+#include "InputContext.h"
 
 #if PLATFORM_WINDOWS
 
@@ -23,7 +24,6 @@ using FPlatformDeviceHandle = void*;
 #endif
 
 #include "Core/Types/Enums/EDeviceConnection.h"
-#include "CoreMinimal.h"
 #include "OutputContext.h"
 
 /**
@@ -54,25 +54,6 @@ struct FDeviceContext
 	 * For instance, it may hold `INVALID_HANDLE_VALUE` when invalid or disconnected.
 	 */
 	FPlatformDeviceHandle Handle = INVALID_PLATFORM_HANDLE;
-	/**
-	 * @brief A platform-specific handle to manage interaction with audio devices.
-	 *
-	 * The AudioHandle variable represents a low-level handle for accessing
-	 * and controlling audio hardware or audio-related platform resources.
-	 * It provides an interface for abstracting platform-specific
-	 * audio device interactions, allowing for unified handling across different systems.
-	 *
-	 * Key Points:
-	 * - Allows communication and control of audio devices within the platform's ecosystem.
-	 * - Encapsulates platform-dependent details for audio resource management.
-	 * - Plays a crucial role in integrating platform audio capabilities into applications.
-	 * - Used as a part of the audio subsystem to ensure efficient and seamless
-	 *   interaction with the underlying hardware.
-	 *
-	 * This handle is specifically tailored to align with platform constraints and
-	 * capabilities to ensure broad support for audio functionalities.
-	 */
-	FPlatformDeviceHandle AudioHandle = INVALID_PLATFORM_HANDLE;
 	/**
 	 * @brief Represents a file or resource path in the context of device management.
 	 *
@@ -167,6 +148,14 @@ struct FDeviceContext
 	 */
 	FOutputContext Output;
 	/**
+	 * @brief Handles input-specific operations and data for connected devices.
+	 *
+	 * This structure is responsible for managing input-related contexts such as
+	 * capturing, processing, and routing input data from connected devices. It plays a
+	 * central role in the integration of user-device interactions within the system.
+	 */
+	FInputContext Input;
+	/**
 	 * Specifies the type of connection used by a device.
 	 *
 	 * ConnectionType is an instance of the EDeviceConnection enumeration,
@@ -196,27 +185,42 @@ struct FDeviceContext
 	 * initialization, compatibility checks, and tailored input/output processing.
 	 */
 	EDeviceType DeviceType = EDeviceType::NotFound;
-	/**
-	 * @brief Uniquely identifies an input device within the system.
-	 *
-	 * This identifier is used to distinguish individual devices connected to
-	 * the system, ensuring that each device can be accurately managed and tracked.
-	 *
-	 * Essential for scenarios where multiple input devices are connected,
-	 * enabling seamless interaction and device-specific operations.
-	 */
-	FInputDeviceId UniqueInputDeviceId;
 
 	// Runtime override for trigger bytes [10..20] (Right) and [21..31] (Left) in the DualSense output buffer.
 	// When enabled via console commands, these arrays are copied verbatim into the HID report.
 	bool bOverrideTriggerBytes = false;
 	unsigned char OverrideTriggerRight[10] = {};
 	unsigned char OverrideTriggerLeft[10] = {};
+	
+	/**
+	 * A map representing the states of various buttons on a controller.
+	 *
+	 * Each key in the map is a button name (FName), and its associated value is a boolean
+	 * indicating whether the button is currently pressed (`true`) or not pressed (`false`).
+	 *
+	 * This variable is primarily used for tracking button input states and ensuring
+	 * accurate representation of input events, such as detecting when a button's state
+	 * changes from pressed to released or vice versa.
+	 *
+	 * The map is updated dynamically during controller runtime, including in functions
+	 * like CheckButtonInput, which ensures real-time synchronization of input states.
+	 * It is reset during library shutdown to clear all stored button states.
+	 */
+	TMap<const FName, bool> ButtonStates;
+	/**
+	 * @typedef AnalogStates
+	 * @brief Represents a mapping of analog input states in the DualSense library.
+	 *
+	 * AnalogStates is a container that maps unique input identifiers, represented by FName,
+	 * to their respective float values, which typically denote the state or intensity of analog inputs.
+	 *
+	 * This map is used to handle and store the state of analog inputs, such as triggers or sticks,
+	 * providing a mechanism to track their values for input handling or processing purposes in an application.
+	 *
+	 * @details The keys in this map (FName) are designed to uniquely identify different analog input sources,
+	 * while the associated float values represent their corresponding state, usually on a normalized scale.
+	 */
+	TMap<const FName, float> AnalogStates;
 
 	FDeviceContext() = default;
-
-	explicit FDeviceContext(const FInputDeviceId InUniqueInputDeviceId)
-	    : UniqueInputDeviceId(InUniqueInputDeviceId)
-	{
-	}
 };

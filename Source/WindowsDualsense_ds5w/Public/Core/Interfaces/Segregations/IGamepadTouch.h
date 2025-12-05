@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-
 class WINDOWSDUALSENSE_DS5W_API IGamepadTouch
 {
 public:

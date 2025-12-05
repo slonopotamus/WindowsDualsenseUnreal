@@ -5,7 +5,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DeviceManager.h"
 #include "IInputDeviceModule.h"
 #include "InputCoreTypes.h"
 #if PLATFORM_LINUX || PLATFORM_MAC

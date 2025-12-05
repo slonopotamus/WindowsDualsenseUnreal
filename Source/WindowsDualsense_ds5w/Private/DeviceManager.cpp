@@ -9,6 +9,8 @@
 #include "Core/Managers/DeviceRegistry.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
 #include "Misc/CoreDelegates.h"
+#include "Async/Async.h"
+#include "Async/TaskGraphInterfaces.h"
 
 using namespace SonyGamepadProxyHelpers;
 
@@ -25,20 +27,6 @@ DeviceManager::~DeviceManager()
 
 void DeviceManager::SendControllerEvents()
 {
-}
-
-void DeviceManager::Tick(float DeltaTime)
-{
-	FDeviceRegistry::Get()->DetectedChangeConnections(DeltaTime);
-
-	PollAccumulator += DeltaTime;
-	if (PollAccumulator < PollInterval)
-	{
-		return;
-	}
-
-	PollAccumulator = 0.0f;
-
 	TArray<FInputDeviceId> OutInputDevices;
 	OutInputDevices.Reset();
 	IPlatformInputDeviceMapper::Get().GetAllConnectedInputDevices(OutInputDevices);
@@ -51,7 +39,7 @@ void DeviceManager::Tick(float DeltaTime)
 			{
 				continue;
 			}
-
+			
 			FString ContextDrive = TEXT("DualSense");
 			if (Gamepad->GetDeviceType() == EDeviceType::DualShock4)
 			{
@@ -61,11 +49,124 @@ void DeviceManager::Tick(float DeltaTime)
 			{
 				ContextDrive = TEXT("DualSenseEdge");
 			}
-
 			FInputDeviceScope InputScope(this, TEXT("DeviceManager.WindowsDualsense"), Device.GetId(), ContextDrive);
-			Gamepad->UpdateInput(MessageHandler, UserId, Device, DeltaTime);
+			if (FDeviceContext* Context = Gamepad->GetMutableDeviceContext())
+			{
+				CheckEvents(Context, UserId, Device);
+			}
 		}
 	}
+}
+
+void DeviceManager::CheckEvents(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) const
+{
+	const auto HandleAnalogInput = [&](const FName& AnalogKey, const FName& ButtonKeyPositive, const FName& ButtonKeyNegative, float NewAxisValue) {
+		if (FMath::Abs(NewAxisValue) < Context->Input.AnalogDeadZone)
+		{
+			NewAxisValue = 0;
+		}
+	
+		auto& OldAxisValue = Context->AnalogStates.FindOrAdd(AnalogKey);
+		if (FMath::IsNearlyEqual(NewAxisValue, OldAxisValue))
+		{
+			return;
+		}
+	
+		MessageHandler->OnControllerAnalog(AnalogKey, UserId, InputDeviceId, NewAxisValue);
+		OldAxisValue = NewAxisValue;
+	
+		CheckButtonInput(Context, UserId, InputDeviceId, ButtonKeyPositive, NewAxisValue > 0);
+		CheckButtonInput(Context, UserId, InputDeviceId, ButtonKeyNegative, NewAxisValue < 0);
+	};
+	
+	HandleAnalogInput(FGamepadKeyNames::LeftAnalogX, FGamepadKeyNames::LeftStickLeft, FGamepadKeyNames::LeftStickRight, Context->Input.LeftAnalog.X);
+	HandleAnalogInput(FGamepadKeyNames::LeftAnalogY, FGamepadKeyNames::LeftStickDown, FGamepadKeyNames::LeftStickUp, Context->Input.LeftAnalog.Y);
+	HandleAnalogInput(FGamepadKeyNames::RightAnalogX, FGamepadKeyNames::RightStickLeft, FGamepadKeyNames::RightStickRight, Context->Input.RightAnalog.X);
+	HandleAnalogInput(FGamepadKeyNames::RightAnalogY, FGamepadKeyNames::RightStickDown, FGamepadKeyNames::RightStickUp, Context->Input.RightAnalog.Y);
+	
+	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftTriggerAnalog, UserId, InputDeviceId, Context->Input.LeftTriggerAnalog);
+	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightTriggerAnalog, UserId, InputDeviceId, Context->Input.RightTriggerAnalog);
+	
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonBottom, Context->Input.bCross);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonLeft, Context->Input.bSquare);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonRight, Context->Input.bCircle);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonTop, Context->Input.bTriangle);
+	
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::DPadUp, Context->Input.bDpadUp);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::DPadDown, Context->Input.bDpadDown);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::DPadLeft, Context->Input.bDpadLeft);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::DPadRight, Context->Input.bDpadRight);
+	
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::LeftShoulder, Context->Input.bLeftShoulder);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightShoulder, Context->Input.bRightShoulder);
+	
+	// mapped urenal native gamepad Start and Select
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::SpecialRight, Context->Input.bStart);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::SpecialLeft, Context->Input.bShare);
+	
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::LeftTriggerThreshold, Context->Input.bLeftTriggerThreshold);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightTriggerThreshold, Context->Input.bRightTriggerThreshold);
+	
+	// mapped urenal native gamepad Push Stick
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::LeftThumb, Context->Input.bLeftStick);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightThumb, Context->Input.bRightStick);
+	
+	// Custom map keys
+	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_PushLeftStick"), Context->Input.bLeftStick);
+	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_PushRightStick"), Context->Input.bRightStick);
+	
+	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Mic"), Context->Input.bMute);
+	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_TouchButtom"), Context->Input.bTouch);
+	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Button"), Context->Input.bPSButton);
+	
+	if (Context->DeviceType == EDeviceType::DualSenseEdge)
+	{
+		CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_FunctionL"), Context->Input.bFn1);
+		CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_FunctionR"), Context->Input.bFn2);
+		CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_PaddleL"), Context->Input.bPaddleLeft);
+		CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_PaddleR"), Context->Input.bPaddleRight);	
+	}
+	
+	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Menu"), Context->Input.bStart);
+	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Share"), Context->Input.bShare);
+}
+
+void DeviceManager::CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const
+{
+	const bool PreviousState = Context->ButtonStates.Contains(ButtonName) ? Context->ButtonStates[ButtonName] : false;
+	if (IsButtonPressed && !PreviousState)
+	{
+		MessageHandler.Get().OnControllerButtonPressed(ButtonName, UserId, InputDeviceId, false);
+	}
+
+	if (!IsButtonPressed && PreviousState)
+	{
+		MessageHandler.Get().OnControllerButtonReleased(ButtonName, UserId, InputDeviceId, false);
+	}
+	Context->ButtonStates.Add(ButtonName, IsButtonPressed);
+}
+
+void DeviceManager::Tick(float DeltaTime)
+{
+	SendControllerEvents();
+	FDeviceRegistry::Get()->DetectedChangeConnections(DeltaTime);
+	
+	PollAccumulator += DeltaTime;
+	if (PollAccumulator < PollInterval)
+	{
+		return;
+	}
+	PollAccumulator = 0.0f;
+
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [=]() {
+		for (const auto& Pair : FDeviceRegistry::Get()->GetAllocatedDevicesMap())
+		{
+			if (ISonyGamepad* Ref = Pair.Value.Get())
+			{
+				Ref->UpdateInput(PollInterval);
+			}
+		}
+	});
 }
 
 void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProperty* Property)
@@ -88,7 +189,7 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 			EInputDeviceTriggerMask HandMask = FeedbackProperty->AffectedTriggers;
 			if (IGamepadTrigger* GamepadTrigger = GetTriggerInterface(ControllerId))
 			{
-				GamepadTrigger->SetResistance(FeedbackProperty->Position, FeedbackProperty->Strengh, static_cast<EControllerHand>(HandMask));
+				GamepadTrigger->SetResistance(FeedbackProperty->Position, FeedbackProperty->Strengh, static_cast<EGamepadHand>(HandMask));
 			}
 		}
 	}
@@ -142,7 +243,7 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 				HexBytes.Add("0x00");
 				HexBytes.Add("0x00");
 				HexBytes.Add("0x00");
-				GamepadTrigger->SetCustomTrigger(static_cast<EControllerHand>(HandMask), HexBytes);
+				GamepadTrigger->SetCustomTrigger(static_cast<EGamepadHand>(HandMask), HexBytes);
 			}
 		}
 	}

@@ -11,7 +11,6 @@
 #include "Core/Types/Structs/Config/GamepadPlayerLed.h"
 #include "Core/Types/Structs/Config/GamepadRumbles.h"
 #include "Core/Types/Structs/Config/GamepadTriggersHaptic.h"
-#include "CoreMinimal.h"
 
 /**
  * @class FOutputContext

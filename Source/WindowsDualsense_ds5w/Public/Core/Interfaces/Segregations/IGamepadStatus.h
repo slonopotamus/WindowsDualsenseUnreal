@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Core/Types/Enums/EDeviceConnection.h"
-#include "CoreMinimal.h"
 
 class WINDOWSDUALSENSE_DS5W_API IGamepadStatus
 {
@@ -37,7 +36,6 @@ public:
 	 * @return The connection type of the device as an EDeviceConnection enumeration.
 	 */
 	virtual EDeviceConnection GetConnectionType() = 0;
-
 	/**
 	 * @brief Retrieves a mutable device context associated with the object.
 	 *

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "Core/Interfaces/ISonyGamepad.h"
 #include "CoreMinimal.h"
 #include "DualShockFeatureReport.generated.h"
 

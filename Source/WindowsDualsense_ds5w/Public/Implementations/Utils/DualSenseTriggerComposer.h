@@ -15,14 +15,14 @@ namespace DualSenseTriggerComposer
 	 * @param Context A pointer to the device context which holds the trigger state to be modified.
 	 * @param Hand An enumeration specifying which hand's trigger functionality to disable (Left, Right, or AnyHand).
 	 */
-	inline void Off(FDeviceContext* Context, const EControllerHand& Hand)
+	inline void Off(FDeviceContext* Context, const EGamepadHand& Hand)
 	{
-		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Left || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0x0;
 		}
 
-		if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Right || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0x0;
 		}
@@ -36,15 +36,15 @@ namespace DualSenseTriggerComposer
 	 * @param Strength The level of resistance to be applied within the defined zone.
 	 * @param Hand An enumeration specifying which hand's trigger functionality to configure (Left, Right, or AnyHand).
 	 */
-	inline void Resistance(FDeviceContext* Context, uint8 StartZones, uint8 Strength, const EControllerHand& Hand)
+	inline void Resistance(FDeviceContext* Context, uint8 StartZones, uint8 Strength, const EGamepadHand& Hand)
 	{
-		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Left || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0x01;
 			Context->Output.LeftTrigger.Strengths.Compose[0] = StartZones;
 			Context->Output.LeftTrigger.Strengths.Compose[1] = Strength;
 		}
-		if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Right || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0x01;
 			Context->Output.RightTrigger.Strengths.Compose[0] = StartZones;
@@ -58,9 +58,9 @@ namespace DualSenseTriggerComposer
 	 * @param Context A pointer to the device context that holds the trigger settings to be modified.
 	 * @param Hand An enumeration specifying which hand's trigger functionality to configure (Left, Right, or AnyHand).
 	 */
-	inline void GameCube(FDeviceContext* Context, const EControllerHand& Hand)
+	inline void GameCube(FDeviceContext* Context, const EGamepadHand& Hand)
 	{
-		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Left || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0x02;
 			Context->Output.LeftTrigger.Strengths.Compose[0] = 0x90;
@@ -68,7 +68,7 @@ namespace DualSenseTriggerComposer
 			Context->Output.LeftTrigger.Strengths.Compose[2] = 0xff;
 		}
 
-		if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Right || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0x02;
 			Context->Output.RightTrigger.Strengths.Compose[0] = 0x90;
@@ -77,9 +77,9 @@ namespace DualSenseTriggerComposer
 		}
 	}
 
-	inline void Bow22(FDeviceContext* Context, uint8 StartZone, uint8 SnapBack, const EControllerHand& Hand)
+	inline void Bow22(FDeviceContext* Context, uint8 StartZone, uint8 SnapBack, const EGamepadHand& Hand)
 	{
-		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Left || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0x22;
 			Context->Output.LeftTrigger.Strengths.Compose[0] = StartZone;
@@ -87,7 +87,7 @@ namespace DualSenseTriggerComposer
 			Context->Output.LeftTrigger.Strengths.Compose[2] = SnapBack;
 		}
 
-		if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Right || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0x22;
 			Context->Output.RightTrigger.Strengths.Compose[0] = StartZone;
@@ -97,12 +97,12 @@ namespace DualSenseTriggerComposer
 	}
 
 	inline void Galloping23(FDeviceContext* Context, uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot,
-	                        uint8 Frequency, const EControllerHand& Hand)
+	                        uint8 Frequency, const EGamepadHand& Hand)
 	{
 		const uint8 FirstFootNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((FirstFoot / 8.0f) * 15.0f), 1, 15));
 		const uint8 SecondFootNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((SecondFoot / 8.0f) * 15.0f), 1, 15));
 		const uint16 PositionMask = (1 << StartPosition) | (1 << EndPosition);
-		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Left || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0x23;
 			Context->Output.LeftTrigger.Strengths.Compose[0] = PositionMask & 0xFF;
@@ -111,7 +111,7 @@ namespace DualSenseTriggerComposer
 			Context->Output.LeftTrigger.Strengths.Compose[3] = Frequency;
 		}
 
-		if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Right || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0x23;
 			Context->Output.RightTrigger.Strengths.Compose[0] = PositionMask & 0xFF;
@@ -121,9 +121,9 @@ namespace DualSenseTriggerComposer
 		}
 	}
 
-	inline void Weapon25(FDeviceContext* Context, uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EControllerHand& Hand)
+	inline void Weapon25(FDeviceContext* Context, uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EGamepadHand& Hand)
 	{
-		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Left || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0x25;
 			Context->Output.LeftTrigger.Strengths.Compose[0] = StartZone << 4 | (Amplitude & 0x0F);
@@ -131,7 +131,7 @@ namespace DualSenseTriggerComposer
 			Context->Output.LeftTrigger.Strengths.Compose[2] = Trigger & 0x0F;
 		}
 
-		if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Right || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0x25;
 			Context->Output.RightTrigger.Strengths.Compose[0] = StartZone << 4 | (Amplitude & 0x0F);
@@ -140,9 +140,9 @@ namespace DualSenseTriggerComposer
 		}
 	}
 
-	inline void MachineGun26(FDeviceContext* Context, uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EControllerHand& Hand)
+	inline void MachineGun26(FDeviceContext* Context, uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EGamepadHand& Hand)
 	{
-		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Left || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0x26;
 			Context->Output.LeftTrigger.Strengths.Compose[0] = 0xf8;
@@ -154,7 +154,7 @@ namespace DualSenseTriggerComposer
 			Context->Output.LeftTrigger.Strengths.Compose[9] = Frequency;
 		}
 
-		if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Right || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0x26;
 			Context->Output.RightTrigger.Strengths.Compose[0] = 0xf8;
@@ -167,9 +167,9 @@ namespace DualSenseTriggerComposer
 		}
 	}
 
-	inline void Machine27(FDeviceContext* Context, uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EControllerHand& Hand)
+	inline void Machine27(FDeviceContext* Context, uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EGamepadHand& Hand)
 	{
-		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Left || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0x27;
 			Context->Output.LeftTrigger.Strengths.Compose[0] = StartZone;
@@ -179,7 +179,7 @@ namespace DualSenseTriggerComposer
 			Context->Output.LeftTrigger.Strengths.Compose[4] = Frequency;
 		}
 
-		if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Right || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0x27;
 			Context->Output.RightTrigger.Strengths.Compose[0] = StartZone;
@@ -190,7 +190,7 @@ namespace DualSenseTriggerComposer
 		}
 	}
 
-	inline void CustomTrigger(FDeviceContext* Context, const EControllerHand& Hand, const TArray<FString>& HexBytes)
+	inline void CustomTrigger(FDeviceContext* Context, const EGamepadHand& Hand, const TArray<FString>& HexBytes)
 	{
 		uint8 Bytes[10] = {0};
 		for (int32 i = 0; i < 10; ++i)
@@ -217,13 +217,13 @@ namespace DualSenseTriggerComposer
 			default: return;
 		}
 
-		if (Hand == EControllerHand::Left || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Left || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0xFF;
 			FMemory::Memcpy(Context->Output.LeftTrigger.Strengths.Compose, Bytes, 10);
 		}
 
-		if (Hand == EControllerHand::Right || Hand == EControllerHand::AnyHand)
+		if (Hand == EGamepadHand::Right || Hand == EGamepadHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0xFF;
 			FMemory::Memcpy(Context->Output.RightTrigger.Strengths.Compose, Bytes, 10);

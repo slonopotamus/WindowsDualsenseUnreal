@@ -5,18 +5,11 @@
 #pragma once
 
 #include "Core/Types/Enums/EDeviceCommons.h"
-#include "CoreMinimal.h"
 
 class WINDOWSDUALSENSE_DS5W_API IGamepadLightbar
 {
 public:
 	virtual ~IGamepadLightbar() = default;
-	/**
-	 * Sets the lightbar color and associated timing parameters on the gamepad.
-	 *
-	 * @param Color The color to set the lightbar to, represented as an FColor.
-	 */
-	virtual void SetLightbar(FColor Color) = 0;
 	/**
 	 * Sets the lightbar color and associated timing parameters on the gamepad.
 	 *

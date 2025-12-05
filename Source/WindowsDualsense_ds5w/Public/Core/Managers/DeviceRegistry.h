@@ -6,11 +6,6 @@
 
 #include "CoreMinimal.h"
 #include "HAL/PlatformProcess.h"
-
-#if PLATFORM_WINDOWS
-#include "Windows/WindowsApplication.h"
-#endif
-
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"

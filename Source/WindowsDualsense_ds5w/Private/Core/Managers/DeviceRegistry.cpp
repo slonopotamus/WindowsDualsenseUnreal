@@ -3,9 +3,6 @@
 // Planned Release Year: 2025
 
 #include "Core/Managers/DeviceRegistry.h"
-#include "API/SonyGamepadProxyHelpers.h"
-#include "Async/Async.h"
-#include "Async/TaskGraphInterfaces.h"
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
@@ -129,10 +126,8 @@ FDeviceRegistry::~FDeviceRegistry()
 
 ISonyGamepad* FDeviceRegistry::GetLibraryInstance(const FInputDeviceId& DeviceId)
 {
-	// TUniquePtr<ISonyGamepad>* é um ponteiro para o unique_ptr dentro do map
 	if (TSharedPtr<ISonyGamepad>* FoundGamepadPtr = LibraryInstances.Find(DeviceId))
 	{
-		// FoundGamepadPtr->Get() acessa o ISonyGamepad* bruto dentro do TUniquePtr
 		if (ISonyGamepad* Gamepad = FoundGamepadPtr->Get())
 		{
 			if (Gamepad->IsConnected())
@@ -193,16 +188,17 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 		AllocateDeviceToDefaultUser = true;
 	}
 
+	FInputDeviceId UniqueInputDeviceId;
 	const FName UniqueNamespace = TEXT("DeviceManager.WindowsDualsense");
 	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, *Context.Path);
 	if (HistoryDevices.Contains(Context.Path))
 	{
-		Context.UniqueInputDeviceId = HistoryDevices[Context.Path];
+		UniqueInputDeviceId = HistoryDevices[Context.Path];
 	}
 	else
 	{
-		Context.UniqueInputDeviceId = IPlatformInputDeviceMapper::Get().AllocateNewInputDeviceId();
-		HistoryDevices.Add(Context.Path, Context.UniqueInputDeviceId);
+		UniqueInputDeviceId = IPlatformInputDeviceMapper::Get().AllocateNewInputDeviceId();
+		HistoryDevices.Add(Context.Path, UniqueInputDeviceId);
 	}
 
 	if (!SonyGamepad->Initialize(Context))
@@ -210,10 +206,10 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 		return;
 	}
 
-	KnownDevicePaths.Add(Context.Path, Context.UniqueInputDeviceId);
-	LibraryInstances.Add(Context.UniqueInputDeviceId, SonyGamepad);
+	KnownDevicePaths.Add(Context.Path, UniqueInputDeviceId);
+	LibraryInstances.Add(UniqueInputDeviceId, SonyGamepad);
 
-	FInputDeviceId GamepadId = Context.UniqueInputDeviceId;
+	FInputDeviceId GamepadId = UniqueInputDeviceId;
 	if (
 	    IPlatformInputDeviceMapper::Get().GetInputDeviceConnectionState(GamepadId) !=
 	    EInputDeviceConnectionState::Connected)
@@ -231,7 +227,7 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 #endif
 		}
 
-		IPlatformInputDeviceMapper::Get().Internal_MapInputDeviceToUser(Context.UniqueInputDeviceId,
+		IPlatformInputDeviceMapper::Get().Internal_MapInputDeviceToUser(UniqueInputDeviceId,
 		                                                                UserId,
 		                                                                EInputDeviceConnectionState::Connected);
 	}

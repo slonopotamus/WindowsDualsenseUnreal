@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Core/Types/Structs/Context/DeviceContext.h"
-#include "CoreMinimal.h"
 
 #define PLATFORM_SONY (PLATFORM_PS4 || PLATFORM_PS5)
 

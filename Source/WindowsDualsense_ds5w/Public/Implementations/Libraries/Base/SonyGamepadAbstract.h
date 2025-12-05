@@ -132,131 +132,6 @@ struct FTouchPoint2
 	unsigned char Id;
 };
 
-/**
- * @class FAccelerometer
- * @brief Represents an accelerometer component that tracks and provides data related to acceleration.
- *
- * The FAccelerometer class is responsible for handling acceleration readings
- * and providing utility functions to process and retrieve those readings
- * meaningfully. This class can be used to monitor motion in three-dimensional
- * space and calculate relevant metrics based on the gathered data.
- *
- * @details
- * The accelerometer typically measures acceleration in three axes: X, Y, and Z,
- * and provides functionality to retrieve raw acceleration values, calculate the
- * magnitude of the acceleration vector, and filter out noise or apply smoothing
- * when needed. This class can be utilized for physical simulation, motion
- * detection, or other use cases where acceleration tracking is required.
- */
-struct FAccelerometer
-{
-	/**
-	 *
-	 */
-	int16_t X;
-	/**
-	 * @brief Represents the variable Y used within the application.
-	 *
-	 * This variable serves as a placeholder for a specific purpose
-	 * depending on the context of the application. The exact use of
-	 * Y should be defined in the code implementation and may represent
-	 * a variety of data types or values depending on its usage.
-	 *
-	 * The role of Y can vary, such as acting as an input parameter,
-	 * intermediate storage, or output result. Proper initialization
-	 * and handling of this variable are essential to ensure the correctness
-	 * and reliability of the program's operations.
-	 *
-	 * Ensure that the value of Y is properly documented and updated
-	 * throughout the codebase to avoid confusion or misuse.
-	 */
-	int16_t Y;
-	/**
-	 * @brief Represents a variable named Z.
-	 *
-	 * This variable is designed to hold a specific value or data type as required
-	 * by the implementation. Its intended use and functionality should be defined
-	 * within the corresponding program or module context. The type and purpose of
-	 * this variable should align with the logic and requirements of its usage.
-	 *
-	 * Ensure that the value assigned to Z adheres to the appropriate constraints
-	 * or expectations in the application to maintain correctness and stability.
-	 */
-	int16_t Z;
-};
-
-/**
- * @class FGyro
- * @brief The FGyro class represents a gyroscopic sensor that provides data on angular velocity and orientation in three-dimensional space.
- *
- * This class models the behavior and properties of a gyroscope, commonly used in robotics, mobile devices, and game controllers for motion tracking
- * and orientation detection. The class offers functionalities to retrieve, reset, and process gyroscopic readings.
- *
- * Detailed methods and attributes allow users to interact with the gyroscope hardware or simulation to acquire real-time data for use in various applications.
- * The gyroscope data includes angular velocity along the X, Y, and Z axes, as well as possible methods for calibration.
- */
-struct FGyro
-{
-	/**
-	 * @brief Represents a variable used for general purposes within the application.
-	 *
-	 * This variable may store values of various types based on its application context,
-	 * and its purpose is defined by the implementation details of the code where it is used.
-	 *
-	 * @note Ensure to initialize and manage the value of this variable correctly to avoid
-	 * unexpected behavior or runtime errors.
-	 */
-	int16_t X;
-	/**
-	 * @brief Represents a generic variable or entity identified as 'Y'.
-	 *
-	 * @details The purpose and type of 'Y' should be defined by its context in
-	 *          the codebase. It could serve as a placeholder or functional part
-	 *          of a process and requires further clarification or initialization
-	 *          during implementation.
-	 *
-	 * @note Ensure 'Y' is properly initialized and used consistently to avoid
-	 *       unexpected behavior. Misuse of 'Y' may lead to runtime errors or
-	 *       logical inconsistencies.
-	 */
-	int16_t Y;
-	/**
-	 * @brief Represents a variable or entity denoted as Z.
-	 *
-	 * This variable may serve as a placeholder or represent a specific value,
-	 * object, or function in the given context. Ensure to initialize or define Z
-	 * appropriately before using it, based on its intended purpose.
-	 *
-	 * @note The specific use case and type of Z must be determined by its context
-	 *       within the scope of the application or module.
-	 */
-	int16_t Z;
-};
-
-struct FSensorBounds
-{
-	FVector2D Gyro_X_Bounds; // X = Min, Y = Max
-
-	FVector2D Gyro_Y_Bounds; // X = Min, Y = Max
-
-	FVector2D Gyro_Z_Bounds; // X = Min, Y = Max
-
-	FVector2D Accel_X_Bounds; // X = Min, Y = Max
-
-	FVector2D Accel_Y_Bounds; // X = Min, Y = Max
-
-	FVector2D Accel_Z_Bounds; // X = Min, Y = Max
-
-	FSensorBounds()
-	{
-		Gyro_X_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
-		Gyro_Y_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
-		Gyro_Z_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
-		Accel_X_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
-		Accel_Y_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
-		Accel_Z_Bounds = FVector2D(FLT_MAX, -FLT_MAX);
-	}
-};
 
 /**
  * @class SonyGamepadAbstract
@@ -275,6 +150,15 @@ class SonyGamepadAbstract : public ISonyGamepad
 
 public:
 	/**
+	 * @brief Shuts down the library and releases associated resources.
+	 *
+	 * This method is invoked to perform cleanup tasks, ensuring that all resources
+	 * allocated by the library are properly released. It overrides the equivalent
+	 * method in the ISonyGamepad interface and ensures the integrity of the shutdown
+	 * process specific to Sony gamepad implementations.
+	 */
+	virtual void ShutdownLibrary() override;
+	/**
 	 * @brief Updates the output state of the gamepad.
 	 *
 	 * This method is responsible for refreshing or modifying the output-related
@@ -288,27 +172,21 @@ public:
 	 */
 	virtual void UpdateOutput() override {}
 	/**
-	 * @brief Updates the input state from the gamepad and communicates it to the input system.
+	 * @brief Updates the input state of the gamepad.
 	 *
-	 * This method processes data received from the gamepad, such as button presses,
-	 * joystick movements, and other device-specific inputs. It then transmits this data
-	 * to the application via the provided input message handler.
+	 * The UpdateInput method is called to process and refresh the input data
+	 * associated with the gamepad. This function is typically invoked on each
+	 * frame with the elapsed time (Delta) since the last update, allowing input
+	 * state to be updated in real-time.
 	 *
-	 * @param InMessageHandler A shared reference to the message handler used for communicating input events to the application.
-	 * @param UserId The unique identifier of the user associated with this input device.
-	 * @param InputDeviceId The identifier for the specific input device providing the input.
-	 * @param Delta The elapsed time since the last input update, used to calculate input events over time.
+	 * @param Delta The time elapsed since the previous frame, in seconds.
+	 *
+	 * @details This method is meant to be overridden to implement specific
+	 * behaviors for handling input updates in derived classes. It ensures that
+	 * the gamepad's state is continuously synchronized with the current input
+	 * conditions, supporting real-time interaction within the application.
 	 */
-	virtual void UpdateInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float Delta) override {}
-	/**
-	 * @brief Shuts down the library and releases associated resources.
-	 *
-	 * This method is invoked to perform cleanup tasks, ensuring that all resources
-	 * allocated by the library are properly released. It overrides the equivalent
-	 * method in the ISonyGamepad interface and ensures the integrity of the shutdown
-	 * process specific to Sony gamepad implementations.
-	 */
-	virtual void ShutdownLibrary() override;
+	virtual void UpdateInput(float Delta) override {}
 	/**
 	 * Pure virtual function that checks the connection status of the gamepad.
 	 *
@@ -342,7 +220,7 @@ public:
 	 */
 	virtual void ResetLights() override {}
 	/**
-	 * Sets the lightbar color and associated timing parameters on the gamepad.
+	 * Sets the lightbar color and associated timing parameters on the gamepad DualShock4.
 	 *
 	 * @param Color The color to set the lightbar to, represented as an FColor.
 	 * @param BrithnessTime The time duration for setting the brightness effect. Defaults to 0.0f.
@@ -381,21 +259,6 @@ public:
 	 */
 	virtual void EnableMotionSensor(bool bIsMotionSensor) override;
 	/**
-	 * Initiates the calibration process for the motion sensor on the gamepad.
-	 *
-	 * @param Duration The duration, in seconds, for which the calibration process should run.
-	 * @param DeadZone The threshold value to be used for filtering out small movements.
-	 */
-	virtual void StartMotionSensorCalibration(float Duration, float DeadZone) override;
-	/**
-	 * Retrieves the current calibration status of the motion sensors.
-	 *
-	 * @param OutProgress A reference to a float where the current calibration progress will be stored.
-	 *                    The value ranges from 0.0 (no progress) to 1.0 (fully calibrated).
-	 * @return True if the calibration status was successfully retrieved, false otherwise.
-	 */
-	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) override;
-	/**
 	 * @brief Sets the vibration feedback of the gamepad.
 	 *
 	 * This method overrides the base implementation to configure the vibration
@@ -404,36 +267,6 @@ public:
 	 * @param Values The force feedback values containing the intensity levels for vibration.
 	 */
 	virtual void SetVibration(const FForceFeedbackValues& Values) override {}
-
-	/**
-	 * A map representing the states of various buttons on a controller.
-	 *
-	 * Each key in the map is a button name (FName), and its associated value is a boolean
-	 * indicating whether the button is currently pressed (`true`) or not pressed (`false`).
-	 *
-	 * This variable is primarily used for tracking button input states and ensuring
-	 * accurate representation of input events, such as detecting when a button's state
-	 * changes from pressed to released or vice versa.
-	 *
-	 * The map is updated dynamically during controller runtime, including in functions
-	 * like CheckButtonInput, which ensures real-time synchronization of input states.
-	 * It is reset during library shutdown to clear all stored button states.
-	 */
-	TMap<const FName, bool> ButtonStates;
-	/**
-	 * @typedef AnalogStates
-	 * @brief Represents a mapping of analog input states in the DualSense library.
-	 *
-	 * AnalogStates is a container that maps unique input identifiers, represented by FName,
-	 * to their respective float values, which typically denote the state or intensity of analog inputs.
-	 *
-	 * This map is used to handle and store the state of analog inputs, such as triggers or sticks,
-	 * providing a mechanism to track their values for input handling or processing purposes in an application.
-	 *
-	 * @details The keys in this map (FName) are designed to uniquely identify different analog input sources,
-	 * while the associated float values represent their corresponding state, usually on a normalized scale.
-	 */
-	TMap<const FName, float> AnalogStates;
 
 	/**
 	 * @brief Retrieves a mutable device context associated with the object.
@@ -472,11 +305,7 @@ public:
 	    , bHasPhoneConnected(false)
 	    , BatteryLevel(0)
 	    , bEnableAccelerometerAndGyroscope(false)
-	    , bHasMotionSensorBaseline(false)
-	    , bIsCalibrating(false)
-	    , CalibrationStartTime(0)
-	    , CalibrationDuration(0)
-	    , CalibrationSampleCount(0)
+	    , HIDDeviceContexts()
 	{}
 
 protected:
@@ -485,55 +314,10 @@ protected:
 	void SetWasTouch1Down(bool WasTouch1Down) { this->bWasTouch1Down = WasTouch1Down; }
 	[[nodiscard]] bool IsWasTouch2Down() const { return bWasTouch2Down; }
 	void SetWasTouch2Down(bool WasTouch2Down) { this->bWasTouch2Down = WasTouch2Down; }
-	[[nodiscard]] bool IsHasPhoneConnected() const { return bHasPhoneConnected; }
-	void SetHasPhoneConnected(bool HasPhoneConnected) { this->bHasPhoneConnected = HasPhoneConnected; }
-	[[nodiscard]] float GetSensorsDeadZone() const { return SensorsDeadZone; }
-	void SetSensorsDeadZone(float DeadZone) { this->SensorsDeadZone = FMath::Clamp(DeadZone, 0.0f, 1.f); }
-	[[nodiscard]] float GetAnalogDeadZone() const { return AnalogDeadZone; }
-	void SetAnalogDeadZone(float DeadZone) { this->AnalogDeadZone = DeadZone; }
 	[[nodiscard]] bool IsEnableAccelerometerAndGyroscope() const { return bEnableAccelerometerAndGyroscope; }
 	[[nodiscard]] bool IsResetGyroscope() const { return bIsResetGyroscope; }
-	void SetIsResetGyroscope(bool ResetGyroscope) { this->bIsResetGyroscope = ResetGyroscope; }
-	[[nodiscard]] bool IsHasMotionSensorBaseline() const { return bHasMotionSensorBaseline; }
-	void SetHasMotionSensorBaseline(bool MotionSensorBaseline) { this->bHasMotionSensorBaseline = MotionSensorBaseline; }
-	[[nodiscard]] bool IsCalibrating() const { return bIsCalibrating; }
-	void SetIsCalibrating(bool Calibrating) { this->bIsCalibrating = Calibrating; }
-	[[nodiscard]] double GetCalibrationStartTime() const { return CalibrationStartTime; }
-	void SetCalibrationStartTime(double CalibrationStart) { this->CalibrationStartTime = CalibrationStart; }
-	[[nodiscard]] float GetCalibrationDuration() const { return CalibrationDuration; }
-	void SetCalibrationDuration(float Duration) { this->CalibrationDuration = Duration; }
-	[[nodiscard]] FVector GetAccumulatedGyro() const { return AccumulatedGyro; }
-	void SetAccumulatedGyro(const FVector& AccGyro) { this->AccumulatedGyro = AccGyro; }
-	[[nodiscard]] FVector GetAccumulatedAccel() const { return AccumulatedAccel; }
-	void SetAccumulatedAccel(const FVector& AccAccel) { this->AccumulatedAccel = AccAccel; }
-	void SetCalibrationSampleCount(int32 CalibrationCount) { this->CalibrationSampleCount = FMath::Clamp(CalibrationCount, 1.0f, 10.0f); }
-	[[nodiscard]] FVector GetGyroBaseline() const { return GyroBaseline; }
-	void SetGyroBaseline(const FVector& Baseline) { this->GyroBaseline = Baseline; }
-	[[nodiscard]] FVector GetAccelBaseline() const { return AccelBaseline; }
-	void SetAccelBaseline(const FVector& Baseline) { this->AccelBaseline = Baseline; }
-	[[nodiscard]] FQuat GetFusedOrientation() const { return FusedOrientation; }
-	void SetFusedOrientation(const FQuat& Orientation) { this->FusedOrientation = Orientation; }
-	[[nodiscard]] FSensorBounds GetBounds() const { return Bounds; }
-	void SetBounds(const FSensorBounds& Bnds) { this->Bounds = Bnds; }
-	/**
-	 * @brief Sets the battery level for the gamepad.
-	 *
-	 * This method assigns the specified battery level to the gamepad, ensuring
-	 * that the value does not exceed the maximum allowable limit of 100.
-	 *
-	 * @param Value The battery level as a percentage, where 0 represents an empty battery
-	 *              and 100 represents a fully charged battery.
-	 */
-	void SetBatteryLevel(float Value);
-	/**
-	 * @brief Increments the calibration sample count.
-	 *
-	 * This method increases the internal counter used for tracking the number
-	 * of calibration samples collected. It is typically utilized during
-	 * calibration procedures to ensure accurate device adjustments based
-	 * on the sample data.
-	 */
-	void IncrementCalibrationSampleCount() { CalibrationSampleCount++; }
+	void SetIsResetGyroscope(const bool IsResetGyroscope) { this->bIsResetGyroscope = IsResetGyroscope; }
+	
 	/**
 	 * @brief Sets the device contexts for the HID device.
 	 *
@@ -544,20 +328,6 @@ protected:
 	 * the new HID device contexts.
 	 */
 	void SetDeviceContexts(const FDeviceContext& DeviceContexts) { this->HIDDeviceContexts = DeviceContexts; }
-
-	/**
-	 * @brief Handles button input events for a DualSense controller.
-	 *
-	 * This function checks the current state of a button on a DualSense controller and triggers
-	 * appropriate input events (button press or release) based on the change in its state.
-	 *
-	 * @param InMessageHandler The message handler responsible for dispatching input events.
-	 * @param UserId The platform user ID associated with the controller.
-	 * @param InputDeviceId The unique identifier for the DualSense input device.
-	 * @param ButtonName The name of the button being checked.
-	 * @param IsButtonPressed A boolean indicating the current pressed state of the button (true if pressed, false otherwise).
-	 */
-	virtual void CheckButtonInput(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed);
 
 private:
 	/**
@@ -619,36 +389,6 @@ private:
 	 */
 	float BatteryLevel;
 	/**
-	 * @variable SensorsDeadZone
-	 * @brief Defines the threshold for ignoring small sensor input variations.
-	 *
-	 * SensorsDeadZone is used to eliminate unintended small variations or noise
-	 * in sensor readings by setting a minimum threshold value. Any input changes
-	 * below this value are considered insignificant and are ignored in further
-	 * processing.
-	 *
-	 * @details This variable is particularly useful for fine-tuning input systems
-	 * to ensure smoother and more reliable sensor-based interactions by reducing
-	 * the sensitivity to unintentional micro-adjustments. It is often applied in
-	 * joystick or motion sensor implementations.
-	 */
-	float SensorsDeadZone = 0.0f;
-	/**
-	 * @variable SensorsDeadZone
-	 * @brief Defines the threshold for ignoring small sensor input variations.
-	 *
-	 * SensorsDeadZone is used to eliminate unintended small variations or noise
-	 * in sensor readings by setting a minimum threshold value. Any input changes
-	 * below this value are considered insignificant and are ignored in further
-	 * processing.
-	 *
-	 * @details This variable is particularly useful for fine-tuning input systems
-	 * to ensure smoother and more reliable sensor-based interactions by reducing
-	 * the sensitivity to unintentional micro-adjustments. It is often applied in
-	 * joystick or motion sensor implementations.
-	 */
-	float AnalogDeadZone = 0.3f;
-	/**
 	 * @variable EnableAccelerometerAndGyroscope
 	 * @brief Flags the activation of accelerometer and gyroscope sensors in the system.
 	 *
@@ -677,174 +417,6 @@ private:
 	 * recalibration is required due to drift or unexpected behavior.
 	 */
 	bool bIsResetGyroscope = false;
-	/**
-	 * @brief Indicates the presence of a motion sensor baseline calibration.
-	 *
-	 * The bHasMotionSensorBaseline variable is used to determine whether
-	 * a baseline calibration has been established for the motion sensor.
-	 * This is important for ensuring reliable readings and performance
-	 * from the motion sensor in applications that depend on accurate
-	 * motion or orientation data.
-	 *
-	 * @details A value of true indicates that a baseline is present, suggesting
-	 * that the motion sensor is calibrated and ready for precise operation.
-	 * A value of false indicates that no baseline calibration exists,
-	 * signaling that calibration might be required or motion sensor
-	 * readings could be unreliable.
-	 */
-	bool bHasMotionSensorBaseline;
-	/**
-	 * @brief Indicates whether the system is currently in the process of calibration.
-	 *
-	 * The bIsCalibrating flag is used to track if a calibration operation is active.
-	 * Calibration procedures are often necessary to ensure accurate performance of
-	 * input devices or sensors, and this property serves as a state indicator during
-	 * such processes.
-	 *
-	 * @details While true, the system may be engaged in activities that adjust
-	 * or fine-tune hardware or software settings based on specific calibration data.
-	 * This information can be used to manage or modify application behavior during
-	 * these operations, ensuring no conflicts arise while calibration is underway.
-	 */
-	bool bIsCalibrating;
-	/**
-	 * @var CalibrationStartTime
-	 * @brief Represents the starting time of a calibration process.
-	 *
-	 * This variable is used to store the timestamp indicating when a calibration
-	 * operation begins. It is typically measured in seconds or another relevant
-	 * time unit and functions as a reference point for tracking the duration
-	 * or progress of the calibration procedure.
-	 *
-	 * @details CalibrationStartTime is essential for systems that require precise
-	 * synchronization or monitoring of calibration events. It provides a time
-	 * reference that can be used to evaluate performance, validate timing,
-	 * or manage system states during the calibration process.
-	 */
-	double CalibrationStartTime;
-	/**
-	 * @variable CalibrationDuration
-	 * @brief Specifies the duration required for a calibration process in the system.
-	 *
-	 * The CalibrationDuration variable represents the amount of time, in seconds,
-	 * allocated for completing the calibration procedure of a specific component or
-	 * system. This value can be used to control timing and ensure proper operation
-	 * during the calibration phase.
-	 *
-	 * @details CalibrationDuration plays a crucial role in determining the time
-	 * limits for calibration workflows. It may be configured based on the requirements
-	 * of the specific hardware or software being calibrated. Proper calibration duration
-	 * is essential to achieve accurate results and optimal performance.
-	 */
-	float CalibrationDuration;
-	/**
-	 * @class AccumulatedGyro
-	 * @brief Represents the accumulated gyroscopic sensor data.
-	 *
-	 * The AccumulatedGyro variable is used to store the cumulative measurements
-	 * from a gyroscope over a period of time. Gyroscopic data typically includes
-	 * angular velocity measurements along the X, Y, and Z axes, allowing for
-	 * tracking of rotational motion.
-	 *
-	 * This variable is commonly used in applications requiring precise angular
-	 * motion tracking or orientation changes, such as in controllers, VR/AR
-	 * systems, or robotics.
-	 *
-	 * @details The data stored in AccumulatedGyro may include the sum of angular
-	 * velocities sampled periodically, providing an aggregate measure of
-	 * rotational movement. Proper handling of noise and sensor calibration is
-	 * recommended to ensure accuracy when interpreting this data.
-	 */
-	FVector AccumulatedGyro;
-	/**
-	 * @class AccumulatedAccel
-	 * @brief Represents the total accumulated acceleration vector.
-	 *
-	 * AccumulatedAccel is a variable intended to store the cumulative acceleration
-	 * values detected over time in the form of a 3D vector. This data is typically
-	 * used to track movement or behavior in applications requiring motion detection
-	 * or spatial calculations.
-	 *
-	 * @details The variable holds acceleration data along the X, Y, and Z axes,
-	 * aggregated over a period. It can be utilized in scenarios such as
-	 * gesture recognition, motion analysis, or input handling in systems that
-	 * rely on accelerometer-based data or similar sensors.
-	 */
-	FVector AccumulatedAccel;
-	/**
-	 * @brief Specifies the number of calibration samples to be collected.
-	 *
-	 * CalibrationSampleCount is an integer variable that determines the quantity of
-	 * samples required for calibration in a given process or system. Increasing or
-	 * decreasing this value directly impacts the precision and accuracy of the calibration
-	 * process, as more samples generally provide more statistically significant data,
-	 * while fewer samples may reduce processing time.
-	 *
-	 * @details This variable is utilized in scenarios where data consistency, error
-	 * adjustment, or parameter tuning is needed for optimal functionality. It plays
-	 * a critical role in applications involving sensors, devices, or systems requiring
-	 * initialization or recalibration during operation.
-	 */
-	int32 CalibrationSampleCount;
-	/**
-	 * @variable GyroBaseline
-	 * @brief Represents the baseline gyroscope values for calibration or adjustment.
-	 *
-	 * The GyroBaseline vector is used to store the initial or default calibration values
-	 * of the gyroscope sensor. These baseline values can be used to correct or offset
-	 * the raw gyroscope data to account for systematic errors or biases in measurements.
-	 *
-	 * @details This variable typically holds three-dimensional vector data, representing
-	 * the x, y, and z axes of the gyroscope readings. By subtracting or adjusting against
-	 * these baseline values, the system can improve the accuracy of motion detection,
-	 * ensuring that small deviations or imperfections in the gyroscope's output are compensated for.
-	 */
-	FVector GyroBaseline;
-	/**
-	 * @variable AccelBaseline
-	 * @brief Represents the baseline accelerometer values for calibration or reference purposes.
-	 *
-	 * The AccelBaseline variable is used to store the baseline or default accelerometer readings
-	 * that can serve as a reference point for motion detection or comparison. It is typically
-	 * initialized during a calibration phase and helps in determining deviations or changes in
-	 * the accelerometer data during device movement.
-	 *
-	 * @details This variable generally consists of three components corresponding to the x, y,
-	 * and z axes of acceleration. It is useful in systems that involve sensor input for motion
-	 * tracking, providing a stable reference to identify movement patterns or biases in the
-	 * accelerometer measurements.
-	 */
-	FVector AccelBaseline;
-	/**
-	 * @class FusedOrientation
-	 * @brief Represents the fused orientation in quaternion format.
-	 *
-	 * The FusedOrientation variable is used to store the orientation data
-	 * expressed as a quaternion. It is typically derived by integrating data
-	 * from multiple sources, such as gyroscope, accelerometer, or magnetometer.
-	 *
-	 * This value is intended for applications that require precise orientation
-	 * tracking, such as virtual reality, augmented reality, or motion-based input systems.
-	 *
-	 * @details The quaternion representation allows for smooth interpolation
-	 * and avoidance of issues like gimbal lock, making it ideal for 3D rotational data.
-	 */
-	FQuat FusedOrientation;
-	/**
-	 * @class FSensorBounds
-	 * @brief Represents the boundaries or limits of a sensor's detectable range.
-	 *
-	 * The FSensorBounds class is utilized to define and handle the spatial or operational
-	 * limits of a sensor within a system. This can include constraints such as minimum and
-	 * maximum values that the sensor can register or operate within, which are essential for
-	 * validating and processing sensor data.
-	 *
-	 * @details This class can be especially useful in applications where sensors are required
-	 * to operate within strict parameters, ensuring data integrity and preventing erroneous
-	 * readings. By defining these bounds, it assists in managing sensor interactions and maintaining
-	 * proper system functionality.
-	 */
-	FSensorBounds Bounds;
 	/**
 	 * @brief Represents the context of a Human Interface Device (HID) used by DualSense controllers.
 	 *

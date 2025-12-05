@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-
 class WINDOWSDUALSENSE_DS5W_API IGamepadSensors
 {
 public:
@@ -21,19 +19,4 @@ public:
 	 * @param bIsMotionSensor Specifies whether to enable the gyroscope (true) or accelerometer (false) as the motion sensor.
 	 */
 	virtual void EnableMotionSensor(bool bIsMotionSensor) = 0;
-	/**
-	 * Initiates the calibration process for the motion sensor on the gamepad.
-	 *
-	 * @param Duration The duration, in seconds, for which the calibration process should run.
-	 * @param DeadZone The threshold value to be used for filtering out small movements.
-	 */
-	virtual void StartMotionSensorCalibration(float Duration, float DeadZone) = 0;
-	/**
-	 * Retrieves the current calibration status of the motion sensors.
-	 *
-	 * @param OutProgress A reference to a float where the current calibration progress will be stored.
-	 *                    The value ranges from 0.0 (no progress) to 1.0 (fully calibrated).
-	 * @return True if the calibration status was successfully retrieved, false otherwise.
-	 */
-	virtual bool GetMotionSensorCalibrationStatus(float& OutProgress) = 0;
 };
