@@ -3,13 +3,11 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
-#include "API/SonyGamepadProxyHelpers.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
 #include "Core/Types/Structs/Config/GamepadCalibration.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
+#include "Helpers/DualSenseLog.h"
 #include "Implementations/Utils/GamepadCalibrationSensors.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include <hidsdi.h>
 #include <setupapi.h>
 
@@ -280,7 +278,7 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 
 bool FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 {
-	using namespace GamepadCalibrationSensors;
+	using namespace FGamepadCalibrationSensors;
 
 	unsigned char FeatureBuffer[41];
 	FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));

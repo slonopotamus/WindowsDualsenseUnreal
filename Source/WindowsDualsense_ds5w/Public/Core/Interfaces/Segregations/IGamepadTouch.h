@@ -4,7 +4,7 @@
 
 #pragma once
 
-class WINDOWSDUALSENSE_DS5W_API IGamepadTouch
+class IGamepadTouch
 {
 public:
 	virtual ~IGamepadTouch() = default;

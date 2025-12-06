@@ -14,7 +14,6 @@
 
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
-#include "CoreMinimal.h"
 
 /**
  * @brief Enumerates the possible outcomes of a polling operation in HID device communication.

@@ -5,7 +5,7 @@
 #pragma once
 #include "Core/Types/Structs/Config/GamepadCalibration.h"
 
-namespace GamepadCalibrationSensors
+namespace FGamepadCalibrationSensors
 {
 	inline void DualSenseCalibrationSensors(const uint8* Buffer, FGamepadCalibration& OutCalibration)
 	{
@@ -83,4 +83,4 @@ namespace GamepadCalibrationSensors
 		FinalAccel.Z = ((RawAccZ - Calibration.AccelBiasZ) * Calibration.AccelFactorZ);
 	}
 
-} // namespace GamepadCalibrationSensors
+} // namespace FGamepadCalibrationSensors

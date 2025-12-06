@@ -9,11 +9,8 @@
 #include "Core/Managers/DeviceRegistry.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
 #include "Misc/CoreDelegates.h"
-#include "Async/Async.h"
-#include "Async/TaskGraphInterfaces.h"
 
 using namespace SonyGamepadProxyHelpers;
-
 DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler)
     : MessageHandler(InMessageHandler)
 {
@@ -29,7 +26,7 @@ void DeviceManager::Tick(float DeltaTime)
 {
 	SendControllerEvents();
 	FDeviceRegistry::Get()->DetectedChangeConnections(DeltaTime);
-	
+
 	PollAccumulator += DeltaTime;
 	if (PollAccumulator < PollInterval)
 	{
@@ -62,7 +59,7 @@ void DeviceManager::SendControllerEvents()
 			{
 				continue;
 			}
-			
+
 			FString ContextDrive = TEXT("DualSense");
 			if (Gamepad->GetDeviceType() == EDeviceType::DualShock4)
 			{
@@ -82,67 +79,65 @@ void DeviceManager::SendControllerEvents()
 	}
 }
 
-void DeviceManager::CheckEvents(FDeviceContext* Context, const FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) const
+void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) const
 {
 	const auto HandleAnalogInput = [&](const FName& AnalogKey, const FName& ButtonKeyPositive, const FName& ButtonKeyNegative, float NewAxisValue) {
-		if (FMath::Abs(NewAxisValue) < FrameInput.AnalogDeadZone)
-		{
-			NewAxisValue = 0;
-		}
-	
 		auto& OldAxisValue = Context->AnalogStates.FindOrAdd(AnalogKey);
 		if (FMath::IsNearlyEqual(NewAxisValue, OldAxisValue))
 		{
 			return;
 		}
-	
+
 		MessageHandler->OnControllerAnalog(AnalogKey, UserId, InputDeviceId, NewAxisValue);
 		OldAxisValue = NewAxisValue;
-	
+
 		CheckButtonInput(Context, UserId, InputDeviceId, ButtonKeyPositive, NewAxisValue > 0);
 		CheckButtonInput(Context, UserId, InputDeviceId, ButtonKeyNegative, NewAxisValue < 0);
 	};
-	
+
 	HandleAnalogInput(FGamepadKeyNames::LeftAnalogX, FGamepadKeyNames::LeftStickLeft, FGamepadKeyNames::LeftStickRight, FrameInput.LeftAnalog.X);
 	HandleAnalogInput(FGamepadKeyNames::LeftAnalogY, FGamepadKeyNames::LeftStickDown, FGamepadKeyNames::LeftStickUp, FrameInput.LeftAnalog.Y);
 	HandleAnalogInput(FGamepadKeyNames::RightAnalogX, FGamepadKeyNames::RightStickLeft, FGamepadKeyNames::RightStickRight, FrameInput.RightAnalog.X);
 	HandleAnalogInput(FGamepadKeyNames::RightAnalogY, FGamepadKeyNames::RightStickDown, FGamepadKeyNames::RightStickUp, FrameInput.RightAnalog.Y);
-	
-	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftTriggerAnalog, UserId, InputDeviceId, FrameInput.LeftTriggerAnalog);
-	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightTriggerAnalog, UserId, InputDeviceId, FrameInput.RightTriggerAnalog);
-	
+
+	if (FrameInput.LeftTriggerAnalog || FrameInput.RightTriggerAnalog)
+	{
+		MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftTriggerAnalog, UserId, InputDeviceId, FrameInput.LeftTriggerAnalog);
+		MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightTriggerAnalog, UserId, InputDeviceId, FrameInput.RightTriggerAnalog);
+	}
+
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonBottom, FrameInput.bCross);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonLeft, FrameInput.bSquare);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonRight, FrameInput.bCircle);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::FaceButtonTop, FrameInput.bTriangle);
-	
+
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::DPadUp, FrameInput.bDpadUp);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::DPadDown, FrameInput.bDpadDown);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::DPadLeft, FrameInput.bDpadLeft);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::DPadRight, FrameInput.bDpadRight);
-	
+
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::LeftShoulder, FrameInput.bLeftShoulder);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightShoulder, FrameInput.bRightShoulder);
-	
+
 	// mapped urenal native gamepad Start and Select
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::SpecialRight, FrameInput.bStart);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::SpecialLeft, FrameInput.bShare);
-	
+
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::LeftTriggerThreshold, FrameInput.bLeftTriggerThreshold);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightTriggerThreshold, FrameInput.bRightTriggerThreshold);
-	
+
 	// mapped urenal native gamepad Push Stick
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::LeftThumb, FrameInput.bLeftStick);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightThumb, FrameInput.bRightStick);
-	
+
 	// Custom map keys
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_PushLeftStick"), FrameInput.bLeftStick);
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_PushRightStick"), FrameInput.bRightStick);
-	
+
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Mic"), FrameInput.bMute);
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_TouchButtom"), FrameInput.bTouch);
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Button"), FrameInput.bPSButton);
-	
+
 	if (Context->DeviceType == EDeviceType::DualSenseEdge)
 	{
 		CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_FunctionL"), FrameInput.bFn1);
@@ -150,11 +145,101 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, const FInputContext& Fr
 		CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_PaddleL"), FrameInput.bPaddleLeft);
 		CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_PaddleR"), FrameInput.bPaddleRight);
 	}
-	
+
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Menu"), FrameInput.bStart);
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Share"), FrameInput.bShare);
-	
-	MessageHandler.Get().OnMotionDetected(FrameInput.Tilt, FrameInput.Gyroscope, FrameInput.Gravity,FrameInput.Accelerometer, UserId, InputDeviceId);
+
+	if (FrameInput.Gyroscope.Size() > 0.0f || FrameInput.Accelerometer.Size() > 0.0f)
+	{
+		MessageHandler.Get().OnMotionDetected(FrameInput.Tilt, FrameInput.Gyroscope, FrameInput.Gravity, FrameInput.Accelerometer, UserId, InputDeviceId);
+	}
+
+	if (FrameInput.TouchDownOne && !FrameInput.bWasTouchDownOne)
+	{
+		MessageHandler->OnTouchStarted(
+		    nullptr,
+		    FrameInput.TouchPositionOne,
+		    1.0f,
+		    FrameInput.TouchIdOne,
+		    UserId,
+		    InputDeviceId);
+	}
+	else if (FrameInput.TouchDownOne && FrameInput.bWasTouchDownOne)
+	{
+		MessageHandler->OnTouchMoved(
+		    FrameInput.TouchPositionOne,
+		    1.0f,
+		    FrameInput.TouchIdOne,
+		    UserId,
+		    InputDeviceId);
+	}
+	else if (!FrameInput.TouchDownOne && FrameInput.bWasTouchDownOne)
+	{
+		MessageHandler->OnTouchEnded(
+		    FrameInput.TouchPositionOne,
+		    FrameInput.TouchIdOne,
+		    UserId,
+		    InputDeviceId);
+	}
+	FrameInput.bWasTouchDownOne = FrameInput.TouchDownOne;
+	FrameInput.TouchLastPositionOne = FrameInput.TouchPositionOne;
+
+	if (FrameInput.TouchDownTwo && !FrameInput.bWasTouchDownTwo)
+	{
+		MessageHandler->OnTouchStarted(
+		    nullptr,
+		    FrameInput.TouchPositionTwo,
+		    1.0f,
+		    FrameInput.TouchIdTwo,
+		    UserId,
+		    InputDeviceId);
+	}
+	else if (FrameInput.TouchDownTwo && FrameInput.bWasTouchDownTwo)
+	{
+		MessageHandler->OnTouchMoved(
+		    FrameInput.TouchPositionTwo,
+		    1.0f,
+		    FrameInput.TouchIdTwo,
+		    UserId,
+		    InputDeviceId);
+	}
+	else if (!FrameInput.TouchDownTwo && FrameInput.bWasTouchDownTwo)
+	{
+		MessageHandler->OnTouchEnded(
+		    FrameInput.TouchPositionTwo,
+		    FrameInput.TouchIdTwo,
+		    UserId,
+		    InputDeviceId);
+	}
+	FrameInput.bWasTouchDownTwo = FrameInput.TouchDownTwo;
+	FrameInput.TouchLastPositionTwo = FrameInput.TouchPositionTwo;
+
+	if (FrameInput.bWasTouchSwipe)
+	{
+		MessageHandler->OnTouchGesture(
+		    EGestureEvent::Swipe,
+		    FrameInput.SwipeVector,
+		    0.0f,
+		    false);
+	}
+
+	if (FrameInput.bWasTouchScroll)
+	{
+		MessageHandler->OnTouchGesture(
+		    EGestureEvent::Scroll,
+		    FrameInput.ScrollVector,
+		    0.0f,
+		    false);
+	}
+
+	if (FrameInput.bWasTouchZoom)
+	{
+		MessageHandler->OnTouchGesture(
+		    EGestureEvent::Magnify,
+		    FVector2D::ZeroVector,
+		    FrameInput.ZoomVector.X,
+		    false);
+	}
 }
 
 void DeviceManager::CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const
@@ -260,7 +345,9 @@ void DeviceManager::SetChannelValues(int32 ControllerId, const FForceFeedbackVal
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		Gamepad->SetVibration(Values);
+		const float LeftRumble = FMath::Clamp(FMath::Max(Values.LeftLarge, Values.LeftSmall), 0.f, 1.f);
+		const float RightRumble = FMath::Clamp(FMath::Max(Values.RightLarge, Values.RightSmall), 0.f, 1.f);
+		Gamepad->SetVibration(static_cast<uint8>(LeftRumble * 255.f), static_cast<uint8>(RightRumble * 255.f));
 	}
 }
 

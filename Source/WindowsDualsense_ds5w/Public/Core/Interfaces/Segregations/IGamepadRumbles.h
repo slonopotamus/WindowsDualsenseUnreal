@@ -9,10 +9,10 @@ class IGamepadRumbles
 public:
 	virtual ~IGamepadRumbles() = default;
 	/**
-	 * Sets the vibration effect for the Sony gamepad.
+	 * Sets the vibration levels for the gamepad.
 	 *
-	 * @param Values A reference to an FForceFeedbackValues struct containing the force feedback
-	 *               intensity and duration for the vibration effect.
+	 * @param LeftRumble The intensity of the left-side vibration motor. The value should range from 0 (no vibration) to 255 (maximum intensity). Defaults to 0 if not specified.
+	 * @param RightRumble The intensity of the right-side vibration motor. The value should range from 0 (no vibration) to 255 (maximum intensity). Defaults to 0 if not specified.
 	 */
-	virtual void SetVibration(const FForceFeedbackValues& Values) = 0;
+	virtual void SetVibration(uint8 LeftRumble = 0, uint8 RightRumble = 0) = 0;
 };

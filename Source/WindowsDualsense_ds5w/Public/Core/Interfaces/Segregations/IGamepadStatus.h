@@ -6,7 +6,7 @@
 
 #include "Core/Types/Enums/EDeviceConnection.h"
 
-class WINDOWSDUALSENSE_DS5W_API IGamepadStatus
+class IGamepadStatus
 {
 public:
 	virtual ~IGamepadStatus() = default;

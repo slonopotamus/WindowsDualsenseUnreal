@@ -9,6 +9,7 @@
 #include "Core/Types/Structs/Context/OutputContext.h"
 #include "GameFramework/InputSettings.h"
 #include "HAL/PlatformProcess.h"
+#include "Helpers/DualSenseLog.h"
 #include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
 #include "Implementations/Libraries/DualShock/DualShockLibrary.h"
 #include "Runtime/Launch/Resources/Version.h"

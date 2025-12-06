@@ -8,132 +8,6 @@
 #include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
 
 /**
- * @class FTouchPoint1
- * @brief Represents a touchpoint in a touch-based input system.
- *
- * The FTouchPoint1 class is designed to encapsulate the properties and behavior
- * of a single touchpoint detected on a touch-sensitive surface. It provides
- * information such as the position, pressure, and state of the touchpoint,
- * which can be used to build touch interactions within an application.
- *
- * This class is typically used in systems that handle multitouch input,
- * providing the data necessary to track individual touchpoints and their
- * specific attributes.
- *
- * @details The class may store information about the position of the touchpoint
- * in screen coordinates, the pressure or force of the touch, and the current state
- * of the touch event (e.g., touch began, moved, or ended). It may be used in
- * conjunction with other similar touchpoint objects for multitouch gesture recognition
- * or input processing.
- */
-struct FTouchPoint1
-{
-	/**
-	 * @brief Represents a generic variable `X`.
-	 *
-	 * This variable is used as a placeholder or for storing a specific value
-	 * during the program's execution. The exact nature and purpose of `X`
-	 * depend on the context in which it is defined.
-	 *
-	 * @note Ensure that the value assigned to `X` is valid and adheres
-	 * to the expected data type or constraints for its proper usage.
-	 */
-	uint16_t X;
-	/**
-	 * @brief Computes the factorial of a given non-negative integer.
-	 *
-	 * This function calculates the factorial of a number using recursion.
-	 * The factorial of a number `n` is the product of all positive integers less than
-	 * or equal to `n`. Factorial is defined as:
-	 * - 0! = 1
-	 * - n! = n * (n-1)!, where n > 0
-	 *
-	 * @param n The non-negative integer for which the factorial is to be computed.
-	 * @return The factorial of the input number. If input  0, returns 1.
-	 * @throw std::invalid_argument If the input is a negative number.
-	 */
-	uint16_t Y;
-	/**
-	 * @brief Represents a downward movement in a grid or coordinate system.
-	 *
-	 * This class encapsulates the functionality related to movement in the downward direction.
-	 * It could be used in contexts such as 2D games, simulations, or navigation systems
-	 * where positioning within a coordinate grid needs to be adjusted downward.
-	 */
-	bool Down;
-	/**
-	 * @class Id
-	 * @brief Represents a unique identifier.
-	 *
-	 * This class is designed to handle and manipulate unique identifiers
-	 * for various use cases. It provides functionality to generate,
-	 * validate, and compare unique ID values.
-	 *
-	 * @details
-	 * They'd class can be used in scenarios where unique identification
-	 * is required, such as database keys, UUID generation, and other
-	 * similar functionalities. It ensures that each instance represents
-	 * a distinct identifier.
-	 */
-	unsigned char Id;
-};
-
-/**
- * @class FTouchPoint2
- * @brief Represents a point of contact on a touch-sensitive surface with additional properties.
- *
- * The FTouchPoint2 class is used to encapsulate the state and properties of a touchpoint
- * as it interacts with a touch-sensitive interface. Each instance of this class provides
- * detailed information about the current state of the touchpoint, including its position,
- * pressure, and movement. This is typically used in multitouch systems to track and manage
- * touch inputs across a surface.
- *
- * The FTouchPoint2 class is particularly useful in applications like gesture recognition,
- * gaming, and graphical applications that require an understanding of user interactions
- * on touch input devices.
- */
-struct FTouchPoint2
-{
-	/**
-	 * @brief Represents the variable X, which is used as a placeholder or for a specific purpose in the context of the program.
-	 *
-	 * This variable may hold data or serve as a control mechanism
-	 * depending on the logic implemented in the application. The detailed
-	 * behavior, intent, and value assignment of X should align with the program's requirements.
-	 *
-	 * @note Ensure proper initialization and context-specific usage of X to avoid
-	 * unintended behaviors.
-	 */
-	uint16_t X;
-	/**
-	 * @brief Represents a variable 'Y' with an unspecified type and purpose.
-	 *
-	 * This variable is declared as 'Y' and may be assigned or used in various contexts
-	 * depending on the implementation or application where it is defined. The specific
-	 * type, purpose, and usage of 'Y' is undefined and should be interpreted based on
-	 * its associated logic or framework.
-	 */
-	uint16_t Y;
-	/**
-	 * @brief Represents a direction or movement towards a lower position or level.
-	 *
-	 * The variable Down is typically used to indicate a downward movement,
-	 * orientation, or state in various contexts such as navigation, positioning,
-	 * or directional control in a program.
-	 */
-	bool Down;
-	/**
-	 * @brief Represents a unique identifier.
-	 *
-	 * This variable is used to store a unique value that can be assigned
-	 * to distinguish between different entities or objects in a system.
-	 * It is typically used for identification.
-	 */
-	unsigned char Id;
-};
-
-
-/**
  * @class SonyGamepadAbstract
  * @brief An abstract base class derived from the ISonyGamepad interface.
  *
@@ -264,9 +138,8 @@ public:
 	 * This method overrides the base implementation to configure the vibration
 	 * feedback intensity for the gamepad based on the provided force feedback values.
 	 *
-	 * @param Values The force feedback values containing the intensity levels for vibration.
 	 */
-	virtual void SetVibration(const FForceFeedbackValues& Values) override {}
+	virtual void SetVibration(uint8 LeftRumble = 0, uint8 RightRumble = 0) override {}
 
 	/**
 	 * @brief Retrieves a mutable device context associated with the object.
@@ -296,7 +169,7 @@ public:
 	 * and responsive 6-DOF (Degrees of Freedom) motion and orientation tracking.
 	 */
 	FMadgwickAhrs MadgwickFilter;
-	
+
 	SonyGamepadAbstract()
 	    : MadgwickFilter(0.8)
 	    , bEnableTouch(false)
@@ -310,14 +183,10 @@ public:
 
 protected:
 	[[nodiscard]] bool IsEnableTouch() const { return bEnableTouch; }
-	[[nodiscard]] bool IsWasTouch1Down() const { return bWasTouch1Down; }
-	void SetWasTouch1Down(bool WasTouch1Down) { this->bWasTouch1Down = WasTouch1Down; }
-	[[nodiscard]] bool IsWasTouch2Down() const { return bWasTouch2Down; }
-	void SetWasTouch2Down(bool WasTouch2Down) { this->bWasTouch2Down = WasTouch2Down; }
 	[[nodiscard]] bool IsEnableAccelerometerAndGyroscope() const { return bEnableAccelerometerAndGyroscope; }
 	[[nodiscard]] bool IsResetGyroscope() const { return bIsResetGyroscope; }
 	void SetIsResetGyroscope(const bool IsResetGyroscope) { this->bIsResetGyroscope = IsResetGyroscope; }
-	
+
 	/**
 	 * @brief Sets the device contexts for the HID device.
 	 *

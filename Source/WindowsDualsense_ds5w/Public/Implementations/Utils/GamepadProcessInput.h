@@ -5,15 +5,44 @@
 #pragma once
 #include "Core/Types/Structs/Context/DeviceContext.h"
 
-namespace GamepadProcessInput
+#define BTN_FN1 0x10
+#define BTN_FN2 0x20
+#define BTN_PADDLE_LEFT 0x40
+#define BTN_PADDLE_RIGHT 0x80
+
+#define BTN_DPAD_UP 0x8
+#define BTN_DPAD_DOWN 0x02
+#define BTN_DPAD_LEFT 0x01
+#define BTN_DPAD_RIGHT 0x04
+
+#define BTN_CROSS 0x20
+#define BTN_SQUARE 0x10
+#define BTN_CIRCLE 0x40
+#define BTN_TRIANGLE 0x80
+
+#define BTN_LEFT_STICK 0x40
+#define BTN_RIGHT_STICK 0x80
+
+#define BTN_LEFT_SHOULDER 0x01
+#define BTN_RIGHT_SHOULDER 0x02
+#define BTN_LEFT_TRIGGER 0x04
+#define BTN_RIGHT_TRIGGER 0x08
+
+#define BTN_START 0x20
+#define BTN_SELECT 0x10
+#define BTN_PAD_BUTTON 0x02
+#define BTN_MIC_BUTTON 0x04
+#define BTN_PLAYSTATION_LOGO 0x01
+
+namespace FGamepadProcessInput
 {
-	inline void DualSenseRaw(const unsigned char* HIDInput, FInputContext* Input, float DeadZone = 0.0f)
+	inline void DualSenseRaw(const unsigned char* HIDInput, FInputContext* Input)
 	{
 		// Analogs
-		const float LeftAnalogX = static_cast<float>(HIDInput[0x00] - 128) / 128;
-		const float LeftAnalogY = static_cast<float>(HIDInput[0x01] - 128) / -128;
-		const float RightAnalogX = static_cast<float>(HIDInput[0x02] - 128) / 128;
-		const float RightAnalogY = static_cast<float>(HIDInput[0x03] - 128) / -128;
+		const float LeftAnalogX = static_cast<float>(HIDInput[0x00] - 128) / 128.f;
+		const float LeftAnalogY = static_cast<float>(HIDInput[0x01] - 128) / -128.f;
+		const float RightAnalogX = static_cast<float>(HIDInput[0x02] - 128) / 128.f;
+		const float RightAnalogY = static_cast<float>(HIDInput[0x03] - 128) / -128.f;
 
 		const float TriggerL = HIDInput[0x04] / 256.0f;
 		const float TriggerR = HIDInput[0x05] / 256.0f;
@@ -23,7 +52,7 @@ namespace GamepadProcessInput
 		const bool bSquare = ButtonsMask & BTN_SQUARE;
 		const bool bCircle = ButtonsMask & BTN_CIRCLE;
 		const bool bTriangle = ButtonsMask & BTN_TRIANGLE;
-		
+
 		switch (HIDInput[0x07] & 0x0F)
 		{
 			case 0x0:
@@ -52,7 +81,7 @@ namespace GamepadProcessInput
 				break;
 			default:;
 		}
-		
+
 		const bool bDPadLeft = ButtonsMask & BTN_DPAD_LEFT;
 		const bool bDPadDown = ButtonsMask & BTN_DPAD_DOWN;
 		const bool bDPadRight = ButtonsMask & BTN_DPAD_RIGHT;
@@ -80,13 +109,26 @@ namespace GamepadProcessInput
 
 		const bool bLeftTriggerThreshold = HIDInput[0x08] & BTN_LEFT_TRIGGER;
 		const bool bRightTriggerThreshold = HIDInput[0x08] & BTN_RIGHT_TRIGGER;
-		
+
 		Input->bHasPhoneConnected = (HIDInput[0x35] & 0x01);
 		Input->BatteryLevel = (((HIDInput[0x34] & 0x0F) / 10.0) * 100);
-		Input->LeftAnalog.X = LeftAnalogX;
-		Input->LeftAnalog.Y = LeftAnalogY;
-		Input->RightAnalog.X = RightAnalogX;
-		Input->RightAnalog.Y = RightAnalogY;
+
+		auto ApplyDeadZone = [](float Value, float Threshold) -> float {
+			if (FMath::Abs(Value) < Threshold)
+			{
+				return 0.0f;
+			}
+
+			const float Sign = FMath::Sign(Value);
+			const float Abs = FMath::Abs(Value);
+			return Sign * ((Abs - Threshold) / (1.0f - Threshold));
+		};
+
+		Input->LeftAnalog.X = ApplyDeadZone(LeftAnalogX, Input->AnalogDeadZone);
+		Input->LeftAnalog.Y = ApplyDeadZone(LeftAnalogY, Input->AnalogDeadZone);
+		Input->RightAnalog.X = ApplyDeadZone(RightAnalogX, Input->AnalogDeadZone);
+		Input->RightAnalog.Y = ApplyDeadZone(RightAnalogY, Input->AnalogDeadZone);
+
 		Input->LeftTriggerAnalog = TriggerL;
 		Input->RightTriggerAnalog = TriggerR;
 		Input->bCross = bCross;
@@ -105,7 +147,7 @@ namespace GamepadProcessInput
 		Input->bRightTriggerThreshold = bRightTriggerThreshold;
 		Input->bLeftStick = PushLeftStick;
 		Input->bRightStick = PushRightStick;
-		
+
 		Input->bMute = Mic;
 		Input->bFn1 = bFn1;
 		Input->bFn2 = bFn2;
@@ -114,8 +156,8 @@ namespace GamepadProcessInput
 		Input->bPaddleLeft = bPaddleLeft;
 		Input->bPaddleRight = bPaddleRight;
 	}
-	
-	inline void DualShockRaw(const unsigned char* HIDInput, FInputContext* Input, float DeadZone = 0.0f)
+
+	inline void DualShockRaw(const unsigned char* HIDInput, FInputContext* Input)
 	{
 		// Triggers
 		const bool bLeftTriggerThreshold = HIDInput[0x05] & BTN_LEFT_TRIGGER;
@@ -125,10 +167,10 @@ namespace GamepadProcessInput
 		const float TriggerL = HIDInput[0x07] / 256.0f;
 		const float TriggerR = HIDInput[0x08] / 256.0f;
 
-		const float LeftAnalogX = static_cast<float>(HIDInput[0x00] - 128) / 128;
-		const float LeftAnalogY = static_cast<float>(HIDInput[0x01] - 128) / -128;
-		const float RightAnalogX = static_cast<float>(HIDInput[0x02] - 128) / 128;
-		const float RightAnalogY = static_cast<float>(HIDInput[0x03] - 128) / -128;
+		const float LeftAnalogX = static_cast<float>(HIDInput[0x00] - 128) / 128.f;
+		const float LeftAnalogY = static_cast<float>(HIDInput[0x01] - 128) / -128.f;
+		const float RightAnalogX = static_cast<float>(HIDInput[0x02] - 128) / 128.f;
+		const float RightAnalogY = static_cast<float>(HIDInput[0x03] - 128) / -128.f;
 
 		uint8_t ButtonsMask = HIDInput[0x04] & 0xF0;
 		const bool bCross = ButtonsMask & BTN_CROSS;
@@ -176,14 +218,26 @@ namespace GamepadProcessInput
 		// Push Stick
 		const bool PushLeftStick = HIDInput[0x05] & BTN_LEFT_STICK;
 		const bool PushRightStick = HIDInput[0x05] & BTN_RIGHT_STICK;
-	
+
 		const bool Start = HIDInput[0x05] & BTN_START;
 		const bool Select = HIDInput[0x05] & BTN_SELECT;
-		
-		Input->LeftAnalog.X = LeftAnalogX;
-		Input->LeftAnalog.Y = LeftAnalogY;
-		Input->RightAnalog.X = RightAnalogX;
-		Input->RightAnalog.Y = RightAnalogY;
+
+		auto ApplyDeadZone = [](float Value, float Threshold) -> float {
+			if (FMath::Abs(Value) < Threshold)
+			{
+				return 0.0f;
+			}
+
+			const float Sign = FMath::Sign(Value);
+			const float Abs = FMath::Abs(Value);
+			return Sign * ((Abs - Threshold) / (1.0f - Threshold));
+		};
+
+		Input->LeftAnalog.X = ApplyDeadZone(LeftAnalogX, Input->AnalogDeadZone);
+		Input->LeftAnalog.Y = ApplyDeadZone(LeftAnalogY, Input->AnalogDeadZone);
+		Input->RightAnalog.X = ApplyDeadZone(RightAnalogX, Input->AnalogDeadZone);
+		Input->RightAnalog.Y = ApplyDeadZone(RightAnalogY, Input->AnalogDeadZone);
+
 		Input->LeftTriggerAnalog = TriggerL;
 		Input->RightTriggerAnalog = TriggerR;
 		Input->bCross = bCross;
@@ -203,5 +257,5 @@ namespace GamepadProcessInput
 		Input->bLeftTriggerThreshold = bLeftTriggerThreshold;
 		Input->bRightTriggerThreshold = bRightTriggerThreshold;
 	}
-	
-}
+
+} // namespace FGamepadProcessInput

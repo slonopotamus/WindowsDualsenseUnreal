@@ -10,11 +10,10 @@
 #include "SDL.h"
 #include "Subsystems/SonyInputProcessor.h"
 #endif
+#include "DeviceManager.h"
 #include "InputCoreTypes.h"
 #include "Misc/Paths.h"
-#include "DeviceManager.h"
 
-DEFINE_LOG_CATEGORY(LogDualSense);
 #define LOCTEXT_NAMESPACE "FWindowsDualsense_ds5wModule"
 
 void FWindowsDualsense_ds5wModule::StartupModule()

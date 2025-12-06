@@ -56,16 +56,17 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad Status", meta = (DisplayName = "Battery Level (0.0f-100.0f)"))
 	static float LevelBatteryDevice(int32 ControllerId);
-	
-#pragma deprecated()
+
 	/**
 	 * Enables or disables the touch functionality on a specified DualSense controller.
 	 *
 	 * @param ControllerId The identifier of the controller for which the touch functionality should be enabled or disabled.
 	 * @param bEnableTouch A boolean indicating whether to enable (true) or disable (false) the touch functionality.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepad: Dualsense or DualShock Touch (Legacy)", meta = (AdvancedDisplay = "EnableTouch Deprecated v1.2.20"))
-	static void EnableTouch(int32 ControllerId, bool bEnableTouch) {}
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad Status", meta = (AdvancedDisplay = "EnableTouch"))
+	static void EnableTouch(int32 ControllerId, bool bEnableTouch);
+
+#pragma deprecated()
 	/**
 	 * Updates the LED color effects on a DualSense controller using the specified color.
 	 *

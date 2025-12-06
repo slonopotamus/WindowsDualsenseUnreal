@@ -6,18 +6,12 @@
 
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Managers/DeviceRegistry.h"
-#include "CoreMinimal.h"
 #include "GenericPlatform/GenericApplicationMessageHandler.h"
+#include "Helpers/DualSenseLog.h"
 
 // Forward declarations
 class IGamepadTrigger;
 class IGamepadAudioHaptics;
-
-/**
- * Logging category for the DualSense plugin.
- * Use this instead of LogDualSense for production code.
- */
-DECLARE_LOG_CATEGORY_EXTERN(LogDualSense, Log, All);
 
 /**
  * @namespace SonyGamepadProxyHelpers

@@ -6,7 +6,7 @@
 
 #include "Core/Types/Enums/EDeviceCommons.h"
 
-class WINDOWSDUALSENSE_DS5W_API IGamepadLightbar
+class IGamepadLightbar
 {
 public:
 	virtual ~IGamepadLightbar() = default;

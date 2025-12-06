@@ -3,9 +3,8 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include "DualSenseLog.h"
 
-#include "CoreMinimal.h"
-#include "UObject/Object.h"
 /**
  * @class FValidateHelpers
  * @brief A helper class for validating input values against predefined constraints.
@@ -15,7 +14,7 @@
  * remain within acceptable ranges for DualSense-related operations. All methods return
  * a boolean indicating whether the value is within the valid range.
  */
-class WINDOWSDUALSENSE_DS5W_API FValidateHelpers
+class FValidateHelpers
 {
 	/**
 	 * Validates whether the given strength value is within the allowable range.

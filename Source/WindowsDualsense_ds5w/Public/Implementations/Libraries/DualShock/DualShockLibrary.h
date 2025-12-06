@@ -1,26 +1,24 @@
 // Copyright (c) 2025 Rafael Valoto/Publisher. All rights reserved.
-// Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
+// Created for: WindowsDualShock_ds5w - Plugin to support DualShock controller on Windows.
 // Planned Release Year: 2025
 
 #pragma once
 
-#include "Async/TaskGraphInterfaces.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
-#include "CoreMinimal.h"
 #include "Implementations/Libraries/Base/SonyGamepadAbstract.h"
 
-class WINDOWSDUALSENSE_DS5W_API FDualShockLibrary : public SonyGamepadAbstract
+class FDualShockLibrary : public SonyGamepadAbstract
 {
 
 public:
 	/**
-	 * @brief Initializes the DualSense library with the specified device context.
+	 * @brief Initializes the DualShock library with the specified device context.
 	 *
 	 * This method sets up the library with the provided device context, configuring
-	 * the necessary states for the DualSense controller, such as enabling or disabling
+	 * the necessary states for the DualShock controller, such as enabling or disabling
 	 * certain features. It ensures the library is prepared to handle input from a connected
-	 * DualSense device.
+	 * DualShock device.
 	 *
 	 * @param Context A reference to an FDeviceContext structure that contains information
 	 * about the current device, such as the connection type and configuration.
@@ -29,9 +27,9 @@ public:
 	 */
 	virtual bool Initialize(const FDeviceContext& Context) override;
 	/**
-	 * @brief Sends output data to the connected DualSense controller.
+	 * @brief Sends output data to the connected DualShock controller.
 	 *
-	 * This method is responsible for transmitting data to the DualSense
+	 * This method is responsible for transmitting data to the DualShock
 	 * controller through the HID device context. It ensures that the
 	 * output buffering mechanism processes the data correctly before
 	 * managing communication with the controller.
@@ -42,7 +40,15 @@ public:
 	 * buffering to the appropriate manager, ensuring proper data flow to the device.
 	 */
 	virtual void UpdateOutput() override;
-	
+
+	/**
+	 * @brief Updates the input state for a DualShock device.
+	 *
+	 * This method processes input data received from a DualShock controller and updates
+	 * the application's state via the provided message handler. It ensures that the input
+	 * is correctly mapped and associated with the specified platform user and input device.
+	 * @return A boolean value indicating whether the input update was successful.
+	 */
 	virtual void UpdateInput(float Delta) override;
 
 	/**
@@ -67,11 +73,14 @@ public:
 	 */
 	virtual void ResetLights() override;
 	/**
-	 * Sets the vibration effect for the Sony gamepad.
+	 * @brief Sets the vibration strength for the DualShock controller.
 	 *
-	 * @param Values A reference to an FForceFeedbackValues struct containing the force feedback
-	 *               intensity and duration for the vibration effect.
+	 * This function allows adjustment of the vibration motors in the controller, enabling
+	 * haptic feedback customization. The intensity of the vibration can be independently
+	 * set for the left and right motors.
+	 *
+	 * @param LeftRumble The intensity of the left motor's vibration (0-255). Optional, defaults to 0.
+	 * @param RightRumble The intensity of the right motor's vibration (0-255). Optional, defaults to 0.
 	 */
-	virtual void SetVibration(const FForceFeedbackValues& Values) override;
-
+	virtual void SetVibration(uint8 LeftRumble = 0, uint8 RightRumble = 0) override;
 };

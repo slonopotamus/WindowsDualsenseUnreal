@@ -184,7 +184,7 @@ struct FDeviceContext
 	bool bOverrideTriggerBytes = false;
 	unsigned char OverrideTriggerRight[10] = {};
 	unsigned char OverrideTriggerLeft[10] = {};
-	
+
 	/**
 	 * A map representing the states of various buttons on a controller.
 	 *
@@ -214,8 +214,7 @@ struct FDeviceContext
 	 * while the associated float values represent their corresponding state, usually on a normalized scale.
 	 */
 	TMap<const FName, float> AnalogStates;
-	
-	
+
 protected:
 	/**
 	 * @brief Handles input-specific operations and data for connected devices.
@@ -238,7 +237,7 @@ protected:
 	 * of input logic within the game engine.
 	 */
 	FInputContext InputGameThread;
-	
+
 	/**
 	 * @brief Ensures thread-safe access to shared input resources.
 	 *
@@ -249,44 +248,44 @@ protected:
 	mutable std::mutex InputMutex;
 
 public:
-    FDeviceContext() = default;
+	FDeviceContext() = default;
 
-    FDeviceContext(const FDeviceContext& Other)
-    {
-        *this = Other;
-    }
+	FDeviceContext(const FDeviceContext& Other)
+	{
+		*this = Other;
+	}
 
-    FDeviceContext& operator=(const FDeviceContext& Other)
-    {
-        if (this != &Other)
-        {
-            Handle = Other.Handle;
-            Path = Other.Path;
-            
-            FMemory::Memcpy(Buffer, Other.Buffer, sizeof(Buffer));
-            FMemory::Memcpy(BufferDS4, Other.BufferDS4, sizeof(BufferDS4));
-            FMemory::Memcpy(BufferAudio, Other.BufferAudio, sizeof(BufferAudio));
-            FMemory::Memcpy(BufferOutput, Other.BufferOutput, sizeof(BufferOutput));
-            
-            Calibration = Other.Calibration;
-            IsConnected = Other.IsConnected;
-        	DeviceType = Other.DeviceType;
-        	ConnectionType = Other.ConnectionType;
-            
-            bOverrideTriggerBytes = Other.bOverrideTriggerBytes;
-            FMemory::Memcpy(OverrideTriggerRight, Other.OverrideTriggerRight, sizeof(OverrideTriggerRight));
-            FMemory::Memcpy(OverrideTriggerLeft, Other.OverrideTriggerLeft, sizeof(OverrideTriggerLeft));
-            
-            ButtonStates = Other.ButtonStates;
-            AnalogStates = Other.AnalogStates;
-           
-        	Output = Other.Output;
-        	Input = Other.Input;
-            InputGameThread = Other.InputGameThread;
-        }
-        return *this;
-    }
-	
+	FDeviceContext& operator=(const FDeviceContext& Other)
+	{
+		if (this != &Other)
+		{
+			Handle = Other.Handle;
+			Path = Other.Path;
+
+			FMemory::Memcpy(Buffer, Other.Buffer, sizeof(Buffer));
+			FMemory::Memcpy(BufferDS4, Other.BufferDS4, sizeof(BufferDS4));
+			FMemory::Memcpy(BufferAudio, Other.BufferAudio, sizeof(BufferAudio));
+			FMemory::Memcpy(BufferOutput, Other.BufferOutput, sizeof(BufferOutput));
+
+			Calibration = Other.Calibration;
+			IsConnected = Other.IsConnected;
+			DeviceType = Other.DeviceType;
+			ConnectionType = Other.ConnectionType;
+
+			bOverrideTriggerBytes = Other.bOverrideTriggerBytes;
+			FMemory::Memcpy(OverrideTriggerRight, Other.OverrideTriggerRight, sizeof(OverrideTriggerRight));
+			FMemory::Memcpy(OverrideTriggerLeft, Other.OverrideTriggerLeft, sizeof(OverrideTriggerLeft));
+
+			ButtonStates = Other.ButtonStates;
+			AnalogStates = Other.AnalogStates;
+
+			Output = Other.Output;
+			Input = Other.Input;
+			InputGameThread = Other.InputGameThread;
+		}
+		return *this;
+	}
+
 	FInputContext GetInputState()
 	{
 		std::lock_guard<std::mutex> Lock(InputMutex);

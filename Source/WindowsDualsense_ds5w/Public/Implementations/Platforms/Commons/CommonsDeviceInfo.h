@@ -6,6 +6,7 @@
 
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
+
 class FCommonsDeviceInfo : public IPlatformHardwareInfo
 {
 	/**

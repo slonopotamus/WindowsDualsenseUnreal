@@ -50,3 +50,13 @@ float USonyGamepadBaseProxy::LevelBatteryDevice(int32 ControllerId)
 
 	return Gamepad->GetBattery();
 }
+void USonyGamepadBaseProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
+{
+	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
+	if (!Gamepad)
+	{
+		return;
+	}
+
+	return Gamepad->EnableTouch(bEnableTouch);
+}

@@ -32,8 +32,8 @@ void FDualShockLibrary::UpdateInput(float Delta)
 	FDeviceContext* Context = GetMutableDeviceContext();
 	IPlatformHardwareInfo::Get().Read(Context);
 	FInputContext* InputToFill = Context->GetBackBuffer();
-	
-	using namespace GamepadProcessInput;
+
+	using namespace FGamepadProcessInput;
 	if (Context->ConnectionType == EDeviceConnection::Bluetooth)
 	{
 		DualShockRaw(&Context->BufferDS4[3], InputToFill);
@@ -44,18 +44,18 @@ void FDualShockLibrary::UpdateInput(float Delta)
 	}
 }
 
-void FDualShockLibrary::SetVibration(const FForceFeedbackValues& Values)
+void FDualShockLibrary::SetVibration(uint8 LeftRumble, uint8 RightRumble)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
-	FOutputContext* HidOutput = &Context->Output;
-	const float LeftRumble = FMath::Max(Values.LeftLarge, Values.LeftSmall);
-	const float RightRumble = FMath::Max(Values.RightLarge, Values.RightSmall);
-
-	const unsigned char OutputLeft = static_cast<unsigned char>(FValidateHelpers::To255(LeftRumble));
-	const unsigned char OutputRight = static_cast<unsigned char>(FValidateHelpers::To255(RightRumble));
-	if (HidOutput->Rumbles.Left != OutputLeft || HidOutput->Rumbles.Right != OutputRight)
+	if (!Context)
 	{
-		HidOutput->Rumbles = {OutputLeft, OutputRight};
+		return;
+	}
+
+	FOutputContext* HidOutput = &Context->Output;
+	if (HidOutput->Rumbles.Left != LeftRumble || HidOutput->Rumbles.Right != RightRumble)
+	{
+		HidOutput->Rumbles = {LeftRumble, RightRumble};
 		UpdateOutput();
 	}
 }

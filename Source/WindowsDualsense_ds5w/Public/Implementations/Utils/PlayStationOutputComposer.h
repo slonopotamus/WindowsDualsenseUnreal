@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Core/Types/Structs/Context/DeviceContext.h"
-#include "CoreMinimal.h"
 
 /**
  * @class FPlayStationOutputComposer
@@ -17,7 +16,7 @@
  * LEDs, and audio settings. The class also provides utilities for managing
  * device contexts.
  */
-class WINDOWSDUALSENSE_DS5W_API FPlayStationOutputComposer
+class FPlayStationOutputComposer
 {
 
 public:

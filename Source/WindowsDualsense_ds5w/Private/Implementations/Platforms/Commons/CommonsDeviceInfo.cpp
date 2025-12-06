@@ -5,9 +5,9 @@
 #include "Implementations/Platforms/Commons/CommonsDeviceInfo.h"
 
 #if PLATFORM_LINUX
-#include "SDL_hidapi.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Implementations/Utils/GamepadCalibrationSensors.h"
+#include "SDL_hidapi.h"
 
 static const uint16 SONY_VENDOR_ID = 0x054C;
 static const uint16 DUALSHOCK4_PID_V1 = 0x05C4;
@@ -176,7 +176,7 @@ bool FCommonsDeviceInfo::CreateHandle(FDeviceContext* Context)
 
 	SDL_hid_set_nonblocking(Handle, 1);
 	Context->Handle = Handle;
-	
+
 	ConfigureFeatures(Context);
 	return true;
 }

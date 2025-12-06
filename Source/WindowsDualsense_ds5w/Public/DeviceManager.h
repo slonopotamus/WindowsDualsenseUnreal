@@ -155,7 +155,7 @@ public:
 	}
 
 protected:
-	void CheckEvents(FDeviceContext* Context, const FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) const;
+	void CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) const;
 	/**
 	 * @brief Handles button input events for a DualSense controller.
 	 *
@@ -168,7 +168,7 @@ protected:
 	 * @param IsButtonPressed A boolean indicating the current pressed state of the button (true if pressed, false otherwise).
 	 */
 	void CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const;
-	
+
 private:
 	/**
 	 * Tracks the accumulated time or events between periodic polling operations.

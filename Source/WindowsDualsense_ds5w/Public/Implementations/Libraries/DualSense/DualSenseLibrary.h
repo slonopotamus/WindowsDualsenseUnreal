@@ -34,7 +34,7 @@
  * The library is designed for developers seeking to leverage unique features of
  * the DualSense controller programmatically within an application.
  */
-class WINDOWSDUALSENSE_DS5W_API FDualSenseLibrary : public SonyGamepadAbstract, public IGamepadTrigger, public IGamepadAudioHaptics
+class FDualSenseLibrary : public SonyGamepadAbstract, public IGamepadTrigger, public IGamepadAudioHaptics
 {
 
 public:
@@ -68,7 +68,7 @@ public:
 	{
 		return this;
 	}
-	
+
 	/**
 	 * @brief Updates the output state of the gamepad.
 	 *
@@ -238,18 +238,16 @@ public:
 	 */
 	virtual void SetMicrophoneLed(ELedMicEnum Led) override;
 	/**
-	 * @brief Updates the vibration feedback for a DualSense controller using force feedback values.
+	 * @brief Sets the vibration strength for the DualSense controller.
 	 *
-	 * This method takes in force feedback values and applies the corresponding vibration settings
-	 * to the DualSense controller's left and right motors. The vibration levels for each motor are
-	 * computed based on the provided force feedback values and are sent to the device to update
-	 * its output state.
+	 * This function allows adjustment of the vibration motors in the controller, enabling
+	 * haptic feedback customization. The intensity of the vibration can be independently
+	 * set for the left and right motors.
 	 *
-	 * @param Vibration The force feedback values representing the intensity of vibrations for the
-	 * left and right motors. These values determine how strong the vibrations will be for the
-	 * respective motors.
+	 * @param LeftRumble The intensity of the left motor's vibration (0-255). Optional, defaults to 0.
+	 * @param RightRumble The intensity of the right motor's vibration (0-255). Optional, defaults to 0.
 	 */
-	virtual void SetVibration(const FForceFeedbackValues& Vibration) override;
+	virtual void SetVibration(uint8 LeftRumble = 0, uint8 RightRumble = 0) override;
 	/**
 	 * @brief Stops all ongoing input and feedback operations on the DualSense controller.
 	 *

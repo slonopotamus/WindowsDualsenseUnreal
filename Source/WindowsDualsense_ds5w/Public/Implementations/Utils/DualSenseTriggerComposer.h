@@ -7,7 +7,7 @@
 #include "Core/Types/Structs/Context/DeviceContext.h"
 #include "Helpers/ValidateHelpers.h"
 
-namespace DualSenseTriggerComposer
+namespace FDualSenseTriggerComposer
 {
 	/**
 	 * Disables the trigger functionality for the specified hand or hands on the provided device context.
@@ -174,7 +174,8 @@ namespace DualSenseTriggerComposer
 			Context->Output.LeftTrigger.Mode = 0x27;
 			Context->Output.LeftTrigger.Strengths.Compose[0] = StartZone;
 			Context->Output.LeftTrigger.Strengths.Compose[1] = BehaviorFlag > 0 ? 0x02 : 0x01;
-			Context->Output.LeftTrigger.Strengths.Compose[2] = Force << 4 | (Amplitude & 0x0F);;
+			Context->Output.LeftTrigger.Strengths.Compose[2] = Force << 4 | (Amplitude & 0x0F);
+			;
 			Context->Output.LeftTrigger.Strengths.Compose[3] = Period;
 			Context->Output.LeftTrigger.Strengths.Compose[4] = Frequency;
 		}
@@ -230,4 +231,4 @@ namespace DualSenseTriggerComposer
 		}
 	}
 
-} // namespace DualSenseTriggerComposer
+} // namespace FDualSenseTriggerComposer

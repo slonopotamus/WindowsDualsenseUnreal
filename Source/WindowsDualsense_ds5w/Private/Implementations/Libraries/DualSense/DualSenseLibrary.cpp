@@ -9,16 +9,16 @@
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
-#include "Helpers/ValidateHelpers.h"
 #include "Implementations/Utils/DualSenseTriggerComposer.h"
 #include "Implementations/Utils/GamepadCalibrationSensors.h"
 #include "Implementations/Utils/GamepadProcessInput.h"
+#include "Implementations/Utils/GamepadTouch.h"
 #include "Implementations/Utils/PlayStationOutputComposer.h"
 #include "InputCoreTypes.h"
 
-using namespace DualSenseTriggerComposer;
+using namespace FDualSenseTriggerComposer;
 
-void FDualSenseLibrary::SetVibration(const FForceFeedbackValues& Values)
+void FDualSenseLibrary::SetVibration(uint8 LeftRumble, uint8 RightRumble)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	if (!Context)
@@ -27,14 +27,9 @@ void FDualSenseLibrary::SetVibration(const FForceFeedbackValues& Values)
 	}
 
 	FOutputContext* HidOutput = &Context->Output;
-	const float LeftRumble = FMath::Max(Values.LeftLarge, Values.LeftSmall);
-	const float RightRumble = FMath::Max(Values.RightLarge, Values.RightSmall);
-
-	const unsigned char OutputLeft = static_cast<unsigned char>(FValidateHelpers::To255(LeftRumble));
-	const unsigned char OutputRight = static_cast<unsigned char>(FValidateHelpers::To255(RightRumble));
-	if (HidOutput->Rumbles.Left != OutputLeft || HidOutput->Rumbles.Right != OutputRight)
+	if (HidOutput->Rumbles.Left != LeftRumble || HidOutput->Rumbles.Right != RightRumble)
 	{
-		HidOutput->Rumbles = {OutputLeft, OutputRight};
+		HidOutput->Rumbles = {LeftRumble, RightRumble};
 		UpdateOutput();
 	}
 }
@@ -106,83 +101,30 @@ bool FDualSenseLibrary::Initialize(const FDeviceContext& Context)
 }
 void FDualSenseLibrary::UpdateInput(float Delta)
 {
-	// if (IsEnableTouch())
-	// {
-	// 	FTouchPoint1 Touch;
-	// 	const int32 Touchpad1Raw = *reinterpret_cast<const int32*>(&HIDInput[0x20]);
-	// 	Touch.Y = (Touchpad1Raw & 0xFFF00000) >> 20;
-	// 	Touch.X = (Touchpad1Raw & 0x000FFF00) >> 8;
-	// 	Touch.Down = (Touchpad1Raw & (1 << 7)) == 0;
-	// 	Touch.Id = (Touchpad1Raw & 127) % 10;
-	//
-	// 	bool bIsTouchDown = Touch.Down;
-	// 	if (bIsTouchDown)
-	// 	{
-	// 		if (!IsWasTouch1Down())
-	// 		{
-	// 			const FVector2D TouchVectorStart = FVector2D(Touch.X, Touch.Y);
-	// 			InMessageHandler->OnTouchStarted(nullptr, TouchVectorStart, 1.0f, Touch.Id, UserId, InputDeviceId);
-	// 		}
-	// 		else
-	// 		{
-	// 			const FVector2D TouchVector = FVector2D(Touch.X, Touch.Y);
-	// 			InMessageHandler->OnTouchMoved(TouchVector, 1.0f, Touch.Id, UserId, InputDeviceId);
-	// 		}
-	// 	}
-	// 	else if (!bIsTouchDown && IsWasTouch1Down())
-	// 	{
-	// 		const FVector2D TouchVectorEnded = FVector2D(Touch.X, Touch.Y);
-	// 		InMessageHandler->OnTouchEnded(TouchVectorEnded, Touch.Id, UserId, InputDeviceId);
-	// 	}
-	// 	SetWasTouch1Down(bIsTouchDown);
-	//
-	// 	FTouchPoint2 Touch2;
-	// 	const int32 Touchpad2Raw = *reinterpret_cast<const int32*>(&HIDInput[0x24]);
-	// 	Touch2.Y = (Touchpad2Raw & 0xFFF00000) >> 20;
-	// 	Touch2.X = (Touchpad2Raw & 0x000FFF00) >> 8;
-	// 	Touch2.Down = (Touchpad2Raw & (1 << 7)) == 0;
-	// 	Touch2.Id = (Touchpad2Raw & 127) % 10;
-	//
-	// 	bool bIsTouch2Down = Touch2.Down;
-	// 	if (bIsTouch2Down)
-	// 	{
-	// 		if (!IsWasTouch2Down())
-	// 		{
-	// 			const FVector2D Touch2VectorStart = FVector2D(Touch2.X, Touch2.Y);
-	// 			InMessageHandler->OnTouchStarted(nullptr, Touch2VectorStart, 1.0f, Touch2.Id, UserId, InputDeviceId);
-	// 		}
-	// 		else
-	// 		{
-	// 			const FVector2D Touch2Vector = FVector2D(Touch2.X, Touch2.Y);
-	// 			InMessageHandler->OnTouchMoved(Touch2Vector, 1.0f, Touch2.Id, UserId, InputDeviceId);
-	// 		}
-	// 	}
-	// 	else if (!bIsTouch2Down && IsWasTouch2Down())
-	// 	{
-	// 		const FVector2D Touch2VectorEnded = FVector2D(Touch2.X, Touch2.Y);
-	// 		InMessageHandler->OnTouchEnded(Touch2VectorEnded, Touch2.Id, UserId, InputDeviceId);
-	// 	}
-	// 	SetWasTouch2Down(bIsTouch2Down);
-	// }
-	
 	FDeviceContext* Context = GetMutableDeviceContext();
 	if (!Context || !Context->IsConnected)
 	{
 		return;
 	}
-	
+
 	IPlatformHardwareInfo::Get().Read(Context);
 	FInputContext* InputToFill = Context->GetBackBuffer();
 	const size_t Padding = Context->ConnectionType == EDeviceConnection::Bluetooth ? 2 : 1;
-	
-	using namespace GamepadProcessInput;
+
+	using namespace FGamepadProcessInput;
 	DualSenseRaw(&Context->Buffer[Padding], InputToFill);
-	
+
+	if (IsEnableTouch())
+	{
+		using namespace FGamepadTouch;
+		ProcessTouch(&Context->Buffer[Padding], InputToFill);
+	}
+
 	if (IsEnableAccelerometerAndGyroscope())
 	{
 		FVector GyroDeg;
 		FVector AccelG;
-		using namespace GamepadCalibrationSensors;
+		using namespace FGamepadCalibrationSensors;
 		ProcessMotionData(&Context->Buffer[Padding], Context->Calibration, GyroDeg, AccelG);
 
 		constexpr float GToMSq = GRAVITY_MS2;
@@ -201,7 +143,7 @@ void FDualSenseLibrary::UpdateInput(float Delta)
 		const FRotator ControlRotation = SensorQuat.Rotator();
 		InputToFill->Gyroscope = GyroDeg;
 		InputToFill->Accelerometer = AccelG;
-		
+
 		InputToFill->Gravity = SensorQuat.GetUpVector();
 		InputToFill->Tilt = FVector(ControlRotation.Roll, ControlRotation.Yaw, ControlRotation.Pitch);
 	}

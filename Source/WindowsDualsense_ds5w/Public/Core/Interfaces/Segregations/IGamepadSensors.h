@@ -4,7 +4,7 @@
 
 #pragma once
 
-class WINDOWSDUALSENSE_DS5W_API IGamepadSensors
+class IGamepadSensors
 {
 public:
 	virtual ~IGamepadSensors() = default;

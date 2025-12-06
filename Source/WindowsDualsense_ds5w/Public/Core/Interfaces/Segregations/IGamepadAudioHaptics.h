@@ -9,7 +9,7 @@
 /**
  *
  */
-class WINDOWSDUALSENSE_DS5W_API IGamepadAudioHaptics
+class IGamepadAudioHaptics
 {
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:

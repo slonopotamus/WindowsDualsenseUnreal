@@ -52,19 +52,47 @@
 struct FInputContext
 {
 	// temporary
-	float AnalogDeadZone = 0.3f;
-	
+	float AnalogDeadZone = 0.09f;
+
 	// Analogs
 	FVector2D LeftAnalog = FVector2D::ZeroVector;
 	FVector2D RightAnalog = FVector2D::ZeroVector;
 	float LeftTriggerAnalog = 0.0f;
 	float RightTriggerAnalog = 0.0f;
-	
+
 	FVector Gyroscope = FVector::ZeroVector;
 	FVector Accelerometer = FVector::ZeroVector;
 	FVector Gravity = FVector::ZeroVector;
 	FVector Tilt = FVector::ZeroVector;
-	
+
+	// touch
+	FVector2d TouchRadius = FVector2D::ZeroVector;
+	FVector2D TouchPosition = FVector2D::ZeroVector;
+	FVector2D TouchStartPosition = FVector2D::ZeroVector;
+
+	int TouchIdOne;
+	bool TouchDownOne;
+	FVector2d TouchPositionOne = FVector2D::ZeroVector;
+	FVector2d TouchLastPositionOne = FVector2D::ZeroVector;
+
+	int TouchIdTwo;
+	bool TouchDownTwo;
+	FVector2d TouchPositionTwo = FVector2D::ZeroVector;
+	FVector2d TouchLastPositionTwo = FVector2D::ZeroVector;
+
+	// touch events
+	FVector2D ZoomVector = FVector2D::ZeroVector;
+	FVector2D SwipeVector = FVector2D::ZeroVector;
+	FVector2D ScrollVector = FVector2D::ZeroVector;
+
+	bool bWasTouchSwipe = false;
+	bool bWasTouchZoom = false;
+	bool bWasTouchScroll = false;
+	bool bWasTouchDownOne = false;
+	bool bWasTouchDownTwo = false;
+	double CurrentTime = FPlatformTime::Seconds();
+	double TouchStartTime;
+
 	// Buttons
 	bool bCross;
 	bool bSquare;
@@ -74,7 +102,7 @@ struct FInputContext
 	bool bDpadDown;
 	bool bDpadLeft;
 	bool bDpadRight;
-	
+
 	// Special Buttons
 	bool bLeftTriggerThreshold;
 	bool bRightTriggerThreshold;
@@ -88,12 +116,14 @@ struct FInputContext
 	bool bTouch;
 	bool bMute;
 	bool bHasPhoneConnected;
-	
+
 	// Edge
 	bool bFn1;
 	bool bFn2;
 	bool bPaddleLeft;
 	bool bPaddleRight;
-	
+
 	float BatteryLevel;
+
+public:
 };

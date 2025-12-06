@@ -31,7 +31,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepadSenors", meta = (ToolTip = "Enables or disables the gyroscope functionality for a specified controller."))
 	static void EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope);
-	
+
 	/**
 	 * Deprecated v1.2.20
 	 * Initiates the motion sensor calibration process for the specified controller.
