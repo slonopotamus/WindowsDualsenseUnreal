@@ -4,6 +4,14 @@
 
 #pragma once
 
+enum class ETouchInteraction : uint8
+{
+	None,
+	Swipe,
+	Zoom,
+	Scroll
+};
+
 /**
  * @struct FInputContext
  * @brief Represents a structure that captures the current input state of various analog inputs, motion sensors,
@@ -64,34 +72,34 @@ struct FInputContext
 	FVector Accelerometer = FVector::ZeroVector;
 	FVector Gravity = FVector::ZeroVector;
 	FVector Tilt = FVector::ZeroVector;
-
+	
 	// touch
-	FVector2d TouchRadius = FVector2D::ZeroVector;
-	FVector2D TouchPosition = FVector2D::ZeroVector;
-	FVector2D TouchStartPosition = FVector2D::ZeroVector;
+	int32 TouchId = 0;
+	int32 TouchFingerCount = 0;
+    
+	// Scroll (Flick)
+	double CurrentTime = 0.0;
+	double TouchStartTime = 0.0;
+	bool bIsTouching = false;
+	bool bWasTouchDown = false;
 
-	int TouchIdOne;
-	bool TouchDownOne;
-	FVector2d TouchPositionOne = FVector2D::ZeroVector;
-	FVector2d TouchLastPositionOne = FVector2D::ZeroVector;
+	uint8 DirectionRaw = 0.0f;
+	float DirectionAngle = 0.0f;
 
-	int TouchIdTwo;
-	bool TouchDownTwo;
-	FVector2d TouchPositionTwo = FVector2D::ZeroVector;
-	FVector2d TouchLastPositionTwo = FVector2D::ZeroVector;
-
-	// touch events
-	FVector2D ZoomVector = FVector2D::ZeroVector;
+	FVector2D P1_Current = FVector2D::ZeroVector;
+	FVector2D P1_Last = FVector2D::ZeroVector;
+    
+	FVector2D P2_Current = FVector2D::ZeroVector;
+	FVector2D P2_Last = FVector2D::ZeroVector;
+    
+	float ZoomDelta = 0.0f;
 	FVector2D SwipeVector = FVector2D::ZeroVector;
-	FVector2D ScrollVector = FVector2D::ZeroVector;
-
-	bool bWasTouchSwipe = false;
-	bool bWasTouchZoom = false;
-	bool bWasTouchScroll = false;
-	bool bWasTouchDownOne = false;
-	bool bWasTouchDownTwo = false;
-	double CurrentTime = FPlatformTime::Seconds();
-	double TouchStartTime;
+	FVector2D ScrollVelocity = FVector2D::ZeroVector;
+	
+	FVector2d TouchRadius = FVector2D::ZeroVector;
+	FVector2d TouchPosition = FVector2D::ZeroVector;
+	FVector2d TouchRelative = FVector2D::ZeroVector;
+	ETouchInteraction TouchInteraction = ETouchInteraction::None;
 
 	// Buttons
 	bool bCross;
@@ -124,6 +132,4 @@ struct FInputContext
 	bool bPaddleRight;
 
 	float BatteryLevel;
-
-public:
 };

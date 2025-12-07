@@ -34,12 +34,33 @@ void DeviceManager::Tick(float DeltaTime)
 	}
 	PollAccumulator = 0.0f;
 
+	FVector2D ScreenSize = FVector2D::ZeroVector;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ScreenSize);
+	}
+	const float CurrentPollInterval = PollInterval;
+
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [=]() {
 		for (const auto& Pair : FDeviceRegistry::Get()->GetAllocatedDevicesMap())
 		{
 			if (ISonyGamepad* Ref = Pair.Value.Get())
 			{
-				Ref->UpdateInput(PollInterval);
+				if (FDeviceContext* Context = Ref->GetMutableDeviceContext())
+				{
+					if (FInputContext* FrameInput = Context->GetBackBuffer())
+					{
+						if (FrameInput->TouchRadius != ScreenSize)
+						{
+							if (ScreenSize.X > 0 && ScreenSize.Y > 0)
+							{
+								UE_LOG(LogDualSense, Log, TEXT("Setting TouchRadius to %f, %f"), ScreenSize.X, ScreenSize.Y);
+								FrameInput->TouchRadius = ScreenSize;
+							}
+						}
+					}
+				}
+				Ref->UpdateInput(CurrentPollInterval);
 			}
 		}
 	});
@@ -154,92 +175,44 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 		MessageHandler.Get().OnMotionDetected(FrameInput.Tilt, FrameInput.Gyroscope, FrameInput.Gravity, FrameInput.Accelerometer, UserId, InputDeviceId);
 	}
 
-	if (FrameInput.TouchDownOne && !FrameInput.bWasTouchDownOne)
+	TSharedPtr<FGenericWindow> NativeWindow;
+	if (GEngine && GEngine->GameViewport)
+	{
+		TSharedPtr<SWindow> WindowPtr = GEngine->GameViewport->GetWindow();
+		if (WindowPtr.IsValid())
+		{
+			NativeWindow = WindowPtr->GetNativeWindow();
+		}
+	}
+	
+	if (FrameInput.bIsTouching && !FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchStarted(
-		    nullptr,
-		    FrameInput.TouchPositionOne,
-		    1.0f,
-		    FrameInput.TouchIdOne,
-		    UserId,
-		    InputDeviceId);
+			NativeWindow,
+			FrameInput.TouchPosition,
+			1.0f,
+			FrameInput.TouchId,
+			UserId,
+			InputDeviceId);
 	}
-	else if (FrameInput.TouchDownOne && FrameInput.bWasTouchDownOne)
+	else if (FrameInput.bIsTouching && FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchMoved(
-		    FrameInput.TouchPositionOne,
-		    1.0f,
-		    FrameInput.TouchIdOne,
-		    UserId,
-		    InputDeviceId);
+			FrameInput.TouchPosition,
+			1.0f,
+			FrameInput.TouchId,
+			UserId,
+			InputDeviceId);
 	}
-	else if (!FrameInput.TouchDownOne && FrameInput.bWasTouchDownOne)
+	else if (!FrameInput.bIsTouching && FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchEnded(
-		    FrameInput.TouchPositionOne,
-		    FrameInput.TouchIdOne,
-		    UserId,
-		    InputDeviceId);
+			FrameInput.TouchPosition,
+			FrameInput.TouchId,
+			UserId,
+			InputDeviceId);
 	}
-	FrameInput.bWasTouchDownOne = FrameInput.TouchDownOne;
-	FrameInput.TouchLastPositionOne = FrameInput.TouchPositionOne;
-
-	if (FrameInput.TouchDownTwo && !FrameInput.bWasTouchDownTwo)
-	{
-		MessageHandler->OnTouchStarted(
-		    nullptr,
-		    FrameInput.TouchPositionTwo,
-		    1.0f,
-		    FrameInput.TouchIdTwo,
-		    UserId,
-		    InputDeviceId);
-	}
-	else if (FrameInput.TouchDownTwo && FrameInput.bWasTouchDownTwo)
-	{
-		MessageHandler->OnTouchMoved(
-		    FrameInput.TouchPositionTwo,
-		    1.0f,
-		    FrameInput.TouchIdTwo,
-		    UserId,
-		    InputDeviceId);
-	}
-	else if (!FrameInput.TouchDownTwo && FrameInput.bWasTouchDownTwo)
-	{
-		MessageHandler->OnTouchEnded(
-		    FrameInput.TouchPositionTwo,
-		    FrameInput.TouchIdTwo,
-		    UserId,
-		    InputDeviceId);
-	}
-	FrameInput.bWasTouchDownTwo = FrameInput.TouchDownTwo;
-	FrameInput.TouchLastPositionTwo = FrameInput.TouchPositionTwo;
-
-	if (FrameInput.bWasTouchSwipe)
-	{
-		MessageHandler->OnTouchGesture(
-		    EGestureEvent::Swipe,
-		    FrameInput.SwipeVector,
-		    0.0f,
-		    false);
-	}
-
-	if (FrameInput.bWasTouchScroll)
-	{
-		MessageHandler->OnTouchGesture(
-		    EGestureEvent::Scroll,
-		    FrameInput.ScrollVector,
-		    0.0f,
-		    false);
-	}
-
-	if (FrameInput.bWasTouchZoom)
-	{
-		MessageHandler->OnTouchGesture(
-		    EGestureEvent::Magnify,
-		    FVector2D::ZeroVector,
-		    FrameInput.ZoomVector.X,
-		    false);
-	}
+	FrameInput.bWasTouchDown = FrameInput.bIsTouching;
 }
 
 void DeviceManager::CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const

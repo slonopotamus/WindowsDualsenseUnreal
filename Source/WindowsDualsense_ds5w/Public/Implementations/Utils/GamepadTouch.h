@@ -14,104 +14,118 @@ namespace FGamepadTouch
 
 	inline void Swipe(FInputContext* Input)
 	{
-		if (Input->TouchDownOne && !Input->bWasTouchDownOne)
+		const FVector2D Delta1 = Input->P1_Current - Input->P1_Last;
+		const FVector2D Delta2 = Input->P2_Current - Input->P2_Last;
+
+		if (Input->TouchFingerCount == 1)
 		{
-			Input->TouchStartPosition = Input->TouchPositionOne;
-			Input->TouchStartTime = Input->CurrentTime;
-		}
-		else if (!Input->TouchDownOne && Input->bWasTouchDownOne)
-		{
-			float Duration = static_cast<float>(Input->CurrentTime - Input->TouchStartTime);
-			float Distance = FVector2D::Distance(Input->TouchPositionOne, Input->TouchStartPosition);
-			if (Duration < 0.25f && Distance > 100.0f)
+			Input->SwipeVector = Delta1;
+			
+			if (Input->SwipeVector.SizeSquared() > 10.0f)
 			{
-				Input->SwipeVector = Input->TouchPositionOne - Input->TouchStartPosition;
-				Input->bWasTouchSwipe = true;
+				Input->TouchInteraction = ETouchInteraction::Swipe;
+			}
+			return;
+		}
+		
+		if (Input->TouchFingerCount == 2)
+		{
+			if (const float DotProd = FVector2D::DotProduct(Delta1.GetSafeNormal(), Delta2.GetSafeNormal()); DotProd > 0.7f)
+			{
+				Input->SwipeVector = (Delta1 + Delta2) * 0.5f;
+				Input->TouchInteraction = ETouchInteraction::Swipe;
 			}
 		}
 	}
 
+	inline void Zoom(FInputContext* Input)
+	{
+		if (Input->TouchFingerCount != 2) return;
+
+		const float DistCurrent = FVector2D::Distance(Input->P1_Current, Input->P2_Current);
+		const float DistLast = FVector2D::Distance(Input->P1_Last, Input->P2_Last);
+
+		if (const float Delta = DistCurrent - DistLast; FMath::Abs(Delta) > 1.0f)
+		{
+			Input->ZoomDelta = Delta;
+			Input->TouchInteraction = ETouchInteraction::Zoom;
+		}
+	}
+	
 	inline void Scroll(FInputContext* Input)
 	{
-		const FVector2D Delta1 = Input->TouchPositionOne - Input->TouchLastPositionOne;
-		const FVector2D Delta2 = Input->TouchPositionTwo - Input->TouchLastPositionTwo;
-		if ((Delta1 | Delta2) > 0.0f)
+		if (!Input->bIsTouching && Input->TouchFingerCount == 0)
 		{
-			if (const FVector2D AvgDelta = (Delta1 + Delta2) * 0.5f; AvgDelta.SizeSquared() > 25.0f)
+			if (const double Duration = Input->CurrentTime - Input->TouchStartTime; Duration < 0.25f && Duration > 0.0f)
 			{
-				Input->ScrollVector = AvgDelta;
-				Input->bWasTouchScroll = true;
+				const float AngleRad = FMath::DegreesToRadians((Input->DirectionRaw / 255.0f) * 360.0f);
+				const FVector2D HardwareDirection(FMath::Cos(AngleRad), FMath::Sin(AngleRad));
+				Input->ScrollVelocity = HardwareDirection * Duration;
+				Input->TouchInteraction = ETouchInteraction::Scroll;
 			}
 		}
 	}
-
-	inline void Magnify(FInputContext* Input)
+	
+	inline void ProcessGestures(FInputContext* Input)
 	{
-		if (Input->TouchDownOne && Input->TouchDownTwo && Input->bWasTouchDownOne && Input->bWasTouchDownTwo)
+		Input->TouchInteraction = ETouchInteraction::None;
+		if (!Input->bIsTouching)
 		{
-			float CurrentDist = FVector2D::Distance(Input->TouchPositionOne, Input->TouchPositionTwo);
-			float PrevDist = FVector2D::Distance(Input->TouchLastPositionOne, Input->TouchLastPositionTwo);
-			float Delta = CurrentDist - PrevDist;
-			if (FMath::Abs(CurrentDist - PrevDist) > 5.0f)
+			Scroll(Input);
+			return;
+		}
+		
+		if (Input->TouchFingerCount == 2)
+		{
+			Zoom(Input);
+			if (Input->TouchInteraction == ETouchInteraction::None)
 			{
-				Input->ZoomVector = FVector2D(Delta, 0.0f);
-				Input->bWasTouchZoom = true;
+				Swipe(Input);
 			}
 		}
-	}
-
-	inline void Reset(FInputContext* Input)
-	{
-		Input->bWasTouchZoom = false;
-		Input->bWasTouchSwipe = false;
-		Input->bWasTouchScroll = false;
-		Input->ZoomVector = FVector2D::ZeroVector;
-		Input->SwipeVector = FVector2D::ZeroVector;
-		Input->ScrollVector = FVector2D::ZeroVector;
-
-		if (Input->TouchRadius == FVector2D::ZeroVector)
+		else if (Input->TouchFingerCount == 1)
 		{
-			Input->TouchRadius = FVector2D(DS_TOUCHPAD_WIDTH, DS_TOUCHPAD_HEIGHT);
+			Swipe(Input);
 		}
 	}
-
+	
 	inline bool IsTouching(const FVector2D& TouchPosition, const FVector2D& TouchRadius)
 	{
 		return TouchPosition.X >= 0 && TouchPosition.X <= TouchRadius.X && TouchPosition.Y >= 0 && TouchPosition.Y <= TouchRadius.Y;
 	}
+	
+	inline void FingerPositions(const unsigned char* HIDInput, FInputContext* Input)
+	{
+		const int32 AbsX = ((HIDInput[0x22] & 0x0F) << 8) | HIDInput[0x21];
+		const int32 AbsY = (HIDInput[0x23] << 4) | ((HIDInput[0x22] & 0xF0) >> 4);
+		Input->TouchPosition = FVector2D(AbsX, AbsY);
+
+		const int32 AbsRelativeX = ((HIDInput[0x27] & 0x0F) << 8) | HIDInput[0x25];
+		const int32 AbsRelativeY = (HIDInput[0x26] << 4) | ((HIDInput[0x27] & 0xF0) >> 4);
+		Input->TouchRelative = FVector2D(AbsRelativeX, AbsRelativeY);
+		
+		Input->P1_Last = Input->P1_Current;
+		Input->P1_Current = Input->TouchPosition;
+		
+		Input->P2_Last = Input->P2_Current;
+		Input->P2_Current = Input->TouchRelative;
+		
+		Input->TouchFingerCount = Input->bIsTouching && (HIDInput[0x24] & 0x80) != 0 ? 2 : 1;
+	}
 
 	inline void ProcessTouch(const unsigned char* HIDInput, FInputContext* Input)
 	{
-		Reset(Input);
-
-		const int32 Touchpad1Raw = *reinterpret_cast<const int32*>(&HIDInput[0x20]);
-
-		Input->TouchPositionOne.Y = (Touchpad1Raw & 0xFFF00000) >> 20;
-		Input->TouchPositionOne.X = (Touchpad1Raw & 0x000FFF00) >> 8;
-
-		Input->TouchIdOne = (Touchpad1Raw & 127) % 10;
-		Input->TouchDownOne = (Touchpad1Raw & (1 << 7)) == 0;
-
-		if (Input->TouchDownOne && !IsTouching(Input->TouchPositionOne, Input->TouchRadius))
+		if (Input->TouchRadius == FVector2D::ZeroVector)
 		{
-			Input->TouchDownOne = false;
+			Input->TouchRadius = FVector2D(DS_TOUCHPAD_WIDTH, DS_TOUCHPAD_HEIGHT);
 		}
-
-		const int32 Touchpad2Raw = *reinterpret_cast<const int32*>(&HIDInput[0x24]);
-		Input->TouchPositionTwo.Y = (Touchpad2Raw & 0xFFF00000) >> 20;
-		Input->TouchPositionTwo.X = (Touchpad2Raw & 0x000FFF00) >> 8;
-
-		Input->TouchIdTwo = (Touchpad2Raw & 127) % 10;
-		Input->TouchDownTwo = (Touchpad2Raw & (1 << 7)) == 0;
-
-		if (Input->TouchDownTwo && !IsTouching(Input->TouchPositionTwo, Input->TouchRadius))
-		{
-			Input->TouchDownTwo = false;
-		}
-
-		// Swipe(Input);
-		// Scroll(Input);
-		// Magnify(Input);
+		
+		
+		Input->TouchId = (HIDInput[0x20] & 0x7F) % 10;
+		Input->bIsTouching = (HIDInput[0x20] & 0x80) != 0;
+		Input->DirectionRaw = HIDInput[0x28];
+		FingerPositions(HIDInput, Input);
+		ProcessGestures(Input);
 	}
 
 } // namespace FGamepadTouch
