@@ -184,33 +184,33 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 			NativeWindow = WindowPtr->GetNativeWindow();
 		}
 	}
-	
+
 	if (FrameInput.bIsTouching && !FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchStarted(
-			NativeWindow,
-			FrameInput.TouchPosition,
-			1.0f,
-			FrameInput.TouchId,
-			UserId,
-			InputDeviceId);
+		    NativeWindow,
+		    FrameInput.TouchPosition,
+		    1.0f,
+		    FrameInput.TouchId,
+		    UserId,
+		    InputDeviceId);
 	}
 	else if (FrameInput.bIsTouching && FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchMoved(
-			FrameInput.TouchPosition,
-			1.0f,
-			FrameInput.TouchId,
-			UserId,
-			InputDeviceId);
+		    FrameInput.TouchPosition,
+		    1.0f,
+		    FrameInput.TouchId,
+		    UserId,
+		    InputDeviceId);
 	}
 	else if (!FrameInput.bIsTouching && FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchEnded(
-			FrameInput.TouchPosition,
-			FrameInput.TouchId,
-			UserId,
-			InputDeviceId);
+		    FrameInput.TouchPosition,
+		    FrameInput.TouchId,
+		    UserId,
+		    InputDeviceId);
 	}
 	FrameInput.bWasTouchDown = FrameInput.bIsTouching;
 }

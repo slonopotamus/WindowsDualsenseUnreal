@@ -72,11 +72,11 @@ struct FInputContext
 	FVector Accelerometer = FVector::ZeroVector;
 	FVector Gravity = FVector::ZeroVector;
 	FVector Tilt = FVector::ZeroVector;
-	
+
 	// touch
 	int32 TouchId = 0;
 	int32 TouchFingerCount = 0;
-    
+
 	// Scroll (Flick)
 	double CurrentTime = 0.0;
 	double TouchStartTime = 0.0;
@@ -88,14 +88,14 @@ struct FInputContext
 
 	FVector2D P1_Current = FVector2D::ZeroVector;
 	FVector2D P1_Last = FVector2D::ZeroVector;
-    
+
 	FVector2D P2_Current = FVector2D::ZeroVector;
 	FVector2D P2_Last = FVector2D::ZeroVector;
-    
+
 	float ZoomDelta = 0.0f;
 	FVector2D SwipeVector = FVector2D::ZeroVector;
 	FVector2D ScrollVelocity = FVector2D::ZeroVector;
-	
+
 	FVector2d TouchRadius = FVector2D::ZeroVector;
 	FVector2d TouchPosition = FVector2D::ZeroVector;
 	FVector2d TouchRelative = FVector2D::ZeroVector;
