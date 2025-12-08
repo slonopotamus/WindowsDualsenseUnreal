@@ -6,6 +6,7 @@
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Types/Enums/EDeviceConnection.h"
+#include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
 #include "Misc/CoreDelegates.h"
 
 using namespace SonyGamepadProxyHelpers;
@@ -29,6 +30,15 @@ EDeviceConnection USonyGamepadBaseProxy::GetConnectionType(int32 ControllerId)
 	}
 
 	return Gamepad->GetConnectionType();
+}
+void USonyGamepadBaseProxy::DualSenseSettings(int32 ControllerId, FDualSenseFeatureReport Value)
+{
+	FDualSenseLibrary* Gamepad = static_cast<FDualSenseLibrary*>(GetTriggerInterface(ControllerId));
+	if (!Gamepad)
+	{
+		return;
+	}
+	Gamepad->Settings(Value);
 }
 bool USonyGamepadBaseProxy::DeviceIsConnected(int32 ControllerId)
 {

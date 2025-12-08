@@ -175,20 +175,10 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 		MessageHandler.Get().OnMotionDetected(FrameInput.Tilt, FrameInput.Gyroscope, FrameInput.Gravity, FrameInput.Accelerometer, UserId, InputDeviceId);
 	}
 
-	TSharedPtr<FGenericWindow> NativeWindow;
-	if (GEngine && GEngine->GameViewport)
-	{
-		TSharedPtr<SWindow> WindowPtr = GEngine->GameViewport->GetWindow();
-		if (WindowPtr.IsValid())
-		{
-			NativeWindow = WindowPtr->GetNativeWindow();
-		}
-	}
-
 	if (FrameInput.bIsTouching && !FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchStarted(
-		    NativeWindow,
+		    nullptr,
 		    FrameInput.TouchPosition,
 		    1.0f,
 		    FrameInput.TouchId,

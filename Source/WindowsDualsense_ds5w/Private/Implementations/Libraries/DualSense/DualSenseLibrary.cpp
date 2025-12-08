@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
+#include "API/Types/DualSenseFeatureReport.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Algorithms/MadgwickAhrs.h"
@@ -14,7 +15,6 @@
 #include "Implementations/Utils/GamepadProcessInput.h"
 #include "Implementations/Utils/GamepadTouch.h"
 #include "Implementations/Utils/PlayStationOutputComposer.h"
-#include "InputCoreTypes.h"
 
 using namespace FDualSenseTriggerComposer;
 
@@ -161,32 +161,32 @@ void FDualSenseLibrary::UpdateOutput()
 	FPlayStationOutputComposer::OutputDualSense(Context);
 }
 
-// void FDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
-// {
-// 	FDeviceContext* Context = GetMutableDeviceContext();
-// 	if (Settings.VibrationMode == EDualSenseDeviceFeatureReport::Off)
-// 	{
-// 		Context->Output.Feature.VibrationMode = 0xFC;
-// 	}
-//
-// 	Context->Output.Feature.SoftRumbleReduce = static_cast<uint8>(Settings.SoftRumbleReduce);
-// 	Context->Output.Feature.TriggerSoftnessLevel = static_cast<uint8>(Settings.TriggerSoftnessLevel);
-// 	Context->Output.Audio.MicStatus = static_cast<uint8>(Settings.MicStatus);
-// 	Context->Output.Audio.MicVolume = static_cast<uint8>(Settings.MicVolume);
-// 	Context->Output.Audio.HeadsetVolume = static_cast<uint8>(Settings.AudioVolume);
-// 	Context->Output.Audio.SpeakerVolume = static_cast<uint8>(Settings.AudioVolume);
-// 	Context->Output.Audio.Mode = 0x08;
-// 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::On && Settings.AudioSpeaker == EDualSenseAudioFeatureReport::Off)
-// 	{
-// 		Context->Output.Audio.Mode = 0x31;
-// 	}
-//
-// 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::Off && Settings.AudioSpeaker == EDualSenseAudioFeatureReport::On)
-// 	{
-// 		Context->Output.Audio.Mode = 0x21;
-// 	}
-// 	UpdateOutput();
-// }
+void FDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
+{
+	FDeviceContext* Context = GetMutableDeviceContext();
+	if (Settings.VibrationMode == EDualSenseDeviceFeatureReport::Off)
+	{
+		Context->Output.Feature.VibrationMode = 0xFC;
+	}
+
+	Context->Output.Feature.SoftRumbleReduce = static_cast<uint8>(Settings.SoftRumbleReduce);
+	Context->Output.Feature.TriggerSoftnessLevel = static_cast<uint8>(Settings.TriggerSoftnessLevel);
+	Context->Output.Audio.MicStatus = static_cast<uint8>(Settings.MicStatus);
+	Context->Output.Audio.MicVolume = static_cast<uint8>(Settings.MicVolume);
+	Context->Output.Audio.HeadsetVolume = static_cast<uint8>(Settings.AudioVolume);
+	Context->Output.Audio.SpeakerVolume = static_cast<uint8>(Settings.AudioVolume);
+	Context->Output.Audio.Mode = 0x08;
+	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::On && Settings.AudioSpeaker == EDualSenseAudioFeatureReport::Off)
+	{
+		Context->Output.Audio.Mode = 0x31;
+	}
+
+	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::Off && Settings.AudioSpeaker == EDualSenseAudioFeatureReport::On)
+	{
+		Context->Output.Audio.Mode = 0x21;
+	}
+	UpdateOutput();
+}
 
 void FDualSenseLibrary::SetResistance(uint8 StartZones, uint8 Strength, const EGamepadHand& Hand)
 {

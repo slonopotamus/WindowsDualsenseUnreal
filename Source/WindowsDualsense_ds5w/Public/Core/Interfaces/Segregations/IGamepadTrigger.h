@@ -4,12 +4,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-
 /**
  *
  */
-class WINDOWSDUALSENSE_DS5W_API IGamepadTrigger
+class IGamepadTrigger
 {
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:

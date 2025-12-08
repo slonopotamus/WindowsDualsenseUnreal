@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "API/Types/DualSenseFeatureReport.h"
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
@@ -68,6 +69,8 @@ public:
 	{
 		return this;
 	}
+
+	void Settings(const FDualSenseFeatureReport& Settings);
 
 	/**
 	 * @brief Updates the output state of the gamepad.

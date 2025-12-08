@@ -5,10 +5,6 @@
 #pragma once
 
 #include "Core/Types/Structs/Context/DeviceContext.h"
-#include "InputCoreTypes.h"
-#include "Misc/CoreDelegates.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/GenericApplicationMessageHandler.h"
-#include "Runtime/ApplicationCore/Public/GenericPlatform/IInputInterface.h"
 #include "Segregations/IGamepadAudioHaptics.h"
 #include "Segregations/IGamepadLightbar.h"
 #include "Segregations/IGamepadRumbles.h"
@@ -22,7 +18,7 @@
  * This interface must be implemented to interact with the gamepad, handling tasks
  * such as connection management, input updates, and device settings.
  */
-class WINDOWSDUALSENSE_DS5W_API ISonyGamepad : public IGamepadStatus, public IGamepadRumbles, public IGamepadLightbar, public IGamepadSensors, public IGamepadTouch
+class ISonyGamepad : public IGamepadStatus, public IGamepadRumbles, public IGamepadLightbar, public IGamepadSensors, public IGamepadTouch
 {
 
 public:

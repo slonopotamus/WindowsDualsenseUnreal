@@ -22,6 +22,11 @@ class WINDOWSDUALSENSE_DS5W_API USonyGamepadBaseProxy : public UObject
 	GENERATED_BODY()
 public:
 	/**
+	 * Temporary
+	 */
+	UFUNCTION(BlueprintCallable, Category = "DualSenseSettings")
+	static void DualSenseSettings(int32 ControllerId, FDualSenseFeatureReport Value);
+	/**
 	 * Checks if the DualSense or DualShock device with the specified Controller ID is connected.
 	 *
 	 * @param ControllerId The ID of the controller to check for connectivity.
