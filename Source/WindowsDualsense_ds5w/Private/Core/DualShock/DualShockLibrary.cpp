@@ -120,10 +120,10 @@ void UDualShockLibrary::UpdateInput(const TSharedRef<FGenericApplicationMessageH
 	const float RightAnalogX = static_cast<float>(HIDInput[0x02] - 128) / 128;
 	const float RightAnalogY = static_cast<float>(HIDInput[0x03] - 128) / -128;
 
-	HandleAnalogInput(FGamepadKeyNames::LeftAnalogX, FGamepadKeyNames::LeftStickLeft, FGamepadKeyNames::LeftStickRight, LeftAnalogX);
-	HandleAnalogInput(FGamepadKeyNames::LeftAnalogY, FGamepadKeyNames::LeftStickDown, FGamepadKeyNames::LeftStickUp, LeftAnalogY);
-	HandleAnalogInput(FGamepadKeyNames::RightAnalogX, FGamepadKeyNames::RightStickLeft, FGamepadKeyNames::RightStickRight, RightAnalogX);
-	HandleAnalogInput(FGamepadKeyNames::RightAnalogY, FGamepadKeyNames::RightStickDown, FGamepadKeyNames::RightStickUp, RightAnalogY);
+	HandleAnalogInput(FGamepadKeyNames::LeftAnalogX, FGamepadKeyNames::LeftStickRight, FGamepadKeyNames::LeftStickLeft, LeftAnalogX);
+	HandleAnalogInput(FGamepadKeyNames::LeftAnalogY, FGamepadKeyNames::LeftStickUp, FGamepadKeyNames::LeftStickDown, LeftAnalogY);
+	HandleAnalogInput(FGamepadKeyNames::RightAnalogX, FGamepadKeyNames::RightStickRight, FGamepadKeyNames::RightStickLeft, RightAnalogX);
+	HandleAnalogInput(FGamepadKeyNames::RightAnalogY, FGamepadKeyNames::RightStickUp, FGamepadKeyNames::RightStickDown, RightAnalogY);
 
 	uint8_t ButtonsMask = HIDInput[0x04] & 0xF0;
 	const bool bCross = ButtonsMask & BTN_CROSS;
