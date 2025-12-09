@@ -27,6 +27,6 @@ void USonyGamepadLightsProxy::PlayerLed(int32 ControllerId, ELedPlayerEnum Value
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		Gamepad->SetPlayerLed(Value, Brightness);
+		Gamepad->SetPlayerLed(static_cast<EDSPlayer>(Value), static_cast<DSCoreTypes::uint8>(Brightness));
 	}
 }

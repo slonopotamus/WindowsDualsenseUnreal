@@ -5,35 +5,6 @@
 #pragma once
 #include "Core/Types/Structs/Context/DeviceContext.h"
 
-#define BTN_FN1 0x10
-#define BTN_FN2 0x20
-#define BTN_PADDLE_LEFT 0x40
-#define BTN_PADDLE_RIGHT 0x80
-
-#define BTN_DPAD_UP 0x8
-#define BTN_DPAD_DOWN 0x02
-#define BTN_DPAD_LEFT 0x01
-#define BTN_DPAD_RIGHT 0x04
-
-#define BTN_CROSS 0x20
-#define BTN_SQUARE 0x10
-#define BTN_CIRCLE 0x40
-#define BTN_TRIANGLE 0x80
-
-#define BTN_LEFT_STICK 0x40
-#define BTN_RIGHT_STICK 0x80
-
-#define BTN_LEFT_SHOULDER 0x01
-#define BTN_RIGHT_SHOULDER 0x02
-#define BTN_LEFT_TRIGGER 0x04
-#define BTN_RIGHT_TRIGGER 0x08
-
-#define BTN_START 0x20
-#define BTN_SELECT 0x10
-#define BTN_PAD_BUTTON 0x02
-#define BTN_MIC_BUTTON 0x04
-#define BTN_PLAYSTATION_LOGO 0x01
-
 namespace FGamepadProcessInput
 {
 	inline void DualSenseRaw(const unsigned char* HIDInput, FInputContext* Input)
@@ -48,67 +19,67 @@ namespace FGamepadProcessInput
 		const float TriggerR = HIDInput[0x05] / 256.0f;
 
 		uint8_t ButtonsMask = HIDInput[0x07] & 0xF0;
-		const bool bCross = ButtonsMask & BTN_CROSS;
-		const bool bSquare = ButtonsMask & BTN_SQUARE;
-		const bool bCircle = ButtonsMask & BTN_CIRCLE;
-		const bool bTriangle = ButtonsMask & BTN_TRIANGLE;
+		const bool bCross = ButtonsMask & DSCoreTypes::InputMasks::Face::Cross;
+		const bool bSquare = ButtonsMask & DSCoreTypes::InputMasks::Face::Square;
+		const bool bCircle = ButtonsMask & DSCoreTypes::InputMasks::Face::Circle;
+		const bool bTriangle = ButtonsMask & DSCoreTypes::InputMasks::Face::Triangle;
 
 		switch (HIDInput[0x07] & 0x0F)
 		{
 			case 0x0:
-				ButtonsMask |= BTN_DPAD_UP;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Up;
 				break;
 			case 0x4:
-				ButtonsMask |= BTN_DPAD_DOWN;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Down;
 				break;
 			case 0x6:
-				ButtonsMask |= BTN_DPAD_LEFT;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Left;
 				break;
 			case 0x2:
-				ButtonsMask |= BTN_DPAD_RIGHT;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Right;
 				break;
 			case 0x5:
-				ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Left | DSCoreTypes::InputMasks::DPad::Down;
 				break;
 			case 0x7:
-				ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Left | DSCoreTypes::InputMasks::DPad::Up;
 				break;
 			case 0x1:
-				ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Right | DSCoreTypes::InputMasks::DPad::Up;
 				break;
 			case 0x3:
-				ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Right | DSCoreTypes::InputMasks::DPad::Down;
 				break;
 			default:;
 		}
 
-		const bool bDPadLeft = ButtonsMask & BTN_DPAD_LEFT;
-		const bool bDPadDown = ButtonsMask & BTN_DPAD_DOWN;
-		const bool bDPadRight = ButtonsMask & BTN_DPAD_RIGHT;
-		const bool bDPadUp = ButtonsMask & BTN_DPAD_UP;
+		const bool bDPadLeft = ButtonsMask & DSCoreTypes::InputMasks::DPad::Left;
+		const bool bDPadDown = ButtonsMask & DSCoreTypes::InputMasks::DPad::Down;
+		const bool bDPadRight = ButtonsMask & DSCoreTypes::InputMasks::DPad::Right;
+		const bool bDPadUp = ButtonsMask & DSCoreTypes::InputMasks::DPad::Up;
 
 		// Shoulders
-		const bool bLeftShoulder = HIDInput[0x08] & BTN_LEFT_SHOULDER;
-		const bool bRightShoulder = HIDInput[0x08] & BTN_RIGHT_SHOULDER;
+		const bool bLeftShoulder = HIDInput[0x08] & DSCoreTypes::InputMasks::Shoulder::L1;
+		const bool bRightShoulder = HIDInput[0x08] & DSCoreTypes::InputMasks::Shoulder::R1;
 
 		// Push Stick
-		const bool PushLeftStick = HIDInput[0x08] & BTN_LEFT_STICK;
-		const bool PushRightStick = HIDInput[0x08] & BTN_RIGHT_STICK;
+		const bool PushLeftStick = HIDInput[0x08] & DSCoreTypes::InputMasks::Stick::L3;
+		const bool PushRightStick = HIDInput[0x08] & DSCoreTypes::InputMasks::Stick::R3;
 
 		// Function & Special Actions
-		const bool Playstation = HIDInput[0x09] & BTN_PLAYSTATION_LOGO;
-		const bool TouchPad = HIDInput[0x09] & BTN_PAD_BUTTON;
-		const bool Mic = HIDInput[0x09] & BTN_MIC_BUTTON;
-		const bool bFn1 = HIDInput[0x09] & BTN_FN1;
-		const bool bFn2 = HIDInput[0x09] & BTN_FN2;
-		const bool bPaddleLeft = HIDInput[0x09] & BTN_PADDLE_LEFT;
-		const bool bPaddleRight = HIDInput[0x09] & BTN_PADDLE_RIGHT;
+		const bool Playstation = HIDInput[0x09] & DSCoreTypes::InputMasks::Menu::PS;
+		const bool TouchPad = HIDInput[0x09] & DSCoreTypes::InputMasks::Menu::TouchPad;
+		const bool Mic = HIDInput[0x09] & DSCoreTypes::InputMasks::Menu::Mute;
+		const bool bFn1 = HIDInput[0x09] & DSCoreTypes::InputMasks::Extra::FnLeft;
+		const bool bFn2 = HIDInput[0x09] & DSCoreTypes::InputMasks::Extra::FnRight;
+		const bool bPaddleLeft = HIDInput[0x09] & DSCoreTypes::InputMasks::Extra::PaddleLeft;
+		const bool bPaddleRight = HIDInput[0x09] & DSCoreTypes::InputMasks::Extra::PaddleRight;
 
-		const bool Start = HIDInput[0x08] & BTN_START;
-		const bool Select = HIDInput[0x08] & BTN_SELECT;
+		const bool Start = HIDInput[0x08] & DSCoreTypes::InputMasks::Menu::Options;
+		const bool Select = HIDInput[0x08] & DSCoreTypes::InputMasks::Menu::Share;
 
-		const bool bLeftTriggerThreshold = HIDInput[0x08] & BTN_LEFT_TRIGGER;
-		const bool bRightTriggerThreshold = HIDInput[0x08] & BTN_RIGHT_TRIGGER;
+		const bool bLeftTriggerThreshold = HIDInput[0x08] & DSCoreTypes::InputMasks::Shoulder::L2;
+		const bool bRightTriggerThreshold = HIDInput[0x08] & DSCoreTypes::InputMasks::Shoulder::R2;
 
 		Input->bHasPhoneConnected = (HIDInput[0x35] & 0x01);
 		Input->BatteryLevel = (((HIDInput[0x34] & 0x0F) / 10.0) * 100);
@@ -160,8 +131,8 @@ namespace FGamepadProcessInput
 	inline void DualShockRaw(const unsigned char* HIDInput, FInputContext* Input)
 	{
 		// Triggers
-		const bool bLeftTriggerThreshold = HIDInput[0x05] & BTN_LEFT_TRIGGER;
-		const bool bRightTriggerThreshold = HIDInput[0x05] & BTN_RIGHT_TRIGGER;
+		const bool bLeftTriggerThreshold = HIDInput[0x05] & DSCoreTypes::InputMasks::Shoulder::L2;
+		const bool bRightTriggerThreshold = HIDInput[0x05] & DSCoreTypes::InputMasks::Shoulder::R2;
 
 		// Triggers Analog 1D
 		const float TriggerL = HIDInput[0x07] / 256.0f;
@@ -173,54 +144,55 @@ namespace FGamepadProcessInput
 		const float RightAnalogY = static_cast<float>(HIDInput[0x03] - 128) / -128.f;
 
 		uint8_t ButtonsMask = HIDInput[0x04] & 0xF0;
-		const bool bCross = ButtonsMask & BTN_CROSS;
-		const bool bSquare = ButtonsMask & BTN_SQUARE;
-		const bool bCircle = ButtonsMask & BTN_CIRCLE;
-		const bool bTriangle = ButtonsMask & BTN_TRIANGLE;
+		const bool bCross = ButtonsMask & DSCoreTypes::InputMasks::Face::Cross;
+		const bool bSquare = ButtonsMask & DSCoreTypes::InputMasks::Face::Square;
+		const bool bCircle = ButtonsMask & DSCoreTypes::InputMasks::Face::Circle;
+		const bool bTriangle = ButtonsMask & DSCoreTypes::InputMasks::Face::Triangle;
 
 		switch (HIDInput[0x04] & 0x0F)
 		{
 			case 0x0:
-				ButtonsMask |= BTN_DPAD_UP;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Up;
 				break;
 			case 0x4:
-				ButtonsMask |= BTN_DPAD_DOWN;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Down;
 				break;
 			case 0x6:
-				ButtonsMask |= BTN_DPAD_LEFT;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Left;
 				break;
 			case 0x2:
-				ButtonsMask |= BTN_DPAD_RIGHT;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Right;
 				break;
 			case 0x5:
-				ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_DOWN;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Left | DSCoreTypes::InputMasks::DPad::Down;
 				break;
 			case 0x7:
-				ButtonsMask |= BTN_DPAD_LEFT | BTN_DPAD_UP;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Left | DSCoreTypes::InputMasks::DPad::Up;
 				break;
 			case 0x1:
-				ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_UP;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Right | DSCoreTypes::InputMasks::DPad::Up;
 				break;
 			case 0x3:
-				ButtonsMask |= BTN_DPAD_RIGHT | BTN_DPAD_DOWN;
+				ButtonsMask |= DSCoreTypes::InputMasks::DPad::Right | DSCoreTypes::InputMasks::DPad::Down;
 				break;
 			default:;
 		}
-		const bool bDPadLeft = ButtonsMask & BTN_DPAD_LEFT;
-		const bool bDPadDown = ButtonsMask & BTN_DPAD_DOWN;
-		const bool bDPadRight = ButtonsMask & BTN_DPAD_RIGHT;
-		const bool bDPadUp = ButtonsMask & BTN_DPAD_UP;
+
+		const bool bDPadLeft = ButtonsMask & DSCoreTypes::InputMasks::DPad::Left;
+		const bool bDPadDown = ButtonsMask & DSCoreTypes::InputMasks::DPad::Down;
+		const bool bDPadRight = ButtonsMask & DSCoreTypes::InputMasks::DPad::Right;
+		const bool bDPadUp = ButtonsMask & DSCoreTypes::InputMasks::DPad::Up;
 
 		// Shoulders
-		const bool bLeftShoulder = HIDInput[0x05] & BTN_LEFT_SHOULDER;
-		const bool bRightShoulder = HIDInput[0x05] & BTN_RIGHT_SHOULDER;
+		const bool bLeftShoulder = HIDInput[0x05] & DSCoreTypes::InputMasks::Shoulder::L1;
+		const bool bRightShoulder = HIDInput[0x05] & DSCoreTypes::InputMasks::Shoulder::R1;
 
 		// Push Stick
-		const bool PushLeftStick = HIDInput[0x05] & BTN_LEFT_STICK;
-		const bool PushRightStick = HIDInput[0x05] & BTN_RIGHT_STICK;
+		const bool PushLeftStick = HIDInput[0x05] & DSCoreTypes::InputMasks::Stick::L3;
+		const bool PushRightStick = HIDInput[0x05] & DSCoreTypes::InputMasks::Stick::R3;
 
-		const bool Start = HIDInput[0x05] & BTN_START;
-		const bool Select = HIDInput[0x05] & BTN_SELECT;
+		const bool Start = HIDInput[0x05] & DSCoreTypes::InputMasks::Menu::Options;
+		const bool Select = HIDInput[0x05] & DSCoreTypes::InputMasks::Menu::Share;
 
 		auto ApplyDeadZone = [](float Value, float Threshold) -> float {
 			if (FMath::Abs(Value) < Threshold)

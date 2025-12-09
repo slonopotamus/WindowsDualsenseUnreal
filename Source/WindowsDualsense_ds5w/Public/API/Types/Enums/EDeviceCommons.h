@@ -4,15 +4,9 @@
 
 #pragma once
 
+#include "Core/Types/ECoreGamepadTypes.h"
 #include "CoreMinimal.h"
 #include "EDeviceCommons.generated.h"
-
-#define PLAYER_LED_LEFT 0x01
-#define PLAYER_LED_RIGHT 0x10
-#define PLAYER_LED_MIDDLE 0x04
-
-#define PLAYER_LED_MIDDLE_LEFT 0x02
-#define PLAYER_LED_MIDDLE_RIGHT 0x08
 
 /**
  * @brief Enum class representing various LED microphone states.
@@ -27,9 +21,9 @@
 UENUM(BlueprintType)
 enum class ELedMicEnum : uint8
 {
-	MicOff = 0x0 UMETA(DisplayName = "Mic Off"),
-	MicOn = 0x1 UMETA(DisplayName = "Mic On"),
-	Pulse = 0x2 UMETA(DisplayName = "Pulse")
+	MicOn = 0x0,
+	MicOff = 0x1,
+	Pulse = 0x2
 };
 
 /**
@@ -40,10 +34,10 @@ UENUM(BlueprintType)
 enum class ELedPlayerEnum : uint8
 {
 	Off = 0 UMETA(DisplayName = "Led Player Off"),
-	One = PLAYER_LED_MIDDLE UMETA(DisplayName = "Player One"),
-	Two = PLAYER_LED_MIDDLE_RIGHT | PLAYER_LED_MIDDLE_LEFT UMETA(DisplayName = "Player Two"),
-	Three = PLAYER_LED_RIGHT | PLAYER_LED_MIDDLE | PLAYER_LED_LEFT UMETA(DisplayName = "Player Three"),
-	All = PLAYER_LED_RIGHT | PLAYER_LED_MIDDLE_RIGHT | PLAYER_LED_MIDDLE_LEFT | PLAYER_LED_LEFT UMETA(DisplayName = "Player all led")
+	One = DSCoreTypes::LedMasks::Middle UMETA(DisplayName = "Player One"),
+	Two = DSCoreTypes::LedMasks::MiddleRight | DSCoreTypes::LedMasks::MiddleLeft UMETA(DisplayName = "Player Two"),
+	Three = DSCoreTypes::LedMasks::Right | DSCoreTypes::LedMasks::Middle | DSCoreTypes::LedMasks::Left UMETA(DisplayName = "Player Three"),
+	All = DSCoreTypes::LedMasks::Right | DSCoreTypes::LedMasks::MiddleRight | DSCoreTypes::LedMasks::MiddleLeft | DSCoreTypes::LedMasks::Left UMETA(DisplayName = "Player all led")
 };
 
 /**
@@ -93,7 +87,7 @@ enum class EDualSenseDeviceFeatureReport : uint8
 {
 	Off = 0,
 	DefaultRumble = 0xFF UMETA(DisplayName = "Default"),
-	HapticSoftRumble = 0xFC UMETA(DisplayName = "Audio based vibration")
+	HapticsRumble = 0xFC UMETA(DisplayName = "Audio based vibration")
 };
 
 /**

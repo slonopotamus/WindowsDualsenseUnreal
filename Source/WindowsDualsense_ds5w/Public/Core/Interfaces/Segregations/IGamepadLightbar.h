@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "Core/Types/Enums/EDeviceCommons.h"
+#include "Core/Types/DSCoreTypes.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 
 class IGamepadLightbar
 {
@@ -21,16 +22,16 @@ public:
 	/**
 	 * Sets the LED associated with the player on the Sony gamepad to a specified brightness level.
 	 *
-	 * @param Led The LED associated with a specific player, represented as an ELedPlayerEnum.
-	 * @param Brightness The desired brightness level for the LED, represented as an ELedBrightnessEnum.
+	 * @param Led The LED associated with a specific player, represented as an EDSPlayer.
+	 * @param Brightness The desired brightness level for the LED.
 	 */
-	virtual void SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness) = 0;
+	virtual void SetPlayerLed(EDSPlayer Led, DSCoreTypes::uint8 Brightness) = 0;
 	/**
 	 * Sets the state of the microphone LED on the gamepad.
 	 *
 	 * @param Led The desired state of the microphone LED, represented by ELedMicEnum.
 	 */
-	virtual void SetMicrophoneLed(ELedMicEnum Led) = 0;
+	virtual void SetMicrophoneLed(EDSMic Led) = 0;
 	/**
 	 * Stops all currently active operations or actions associated with the interface.
 	 * This method must be implemented by any derived class to handle the termination

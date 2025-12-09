@@ -3,14 +3,7 @@
 // Planned Release Year: 2025
 
 #pragma once
-
-enum class ETouchInteraction : uint8
-{
-	None,
-	Swipe,
-	Zoom,
-	Scroll
-};
+#include "Core/Types/ECoreGamepadTypes.h"
 
 /**
  * @struct FInputContext
@@ -99,7 +92,7 @@ struct FInputContext
 	FVector2d TouchRadius = FVector2D::ZeroVector;
 	FVector2d TouchPosition = FVector2D::ZeroVector;
 	FVector2d TouchRelative = FVector2D::ZeroVector;
-	ETouchInteraction TouchInteraction = ETouchInteraction::None;
+	EDSTouchInteraction TouchInteraction = EDSTouchInteraction::None;
 
 	// Buttons
 	bool bCross;

@@ -24,7 +24,8 @@ using FPlatformDeviceHandle = void*;
 #define INVALID_PLATFORM_HANDLE nullptr
 #endif
 
-#include "Core/Types/Enums/EDeviceConnection.h"
+#include "Core/Types/DSCoreTypes.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 #include "OutputContext.h"
 
 /**
@@ -166,7 +167,7 @@ struct FDeviceContext
 	 * In scenarios such as device discovery or IO operations, ConnectionType
 	 * influences logic such as input report length, output buffering, and connection state updates.
 	 */
-	EDeviceConnection ConnectionType = EDeviceConnection::Unrecognized;
+	EDSDeviceConnection ConnectionType = EDSDeviceConnection::Unrecognized;
 	/**
 	 * @brief Represents the type of device in the context of DualSense HID management.
 	 *
@@ -177,7 +178,7 @@ struct FDeviceContext
 	 * It plays a pivotal role in distinguishing devices for operations such as feature
 	 * initialization, compatibility checks, and tailored input/output processing.
 	 */
-	EDeviceType DeviceType = EDeviceType::NotFound;
+	EDSDeviceType DeviceType = EDSDeviceType::NotFound;
 
 	// Runtime override for trigger bytes [10..20] (Right) and [21..31] (Left) in the DualSense output buffer.
 	// When enabled via console commands, these arrays are copied verbatim into the HID report.

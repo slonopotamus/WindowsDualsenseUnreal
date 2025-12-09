@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "Core/Types/Enums/EDeviceConnection.h"
+#include "Core/Types/DSCoreTypes.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 
 class IGamepadStatus
 {
@@ -29,13 +30,13 @@ public:
 	 *
 	 * @return The type of the device as an EDeviceType enumeration.
 	 */
-	virtual EDeviceType GetDeviceType() = 0;
+	virtual EDSDeviceType GetDeviceType() = 0;
 	/**
 	 * Retrieves the connection type of the device.
 	 *
 	 * @return The connection type of the device as an EDeviceConnection enumeration.
 	 */
-	virtual EDeviceConnection GetConnectionType() = 0;
+	virtual EDSDeviceConnection GetConnectionType() = 0;
 	/**
 	 * @brief Retrieves a mutable device context associated with the object.
 	 *

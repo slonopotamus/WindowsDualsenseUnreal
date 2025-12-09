@@ -7,7 +7,8 @@
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Managers/DeviceRegistry.h"
-#include "Core/Types/Enums/EDeviceConnection.h"
+#include "Core/Types/DSCoreTypes.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 #include "Misc/CoreDelegates.h"
 
 using namespace SonyGamepadProxyHelpers;
@@ -82,11 +83,11 @@ void DeviceManager::SendControllerEvents()
 			}
 
 			FString ContextDrive = TEXT("DualSense");
-			if (Gamepad->GetDeviceType() == EDeviceType::DualShock4)
+			if (Gamepad->GetDeviceType() == EDSDeviceType::DualShock4)
 			{
 				ContextDrive = TEXT("DualShock4");
 			}
-			if (Gamepad->GetDeviceType() == EDeviceType::DualSenseEdge)
+			if (Gamepad->GetDeviceType() == EDSDeviceType::DualSenseEdge)
 			{
 				ContextDrive = TEXT("DualSenseEdge");
 			}
@@ -159,7 +160,7 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_TouchButtom"), FrameInput.bTouch);
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Button"), FrameInput.bPSButton);
 
-	if (Context->DeviceType == EDeviceType::DualSenseEdge)
+	if (Context->DeviceType == EDSDeviceType::DualSenseEdge)
 	{
 		CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_FunctionL"), FrameInput.bFn1);
 		CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_FunctionR"), FrameInput.bFn2);
@@ -240,7 +241,7 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 			EInputDeviceTriggerMask HandMask = FeedbackProperty->AffectedTriggers;
 			if (IGamepadTrigger* GamepadTrigger = GetTriggerInterface(ControllerId))
 			{
-				GamepadTrigger->SetResistance(FeedbackProperty->Position, FeedbackProperty->Strengh, static_cast<EGamepadHand>(HandMask));
+				GamepadTrigger->SetResistance(FeedbackProperty->Position, FeedbackProperty->Strengh, static_cast<EDSGamepadHand>(HandMask));
 			}
 		}
 	}
@@ -294,7 +295,7 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 				HexBytes.Add("0x00");
 				HexBytes.Add("0x00");
 				HexBytes.Add("0x00");
-				GamepadTrigger->SetCustomTrigger(static_cast<EGamepadHand>(HandMask), HexBytes);
+				GamepadTrigger->SetCustomTrigger(static_cast<EDSGamepadHand>(HandMask), HexBytes);
 			}
 		}
 	}

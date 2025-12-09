@@ -35,12 +35,12 @@ bool SonyGamepadAbstract::IsConnected()
 	return HIDDeviceContexts.IsConnected;
 }
 
-EDeviceType SonyGamepadAbstract::GetDeviceType()
+EDSDeviceType SonyGamepadAbstract::GetDeviceType()
 {
 	return HIDDeviceContexts.DeviceType;
 }
 
-EDeviceConnection SonyGamepadAbstract::GetConnectionType()
+EDSDeviceConnection SonyGamepadAbstract::GetConnectionType()
 {
 	return HIDDeviceContexts.ConnectionType;
 }

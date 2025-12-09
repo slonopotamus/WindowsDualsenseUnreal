@@ -4,8 +4,8 @@
 
 #include "API/SonyGamepadBaseProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
+#include "API/Types/Enums/EDeviceConnection.h"
 #include "Core/Interfaces/ISonyGamepad.h"
-#include "Core/Types/Enums/EDeviceConnection.h"
 #include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
 #include "Misc/CoreDelegates.h"
 
@@ -19,7 +19,7 @@ EDeviceType USonyGamepadBaseProxy::GetDeviceType(int32 ControllerId)
 		return EDeviceType::NotFound;
 	}
 
-	return Gamepad->GetDeviceType();
+	return static_cast<EDeviceType>(Gamepad->GetDeviceType());
 }
 EDeviceConnection USonyGamepadBaseProxy::GetConnectionType(int32 ControllerId)
 {
@@ -29,7 +29,7 @@ EDeviceConnection USonyGamepadBaseProxy::GetConnectionType(int32 ControllerId)
 		return EDeviceConnection::Unrecognized;
 	}
 
-	return Gamepad->GetConnectionType();
+	return static_cast<EDeviceConnection>(Gamepad->GetConnectionType());
 }
 void USonyGamepadBaseProxy::DualSenseSettings(int32 ControllerId, FDualSenseFeatureReport Value)
 {
@@ -50,7 +50,7 @@ bool USonyGamepadBaseProxy::DeviceIsConnected(int32 ControllerId)
 
 	return true;
 }
-float USonyGamepadBaseProxy::LevelBatteryDevice(int32 ControllerId)
+float USonyGamepadBaseProxy::BatteryLevelDevice(int32 ControllerId)
 {
 	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
 	if (!Gamepad)

@@ -8,7 +8,7 @@
 #include "Async/TaskGraphInterfaces.h"
 #include "Core/Algorithms/MadgwickAhrs.h"
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
-#include "Core/Types/Enums/EDeviceConnection.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
 #include "Implementations/Utils/DualSenseTriggerComposer.h"
 #include "Implementations/Utils/GamepadCalibrationSensors.h"
@@ -74,7 +74,7 @@ bool FDualSenseLibrary::Initialize(const FDeviceContext& Context)
 {
 	SetDeviceContexts(Context);
 	FDeviceContext* DSContext = GetMutableDeviceContext();
-	if (DSContext->ConnectionType == EDeviceConnection::Bluetooth)
+	if (DSContext->ConnectionType == EDSDeviceConnection::Bluetooth)
 	{
 		FOutputContext* EnableReport = &DSContext->Output;
 		// Set flags to enable control over the lightbar, player LEDs
@@ -109,7 +109,7 @@ void FDualSenseLibrary::UpdateInput(float Delta)
 
 	IPlatformHardwareInfo::Get().Read(Context);
 	FInputContext* InputToFill = Context->GetBackBuffer();
-	const size_t Padding = Context->ConnectionType == EDeviceConnection::Bluetooth ? 2 : 1;
+	const size_t Padding = Context->ConnectionType == EDSDeviceConnection::Bluetooth ? 2 : 1;
 
 	using namespace FGamepadProcessInput;
 	DualSenseRaw(&Context->Buffer[Padding], InputToFill);
@@ -188,7 +188,7 @@ void FDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetResistance(uint8 StartZones, uint8 Strength, const EGamepadHand& Hand)
+void FDualSenseLibrary::SetResistance(uint8 StartZones, uint8 Strength, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Resistance(Context, StartZones, Strength, Hand);
@@ -196,28 +196,28 @@ void FDualSenseLibrary::SetResistance(uint8 StartZones, uint8 Strength, const EG
 }
 
 void FDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot,
-                                       uint8 Frequency, const EGamepadHand& Hand)
+                                       uint8 Frequency, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Galloping23(Context, StartPosition, EndPosition, FirstFoot, SecondFoot, Frequency, Hand);
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::StopTrigger(const EGamepadHand& Hand)
+void FDualSenseLibrary::StopTrigger(const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Off(Context, Hand);
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetGameCube(const EGamepadHand& Hand)
+void FDualSenseLibrary::SetGameCube(const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	GameCube(Context, Hand);
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetBow22(uint8 StartZone, uint8 SnapBack, const EGamepadHand& Hand)
+void FDualSenseLibrary::SetBow22(uint8 StartZone, uint8 SnapBack, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Context->bOverrideTriggerBytes = false;
@@ -225,28 +225,28 @@ void FDualSenseLibrary::SetBow22(uint8 StartZone, uint8 SnapBack, const EGamepad
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EGamepadHand& Hand)
+void FDualSenseLibrary::SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Weapon25(Context, StartZone, Amplitude, Behavior, Trigger, Hand);
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EGamepadHand& Hand)
+void FDualSenseLibrary::SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	MachineGun26(Context, StartZone, Behavior, Amplitude, Frequency, Hand);
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EGamepadHand& Hand)
+void FDualSenseLibrary::SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Machine27(Context, StartZone, BehaviorFlag, Force, Amplitude, Period, Frequency, Hand);
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetCustomTrigger(const EGamepadHand& Hand, const TArray<FString>& HexBytes)
+void FDualSenseLibrary::SetCustomTrigger(const EDSGamepadHand& Hand, const TArray<FString>& HexBytes)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	CustomTrigger(Context, Hand, HexBytes);
@@ -254,11 +254,11 @@ void FDualSenseLibrary::SetCustomTrigger(const EGamepadHand& Hand, const TArray<
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness)
+void FDualSenseLibrary::SetPlayerLed(EDSPlayer Led, DSCoreTypes::uint8 Brightness)
 {
 }
 
-void FDualSenseLibrary::SetMicrophoneLed(ELedMicEnum Led)
+void FDualSenseLibrary::SetMicrophoneLed(EDSMic Led)
 {
 }
 

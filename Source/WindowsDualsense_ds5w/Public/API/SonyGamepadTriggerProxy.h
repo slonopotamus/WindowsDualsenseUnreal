@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "Core/Types/Enums/EDeviceCommons.h"
+#include "API/Types/Enums/EDeviceCommons.h"
 #include "CoreMinimal.h"
-#include "SonyGamepadBaseProxy.h"
 #include "UObject/Object.h"
 #include "SonyGamepadTriggerProxy.generated.h"
 
@@ -168,14 +167,15 @@ public:
 	 * or right trigger on the specified controller.
 	 *
 	 * @param ControllerId The identifier of the target DualSense controller to apply the custom effect.
-	 * @param Hand Specifies whether the effect is to be applied to the left or right trigger.
 	 * @param HexBytes An array of hexadecimal byte strings that define the custom trigger effect.
+	 * @param Hand Specifies whether the effect is to be applied to the left or right trigger.
+	 *
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTrigger", meta = (DisplayName = "Custom Trigger (New)", ToolTip = "This function sets a user-defined trigger effect by accepting a series of hexadecimal byte strings that define the desired behavior or feedback. The effect can be customized and applied to the left or right trigger on the specified controller."))
 	static void CustomTrigger(
 	    int32 ControllerId,
-	    EGamepadHand Hand,
-	    const TArray<FString>& HexBytes);
+	    const TArray<FString>& HexBytes,
+	    EGamepadHand Hand);
 
 	/**
 	 * @brief Stops the active trigger effect on a specified hand of the given DualSense controller.

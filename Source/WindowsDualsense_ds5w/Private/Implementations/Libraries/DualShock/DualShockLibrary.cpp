@@ -4,7 +4,7 @@
 
 #include "Implementations/Libraries/DualShock/DualShockLibrary.h"
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
-#include "Core/Types/Enums/EDeviceConnection.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 #include "Helpers/ValidateHelpers.h"
 #include "Implementations/Utils/GamepadProcessInput.h"
 #include "Implementations/Utils/PlayStationOutputComposer.h"
@@ -34,7 +34,7 @@ void FDualShockLibrary::UpdateInput(float Delta)
 	FInputContext* InputToFill = Context->GetBackBuffer();
 
 	using namespace FGamepadProcessInput;
-	if (Context->ConnectionType == EDeviceConnection::Bluetooth)
+	if (Context->ConnectionType == EDSDeviceConnection::Bluetooth)
 	{
 		DualShockRaw(&Context->BufferDS4[3], InputToFill);
 	}

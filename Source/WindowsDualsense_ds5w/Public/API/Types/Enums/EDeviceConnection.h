@@ -8,7 +8,7 @@
 #include "EDeviceConnection.generated.h"
 
 /**
- * @enum EDeviceType
+ * @enum EDSDeviceType
  * Enum representing different types of devices.
  *
  * @value Default Represents the default type of device.
@@ -25,7 +25,7 @@ enum class EDeviceType : uint8
 };
 
 /**
- * @enum EDeviceConnection
+ * @enum EDSDeviceConnection
  * Enum representing the types of connections for a device.
  *
  * @value Usb Represents a USB connection.

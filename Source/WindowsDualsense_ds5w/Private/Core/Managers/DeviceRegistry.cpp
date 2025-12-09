@@ -159,12 +159,12 @@ void FDeviceRegistry::RemoveLibraryInstance(const FInputDeviceId& GamepadId)
 void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 {
 	TSharedPtr<ISonyGamepad> SonyGamepad = nullptr;
-	if (Context.DeviceType == EDeviceType::DualSense || Context.DeviceType == EDeviceType::DualSenseEdge)
+	if (Context.DeviceType == EDSDeviceType::DualSense || Context.DeviceType == EDSDeviceType::DualSenseEdge)
 	{
 		SonyGamepad = MakeShared<FDualSenseLibrary>();
 	}
 
-	if (Context.DeviceType == EDeviceType::DualShock4)
+	if (Context.DeviceType == EDSDeviceType::DualShock4)
 	{
 		SonyGamepad = MakeShared<FDualShockLibrary>();
 	}

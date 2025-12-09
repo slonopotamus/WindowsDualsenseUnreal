@@ -3,9 +3,8 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Utils/PlayStationOutputComposer.h"
-#include "API/SonyGamepadProxyHelpers.h"
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
-#include "Core/Types/Enums/EDeviceConnection.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
 
 const uint32 FPlayStationOutputComposer::CRCSeed = 0xeada2d49;
@@ -14,17 +13,17 @@ void FPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
 {
 	const FOutputContext* HidOut = &DeviceContext->Output;
 
-	size_t Padding = DeviceContext->ConnectionType == EDeviceConnection::Bluetooth ? 2 : 1;
-	DeviceContext->BufferOutput[0] = DeviceContext->ConnectionType == EDeviceConnection::Bluetooth ? 0x11 : 0x05;
+	size_t Padding = DeviceContext->ConnectionType == EDSDeviceConnection::Bluetooth ? 2 : 1;
+	DeviceContext->BufferOutput[0] = DeviceContext->ConnectionType == EDSDeviceConnection::Bluetooth ? 0x11 : 0x05;
 
-	if (DeviceContext->ConnectionType == EDeviceConnection::Bluetooth)
+	if (DeviceContext->ConnectionType == EDSDeviceConnection::Bluetooth)
 	{
 		DeviceContext->BufferOutput[1] = 0xc0;
 	}
 
 	unsigned char* Output = &DeviceContext->BufferOutput[Padding];
 
-	if (DeviceContext->ConnectionType == EDeviceConnection::Bluetooth)
+	if (DeviceContext->ConnectionType == EDSDeviceConnection::Bluetooth)
 	{
 		Output[0] = 0x20;
 		Output[1] = 0x07;
@@ -42,7 +41,7 @@ void FPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
 	Output[8 + (Padding - 1)] = HidOut->FlashLigthbar.Bright_Time;
 	Output[9 + (Padding - 1)] = HidOut->FlashLigthbar.Toggle_Time;
 
-	if (DeviceContext->ConnectionType == EDeviceConnection::Bluetooth)
+	if (DeviceContext->ConnectionType == EDSDeviceConnection::Bluetooth)
 	{
 		const uint32 CrcChecksum = Compute(DeviceContext->BufferOutput, 74);
 		DeviceContext->BufferOutput[0x4A] = static_cast<unsigned char>((CrcChecksum & 0x000000FF) >> 0UL);
@@ -56,9 +55,9 @@ void FPlayStationOutputComposer::OutputDualShock(FDeviceContext* DeviceContext)
 
 void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 {
-	const size_t Padding = DeviceContext->ConnectionType == EDeviceConnection::Bluetooth ? 2 : 1;
-	DeviceContext->BufferOutput[0] = DeviceContext->ConnectionType == EDeviceConnection::Bluetooth ? 0x31 : 0x02;
-	if (DeviceContext->ConnectionType == EDeviceConnection::Bluetooth)
+	const size_t Padding = DeviceContext->ConnectionType == EDSDeviceConnection::Bluetooth ? 2 : 1;
+	DeviceContext->BufferOutput[0] = DeviceContext->ConnectionType == EDSDeviceConnection::Bluetooth ? 0x31 : 0x02;
+	if (DeviceContext->ConnectionType == EDSDeviceConnection::Bluetooth)
 	{
 		DeviceContext->BufferOutput[1] = 0x02;
 	}
@@ -95,7 +94,7 @@ void FPlayStationOutputComposer::OutputDualSense(FDeviceContext* DeviceContext)
 		SetTriggerEffects(&Output[21], HidOut->LeftTrigger);
 	}
 
-	if (DeviceContext->ConnectionType == EDeviceConnection::Bluetooth)
+	if (DeviceContext->ConnectionType == EDSDeviceConnection::Bluetooth)
 	{
 		const int32 CrcChecksum = Compute(DeviceContext->BufferOutput, 74);
 		DeviceContext->BufferOutput[0x4A] = static_cast<unsigned char>((CrcChecksum & 0x000000FF) >> 0UL);
@@ -230,7 +229,7 @@ void FPlayStationOutputComposer::SendAudioHapticAdvanced(FDeviceContext* DeviceC
 		return;
 	}
 
-	if (DeviceContext->ConnectionType == EDeviceConnection::Bluetooth)
+	if (DeviceContext->ConnectionType == EDSDeviceConnection::Bluetooth)
 	{
 		constexpr size_t CrcOffset = 138;
 		const int32 CrcChecksum = Compute(DeviceContext->BufferAudio, CrcOffset);

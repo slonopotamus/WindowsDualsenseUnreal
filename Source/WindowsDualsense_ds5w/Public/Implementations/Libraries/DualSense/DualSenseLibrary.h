@@ -8,7 +8,8 @@
 #include "Core/Interfaces/ISonyGamepad.h"
 #include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "Core/Interfaces/Segregations/IGamepadTrigger.h"
-#include "Core/Types/Enums/EDeviceCommons.h"
+#include "Core/Types/DSCoreTypes.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
 #include "Implementations/Libraries/Base/SonyGamepadAbstract.h"
 #include <atomic>
@@ -112,10 +113,10 @@ public:
 	 * Stops any ongoing adaptive trigger effects on the specified controller hand.
 	 *
 	 * @param Hand The hand for which to stop the adaptive trigger effect.
-	 *             Acceptable values are EGamepadHand::Left, EGamepadHand::Right,
-	 *             or EGamepadHand::AnyHand.
+	 *             Acceptable values are EDSGamepadHand::Left, EDSGamepadHand::Right,
+	 *             or EDSGamepadHand::AnyHand.
 	 */
-	virtual void StopTrigger(const EGamepadHand& Hand) override;
+	virtual void StopTrigger(const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the trigger settings on a DualSense controller for GameCube-style behavior.
 	 *
@@ -125,9 +126,9 @@ public:
 	 *
 	 * @param Hand The hand (left, right, or both) corresponding to the controller
 	 * side where the GameCube-style trigger behavior should be applied. Must be
-	 * a value of the EGamepadHand enumeration.
+	 * a value of the EDSGamepadHand enumeration.
 	 */
-	virtual void SetGameCube(const EGamepadHand& Hand) override;
+	virtual void SetGameCube(const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Sets the trigger resistance properties for a specific controller hand.
 	 *
@@ -140,7 +141,7 @@ public:
 	 * @param Strength Determines the intensity or strength of the resistance.
 	 * @param Hand Indicates the controller hand (e.g., left or right) where the resistance should be configured.
 	 */
-	virtual void SetResistance(uint8 StartZones, uint8 Strength, const EGamepadHand& Hand) override;
+	virtual void SetResistance(uint8 StartZones, uint8 Strength, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the bow effect settings on a DualSense controller.
 	 *
@@ -151,7 +152,7 @@ public:
 	 * @param SnapBack The SnapBack of the force applied during the bow effect.
 	 * @param Hand The controller hand (left or right) associated with the bow action.
 	 */
-	virtual void SetBow22(uint8 StartZone, uint8 SnapBack, const EGamepadHand& Hand) override;
+	virtual void SetBow22(uint8 StartZone, uint8 SnapBack, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the galloping trigger feedback behavior on a DualSense controller.
 	 *
@@ -166,7 +167,7 @@ public:
 	 * @param Frequency The frequency of the galloping effect, determining how rapidly it alternates or triggers.
 	 * @param Hand Specifies the controller hand (left, right, or any) to apply the galloping effect.
 	 */
-	virtual void SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot, uint8 Frequency, const EGamepadHand& Hand) override;
+	virtual void SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot, uint8 Frequency, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the trigger effect for the DualSense controller's adaptive triggers.
 	 *
@@ -179,7 +180,7 @@ public:
 	 * @param Trigger Specifies an additional parameter for customizing the effect behavior.
 	 * @param Hand Determines which hand (Left, Right, or AnyHand) the configuration applies to.
 	 */
-	virtual void SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EGamepadHand& Hand) override;
+	virtual void SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the machine gun effect on a DualSense controller.
 	 *
@@ -196,7 +197,7 @@ public:
 	 * @param Frequency Configures the frequency of the haptic pulses to simulate firing intervals.
 	 * @param Hand Indicates which controller hand (left or right) will receive the effect.
 	 */
-	virtual void SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EGamepadHand& Hand) override;
+	virtual void SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the advanced machine effect (Mode 0x27) for DualSense controller triggers.
 	 *
@@ -213,7 +214,7 @@ public:
 	 * @param Frequency Determines the frequency for the trigger vibration or repeated effect.
 	 * @param Hand Identifies the controller hand (left, right, or both) for applying the trigger effect.
 	 */
-	virtual void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EGamepadHand& Hand) override;
+	virtual void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Sets custom trigger behavior for the specified controller hand using custom hexadecimal byte data.
 	 *
@@ -224,7 +225,7 @@ public:
 	 * @param Hand The hand designation of the controller (e.g., left, right, or any hand) for which the custom trigger behavior is applied.
 	 * @param HexBytes An array of hexadecimal byte strings defining the custom trigger configuration. Must contain exactly 10 valid values.
 	 */
-	virtual void SetCustomTrigger(const EGamepadHand& Hand, const TArray<FString>& HexBytes) override;
+	virtual void SetCustomTrigger(const EDSGamepadHand& Hand, const TArray<FString>& HexBytes) override;
 
 	/**
 	 * Sets the LED player indicator effects based on the desired player LED pattern and brightness intensity.
@@ -232,14 +233,14 @@ public:
 	 * @param Led The LED pattern to be displayed on the device, represented by the ELedPlayerEnum enumeration.
 	 * @param Brightness The brightness intensity for the LED, represented by the ELedBrightnessEnum enumeration.
 	 */
-	virtual void SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness) override;
+	virtual void SetPlayerLed(EDSPlayer Led, DSCoreTypes::uint8 Brightness) override;
 	/**
 	 * Sets the microphone LED effects on the DualSense controller.
 	 *
 	 * @param Led The desired LED microphone effect to be applied. It is defined by the ELedMicEnum enumeration,
 	 *               which includes options such as MicOff, MicOn, and Pulse.
 	 */
-	virtual void SetMicrophoneLed(ELedMicEnum Led) override;
+	virtual void SetMicrophoneLed(EDSMic Led) override;
 	/**
 	 * @brief Sets the vibration strength for the DualSense controller.
 	 *

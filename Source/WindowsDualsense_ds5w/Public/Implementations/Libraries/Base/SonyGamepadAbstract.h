@@ -5,7 +5,8 @@
 #pragma once
 #include "Core/Algorithms/MadgwickAhrs.h"
 #include "Core/Interfaces/ISonyGamepad.h"
-#include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
+#include "Core/Types/DSCoreTypes.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 
 /**
  * @class SonyGamepadAbstract
@@ -72,13 +73,13 @@ public:
 	 *
 	 * @return The type of the device as an EDeviceType enumeration.
 	 */
-	virtual EDeviceType GetDeviceType() override;
+	virtual EDSDeviceType GetDeviceType() override;
 	/**
 	 * Retrieves the connection type of the device.
 	 *
 	 * @return The connection type of the device as an EDeviceConnection enumeration.
 	 */
-	virtual EDeviceConnection GetConnectionType() override;
+	virtual EDSDeviceConnection GetConnectionType() override;
 	/**
 	 * Retrieves the current battery level of the Sony gamepad.
 	 *
@@ -108,13 +109,13 @@ public:
 	 * @param Led The LED associated with a specific player, represented as an ELedPlayerEnum.
 	 * @param Brightness The desired brightness level for the LED, represented as an ELedBrightnessEnum.
 	 */
-	virtual void SetPlayerLed(ELedPlayerEnum Led, ELedBrightnessEnum Brightness) override {}
+	virtual void SetPlayerLed(EDSPlayer Led, DSCoreTypes::uint8 Brightness) override {}
 	/**
 	 * Sets the state of the microphone LED on the gamepad.
 	 *
 	 * @param Led The desired state of the microphone LED, represented by ELedMicEnum.
 	 */
-	virtual void SetMicrophoneLed(ELedMicEnum Led) override {}
+	virtual void SetMicrophoneLed(EDSMic Led) override {}
 	/**
 	 * Sets the touch state for the device.
 	 *

@@ -8,10 +8,33 @@
 #include "Core/Managers/DeviceRegistry.h"
 #include "GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Helpers/DualSenseLog.h"
+#include "Types/Enums/EDeviceCommons.h"
+#include "Types/Enums/EDeviceConnection.h"
 
 // Forward declarations
 class IGamepadTrigger;
 class IGamepadAudioHaptics;
+
+static_assert((uint8)EDeviceType::DualSense == (uint8)EDSDeviceType::DualSense, "Enum mismatch: DualSense value differs between Core and API!");
+static_assert((uint8)EDeviceType::DualShock4 == (uint8)EDSDeviceType::DualShock4, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)EDeviceType::DualSenseEdge == (uint8)EDSDeviceType::DualSenseEdge, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)EDeviceType::DualSenseEdge == (uint8)EDSDeviceType::DualSenseEdge, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)EDeviceConnection::Usb == (uint8)EDSDeviceConnection::Usb, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)EDeviceConnection::Bluetooth == (uint8)EDSDeviceConnection::Bluetooth, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)EDeviceConnection::Unrecognized == (uint8)EDSDeviceConnection::Unrecognized, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)EGamepadHand::Left == (uint8)EDSGamepadHand::Left, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)EGamepadHand::Right == (uint8)EDSGamepadHand::Right, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)EGamepadHand::AnyHand == (uint8)EDSGamepadHand::AnyHand, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)EDualSenseAudioFeatureReport::On == (uint8)EDSAudioMode::On, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)EDualSenseAudioFeatureReport::Off == (uint8)EDSAudioMode::Off, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)ELedPlayerEnum::Off == (uint8)EDSPlayer::Off, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)ELedPlayerEnum::One == (uint8)EDSPlayer::One, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)ELedPlayerEnum::Two == (uint8)EDSPlayer::Two, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)ELedPlayerEnum::Three == (uint8)EDSPlayer::Three, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)ELedPlayerEnum::All == (uint8)EDSPlayer::All, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)ELedMicEnum::MicOn == (uint8)EDSMic::MicOn, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)ELedMicEnum::MicOff == (uint8)EDSMic::MicOff, "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert((uint8)ELedMicEnum::Pulse == (uint8)EDSMic::Pulse, "Enum mismatch: DualShock4 value differs between Core and API!");
 
 /**
  * @namespace SonyGamepadProxyHelpers

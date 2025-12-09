@@ -3,7 +3,7 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
-#include "Core/Types/Enums/EDeviceConnection.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 #include "Core/Types/Structs/Config/GamepadCalibration.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
 #include "Helpers/DualSenseLog.h"
@@ -77,22 +77,22 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 								{
 									case 0x05C4:
 									case 0x09CC:
-										Context.DeviceType = EDeviceType::DualShock4;
+										Context.DeviceType = EDSDeviceType::DualShock4;
 										break;
 									case 0x0DF2:
-										Context.DeviceType = EDeviceType::DualSenseEdge;
+										Context.DeviceType = EDSDeviceType::DualSenseEdge;
 										break;
-									default: Context.DeviceType = EDeviceType::DualSense;
+									default: Context.DeviceType = EDSDeviceType::DualSense;
 								}
 
 								Context.IsConnected = true;
-								Context.ConnectionType = EDeviceConnection::Usb;
+								Context.ConnectionType = EDSDeviceConnection::Usb;
 								FString DevicePath(Context.Path);
 								if (DevicePath.Contains(TEXT("{00001124-0000-1000-8000-00805f9b34fb}")) ||
 								    DevicePath.Contains(TEXT("bth")) ||
 								    DevicePath.Contains(TEXT("BTHENUM")))
 								{
-									Context.ConnectionType = EDeviceConnection::Bluetooth;
+									Context.ConnectionType = EDSDeviceConnection::Bluetooth;
 								}
 								Devices.Add(Context);
 							}
@@ -133,14 +133,14 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 	}
 
 	DWORD BytesRead = 0;
-	if (Context->ConnectionType == EDeviceConnection::Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
+	if (Context->ConnectionType == EDSDeviceConnection::Bluetooth && Context->DeviceType == EDSDeviceType::DualShock4)
 	{
 		constexpr size_t InputReportLength = 547;
 		PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
 	}
 	else
 	{
-		const size_t InputBufferSize = Context->ConnectionType == EDeviceConnection::Bluetooth ? 78 : 64;
+		const size_t InputBufferSize = Context->ConnectionType == EDSDeviceConnection::Bluetooth ? 78 : 64;
 		PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
 	}
 }
@@ -152,8 +152,8 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 		return;
 	}
 
-	size_t InReportLength = Context->DeviceType == EDeviceType::DualShock4 ? 32 : 74;
-	size_t OutputReportLength = Context->ConnectionType == EDeviceConnection::Bluetooth ? 78 : InReportLength;
+	size_t InReportLength = Context->DeviceType == EDSDeviceType::DualShock4 ? 32 : 74;
+	size_t OutputReportLength = Context->ConnectionType == EDSDeviceConnection::Bluetooth ? 78 : InReportLength;
 
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
@@ -259,7 +259,7 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		return;
 	}
 
-	if (Context->ConnectionType != EDeviceConnection::Bluetooth)
+	if (Context->ConnectionType != EDSDeviceConnection::Bluetooth)
 	{
 		return;
 	}

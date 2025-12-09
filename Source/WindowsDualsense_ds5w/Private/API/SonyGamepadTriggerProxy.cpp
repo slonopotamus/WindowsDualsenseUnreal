@@ -4,7 +4,7 @@
 
 #include "API/SonyGamepadTriggerProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "Core/Types/Enums/EDeviceCommons.h"
+#include "API/Types/Enums/EDeviceCommons.h"
 
 using namespace SonyGamepadProxyHelpers;
 
@@ -12,7 +12,7 @@ void USonyGamepadTriggerProxy::GameCube(int32 ControllerId, EGamepadHand Hand)
 {
 	if (IGamepadTrigger* Gamepad = GetTriggerInterface(ControllerId))
 	{
-		Gamepad->SetGameCube(Hand);
+		Gamepad->SetGameCube(static_cast<EDSGamepadHand>(Hand));
 	}
 }
 void USonyGamepadTriggerProxy::Resistance(int32 ControllerId, ETriggerPositionMask StartPosition,
@@ -20,7 +20,7 @@ void USonyGamepadTriggerProxy::Resistance(int32 ControllerId, ETriggerPositionMa
 {
 	if (IGamepadTrigger* Gamepad = GetTriggerInterface(ControllerId))
 	{
-		Gamepad->SetResistance(static_cast<uint8>(StartPosition), static_cast<uint8>(Strength), Hand);
+		Gamepad->SetResistance(static_cast<uint8>(StartPosition), static_cast<uint8>(Strength), static_cast<EDSGamepadHand>(Hand));
 	}
 }
 void USonyGamepadTriggerProxy::Bow(int32 ControllerId, ETriggerPosition StartZone, EDualSenseSnapBack SnapBack,
@@ -28,7 +28,7 @@ void USonyGamepadTriggerProxy::Bow(int32 ControllerId, ETriggerPosition StartZon
 {
 	if (IGamepadTrigger* Gamepad = GetTriggerInterface(ControllerId))
 	{
-		Gamepad->SetBow22(static_cast<uint8>(StartZone), static_cast<uint8>(SnapBack), Hand);
+		Gamepad->SetBow22(static_cast<uint8>(StartZone), static_cast<uint8>(SnapBack), static_cast<EDSGamepadHand>(Hand));
 	}
 }
 void USonyGamepadTriggerProxy::Weapon(int32 ControllerId, ETriggerPosition StartZone,
@@ -38,7 +38,7 @@ void USonyGamepadTriggerProxy::Weapon(int32 ControllerId, ETriggerPosition Start
 	if (IGamepadTrigger* Gamepad = GetTriggerInterface(ControllerId))
 	{
 		Gamepad->SetWeapon25(static_cast<uint8>(StartZone), static_cast<uint8>(Amplitude), static_cast<uint8>(Behavior),
-		                     static_cast<uint8>(Trigger), Hand);
+		                     static_cast<uint8>(Trigger), static_cast<EDSGamepadHand>(Hand));
 	}
 }
 void USonyGamepadTriggerProxy::AutomaticGun(int32 ControllerId, ETriggerPosition StartZone,
@@ -46,7 +46,7 @@ void USonyGamepadTriggerProxy::AutomaticGun(int32 ControllerId, ETriggerPosition
 {
 	if (IGamepadTrigger* Gamepad = GetTriggerInterface(ControllerId))
 	{
-		Gamepad->SetMachineGun26(static_cast<uint8>(StartZone), static_cast<uint8>(Behavior), static_cast<uint8>(Recoil), Frequency.Frequency, Hand);
+		Gamepad->SetMachineGun26(static_cast<uint8>(StartZone), static_cast<uint8>(Behavior), static_cast<uint8>(Recoil), Frequency.Frequency, static_cast<EDSGamepadHand>(Hand));
 	}
 }
 void USonyGamepadTriggerProxy::Machine(int32 ControllerId, ETriggerPosition StartZone, ETriggerEffectBehavior Behavior,
@@ -57,10 +57,10 @@ void USonyGamepadTriggerProxy::Machine(int32 ControllerId, ETriggerPosition Star
 	if (IGamepadTrigger* Gamepad = GetTriggerInterface(ControllerId))
 	{
 		Gamepad->SetMachine27(static_cast<uint8>(StartZone), static_cast<uint8>(Behavior), static_cast<uint8>(ForceIntensity), static_cast<uint8>(Amplitude),
-		                      Frequency_Period.Period, Frequency_Period.Frequency, Hand);
+		                      Frequency_Period.Period, Frequency_Period.Frequency, static_cast<EDSGamepadHand>(Hand));
 	}
 }
-void USonyGamepadTriggerProxy::CustomTrigger(int32 ControllerId, EGamepadHand Hand, const TArray<FString>& HexBytes)
+void USonyGamepadTriggerProxy::CustomTrigger(int32 ControllerId, const TArray<FString>& HexBytes, EGamepadHand Hand)
 {
 	if (HexBytes.Num() > 10)
 	{
@@ -69,13 +69,13 @@ void USonyGamepadTriggerProxy::CustomTrigger(int32 ControllerId, EGamepadHand Ha
 
 	if (IGamepadTrigger* Gamepad = GetTriggerInterface(ControllerId))
 	{
-		Gamepad->SetCustomTrigger(Hand, HexBytes);
+		Gamepad->SetCustomTrigger(static_cast<EDSGamepadHand>(Hand), HexBytes);
 	}
 }
 void USonyGamepadTriggerProxy::StopTrigger(int32 ControllerId, EGamepadHand Hand)
 {
 	if (IGamepadTrigger* Gamepad = GetTriggerInterface(ControllerId))
 	{
-		Gamepad->StopTrigger(Hand);
+		Gamepad->StopTrigger(static_cast<EDSGamepadHand>(Hand));
 	}
 }

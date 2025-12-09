@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Core/Types/Enums/EDeviceCommons.h"
+#include "API/Types/Enums/EDeviceCommons.h"
 #include "CoreMinimal.h"
 #include "DualSenseFeatureReport.generated.h"
 

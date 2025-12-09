@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Core/Types/Enums/EDeviceCommons.h"
+#include "API/Types/Enums/EDeviceCommons.h"
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "SonyGamepadLightsProxy.generated.h"
