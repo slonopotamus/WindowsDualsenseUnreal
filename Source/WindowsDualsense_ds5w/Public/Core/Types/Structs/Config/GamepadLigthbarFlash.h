@@ -4,13 +4,11 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-
 /**
  * Represents the player LED configuration for a device.
  */
 struct FGamepadLigthbarFlash
 {
-	unsigned char Bright_Time = 0x0;
-	unsigned char Toggle_Time = 0x0;
+	std::uint8_t Bright_Time = 0x0;
+	std::uint8_t Toggle_Time = 0x0;
 };

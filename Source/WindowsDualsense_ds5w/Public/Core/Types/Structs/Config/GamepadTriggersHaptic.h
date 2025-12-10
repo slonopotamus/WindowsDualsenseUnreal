@@ -3,7 +3,6 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include "CoreMinimal.h"
 #include "GamepadTriggers.h"
 
 /**
@@ -35,7 +34,7 @@ struct FGamepadTriggersHaptic
 	 *
 	 * @return Returns true if the initialization is successful, otherwise false.
 	 */
-	unsigned char Mode = 0x0;
+	std::uint8_t Mode = 0x0;
 	/**
 	 * @brief Represents the strength configuration used in haptic feedback effects for triggers.
 	 *

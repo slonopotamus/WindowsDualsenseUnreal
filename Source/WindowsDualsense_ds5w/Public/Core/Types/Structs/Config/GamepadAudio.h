@@ -3,7 +3,9 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include "CoreMinimal.h"
+
+#include "Core/Types/DSCoreTypes.h"
+using namespace DSCoreTypes;
 
 /**
  * @class FGamepadAudio
@@ -36,7 +38,7 @@ struct FGamepadAudio
 	 * Usage of this variable may influence the overall behavior, decision-making,
 	 * or output of the system it is a part of.
 	 */
-	uint8 Mode = 0x05;
+	std::uint8_t Mode = 0x05;
 	/**
 	 * Represents the audio volume level for the connected headset.
 	 *
@@ -48,7 +50,7 @@ struct FGamepadAudio
 	 * This variable is primarily used in device output configurations for transmitting
 	 * audio-related settings to a DualSense controller.
 	 */
-	uint8 HeadsetVolume = 0x7C;
+	std::uint8_t HeadsetVolume = 0x7C;
 	/**
 	 * Represents the volume level of the speaker output for a DualSense device.
 	 *
@@ -66,7 +68,7 @@ struct FGamepadAudio
 	 * Used during DualSense Devices configuration and in HID report processing to
 	 * adjust the speaker's output level.
 	 */
-	uint8 SpeakerVolume = 0x7C;
+	std::uint8_t SpeakerVolume = 0x7C;
 	/**
 	 * MicVolume is an 8-bit unsigned integer that represents the microphone volume level
 	 * in an audio configuration. It is primarily used within the DualSense controller
@@ -83,7 +85,7 @@ struct FGamepadAudio
 	 * - The value can be dynamically configured via the related API, such as the
 	 *   `UDualSenseLibrary::Settings` method, using the provided settings structure.
 	 */
-	uint8 MicVolume = 0x7C;
+	std::uint8_t MicVolume = 0x7C;
 	/**
 	 * @brief Represents the status of the microphone in DualSense audio settings.
 	 *
@@ -104,5 +106,5 @@ struct FGamepadAudio
 	 * - Transmitted as part of the HID output data buffer during device communication.
 	 * - Controlled via the settings API, influenced by user-defined configurations.
 	 */
-	uint8 MicStatus = 0x0;
+	std::uint8_t MicStatus = 0x0;
 };

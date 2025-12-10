@@ -7,49 +7,49 @@ using namespace DSCoreTypes;
 /**
  * @brief Enum class representing various LED microphone states.
  */
-enum class EDSMic : DSCoreTypes::uint8
+enum class EDSMic : std::uint8_t
 {
-	MicOn = 0x0,
-	MicOff = 0x1,
-	Pulse = 0x2
+	MicOn = 0,
+	MicOff = 1,
+	Pulse = 2
 };
 
 /**
  * @brief Player LED definition logic.
  */
-enum class EDSPlayer : DSCoreTypes::uint8
+enum class EDSPlayer : std::uint8_t
 {
 	Off = 0,
-	One = DSCoreTypes::LedMasks::Middle,
-	Two = DSCoreTypes::LedMasks::MiddleRight | DSCoreTypes::LedMasks::MiddleLeft,
-	Three = DSCoreTypes::LedMasks::Right | DSCoreTypes::LedMasks::Middle | DSCoreTypes::LedMasks::Left,
-	All = DSCoreTypes::LedMasks::Right | DSCoreTypes::LedMasks::MiddleRight | DSCoreTypes::LedMasks::MiddleLeft | DSCoreTypes::LedMasks::Left
+	One = LedMasks::Middle,
+	Two = LedMasks::MiddleRight | LedMasks::MiddleLeft,
+	Three = LedMasks::Right | LedMasks::Middle | LedMasks::Left,
+	All = LedMasks::Right | LedMasks::MiddleRight | LedMasks::MiddleLeft | LedMasks::Left
 };
 
 /**
  * @brief Audio feature states.
  */
-enum class EDSAudioMode : DSCoreTypes::uint8
+enum class EDSAudioMode : std::uint8_t
 {
 	On,
 	Off
 };
 
-enum class EDSVibrationMode : DSCoreTypes::uint8
+enum class EDSVibrationMode : std::uint8_t
 {
 	Off = 0,
 	DefaultRumble = 0xFF,
 	HapticsRumble = 0xFC
 };
 
-enum class EDSGamepadHand : DSCoreTypes::uint8
+enum class EDSGamepadHand : std::uint8_t
 {
 	Left,
 	Right,
 	AnyHand
 };
 
-enum class EDSTouchInteraction : uint8
+enum class EDSTouchInteraction : std::uint8_t
 {
 	None,
 	Swipe,
@@ -57,7 +57,7 @@ enum class EDSTouchInteraction : uint8
 	Scroll
 };
 
-enum class EDSDeviceType : DSCoreTypes::uint8
+enum class EDSDeviceType : std::uint8_t
 {
 	DualSense,
 	DualSenseEdge,
@@ -65,7 +65,7 @@ enum class EDSDeviceType : DSCoreTypes::uint8
 	NotFound
 };
 
-enum class EDSDeviceConnection : DSCoreTypes::uint8
+enum class EDSDeviceConnection : std::uint8_t
 {
 	Usb,
 	Bluetooth,

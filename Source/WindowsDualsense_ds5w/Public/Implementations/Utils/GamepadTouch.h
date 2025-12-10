@@ -18,22 +18,22 @@ namespace FGamepadTouch
 
 	inline void ProcessTouch(const unsigned char* HIDInput, FInputContext* Input)
 	{
-		if (Input->TouchRadius == FVector2D::ZeroVector)
+		if (Input->TouchRadius.X == 0.0f || Input->TouchRadius.Y == 0.0f)
 		{
-			Input->TouchRadius = FVector2D(DS_TOUCHPAD_WIDTH, DS_TOUCHPAD_HEIGHT);
+			Input->TouchRadius = {DS_TOUCHPAD_WIDTH, DS_TOUCHPAD_HEIGHT};
 		}
 
 		Input->TouchId = (HIDInput[0x20] & 0x7F) % 10;
 		Input->bIsTouching = (HIDInput[0x20] & 0x80) != 0;
 		Input->DirectionRaw = HIDInput[0x28];
 
-		const int32 AbsX = ((HIDInput[0x22] & 0x0F) << 8) | HIDInput[0x21];
-		const int32 AbsY = (HIDInput[0x23] << 4) | ((HIDInput[0x22] & 0xF0) >> 4);
-		Input->TouchPosition = FVector2D(AbsX, AbsY);
+		const float AbsX = ((HIDInput[0x22] & 0x0F) << 8) | HIDInput[0x21];
+		const float AbsY = (HIDInput[0x23] << 4) | ((HIDInput[0x22] & 0xF0) >> 4);
+		Input->TouchPosition = {AbsX, AbsY};
 
-		const int32 AbsRelativeX = ((HIDInput[0x27] & 0x0F) << 8) | HIDInput[0x25];
-		const int32 AbsRelativeY = (HIDInput[0x26] << 4) | ((HIDInput[0x27] & 0xF0) >> 4);
-		Input->TouchRelative = FVector2D(AbsRelativeX, AbsRelativeY);
+		const float AbsRelativeX = ((HIDInput[0x27] & 0x0F) << 8) | HIDInput[0x25];
+		const float AbsRelativeY = (HIDInput[0x26] << 4) | ((HIDInput[0x27] & 0xF0) >> 4);
+		Input->TouchRelative = {AbsRelativeX, AbsRelativeY};
 
 		Input->P1_Last = Input->P1_Current;
 		Input->P1_Current = Input->TouchPosition;

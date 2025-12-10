@@ -7,7 +7,7 @@
 
 namespace FGamepadCalibrationSensors
 {
-	inline void DualSenseCalibrationSensors(const uint8* Buffer, FGamepadCalibration& OutCalibration)
+	inline void DualSenseCalibrationSensors(const std::uint8_t* Buffer, FGamepadCalibration& OutCalibration)
 	{
 		auto GetLE16 = [](const uint8* Data) -> int16 {
 			return static_cast<int16>(Data[0] | (Data[1] << 8));
@@ -64,15 +64,15 @@ namespace FGamepadCalibrationSensors
 		OutCalibration.AccelFactorZ = (RangeZ != 0.0f) ? (2.0f / RangeZ) : 1.0f;
 	}
 
-	inline void ProcessMotionData(const uint8* Buffer, const FGamepadCalibration& Calibration, FVector& FinalGyro, FVector& FinalAccel)
+	inline void ProcessMotionData(const uint8* Buffer, const FGamepadCalibration& Calibration, DSCoreTypes::DSVector3D& FinalGyro, DSCoreTypes::DSVector3D & FinalAccel)
 	{
-		const int16 RawGyroX = static_cast<int16>(Buffer[15] | (Buffer[16] << 8));
-		const int16 RawGyroY = static_cast<int16>(Buffer[17] | (Buffer[18] << 8));
-		const int16 RawGyroZ = static_cast<int16>(Buffer[19] | (Buffer[20] << 8));
+		const std::int16_t RawGyroX = (Buffer[15] | (Buffer[16] << 8));
+		const std::int16_t RawGyroY = (Buffer[17] | (Buffer[18] << 8));
+		const std::int16_t RawGyroZ = (Buffer[19] | (Buffer[20] << 8));
 
-		const int16 RawAccX = static_cast<int16>(Buffer[21] | (Buffer[22] << 8));
-		const int16 RawAccY = static_cast<int16>(Buffer[23] | (Buffer[24] << 8));
-		const int16 RawAccZ = static_cast<int16>(Buffer[25] | (Buffer[26] << 8));
+		const int16 RawAccX = (Buffer[21] | (Buffer[22] << 8));
+		const int16 RawAccY = (Buffer[23] | (Buffer[24] << 8));
+		const int16 RawAccZ = (Buffer[25] | (Buffer[26] << 8));
 
 		FinalGyro.X = ((RawGyroX - Calibration.GyroBiasX) * Calibration.GyroFactorX);
 		FinalGyro.Y = ((RawGyroY - Calibration.GyroBiasY) * Calibration.GyroFactorY);

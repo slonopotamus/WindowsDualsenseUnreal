@@ -10,6 +10,7 @@
 #include "Core/Types/DSCoreTypes.h"
 #include "Core/Types/ECoreGamepadTypes.h"
 #include "Misc/CoreDelegates.h"
+#include <locale>
 
 using namespace SonyGamepadProxyHelpers;
 DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler)
@@ -51,12 +52,13 @@ void DeviceManager::Tick(float DeltaTime)
 				{
 					if (FInputContext* FrameInput = Context->GetBackBuffer())
 					{
-						if (FrameInput->TouchRadius != ScreenSize)
+						if (FrameInput->TouchRadius.X != ScreenSize.X || FrameInput->TouchRadius.Y != ScreenSize.Y)
 						{
 							if (ScreenSize.X > 0 && ScreenSize.Y > 0)
 							{
 								UE_LOG(LogDualSense, Log, TEXT("Setting TouchRadius to %f, %f"), ScreenSize.X, ScreenSize.Y);
-								FrameInput->TouchRadius = ScreenSize;
+								FrameInput->TouchRadius.X = ScreenSize.X;
+								FrameInput->TouchRadius.Y = ScreenSize.Y;
 							}
 						}
 					}
@@ -104,7 +106,9 @@ void DeviceManager::SendControllerEvents()
 void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) const
 {
 	const auto HandleAnalogInput = [&](const FName& AnalogKey, const FName& ButtonKeyPositive, const FName& ButtonKeyNegative, float NewAxisValue) {
-		auto& OldAxisValue = Context->AnalogStates.FindOrAdd(AnalogKey);
+		const std::string Str(TCHAR_TO_UTF8(*AnalogKey.ToString()));
+		
+		float& OldAxisValue = Context->AnalogStates[Str];
 		if (FMath::IsNearlyEqual(NewAxisValue, OldAxisValue))
 		{
 			return;
@@ -171,16 +175,17 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Menu"), FrameInput.bStart);
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Share"), FrameInput.bShare);
 
-	if (FrameInput.Gyroscope.Size() > 0.0f || FrameInput.Accelerometer.Size() > 0.0f)
-	{
-		MessageHandler.Get().OnMotionDetected(FrameInput.Tilt, FrameInput.Gyroscope, FrameInput.Gravity, FrameInput.Accelerometer, UserId, InputDeviceId);
-	}
+	FVector UnrealTilt(FrameInput.Tilt.X, FrameInput.Tilt.Y, FrameInput.Tilt.Z);
+	FVector UnrealGyro(FrameInput.Gyroscope.X, FrameInput.Gyroscope.Y, FrameInput.Gyroscope.Z);
+	FVector UnrealGravity(FrameInput.Gravity.X, FrameInput.Gravity.Y, FrameInput.Gravity.Z);
+	FVector UnrealAccel(FrameInput.Accelerometer.X, FrameInput.Accelerometer.Y, FrameInput.Accelerometer.Z);
+	MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, UnrealGravity, UnrealAccel, UserId, InputDeviceId);
 
 	if (FrameInput.bIsTouching && !FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchStarted(
 		    nullptr,
-		    FrameInput.TouchPosition,
+		    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
 		    1.0f,
 		    FrameInput.TouchId,
 		    UserId,
@@ -189,7 +194,7 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 	else if (FrameInput.bIsTouching && FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchMoved(
-		    FrameInput.TouchPosition,
+		    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
 		    1.0f,
 		    FrameInput.TouchId,
 		    UserId,
@@ -198,7 +203,7 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 	else if (!FrameInput.bIsTouching && FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchEnded(
-		    FrameInput.TouchPosition,
+		    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
 		    FrameInput.TouchId,
 		    UserId,
 		    InputDeviceId);
@@ -208,7 +213,8 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 
 void DeviceManager::CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const
 {
-	const bool PreviousState = Context->ButtonStates.Contains(ButtonName) ? Context->ButtonStates[ButtonName] : false;
+	const std::string Str(TCHAR_TO_UTF8(*ButtonName.ToString()));
+	const bool PreviousState = Context->AnalogStates[Str];
 	if (IsButtonPressed && !PreviousState)
 	{
 		MessageHandler.Get().OnControllerButtonPressed(ButtonName, UserId, InputDeviceId, false);
@@ -218,7 +224,6 @@ void DeviceManager::CheckButtonInput(FDeviceContext* Context, const FPlatformUse
 	{
 		MessageHandler.Get().OnControllerButtonReleased(ButtonName, UserId, InputDeviceId, false);
 	}
-	Context->ButtonStates.Add(ButtonName, IsButtonPressed);
 }
 
 void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProperty* Property)

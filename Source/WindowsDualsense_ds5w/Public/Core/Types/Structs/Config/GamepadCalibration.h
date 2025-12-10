@@ -3,12 +3,9 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include "Core/Types/DSCoreTypes.h"
 
-#define DS_ACC_RES_PER_G 8192
-#define DS_ACC_RANGE (4 * DS_ACC_RES_PER_G)
-#define DS_GYRO_RES_PER_DEG_S 1024
-#define DS_GYRO_RANGE (2048 * DS_GYRO_RES_PER_DEG_S)
-#define GRAVITY_MS2 9.80665f
+using namespace DSCoreTypes;
 
 /**
  * @brief Represents a structure for calibrating gamepad sensors.
@@ -25,9 +22,9 @@
  */
 struct FGamepadCalibration
 {
-	int16 GyroBiasX = 0;
-	int16 GyroBiasY = 0;
-	int16 GyroBiasZ = 0;
+	std::uint16_t GyroBiasX = 0;
+	std::uint16_t GyroBiasY = 0;
+	std::uint16_t GyroBiasZ = 0;
 
 	float AccelBiasX = 0;
 	float AccelBiasY = 0;

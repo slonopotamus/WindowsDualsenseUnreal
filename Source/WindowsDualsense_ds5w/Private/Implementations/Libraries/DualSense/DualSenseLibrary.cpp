@@ -122,30 +122,38 @@ void FDualSenseLibrary::UpdateInput(float Delta)
 
 	if (IsEnableAccelerometerAndGyroscope())
 	{
-		FVector GyroDeg;
-		FVector AccelG;
+		DSVector3D GyroDeg;
+		DSVector3D AccelG;
+	
+		constexpr DSQuat RotZMinus90(0.0f, 0.0f, -0.70710678f, 0.70710678f);
+		constexpr DSQuat RotX180(1.0f, 0.0f, 0.0f, 0.0f);
+		const DSQuat FinalCorrection = RotX180 * RotZMinus90;
+		
 		using namespace FGamepadCalibrationSensors;
 		ProcessMotionData(&Context->Buffer[Padding], Context->Calibration, GyroDeg, AccelG);
-
-		constexpr float GToMSq = GRAVITY_MS2;
-		constexpr float DegToRad = PI / 180.0f;
-		FVector GyroRad = GyroDeg * DegToRad; // deg/s -> rad/s
-		FVector AccelRad = AccelG * GToMSq;
-		MadgwickFilter.UpdateImu(GyroRad.Z, GyroRad.Y, -GyroRad.X, AccelRad.Z, AccelRad.Y, -AccelRad.X, 0.033f);
+		AccelG.Normalize();
+		
+		if (IsResetGyroscope())
+		{
+			MadgwickFilter.Reset();
+		}
+		
+		constexpr float DegToRad = 3.1415926535f / 180.0f;
+		const DSVector3D GyroRad = {GyroDeg.X * DegToRad, GyroDeg.Y * DegToRad, GyroDeg.Z * DegToRad}; // deg/s -> rad/s
+		MadgwickFilter.UpdateImu(GyroRad.Z, GyroRad.Y, GyroRad.X, AccelG.Z, AccelG.Y, AccelG.X, 0.033f);
 
 		float qw, qx, qy, qz;
 		MadgwickFilter.GetQuaternion(qw, qx, qy, qz);
 
-		const FQuat RawQuat(qx, qy, qz, qw);
-		const FQuat CorrectionQuat(FVector::ForwardVector, PI);
-		const FQuat SensorQuat = CorrectionQuat * RawQuat;
+		const DSQuat RawQuat(qx, qy, qz, qw);
+		const DSQuat SensorQuat = FinalCorrection * RawQuat;
 
-		const FRotator ControlRotation = SensorQuat.Rotator();
 		InputToFill->Gyroscope = GyroDeg;
 		InputToFill->Accelerometer = AccelG;
-
 		InputToFill->Gravity = SensorQuat.GetUpVector();
-		InputToFill->Tilt = FVector(ControlRotation.Roll, ControlRotation.Yaw, ControlRotation.Pitch);
+    
+		auto [Roll, Pitch, Yaw ] = SensorQuat.ToRotator();
+		InputToFill->Tilt = { Roll, Pitch, Yaw };
 	}
 
 	Context->SwapInputBuffers();
@@ -254,7 +262,7 @@ void FDualSenseLibrary::SetCustomTrigger(const EDSGamepadHand& Hand, const TArra
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetPlayerLed(EDSPlayer Led, DSCoreTypes::uint8 Brightness)
+void FDualSenseLibrary::SetPlayerLed(EDSPlayer Led, std::uint8_t Brightness)
 {
 }
 

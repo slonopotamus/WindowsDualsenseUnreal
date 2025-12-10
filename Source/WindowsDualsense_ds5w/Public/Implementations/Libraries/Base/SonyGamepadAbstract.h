@@ -109,7 +109,7 @@ public:
 	 * @param Led The LED associated with a specific player, represented as an ELedPlayerEnum.
 	 * @param Brightness The desired brightness level for the LED, represented as an ELedBrightnessEnum.
 	 */
-	virtual void SetPlayerLed(EDSPlayer Led, DSCoreTypes::uint8 Brightness) override {}
+	virtual void SetPlayerLed(EDSPlayer Led, std::uint8_t Brightness) override {}
 	/**
 	 * Sets the state of the microphone LED on the gamepad.
 	 *

@@ -40,8 +40,8 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 
 	PrimaryTick = false;
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [WeakManager = AsWeak()]() {
-		TArray<FDeviceContext> DetectedDevices;
-		DetectedDevices.Reset();
+		std::vector<FDeviceContext> DetectedDevices;
+		DetectedDevices.clear();
 
 		IPlatformHardwareInfo::Get().Detect(DetectedDevices);
 		AsyncTask(ENamedThreads::GameThread, [WeakManager, DetectedDevices = MoveTemp(DetectedDevices)]() mutable {
@@ -54,7 +54,8 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 			TSet<FString> CurrentlyConnectedPaths;
 			for (const FDeviceContext& Context : DetectedDevices)
 			{
-				CurrentlyConnectedPaths.Add(Context.Path);
+				FString PathStr(Context.Path.data());
+				CurrentlyConnectedPaths.Add(PathStr);
 			}
 
 			TArray<FString> DisconnectedPaths;
@@ -82,12 +83,13 @@ void FDeviceRegistry::DetectedChangeConnections(float DeltaTime)
 
 			for (FDeviceContext& Context : DetectedDevices)
 			{
-				if (!Manager->KnownDevicePaths.Contains(Context.Path))
+				FString PathStr(Context.Path.data());
+				if (!Manager->KnownDevicePaths.Contains(PathStr))
 				{
 					Context.Output = FOutputContext();
 					if (!IPlatformHardwareInfo::Get().CreateHandle(&Context))
 					{
-						UE_LOG(LogDualSense, Log, TEXT("DualSense: DeviceManager Failed to create handle for device %s."), *Context.Path);
+						UE_LOG(LogDualSense, Log, TEXT("DualSense: DeviceManager Failed to create handle for device %s."), *PathStr);
 						continue;
 					}
 
@@ -190,16 +192,18 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 	}
 
 	FInputDeviceId UniqueInputDeviceId;
+	FString PathStr(Context.Path.data());
+	
 	const FName UniqueNamespace = TEXT("DeviceManager.WindowsDualsense");
-	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, *Context.Path);
-	if (HistoryDevices.Contains(Context.Path))
+	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, *PathStr);
+	if (HistoryDevices.Contains(PathStr))
 	{
-		UniqueInputDeviceId = HistoryDevices[Context.Path];
+		UniqueInputDeviceId = HistoryDevices[PathStr];
 	}
 	else
 	{
 		UniqueInputDeviceId = IPlatformInputDeviceMapper::Get().AllocateNewInputDeviceId();
-		HistoryDevices.Add(Context.Path, UniqueInputDeviceId);
+		HistoryDevices.Add(PathStr, UniqueInputDeviceId);
 	}
 
 	if (!SonyGamepad->Initialize(Context))
@@ -207,7 +211,7 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 		return;
 	}
 
-	KnownDevicePaths.Add(Context.Path, UniqueInputDeviceId);
+	KnownDevicePaths.Add(PathStr, UniqueInputDeviceId);
 	LibraryInstances.Add(UniqueInputDeviceId, SonyGamepad);
 
 	FInputDeviceId GamepadId = UniqueInputDeviceId;

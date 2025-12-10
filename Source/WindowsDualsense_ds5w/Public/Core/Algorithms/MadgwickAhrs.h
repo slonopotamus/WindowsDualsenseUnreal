@@ -4,8 +4,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Core/Types/DSCoreTypes.h"
 #include <cmath>
+
+using namespace DSCoreTypes;
 
 class FMadgwickAhrs
 {
@@ -17,6 +19,7 @@ public:
 	void SetBeta(const float BetaValue);
 	void GetQuaternion(float& Nq0, float& Nq1, float& Nq2, float& Nq3) const;
 	void Reset();
+	void Reset(float ax, float ay, float az);
 
 private:
 	float Beta;

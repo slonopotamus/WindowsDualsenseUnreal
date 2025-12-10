@@ -7,6 +7,8 @@
 #include "Core/Types/DSCoreTypes.h"
 #include "Core/Types/ECoreGamepadTypes.h"
 
+using namespace DSCoreTypes;
+
 class IGamepadLightbar
 {
 public:
@@ -25,7 +27,7 @@ public:
 	 * @param Led The LED associated with a specific player, represented as an EDSPlayer.
 	 * @param Brightness The desired brightness level for the LED.
 	 */
-	virtual void SetPlayerLed(EDSPlayer Led, DSCoreTypes::uint8 Brightness) = 0;
+	virtual void SetPlayerLed(EDSPlayer Led, std::uint8_t Brightness) = 0;
 	/**
 	 * Sets the state of the microphone LED on the gamepad.
 	 *

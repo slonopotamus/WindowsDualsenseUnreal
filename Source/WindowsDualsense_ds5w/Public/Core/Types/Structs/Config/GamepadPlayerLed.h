@@ -3,7 +3,6 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include "CoreMinimal.h"
 
 struct FGamepadPlayerLed
 {
@@ -17,11 +16,11 @@ struct FGamepadPlayerLed
 	 * The exact behavior and attributes of the LED are dependent on the context in which the
 	 * variable is implemented.
 	 */
-	unsigned char Led = 0x0;
+	std::uint8_t Led = 0x0;
 	/**
 	 * Represents the brightness level of the player's LED indicator on the controller.
 	 *
-	 * The value of this variable is an unsigned 8-bit integer (unsigned char) that can
+	 * The value of this variable is an unsigned 8-bit integer (std::uint8_t) that can
 	 * be adjusted to set the desired brightness level. The potential values range
 	 * from 0x0 (minimum brightness or off) to the maximum value supported by the device.
 	 *
@@ -30,5 +29,5 @@ struct FGamepadPlayerLed
 	 *
 	 * Modifications to this variable impact the LED brightness visible on the device.
 	 */
-	unsigned char Brightness = 0x00;
+	std::uint8_t Brightness = 0x00;
 };

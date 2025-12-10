@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <vector>
+#include <memory>
 #include "Core/Types/Structs/Context/DeviceContext.h"
 
 #define PLATFORM_SONY (PLATFORM_PS4 || PLATFORM_PS5)
@@ -21,7 +23,7 @@
  * or invalidation. Additionally, it provides a mechanism for accessing a
  * singleton instance for the platform-specific implementation of the interface.
  */
-class WINDOWSDUALSENSE_DS5W_API IPlatformHardwareInfo
+class IPlatformHardwareInfo
 {
 	/**
 	 * Provides access to the singleton instance of the IPlatformHardwareInfo.
@@ -84,7 +86,7 @@ public:
 	 * @param Devices A reference to an array that will be populated with detected device
 	 *                contexts. Each entry represents a connected hardware device and its details.
 	 */
-	virtual void Detect(TArray<FDeviceContext>& Devices) = 0;
+	virtual void Detect(std::vector<FDeviceContext>& Devices) = 0;
 	/**
 	 * Initializes and creates a handle for the specified device context.
 	 *
@@ -144,5 +146,5 @@ protected:
 	 * @note The actual instance is platform-dependent and will be created as required during runtime.
 	 */
 private:
-	static TUniquePtr<IPlatformHardwareInfo> PlatformInfoInstance;
+	static std::unique_ptr<IPlatformHardwareInfo> PlatformInfoInstance;
 };

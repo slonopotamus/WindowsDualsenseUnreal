@@ -3,7 +3,7 @@
 // Planned Release Year: 2025
 
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
-
+#include <memory>
 #if PLATFORM_WINDOWS
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
 #elif PLATFORM_MAC || PLATFORM_LINUX
@@ -12,7 +12,7 @@
 #include "Implementations/Platforms/Sony/FNullHardwareInterface.h"
 #endif
 
-TUniquePtr<IPlatformHardwareInfo> IPlatformHardwareInfo::PlatformInfoInstance = nullptr;
+std::unique_ptr<IPlatformHardwareInfo> IPlatformHardwareInfo::PlatformInfoInstance = nullptr;
 
 /**
  * Retrieves a reference to the platform-specific hardware information interface instance.
@@ -40,9 +40,9 @@ IPlatformHardwareInfo& IPlatformHardwareInfo::Get()
 		// - PLATFORM_SONY: Reserved for future PlayStation implementation
 		//
 #if PLATFORM_WINDOWS
-		PlatformInfoInstance = MakeUnique<FWindowsDeviceInfo>();
+		PlatformInfoInstance = std::make_unique<FWindowsDeviceInfo>();
 #elif PLATFORM_MAC || PLATFORM_LINUX
-		PlatformInfoInstance = MakeUnique<FCommonsDeviceInfo>();
+		PlatformInfoInstance = std::make_unique<FCommonsDeviceInfo>();
 #elif PLATFORM_SONY
 		// Note: PLATFORM_SONY implementation is reserved for licensed PlayStation developers only
 		// Example:

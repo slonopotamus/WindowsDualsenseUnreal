@@ -233,7 +233,7 @@ public:
 	 * @param Led The LED pattern to be displayed on the device, represented by the ELedPlayerEnum enumeration.
 	 * @param Brightness The brightness intensity for the LED, represented by the ELedBrightnessEnum enumeration.
 	 */
-	virtual void SetPlayerLed(EDSPlayer Led, DSCoreTypes::uint8 Brightness) override;
+	virtual void SetPlayerLed(EDSPlayer Led, std::uint8_t Brightness) override;
 	/**
 	 * Sets the microphone LED effects on the DualSense controller.
 	 *

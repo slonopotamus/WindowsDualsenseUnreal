@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include "Core/Types/DSCoreTypes.h"
 #include "Core/Types/ECoreGamepadTypes.h"
 
 /**
@@ -56,15 +57,15 @@ struct FInputContext
 	float AnalogDeadZone = 0.09f;
 
 	// Analogs
-	FVector2D LeftAnalog = FVector2D::ZeroVector;
-	FVector2D RightAnalog = FVector2D::ZeroVector;
+	DSVector2D LeftAnalog = {0, 0};
+	DSVector2D RightAnalog = {0, 0};
 	float LeftTriggerAnalog = 0.0f;
 	float RightTriggerAnalog = 0.0f;
 
-	FVector Gyroscope = FVector::ZeroVector;
-	FVector Accelerometer = FVector::ZeroVector;
-	FVector Gravity = FVector::ZeroVector;
-	FVector Tilt = FVector::ZeroVector;
+	DSVector3D Gyroscope = {0,0,0};
+	DSVector3D Accelerometer = {0,0,0};
+	DSVector3D Gravity = {0,0,0};
+	DSVector3D Tilt = {0,0,0};
 
 	// touch
 	int32 TouchId = 0;
@@ -76,22 +77,23 @@ struct FInputContext
 	bool bIsTouching = false;
 	bool bWasTouchDown = false;
 
-	uint8 DirectionRaw = 0.0f;
 	float DirectionAngle = 0.0f;
+	uint8 DirectionRaw = 0.0f;
+	
 
-	FVector2D P1_Current = FVector2D::ZeroVector;
-	FVector2D P1_Last = FVector2D::ZeroVector;
+	DSVector2D P1_Current = {0, 0};
+	DSVector2D P1_Last = {0, 0};
 
-	FVector2D P2_Current = FVector2D::ZeroVector;
-	FVector2D P2_Last = FVector2D::ZeroVector;
+	DSVector2D P2_Current = {0, 0};
+	DSVector2D P2_Last = {0, 0};
 
 	float ZoomDelta = 0.0f;
-	FVector2D SwipeVector = FVector2D::ZeroVector;
-	FVector2D ScrollVelocity = FVector2D::ZeroVector;
+	DSVector2D SwipeVector = {0, 0};
+	DSVector2D ScrollVelocity = {0, 0};
 
-	FVector2d TouchRadius = FVector2D::ZeroVector;
-	FVector2d TouchPosition = FVector2D::ZeroVector;
-	FVector2d TouchRelative = FVector2D::ZeroVector;
+	DSVector2D TouchRadius = {0, 0};
+	DSVector2D TouchPosition = {0, 0};
+	DSVector2D TouchRelative = {0, 0};
 	EDSTouchInteraction TouchInteraction = EDSTouchInteraction::None;
 
 	// Buttons

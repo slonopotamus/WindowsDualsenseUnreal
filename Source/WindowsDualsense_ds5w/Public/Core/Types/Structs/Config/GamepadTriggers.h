@@ -3,7 +3,6 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include "CoreMinimal.h"
 
 /**
  * Represents a collection of strength-related configurations and parameters for haptic feedback.
@@ -12,5 +11,5 @@
  */
 struct FGamepadTriggers
 {
-	unsigned char Compose[10] = {0};
+	std::uint8_t Compose[10] = {0};
 };

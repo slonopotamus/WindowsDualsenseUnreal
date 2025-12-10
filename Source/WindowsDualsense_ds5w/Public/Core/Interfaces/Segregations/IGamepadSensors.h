@@ -3,6 +3,8 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include "Core/Types/DSCoreTypes.h"
+using namespace DSCoreTypes;
 
 class IGamepadSensors
 {

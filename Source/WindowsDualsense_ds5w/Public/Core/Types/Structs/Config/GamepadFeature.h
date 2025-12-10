@@ -3,8 +3,9 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include "CoreMinimal.h"
+#include "Core/Types/DSCoreTypes.h"
 
+using namespace DSCoreTypes;
 /**
  * Structure representing the configuration of features for a device.
  * This struct contains various settings related to vibration, rumble, and trigger behavior.
@@ -17,7 +18,7 @@ struct FGamepadFeature
 	 * FeatureMode is used to configure a specific feature mode within the device.
 	 * It is stored as an 8-bit unsigned integer, and its default value is 0xF7.
 	 */
-	uint8 FeatureMode = 0xF7;
+	std::uint8_t FeatureMode = 0xF7;
 	/**
 	 * @brief Represents the mode or pattern of vibration for a device.
 	 *
@@ -38,7 +39,7 @@ struct FGamepadFeature
 	 * the target hardware and does not cause unintended behavior or excessive
 	 * power consumption.
 	 */
-	uint8 VibrationMode = 0xFF;
+	std::uint8_t VibrationMode = 0xFF;
 	/**
 	 * @brief Adjusts and reduces the intensity of a soft rumble effect.
 	 *
@@ -56,7 +57,7 @@ struct FGamepadFeature
 	 * This variable can be part of configurations to promote user
 	 * comfort, power consumption management, or sensitivity adjustments.
 	 */
-	uint8 SoftRumbleReduce = 0x00;
+	std::uint8_t SoftRumbleReduce = 0x00;
 	/**
 	 * Represents the softness level for the trigger component of a game controller.
 	 *
@@ -70,5 +71,5 @@ struct FGamepadFeature
 	 *   of the controller's trigger mechanism.
 	 * - Often combined with other features such as vibration or rumble effects.
 	 */
-	uint8 TriggerSoftnessLevel = 0x00;
+	std::uint8_t TriggerSoftnessLevel = 0x00;
 };

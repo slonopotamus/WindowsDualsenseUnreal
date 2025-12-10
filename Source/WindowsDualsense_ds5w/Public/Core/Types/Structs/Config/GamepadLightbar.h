@@ -3,7 +3,6 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include "CoreMinimal.h"
 
 /**
  * @class FGamepadLightbar
@@ -36,7 +35,7 @@ struct FGamepadLightbar
 	 * Proper initialization and handling of R are crucial for maintaining program stability
 	 * and preventing potential runtime errors.
 	 */
-	unsigned char R = 0x0;
+	std::uint8_t R = 0x0;
 	/**
 	 * @brief Reverses a given string in place.
 	 *
@@ -45,7 +44,7 @@ struct FGamepadLightbar
 	 *
 	 * @param str The string to be reversed. Passed by reference.
 	 */
-	unsigned char G = 0x0;
+	std::uint8_t G = 0x0;
 	/**
 	 * @brief Represents a variable used for storing data or intermediate values within a program.
 	 *
@@ -54,7 +53,7 @@ struct FGamepadLightbar
 	 *
 	 * @note Ensure the type and purpose of B are clearly defined in the surrounding codebase to avoid misuse.
 	 */
-	unsigned char B = 0x0;
+	std::uint8_t B = 0x0;
 	/**
 	 * @brief Represents a variable used within the program.
 	 *
@@ -62,5 +61,5 @@ struct FGamepadLightbar
 	 * context and usage within the codebase. It can be assigned a value
 	 * or modified during execution based on program requirements.
 	 */
-	unsigned char A = 0x0;
+	std::uint8_t A = 0x0;
 };

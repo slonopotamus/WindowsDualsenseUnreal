@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "Core/Types/DSCoreTypes.h"
+using namespace DSCoreTypes;
+
 class IGamepadTouch
 {
 public:

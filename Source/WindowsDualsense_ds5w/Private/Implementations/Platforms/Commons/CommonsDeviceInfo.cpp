@@ -4,16 +4,19 @@
 
 #include "Implementations/Platforms/Commons/CommonsDeviceInfo.h"
 
-#if PLATFORM_LINUX
+#ifdef __unix__
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Implementations/Utils/GamepadCalibrationSensors.h"
 #include "SDL_hidapi.h"
+#include <string>
+#include <cstring>
+#include <unordered_set>
 
-static const uint16 SONY_VENDOR_ID = 0x054C;
-static const uint16 DUALSHOCK4_PID_V1 = 0x05C4;
-static const uint16 DUALSHOCK4_PID_V2 = 0x09CC;
-static const uint16 DUALSENSE_PID = 0x0CE6;
-static const uint16 DUALSENSE_EDGE_PID = 0x0DF2;
+static const std::uint16_t SONY_VENDOR_ID = 0x054C;
+static const std::uint16_t DUALSHOCK4_PID_V1 = 0x05C4;
+static const std::uint16_t DUALSHOCK4_PID_V2 = 0x09CC;
+static const std::uint16_t DUALSENSE_PID = 0x0CE6;
+static const std::uint16_t DUALSENSE_EDGE_PID = 0x0DF2;
 
 void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 {
@@ -21,32 +24,31 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 	{
 		return;
 	}
-
-	int BytesRead = 0;
-	if (Context->ConnectionType == EDeviceConnection::Bluetooth && Context->DeviceType == EDeviceType::DualShock4)
+	SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Context->Handle);
+	if (!DeviceHandle)
+	{
+		return;
+	}
+	
+	if (Context->ConnectionType == EDSDeviceConnection::Bluetooth && Context->DeviceType == EDSDeviceType::DualShock4)
 	{
 		const size_t InputReportLength = 547;
-		BytesRead = SDL_hid_read(Context->Handle, Context->BufferDS4, InputReportLength);
-		if (BytesRead < 0)
+		if (SDL_hid_read(DeviceHandle, Context->BufferDS4, InputReportLength) < 0)
 		{
-			UE_LOG(LogDualSense, Warning, TEXT("hid_api: Failed to read from device (likely disconnected)"));
 			InvalidateHandle(Context);
 		}
 		return;
 	}
 
-	const size_t InputReportLength = (Context->ConnectionType == EDeviceConnection::Bluetooth) ? 78 : 64;
+	const size_t InputReportLength = (Context->ConnectionType == EDSDeviceConnection::Bluetooth) ? 78 : 64;
 	if (sizeof(Context->Buffer) < InputReportLength)
 	{
-		UE_LOG(LogDualSense, Warning, TEXT("hid_api: Main buffer is too small for report input."));
 		InvalidateHandle(Context);
 		return;
 	}
 
-	BytesRead = SDL_hid_read(Context->Handle, Context->Buffer, InputReportLength);
-	if (BytesRead < 0)
+	if (SDL_hid_read(DeviceHandle, Context->Buffer, InputReportLength) < 0)
 	{
-		UE_LOG(LogDualSense, Warning, TEXT("hid_api: Failed to read from device (likely disconnected)"));
 		InvalidateHandle(Context);
 	}
 }
@@ -57,29 +59,30 @@ void FCommonsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 	{
 		return;
 	}
+	
+	SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Context->Handle);
 
 	constexpr size_t Report = 142;
-	int BytesWritten = SDL_hid_write(Context->Handle, Context->BufferAudio, Report);
+	int BytesWritten = SDL_hid_write(DeviceHandle, Context->BufferAudio, Report);
 	if (BytesWritten < 0)
 	{
-		UE_LOG(LogDualSense, Warning, TEXT("hid_api: Failed to write audio device"));
 	}
 }
 
 bool FCommonsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 {
-	using namespace GamepadCalibrationSensors;
-
-	unsigned char FeatureBuffer[41];
-	FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
+	SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Context->Handle);
+	
+	unsigned char FeatureBuffer[41] = {0};
+	std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
 
 	FeatureBuffer[0] = 0x05;
-	if (!SDL_hid_get_feature_report(Context->Handle, FeatureBuffer, 41))
+	if (!SDL_hid_get_feature_report(DeviceHandle, FeatureBuffer, 41))
 	{
-		UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error"));
 		return false;
 	}
 
+	using namespace FGamepadCalibrationSensors;
 	FGamepadCalibration Calibration;
 	DualSenseCalibrationSensors(FeatureBuffer, Calibration);
 
@@ -93,23 +96,24 @@ void FCommonsDeviceInfo::Write(FDeviceContext* Context)
 	{
 		return;
 	}
+	
+	SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Context->Handle);
 
-	const size_t InReportLength = (Context->DeviceType == EDeviceType::DualShock4) ? 32 : 74;
-	const size_t OutputReportLength = (Context->ConnectionType == EDeviceConnection::Bluetooth) ? 78 : InReportLength;
+	const size_t InReportLength = (Context->DeviceType == EDSDeviceType::DualShock4) ? 32 : 74;
+	const size_t OutputReportLength = (Context->ConnectionType == EDSDeviceConnection::Bluetooth) ? 78 : InReportLength;
 
-	int BytesWritten = SDL_hid_write(Context->Handle, Context->BufferOutput, OutputReportLength);
+	int BytesWritten = SDL_hid_write(DeviceHandle, Context->BufferOutput, OutputReportLength);
 	if (BytesWritten < 0)
 	{
-		UE_LOG(LogDualSense, Warning, TEXT("hid_api: Failed to write to device"));
 		InvalidateHandle(Context);
 	}
 }
 
-void FCommonsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
+void FCommonsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 {
-	Devices.Empty();
+	Devices.clear();
 
-	const TSet<uint16> SupportedPIDs = {
+	const std::unordered_set<uint16_t> SupportedPIDs = {
 	    DUALSHOCK4_PID_V1,
 	    DUALSHOCK4_PID_V2,
 	    DUALSENSE_PID,
@@ -123,38 +127,37 @@ void FCommonsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 
 	for (SDL_hid_device_info* CurrentDevice = Devs; CurrentDevice != nullptr; CurrentDevice = CurrentDevice->next)
 	{
-		if (SupportedPIDs.Contains(CurrentDevice->product_id))
+		if (SupportedPIDs.contains(CurrentDevice->product_id))
 		{
 			FDeviceContext NewDeviceContext;
-			FString PathStr = UTF8_TO_TCHAR(CurrentDevice->path);
-			NewDeviceContext.Path = PathStr;
+			NewDeviceContext.Path = std::string(CurrentDevice->path);
 
 			switch (CurrentDevice->product_id)
 			{
 				case DUALSHOCK4_PID_V1:
 				case DUALSHOCK4_PID_V2:
-					NewDeviceContext.DeviceType = EDeviceType::DualShock4;
+					NewDeviceContext.DeviceType = EDSDeviceType::DualShock4;
 					break;
 				case DUALSENSE_EDGE_PID:
-					NewDeviceContext.DeviceType = EDeviceType::DualSenseEdge;
+					NewDeviceContext.DeviceType = EDSDeviceType::DualSenseEdge;
 					break;
 				case DUALSENSE_PID:
 				default:
-					NewDeviceContext.DeviceType = EDeviceType::DualSense;
+					NewDeviceContext.DeviceType = EDSDeviceType::DualSense;
 					break;
 			}
 
 			NewDeviceContext.IsConnected = true;
 			if (CurrentDevice->interface_number == -1)
 			{
-				NewDeviceContext.ConnectionType = EDeviceConnection::Bluetooth;
+				NewDeviceContext.ConnectionType = EDSDeviceConnection::Bluetooth;
 			}
 			else
 			{
-				NewDeviceContext.ConnectionType = EDeviceConnection::Usb;
+				NewDeviceContext.ConnectionType = EDSDeviceConnection::Usb;
 			}
 			NewDeviceContext.Handle = nullptr;
-			Devices.Add(NewDeviceContext);
+			Devices.push_back(NewDeviceContext);
 		}
 	}
 	SDL_hid_free_enumeration(Devs);
@@ -162,19 +165,20 @@ void FCommonsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 
 bool FCommonsDeviceInfo::CreateHandle(FDeviceContext* Context)
 {
-	if (!Context || Context->Path.IsEmpty())
+	if (!Context)
 	{
 		return false;
 	}
 
-	const FTCHARToUTF8 PathConverter(*Context->Path);
-	const FPlatformDeviceHandle Handle = SDL_hid_open_path(PathConverter.Get(), true);
+	const char* Path = Context->Path.data();
+	const FPlatformDeviceHandle Handle = SDL_hid_open_path(Path, true);
 	if (Handle == INVALID_PLATFORM_HANDLE)
 	{
 		return false;
 	}
 
-	SDL_hid_set_nonblocking(Handle, 1);
+	SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Handle);
+	SDL_hid_set_nonblocking(DeviceHandle, 1);
 	Context->Handle = Handle;
 
 	ConfigureFeatures(Context);
@@ -183,17 +187,22 @@ bool FCommonsDeviceInfo::CreateHandle(FDeviceContext* Context)
 
 void FCommonsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 {
-	if (Context && Context->Handle)
+	if (Context)
 	{
-		SDL_hid_close(Context->Handle);
+		SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Context->Handle);
+		if (DeviceHandle != nullptr)
+		{
+			SDL_hid_close(DeviceHandle);
+		}
+		
 		Context->Handle = INVALID_PLATFORM_HANDLE;
 		Context->IsConnected = false;
 
-		Context->Path = nullptr;
-		memset(Context->Buffer, 0, sizeof(Context->Buffer));
-		memset(Context->BufferDS4, 0, sizeof(Context->BufferDS4));
-		memset(Context->BufferOutput, 0, sizeof(Context->BufferOutput));
-		memset(Context->BufferAudio, 0, sizeof(Context->BufferAudio));
+		Context->Path.clear();
+		std::memset(Context->Buffer, 0, sizeof(Context->Buffer));
+		std::memset(Context->BufferDS4, 0, sizeof(Context->BufferDS4));
+		std::memset(Context->BufferOutput, 0, sizeof(Context->BufferOutput));
+		std::memset(Context->BufferAudio, 0, sizeof(Context->BufferAudio));
 	}
 }
 #endif

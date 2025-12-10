@@ -4,29 +4,16 @@
 
 #pragma once
 #include "Core/Types/Structs/Config/GamepadCalibration.h"
+#include "Core/Types/ECoreGamepadTypes.h"
 #include "InputContext.h"
+#include "OutputContext.h"
 #include <mutex>
+#include <string>
+#include <unordered_map>
+#include <cstring>
 
-#if PLATFORM_WINDOWS
-
-#include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/HideWindowsPlatformTypes.h"
-#include <Windows.h>
-using FPlatformDeviceHandle = HANDLE;
-#define INVALID_PLATFORM_HANDLE INVALID_HANDLE_VALUE
-
-#elif PLATFORM_MAC || PLATFORM_LINUX
-#include "SDL_hidapi.h"
-using FPlatformDeviceHandle = SDL_hid_device*;
-#define INVALID_PLATFORM_HANDLE nullptr
-#else
 using FPlatformDeviceHandle = void*;
 #define INVALID_PLATFORM_HANDLE nullptr
-#endif
-
-#include "Core/Types/DSCoreTypes.h"
-#include "Core/Types/ECoreGamepadTypes.h"
-#include "OutputContext.h"
 
 /**
  * @brief Represents the context and state of a connected device.
@@ -55,7 +42,7 @@ struct FDeviceContext
 	 * disconnected handles can result in undefined behavior.
 	 * For instance, it may hold `INVALID_HANDLE_VALUE` when invalid or disconnected.
 	 */
-	FPlatformDeviceHandle Handle = INVALID_PLATFORM_HANDLE;
+	FPlatformDeviceHandle Handle;
 	/**
 	 * @brief Represents a file or resource path in the context of device management.
 	 *
@@ -65,7 +52,7 @@ struct FDeviceContext
 	 * It plays a critical role in ensuring proper file system referencing and resource
 	 * allocation within the management system.
 	 */
-	FString Path;
+	std::string Path;
 	/**
 	 * @brief Internal data buffer for device communication.
 	 *
@@ -189,7 +176,7 @@ struct FDeviceContext
 	/**
 	 * A map representing the states of various buttons on a controller.
 	 *
-	 * Each key in the map is a button name (FName), and its associated value is a boolean
+	 * Each key in the map is a button name (std::string), and its associated value is a boolean
 	 * indicating whether the button is currently pressed (`true`) or not pressed (`false`).
 	 *
 	 * This variable is primarily used for tracking button input states and ensuring
@@ -200,7 +187,7 @@ struct FDeviceContext
 	 * like CheckButtonInput, which ensures real-time synchronization of input states.
 	 * It is reset during library shutdown to clear all stored button states.
 	 */
-	TMap<const FName, bool> ButtonStates;
+	std::unordered_map<std::string, bool> ButtonStates;
 	/**
 	 * @typedef AnalogStates
 	 * @brief Represents a mapping of analog input states in the DualSense library.
@@ -211,10 +198,10 @@ struct FDeviceContext
 	 * This map is used to handle and store the state of analog inputs, such as triggers or sticks,
 	 * providing a mechanism to track their values for input handling or processing purposes in an application.
 	 *
-	 * @details The keys in this map (FName) are designed to uniquely identify different analog input sources,
+	 * @details The keys in this map (std::string) are designed to uniquely identify different analog input sources,
 	 * while the associated float values represent their corresponding state, usually on a normalized scale.
 	 */
-	TMap<const FName, float> AnalogStates;
+	std::unordered_map<std::string, float> AnalogStates;
 
 protected:
 	/**
@@ -263,10 +250,10 @@ public:
 			Handle = Other.Handle;
 			Path = Other.Path;
 
-			FMemory::Memcpy(Buffer, Other.Buffer, sizeof(Buffer));
-			FMemory::Memcpy(BufferDS4, Other.BufferDS4, sizeof(BufferDS4));
-			FMemory::Memcpy(BufferAudio, Other.BufferAudio, sizeof(BufferAudio));
-			FMemory::Memcpy(BufferOutput, Other.BufferOutput, sizeof(BufferOutput));
+			std::memcpy(Buffer, Other.Buffer, sizeof(Buffer));
+			std::memcpy(BufferDS4, Other.BufferDS4, sizeof(BufferDS4));
+			std::memcpy(BufferAudio, Other.BufferAudio, sizeof(BufferAudio));
+			std::memcpy(BufferOutput, Other.BufferOutput, sizeof(BufferOutput));
 
 			Calibration = Other.Calibration;
 			IsConnected = Other.IsConnected;
@@ -274,8 +261,8 @@ public:
 			ConnectionType = Other.ConnectionType;
 
 			bOverrideTriggerBytes = Other.bOverrideTriggerBytes;
-			FMemory::Memcpy(OverrideTriggerRight, Other.OverrideTriggerRight, sizeof(OverrideTriggerRight));
-			FMemory::Memcpy(OverrideTriggerLeft, Other.OverrideTriggerLeft, sizeof(OverrideTriggerLeft));
+			std::memcpy(OverrideTriggerRight, Other.OverrideTriggerRight, sizeof(OverrideTriggerRight));
+			std::memcpy(OverrideTriggerLeft, Other.OverrideTriggerLeft, sizeof(OverrideTriggerLeft));
 
 			ButtonStates = Other.ButtonStates;
 			AnalogStates = Other.AnalogStates;

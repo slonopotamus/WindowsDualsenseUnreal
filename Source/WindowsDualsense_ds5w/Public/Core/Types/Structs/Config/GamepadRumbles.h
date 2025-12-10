@@ -3,7 +3,6 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include "CoreMinimal.h"
 
 /**
  * @class FGamepadRumbles
@@ -31,7 +30,7 @@ struct FGamepadRumbles
 	 * @note Ensure that the context or system in which `Left` is applied
 	 * defines its behavior and associated interactions clearly.
 	 */
-	unsigned char Left = 0x0;
+	std::uint8_t Left = 0x0;
 	/**
 	 * @brief Represents the right direction or orientation in a spatial or logical context.
 	 *
@@ -39,5 +38,5 @@ struct FGamepadRumbles
 	 * It can be applied in various domains such as geometry, navigation, or logical conditions
 	 * where operations or processes involve orientation, movement, or side specification.
 	 */
-	unsigned char Right = 0x0;
+	std::uint8_t Right = 0x0;
 };

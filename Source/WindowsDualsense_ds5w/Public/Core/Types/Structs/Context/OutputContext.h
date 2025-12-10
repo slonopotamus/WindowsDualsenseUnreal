@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Core/Types/DSCoreTypes.h"
 #include "Core/Types/Structs/Config/GamepadAudio.h"
 #include "Core/Types/Structs/Config/GamepadFeature.h"
 #include "Core/Types/Structs/Config/GamepadLightbar.h"
@@ -11,6 +12,8 @@
 #include "Core/Types/Structs/Config/GamepadPlayerLed.h"
 #include "Core/Types/Structs/Config/GamepadRumbles.h"
 #include "Core/Types/Structs/Config/GamepadTriggersHaptic.h"
+
+using namespace DSCoreTypes;
 
 /**
  * @class FOutputContext

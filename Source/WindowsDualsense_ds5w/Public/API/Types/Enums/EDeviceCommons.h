@@ -21,9 +21,9 @@
 UENUM(BlueprintType)
 enum class ELedMicEnum : uint8
 {
-	MicOn = 0x0,
-	MicOff = 0x1,
-	Pulse = 0x2
+	MicOn = 0,
+	MicOff = 1,
+	Pulse = 2
 };
 
 /**
