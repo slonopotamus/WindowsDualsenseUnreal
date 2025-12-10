@@ -158,4 +158,15 @@ namespace SonyGamepadProxyHelpers
 		return FInputDeviceId::CreateFromInternalId(INDEX_NONE);
 	}
 
+	inline std::vector<std::uint8_t> ConvertVector(const TArray<FString>& UnrealArray)
+	{
+		std::vector<uint8_t> CoreBytes;
+		CoreBytes.reserve(UnrealArray.Num());
+		for (const FString& HexStr : UnrealArray)
+		{
+			CoreBytes.push_back(static_cast<uint8_t>(FParse::HexNumber(*HexStr)));
+		}
+		return CoreBytes;
+	}
+
 } // namespace SonyGamepadProxyHelpers

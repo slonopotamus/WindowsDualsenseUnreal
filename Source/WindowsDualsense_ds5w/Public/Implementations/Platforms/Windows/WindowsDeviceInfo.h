@@ -4,7 +4,7 @@
 
 #pragma once
 
-#if PLATFORM_WINDOWS
+#ifdef _WIN32
 #define NOMINMAX
 
 #include "Windows/AllowWindowsPlatformTypes.h"
@@ -13,6 +13,7 @@
 #endif
 
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
+#include "Core/Types/DSCoreTypes.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
 
 /**
@@ -86,7 +87,7 @@ public:
 	 * @param Devices A reference to an array of FDeviceContext objects that will be updated to include
 	 *        the detected and initialized HID device contexts. Existing data in the array will be overwritten.
 	 */
-	virtual void Detect(TArray<FDeviceContext>& Devices) override;
+	virtual void Detect(std::vector<FDeviceContext>& Devices) override;
 	/**
 	 * @brief Creates a handle for the specified device context.
 	 *
@@ -127,7 +128,7 @@ public:
 	 *                     On successful execution, this will be set to ERROR_SUCCESS.
 	 * @return True if the ping operation succeeds; otherwise, false.
 	 */
-	static bool PingOnce(HANDLE Handle, int32* OutLastError = nullptr);
+	static bool PingOnce(HANDLE Handle, std::int32_t* OutLastError = nullptr);
 	/**
 	 * @brief Polls and processes a single tick for a HID device, performing ping and read operations.
 	 *
@@ -140,7 +141,7 @@ public:
 	 * @param OutBytesRead A reference to a variable where the number of bytes successfully read will be stored.
 	 * @return An enumeration value of type EPollResult indicating the result of the polling operation.
 	 */
-	static EPollResult PollTick(HANDLE Handle, unsigned char* Buffer, int32 Length, DWORD& OutBytesRead);
+	static EPollResult PollTick(HANDLE Handle, unsigned char* Buffer, std::int32_t Length, DWORD& OutBytesRead);
 	/**
 	 * @brief Determines whether the given error code should be treated as a device disconnection.
 	 *
@@ -150,7 +151,7 @@ public:
 	 * @param Error The error code to evaluate.
 	 * @return true if the error code indicates a device disconnection, false otherwise.
 	 */
-	static bool ShouldTreatAsDisconnected(const int32 Error)
+	static bool ShouldTreatAsDisconnected(const std::int32_t Error)
 	{
 		switch (Error)
 		{

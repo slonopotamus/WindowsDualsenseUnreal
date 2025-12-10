@@ -3,14 +3,14 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include "Core/Types/Structs/Config/GamepadCalibration.h"
 #include "Core/Types/ECoreGamepadTypes.h"
+#include "Core/Types/Structs/Config/GamepadCalibration.h"
 #include "InputContext.h"
 #include "OutputContext.h"
+#include <cstring>
 #include <mutex>
 #include <string>
 #include <unordered_map>
-#include <cstring>
 
 using FPlatformDeviceHandle = void*;
 #define INVALID_PLATFORM_HANDLE nullptr

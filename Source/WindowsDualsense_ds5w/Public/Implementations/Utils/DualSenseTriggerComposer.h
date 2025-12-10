@@ -4,8 +4,8 @@
 
 #pragma once
 #include "API/SonyGamepadProxyHelpers.h"
+#include "Core/Types/DSCoreTypes.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
-#include "Helpers/ValidateHelpers.h"
 
 namespace FDualSenseTriggerComposer
 {
@@ -36,7 +36,7 @@ namespace FDualSenseTriggerComposer
 	 * @param Strength The level of resistance to be applied within the defined zone.
 	 * @param Hand An enumeration specifying which hand's trigger functionality to configure (Left, Right, or AnyHand).
 	 */
-	inline void Resistance(FDeviceContext* Context, uint8 StartZones, uint8 Strength, const EDSGamepadHand& Hand)
+	inline void Resistance(FDeviceContext* Context, std::uint8_t StartZones, std::uint8_t Strength, const EDSGamepadHand& Hand)
 	{
 		if (Hand == EDSGamepadHand::Left || Hand == EDSGamepadHand::AnyHand)
 		{
@@ -77,7 +77,7 @@ namespace FDualSenseTriggerComposer
 		}
 	}
 
-	inline void Bow22(FDeviceContext* Context, uint8 StartZone, uint8 SnapBack, const EDSGamepadHand& Hand)
+	inline void Bow22(FDeviceContext* Context, std::uint8_t StartZone, std::uint8_t SnapBack, const EDSGamepadHand& Hand)
 	{
 		if (Hand == EDSGamepadHand::Left || Hand == EDSGamepadHand::AnyHand)
 		{
@@ -96,11 +96,11 @@ namespace FDualSenseTriggerComposer
 		}
 	}
 
-	inline void Galloping23(FDeviceContext* Context, uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot,
-	                        uint8 Frequency, const EDSGamepadHand& Hand)
+	inline void Galloping23(FDeviceContext* Context, std::uint8_t StartPosition, std::uint8_t EndPosition, std::uint8_t FirstFoot, std::uint8_t SecondFoot,
+	                        std::uint8_t Frequency, const EDSGamepadHand& Hand)
 	{
-		const uint8 FirstFootNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((FirstFoot / 8.0f) * 15.0f), 1, 15));
-		const uint8 SecondFootNib = static_cast<uint8>(FMath::Clamp(FMath::RoundToInt((SecondFoot / 8.0f) * 15.0f), 1, 15));
+		const std::uint8_t FirstFootNib = static_cast<std::uint8_t>(FMath::Clamp(FMath::RoundToInt((FirstFoot / 8.0f) * 15.0f), 1, 15));
+		const std::uint8_t SecondFootNib = static_cast<std::uint8_t>(FMath::Clamp(FMath::RoundToInt((SecondFoot / 8.0f) * 15.0f), 1, 15));
 		const uint16 PositionMask = (1 << StartPosition) | (1 << EndPosition);
 		if (Hand == EDSGamepadHand::Left || Hand == EDSGamepadHand::AnyHand)
 		{
@@ -121,7 +121,7 @@ namespace FDualSenseTriggerComposer
 		}
 	}
 
-	inline void Weapon25(FDeviceContext* Context, uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EDSGamepadHand& Hand)
+	inline void Weapon25(FDeviceContext* Context, std::uint8_t StartZone, std::uint8_t Amplitude, std::uint8_t Behavior, std::uint8_t Trigger, const EDSGamepadHand& Hand)
 	{
 		if (Hand == EDSGamepadHand::Left || Hand == EDSGamepadHand::AnyHand)
 		{
@@ -140,7 +140,7 @@ namespace FDualSenseTriggerComposer
 		}
 	}
 
-	inline void MachineGun26(FDeviceContext* Context, uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EDSGamepadHand& Hand)
+	inline void MachineGun26(FDeviceContext* Context, std::uint8_t StartZone, std::uint8_t Behavior, std::uint8_t Amplitude, std::uint8_t Frequency, const EDSGamepadHand& Hand)
 	{
 		if (Hand == EDSGamepadHand::Left || Hand == EDSGamepadHand::AnyHand)
 		{
@@ -167,7 +167,7 @@ namespace FDualSenseTriggerComposer
 		}
 	}
 
-	inline void Machine27(FDeviceContext* Context, uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EDSGamepadHand& Hand)
+	inline void Machine27(FDeviceContext* Context, std::uint8_t StartZone, std::uint8_t BehaviorFlag, std::uint8_t Force, std::uint8_t Amplitude, std::uint8_t Period, std::uint8_t Frequency, const EDSGamepadHand& Hand)
 	{
 		if (Hand == EDSGamepadHand::Left || Hand == EDSGamepadHand::AnyHand)
 		{
@@ -191,21 +191,9 @@ namespace FDualSenseTriggerComposer
 		}
 	}
 
-	inline void CustomTrigger(FDeviceContext* Context, const EDSGamepadHand& Hand, const TArray<FString>& HexBytes)
+	inline void CustomTrigger(FDeviceContext* Context, const EDSGamepadHand& Hand, const std::vector<std::uint8_t>& HexBytes)
 	{
-		uint8 Bytes[10] = {0};
-		for (int32 i = 0; i < 10; ++i)
-		{
-			uint8 B = 0;
-			if (!FValidateHelpers::ParseHexByte_Local(HexBytes[i], B))
-			{
-				UE_LOG(LogDualSense, Warning, TEXT("CustomTrigger: invalid hex token at index %d: '%s'"), i, *HexBytes[i]);
-				return;
-			}
-			Bytes[i] = B;
-		}
-
-		switch (Bytes[0])
+		switch (HexBytes[0])
 		{
 			case 0x01:
 			case 0x02:
@@ -221,13 +209,13 @@ namespace FDualSenseTriggerComposer
 		if (Hand == EDSGamepadHand::Left || Hand == EDSGamepadHand::AnyHand)
 		{
 			Context->Output.LeftTrigger.Mode = 0xFF;
-			FMemory::Memcpy(Context->Output.LeftTrigger.Strengths.Compose, Bytes, 10);
+			FMemory::Memcpy(Context->Output.LeftTrigger.Strengths.Compose, HexBytes.data(), 10);
 		}
 
 		if (Hand == EDSGamepadHand::Right || Hand == EDSGamepadHand::AnyHand)
 		{
 			Context->Output.RightTrigger.Mode = 0xFF;
-			FMemory::Memcpy(Context->Output.RightTrigger.Strengths.Compose, Bytes, 10);
+			FMemory::Memcpy(Context->Output.RightTrigger.Strengths.Compose, HexBytes.data(), 10);
 		}
 	}
 

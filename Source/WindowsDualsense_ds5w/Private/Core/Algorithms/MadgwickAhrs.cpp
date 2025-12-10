@@ -72,68 +72,57 @@ void FMadgwickAhrs::GetQuaternion(float& Nq0, float& Nq1, float& Nq2, float& Nq3
 
 void FMadgwickAhrs::Reset()
 {
-	q0 = 1.0f; q1 = 0.0f; q2 = 0.0f; q3 = 0.0f;
+	q0 = 1.0f;
+	q1 = 0.0f;
+	q2 = 0.0f;
+	q3 = 0.0f;
 }
 
 void FMadgwickAhrs::Reset(float ax, float ay, float az)
 {
 	float norm = std::sqrt(ax * ax + ay * ay + az * az);
-    
-	// 1. Segurança contra vetor zero (controle caindo ou erro de leitura)
-	if (norm < 1e-8f) 
+
+	if (norm < 1e-8f)
 	{
-		Reset(); // Fallback para reset padrão (Identity)
+		Reset();
 		return;
 	}
-    
-	// 2. Normaliza para garantir direção unitária
+
 	ax /= norm;
 	ay /= norm;
 	az /= norm;
 
-	// 3. Verifica casos extremos para evitar divisão por zero na matemática abaixo
-    
-	// Caso A: Já está plano (Alinhado com 0,0,1)
-	if (az > 0.999f) 
+	if (az > 0.999f)
 	{
-		Reset(); // Rotação Zero (Identity)
+		Reset();
 		return;
 	}
-    
-	// Caso B: Está totalmente de ponta cabeça (Alinhado com 0,0,-1)
-	// O algoritmo do arco mais curto falha em 180 graus exatos (singularidade),
-	// então forçamos uma rotação de 180 no eixo X.
-	if (az < -0.999f) 
+
+	if (az < -0.999f)
 	{
-		this->q0 = 0.0f; 
-		this->q1 = 1.0f; // Eixo X
-		this->q2 = 0.0f; 
+		this->q0 = 0.0f;
+		this->q1 = 1.0f; // X
+		this->q2 = 0.0f;
 		this->q3 = 0.0f;
 		return;
 	}
 
-	// 4. Cálculo do Quatérnio de Alinhamento (Shortest Arc)
-	// Alinha o vetor UP do mundo (0,0,1) com a Gravidade medida (ax, ay, az)
-    
-	// Produto Vetorial (Eixo da rotação) simplificado para Z-Up
-	float cross_x = -ay; 
-	float cross_y = ax;  
-	float cross_z = 0.0f; 
-    
-	// Algoritmo Half-Angle para construir o quatérnio
-	float dot = az; 
+	float cross_x = -ay;
+	float cross_y = ax;
+	float cross_z = 0.0f;
+
+	float dot = az;
 	float s = std::sqrt((1.0f + dot) * 2.0f);
 	float invs = 1.0f / s;
-    
-	this->q0 = 0.5f * s;        // Componente W (Escalar)
-	this->q1 = cross_x * invs;  // Componente X
-	this->q2 = cross_y * invs;  // Componente Y
-	this->q3 = cross_z * invs;  // Componente Z
-    
-	// 5. Normalização final do Quatérnio (Essencial para evitar erros acumulados)
-	float qnorm = std::sqrt(q0*q0 + q1*q1 + q2*q2 + q3*q3);
+
+	this->q0 = 0.5f * s;       // W
+	this->q1 = cross_x * invs; // X
+	this->q2 = cross_y * invs; // Y
+	this->q3 = cross_z * invs; // Z
+
+	float qnorm = std::sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
 	float invQNorm = 1.0f / qnorm;
-    
+
 	this->q0 *= invQNorm;
 	this->q1 *= invQNorm;
 	this->q2 *= invQNorm;

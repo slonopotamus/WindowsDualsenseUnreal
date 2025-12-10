@@ -6,11 +6,11 @@
 
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
-#include <vector>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <memory>
+#include <vector>
 
 class FCommonsDeviceInfo : public IPlatformHardwareInfo
 {
@@ -87,7 +87,7 @@ public:
 	 * @param Devices A reference to an array of FDeviceContext objects
 	 *                that will be populated with the detected device information.
 	 */
-	virtual void Detect(std::vector<FDeviceContext>&  Devices) override;
+	virtual void Detect(std::vector<FDeviceContext>& Devices) override;
 	/**
 	 * Creates a handle for the FCommonsDeviceInfo class using the provided device context.
 	 *

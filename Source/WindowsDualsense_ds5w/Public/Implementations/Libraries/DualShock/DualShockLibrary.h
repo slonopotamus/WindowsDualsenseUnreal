@@ -65,7 +65,7 @@ public:
 	 * @param ToggleTime A float value representing the duration (in seconds) for which
 	 * the lightbar is toggled off during a flash cycle.
 	 */
-	virtual void SetLightbar(FColor Color, float BrithnessTime = 0.0f, float ToggleTime = 0.0f) override;
+	virtual void SetLightbar(FDSColor Color, float BrithnessTime = 0.0f, float ToggleTime = 0.0f) override;
 	/**
 	 * Stops all currently active operations or actions associated with the interface.
 	 * This method must be implemented by any derived class to handle the termination

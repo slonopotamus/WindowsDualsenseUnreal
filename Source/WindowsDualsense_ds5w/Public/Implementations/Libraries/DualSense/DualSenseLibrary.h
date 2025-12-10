@@ -141,7 +141,7 @@ public:
 	 * @param Strength Determines the intensity or strength of the resistance.
 	 * @param Hand Indicates the controller hand (e.g., left or right) where the resistance should be configured.
 	 */
-	virtual void SetResistance(uint8 StartZones, uint8 Strength, const EDSGamepadHand& Hand) override;
+	virtual void SetResistance(std::uint8_t StartZones, std::uint8_t Strength, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the bow effect settings on a DualSense controller.
 	 *
@@ -152,7 +152,7 @@ public:
 	 * @param SnapBack The SnapBack of the force applied during the bow effect.
 	 * @param Hand The controller hand (left or right) associated with the bow action.
 	 */
-	virtual void SetBow22(uint8 StartZone, uint8 SnapBack, const EDSGamepadHand& Hand) override;
+	virtual void SetBow22(std::uint8_t StartZone, std::uint8_t SnapBack, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the galloping trigger feedback behavior on a DualSense controller.
 	 *
@@ -167,7 +167,7 @@ public:
 	 * @param Frequency The frequency of the galloping effect, determining how rapidly it alternates or triggers.
 	 * @param Hand Specifies the controller hand (left, right, or any) to apply the galloping effect.
 	 */
-	virtual void SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot, uint8 Frequency, const EDSGamepadHand& Hand) override;
+	virtual void SetGalloping23(std::uint8_t StartPosition, std::uint8_t EndPosition, std::uint8_t FirstFoot, std::uint8_t SecondFoot, std::uint8_t Frequency, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the trigger effect for the DualSense controller's adaptive triggers.
 	 *
@@ -180,7 +180,7 @@ public:
 	 * @param Trigger Specifies an additional parameter for customizing the effect behavior.
 	 * @param Hand Determines which hand (Left, Right, or AnyHand) the configuration applies to.
 	 */
-	virtual void SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EDSGamepadHand& Hand) override;
+	virtual void SetWeapon25(std::uint8_t StartZone, std::uint8_t Amplitude, std::uint8_t Behavior, std::uint8_t Trigger, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the machine gun effect on a DualSense controller.
 	 *
@@ -197,7 +197,7 @@ public:
 	 * @param Frequency Configures the frequency of the haptic pulses to simulate firing intervals.
 	 * @param Hand Indicates which controller hand (left or right) will receive the effect.
 	 */
-	virtual void SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EDSGamepadHand& Hand) override;
+	virtual void SetMachineGun26(std::uint8_t StartZone, std::uint8_t Behavior, std::uint8_t Amplitude, std::uint8_t Frequency, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Configures the advanced machine effect (Mode 0x27) for DualSense controller triggers.
 	 *
@@ -214,7 +214,7 @@ public:
 	 * @param Frequency Determines the frequency for the trigger vibration or repeated effect.
 	 * @param Hand Identifies the controller hand (left, right, or both) for applying the trigger effect.
 	 */
-	virtual void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EDSGamepadHand& Hand) override;
+	virtual void SetMachine27(std::uint8_t StartZone, std::uint8_t BehaviorFlag, std::uint8_t Force, std::uint8_t Amplitude, std::uint8_t Period, std::uint8_t Frequency, const EDSGamepadHand& Hand) override;
 	/**
 	 * @brief Sets custom trigger behavior for the specified controller hand using custom hexadecimal byte data.
 	 *
@@ -225,7 +225,7 @@ public:
 	 * @param Hand The hand designation of the controller (e.g., left, right, or any hand) for which the custom trigger behavior is applied.
 	 * @param HexBytes An array of hexadecimal byte strings defining the custom trigger configuration. Must contain exactly 10 valid values.
 	 */
-	virtual void SetCustomTrigger(const EDSGamepadHand& Hand, const TArray<FString>& HexBytes) override;
+	virtual void SetCustomTrigger(const EDSGamepadHand& Hand, const std::vector<std::uint8_t>& HexBytes) override;
 
 	/**
 	 * Sets the LED player indicator effects based on the desired player LED pattern and brightness intensity.
@@ -251,7 +251,7 @@ public:
 	 * @param LeftRumble The intensity of the left motor's vibration (0-255). Optional, defaults to 0.
 	 * @param RightRumble The intensity of the right motor's vibration (0-255). Optional, defaults to 0.
 	 */
-	virtual void SetVibration(uint8 LeftRumble = 0, uint8 RightRumble = 0) override;
+	virtual void SetVibration(std::uint8_t LeftRumble = 0, std::uint8_t RightRumble = 0) override;
 	/**
 	 * @brief Stops all ongoing input and feedback operations on the DualSense controller.
 	 *
@@ -281,7 +281,7 @@ public:
 	 * @param BrithnessTime The duration for the lightbar's brightness transition.
 	 * @param ToggleTime The duration for toggling the lightbar state.
 	 */
-	virtual void SetLightbar(FColor Color, float BrithnessTime = 0.f, float ToggleTime = 0.f) override;
+	virtual void SetLightbar(FDSColor Color, float BrithnessTime = 0.f, float ToggleTime = 0.f) override;
 	/**
 	 * @brief Updates the haptic feedback system of the DualSense controller with audio data.
 	 *
@@ -300,7 +300,7 @@ public:
 	 * This functionality is typically implemented in systems that aim to provide immersive
 	 * feedback during audio playback or gaming scenarios that utilize DualSense controllers.
 	 */
-	virtual void AudioHapticUpdate(TArray<int8> Data) override;
+	virtual void AudioHapticUpdate(std::vector<std::uint8_t> Data) override;
 
 private:
 	/**
@@ -316,5 +316,5 @@ private:
 	 * with corresponding audio playback, enhancing features such as haptic feedback in interactive
 	 * environments or devices.
 	 */
-	uint8 AudioVibrationSequence;
+	std::uint8_t AudioVibrationSequence;
 };

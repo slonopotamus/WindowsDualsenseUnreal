@@ -18,7 +18,7 @@
 
 using namespace FDualSenseTriggerComposer;
 
-void FDualSenseLibrary::SetVibration(uint8 LeftRumble, uint8 RightRumble)
+void FDualSenseLibrary::SetVibration(std::uint8_t LeftRumble, std::uint8_t RightRumble)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	if (!Context)
@@ -52,7 +52,7 @@ void FDualSenseLibrary::ResetLights()
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetLightbar(FColor Color, float BrithnessTime, float ToggleTime)
+void FDualSenseLibrary::SetLightbar(FDSColor Color, float BrithnessTime, float ToggleTime)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	if (!Context)
@@ -122,38 +122,57 @@ void FDualSenseLibrary::UpdateInput(float Delta)
 
 	if (IsEnableAccelerometerAndGyroscope())
 	{
-		DSVector3D GyroDeg;
-		DSVector3D AccelG;
-	
-		constexpr DSQuat RotZMinus90(0.0f, 0.0f, -0.70710678f, 0.70710678f);
-		constexpr DSQuat RotX180(1.0f, 0.0f, 0.0f, 0.0f);
-		const DSQuat FinalCorrection = RotX180 * RotZMinus90;
-		
+		// DSVector3D GyroDeg;
+		// DSVector3D AccelG;
+
+		FVector GyroDeg;
+		FVector AccelG;
+
+		// constexpr DSQuat RotZMinus90(0.0f, 0.0f, -0.70710678f, 0.70710678f);
+		// constexpr DSQuat RotX180(1.0f, 0.0f, 0.0f, 0.0f);
+		// const DSQuat FinalCorrection = RotX180 * RotZMinus90;
+
 		using namespace FGamepadCalibrationSensors;
 		ProcessMotionData(&Context->Buffer[Padding], Context->Calibration, GyroDeg, AccelG);
-		AccelG.Normalize();
-		
-		if (IsResetGyroscope())
-		{
-			MadgwickFilter.Reset();
-		}
-		
-		constexpr float DegToRad = 3.1415926535f / 180.0f;
-		const DSVector3D GyroRad = {GyroDeg.X * DegToRad, GyroDeg.Y * DegToRad, GyroDeg.Z * DegToRad}; // deg/s -> rad/s
-		MadgwickFilter.UpdateImu(GyroRad.Z, GyroRad.Y, GyroRad.X, AccelG.Z, AccelG.Y, AccelG.X, 0.033f);
+		// AccelG.Normalize();
+
+		// if (IsResetGyroscope())
+		// {
+		// 	MadgwickFilter.Reset();
+		// }
+		constexpr float GToMSq = GRAVITY_MS2;
+		constexpr float DegToRad = PI / 180.0f;
+		FVector GyroRad = GyroDeg * DegToRad; // deg/s -> rad/s
+		FVector AccelRad = AccelG * GToMSq;
+		MadgwickFilter.UpdateImu(GyroRad.Z, GyroRad.Y, GyroRad.X, AccelRad.Z, AccelRad.Y, AccelRad.X, 0.033f);
+		// constexpr float DegToRad = 3.1415926535f / 180.0f;
+		// const DSVector3D GyroRad = {GyroDeg.X * DegToRad, GyroDeg.Y * DegToRad, GyroDeg.Z * DegToRad}; // deg/s -> rad/s
+		// MadgwickFilter.UpdateImu(GyroRad.Z, GyroRad.Y, -GyroRad.X, AccelG.Z, AccelG.Y, -AccelG.X, Delta);
 
 		float qw, qx, qy, qz;
 		MadgwickFilter.GetQuaternion(qw, qx, qy, qz);
 
-		const DSQuat RawQuat(qx, qy, qz, qw);
-		const DSQuat SensorQuat = FinalCorrection * RawQuat;
+		const FQuat RawQuat(qx, qy, qz, qw);
+		const FQuat CorrectionQuat(FVector::ForwardVector, PI);
+		const FQuat SensorQuat = CorrectionQuat * RawQuat;
+		// const DSQuat SensorQuat = RawQuat;
 
-		InputToFill->Gyroscope = GyroDeg;
-		InputToFill->Accelerometer = AccelG;
-		InputToFill->Gravity = SensorQuat.GetUpVector();
-    
-		auto [Roll, Pitch, Yaw ] = SensorQuat.ToRotator();
-		InputToFill->Tilt = { Roll, Pitch, Yaw };
+		InputToFill->Gyroscope.X = GyroDeg.X;
+		InputToFill->Gyroscope.Y = GyroDeg.Z;
+		InputToFill->Gyroscope.Y = GyroDeg.Y;
+		InputToFill->Accelerometer.X = AccelG.X;
+		InputToFill->Accelerometer.Y = AccelG.Z;
+		InputToFill->Accelerometer.Y = AccelG.Y;
+		// InputToFill->Gravity = RawQuat.GetUpVector();
+
+		auto [Pitch, Yaw, Roll] = SensorQuat.Rotator();
+		InputToFill->Tilt.X = Roll;
+		InputToFill->Tilt.Y = Yaw;
+		InputToFill->Tilt.Z = Pitch;
+
+		// UE_LOG(LogDualSense, Log, TEXT("Gyro: %f, %f, %f"), GyroDeg.X, GyroDeg.Y, GyroDeg.Z);
+		// UE_LOG(LogDualSense, Log, TEXT("AccelG: %f, %f, %f"), AccelG.X, AccelG.Y, AccelG.Z);
+		// UE_LOG(LogDualSense, Log, TEXT("Tilt: %f, %f, %f"), Roll, Yaw, Pitch);
 	}
 
 	Context->SwapInputBuffers();
@@ -177,12 +196,12 @@ void FDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 		Context->Output.Feature.VibrationMode = 0xFC;
 	}
 
-	Context->Output.Feature.SoftRumbleReduce = static_cast<uint8>(Settings.SoftRumbleReduce);
-	Context->Output.Feature.TriggerSoftnessLevel = static_cast<uint8>(Settings.TriggerSoftnessLevel);
-	Context->Output.Audio.MicStatus = static_cast<uint8>(Settings.MicStatus);
-	Context->Output.Audio.MicVolume = static_cast<uint8>(Settings.MicVolume);
-	Context->Output.Audio.HeadsetVolume = static_cast<uint8>(Settings.AudioVolume);
-	Context->Output.Audio.SpeakerVolume = static_cast<uint8>(Settings.AudioVolume);
+	Context->Output.Feature.SoftRumbleReduce = static_cast<std::uint8_t>(Settings.SoftRumbleReduce);
+	Context->Output.Feature.TriggerSoftnessLevel = static_cast<std::uint8_t>(Settings.TriggerSoftnessLevel);
+	Context->Output.Audio.MicStatus = static_cast<std::uint8_t>(Settings.MicStatus);
+	Context->Output.Audio.MicVolume = static_cast<std::uint8_t>(Settings.MicVolume);
+	Context->Output.Audio.HeadsetVolume = static_cast<std::uint8_t>(Settings.AudioVolume);
+	Context->Output.Audio.SpeakerVolume = static_cast<std::uint8_t>(Settings.AudioVolume);
 	Context->Output.Audio.Mode = 0x08;
 	if (Settings.AudioHeadset == EDualSenseAudioFeatureReport::On && Settings.AudioSpeaker == EDualSenseAudioFeatureReport::Off)
 	{
@@ -196,15 +215,15 @@ void FDualSenseLibrary::Settings(const FDualSenseFeatureReport& Settings)
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetResistance(uint8 StartZones, uint8 Strength, const EDSGamepadHand& Hand)
+void FDualSenseLibrary::SetResistance(std::uint8_t StartZones, std::uint8_t Strength, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Resistance(Context, StartZones, Strength, Hand);
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot,
-                                       uint8 Frequency, const EDSGamepadHand& Hand)
+void FDualSenseLibrary::SetGalloping23(std::uint8_t StartPosition, std::uint8_t EndPosition, std::uint8_t FirstFoot, std::uint8_t SecondFoot,
+                                       std::uint8_t Frequency, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Galloping23(Context, StartPosition, EndPosition, FirstFoot, SecondFoot, Frequency, Hand);
@@ -225,7 +244,7 @@ void FDualSenseLibrary::SetGameCube(const EDSGamepadHand& Hand)
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetBow22(uint8 StartZone, uint8 SnapBack, const EDSGamepadHand& Hand)
+void FDualSenseLibrary::SetBow22(std::uint8_t StartZone, std::uint8_t SnapBack, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Context->bOverrideTriggerBytes = false;
@@ -233,28 +252,28 @@ void FDualSenseLibrary::SetBow22(uint8 StartZone, uint8 SnapBack, const EDSGamep
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EDSGamepadHand& Hand)
+void FDualSenseLibrary::SetWeapon25(std::uint8_t StartZone, std::uint8_t Amplitude, std::uint8_t Behavior, std::uint8_t Trigger, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Weapon25(Context, StartZone, Amplitude, Behavior, Trigger, Hand);
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EDSGamepadHand& Hand)
+void FDualSenseLibrary::SetMachineGun26(std::uint8_t StartZone, std::uint8_t Behavior, std::uint8_t Amplitude, std::uint8_t Frequency, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	MachineGun26(Context, StartZone, Behavior, Amplitude, Frequency, Hand);
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EDSGamepadHand& Hand)
+void FDualSenseLibrary::SetMachine27(std::uint8_t StartZone, std::uint8_t BehaviorFlag, std::uint8_t Force, std::uint8_t Amplitude, std::uint8_t Period, std::uint8_t Frequency, const EDSGamepadHand& Hand)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	Machine27(Context, StartZone, BehaviorFlag, Force, Amplitude, Period, Frequency, Hand);
 	UpdateOutput();
 }
 
-void FDualSenseLibrary::SetCustomTrigger(const EDSGamepadHand& Hand, const TArray<FString>& HexBytes)
+void FDualSenseLibrary::SetCustomTrigger(const EDSGamepadHand& Hand, const std::vector<std::uint8_t>& HexBytes)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	CustomTrigger(Context, Hand, HexBytes);
@@ -270,7 +289,7 @@ void FDualSenseLibrary::SetMicrophoneLed(EDSMic Led)
 {
 }
 
-void FDualSenseLibrary::AudioHapticUpdate(TArray<int8> Data)
+void FDualSenseLibrary::AudioHapticUpdate(std::vector<std::uint8_t> Data)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	if (!Context || !Context->IsConnected)
@@ -282,6 +301,6 @@ void FDualSenseLibrary::AudioHapticUpdate(TArray<int8> Data)
 	AudioData[0] = (AudioVibrationSequence++) & 0xFF;
 	AudioData[1] = 0x92;
 	AudioData[2] = 0x40;
-	FMemory::Memcpy(&AudioData[3], Data.GetData(), 64);
+	std::memcpy(&AudioData[3], Data.data(), 64);
 	FPlayStationOutputComposer::SendAudioHapticAdvanced(Context);
 }

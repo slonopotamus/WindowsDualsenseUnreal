@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include "Core/Types/DSCoreTypes.h"
 
 /**
  *
@@ -32,7 +33,7 @@ public:
 	 * @param Strength The intensity of the resistance effect.
 	 * @param Hand An enum identifying the controller hand to configure.
 	 */
-	virtual void SetResistance(uint8 StartZones, uint8 Strength, const EDSGamepadHand& Hand) = 0;
+	virtual void SetResistance(std::uint8_t StartZones, std::uint8_t Strength, const EDSGamepadHand& Hand) = 0;
 	/**
 	 * Activates custom trigger configurations on a gamepad for a specified hand.
 	 *
@@ -41,7 +42,7 @@ public:
 	 * @param HexBytes An array of strings representing hexadecimal values that define
 	 *                 the trigger configuration parameters.
 	 */
-	virtual void SetCustomTrigger(const EDSGamepadHand& Hand, const TArray<FString>& HexBytes) = 0;
+	virtual void SetCustomTrigger(const EDSGamepadHand& Hand, const std::vector<std::uint8_t>& HexBytes) = 0;
 	/**
 	 * Configures the bow tension effect on the gamepad triggers based on specified parameters.
 	 *
@@ -49,7 +50,7 @@ public:
 	 * @param SnapBack The intensity or force of the bow effect applied to the trigger.
 	 * @param Hand The controller hand (left or right) to which the effect should be applied.
 	 */
-	virtual void SetBow22(uint8 StartZone, uint8 SnapBack, const EDSGamepadHand& Hand) = 0;
+	virtual void SetBow22(std::uint8_t StartZone, std::uint8_t SnapBack, const EDSGamepadHand& Hand) = 0;
 	/**
 	 * Configures a galloping effect on the gamepad with specified parameters for position, foot rhythm, and frequency.
 	 *
@@ -60,7 +61,7 @@ public:
 	 * @param Frequency The frequency of the galloping effect.
 	 * @param Hand The specific controller hand to which the effect is applied.
 	 */
-	virtual void SetGalloping23(uint8 StartPosition, uint8 EndPosition, uint8 FirstFoot, uint8 SecondFoot, uint8 Frequency, const EDSGamepadHand& Hand) = 0;
+	virtual void SetGalloping23(std::uint8_t StartPosition, std::uint8_t EndPosition, std::uint8_t FirstFoot, std::uint8_t SecondFoot, std::uint8_t Frequency, const EDSGamepadHand& Hand) = 0;
 	/**
 	 * Configures trigger behavior for the specified weapon mode on a gamepad.
 	 *
@@ -70,7 +71,7 @@ public:
 	 * @param Trigger The specific trigger to configure.
 	 * @param Hand The controller hand (left or right) associated with the trigger.
 	 */
-	virtual void SetWeapon25(uint8 StartZone, uint8 Amplitude, uint8 Behavior, uint8 Trigger, const EDSGamepadHand& Hand) = 0;
+	virtual void SetWeapon25(std::uint8_t StartZone, std::uint8_t Amplitude, std::uint8_t Behavior, std::uint8_t Trigger, const EDSGamepadHand& Hand) = 0;
 	/**
 	 * Configures the machine gun effect on the gamepad triggers with specific parameters.
 	 *
@@ -80,7 +81,7 @@ public:
 	 * @param Frequency The frequency of the feedback effect for the machine gun effect.
 	 * @param Hand The controller hand (left or right) to which the machine gun effect is applied.
 	 */
-	virtual void SetMachineGun26(uint8 StartZone, uint8 Behavior, uint8 Amplitude, uint8 Frequency, const EDSGamepadHand& Hand) = 0;
+	virtual void SetMachineGun26(std::uint8_t StartZone, std::uint8_t Behavior, std::uint8_t Amplitude, std::uint8_t Frequency, const EDSGamepadHand& Hand) = 0;
 	/**
 	 * Configures the behavior and haptic effects for a specific machine profile on a gamepad.
 	 *
@@ -92,5 +93,5 @@ public:
 	 * @param Frequency The frequency of the haptic feedback signal.
 	 * @param Hand The hand (left or right) to which the feedback effect will be applied, based on the EDSGamepadHand enumeration.
 	 */
-	virtual void SetMachine27(uint8 StartZone, uint8 BehaviorFlag, uint8 Force, uint8 Amplitude, uint8 Period, uint8 Frequency, const EDSGamepadHand& Hand) = 0;
+	virtual void SetMachine27(std::uint8_t StartZone, std::uint8_t BehaviorFlag, std::uint8_t Force, std::uint8_t Amplitude, std::uint8_t Period, std::uint8_t Frequency, const EDSGamepadHand& Hand) = 0;
 };

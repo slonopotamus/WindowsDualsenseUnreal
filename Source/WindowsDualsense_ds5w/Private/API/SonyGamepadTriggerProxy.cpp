@@ -69,7 +69,7 @@ void USonyGamepadTriggerProxy::CustomTrigger(int32 ControllerId, const TArray<FS
 
 	if (IGamepadTrigger* Gamepad = GetTriggerInterface(ControllerId))
 	{
-		Gamepad->SetCustomTrigger(static_cast<EDSGamepadHand>(Hand), HexBytes);
+		Gamepad->SetCustomTrigger(static_cast<EDSGamepadHand>(Hand), ConvertVector(HexBytes));
 	}
 }
 void USonyGamepadTriggerProxy::StopTrigger(int32 ControllerId, EGamepadHand Hand)

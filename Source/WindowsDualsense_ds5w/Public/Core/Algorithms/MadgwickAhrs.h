@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Core/Types/DSCoreTypes.h"
-#include <cmath>
 
 using namespace DSCoreTypes;
 

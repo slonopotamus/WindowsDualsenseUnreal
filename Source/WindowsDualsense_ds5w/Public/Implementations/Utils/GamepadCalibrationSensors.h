@@ -64,7 +64,7 @@ namespace FGamepadCalibrationSensors
 		OutCalibration.AccelFactorZ = (RangeZ != 0.0f) ? (2.0f / RangeZ) : 1.0f;
 	}
 
-	inline void ProcessMotionData(const uint8* Buffer, const FGamepadCalibration& Calibration, DSCoreTypes::DSVector3D& FinalGyro, DSCoreTypes::DSVector3D & FinalAccel)
+	inline void ProcessMotionData(const uint8* Buffer, const FGamepadCalibration& Calibration, FVector& FinalGyro, FVector& FinalAccel)
 	{
 		const std::int16_t RawGyroX = (Buffer[15] | (Buffer[16] << 8));
 		const std::int16_t RawGyroY = (Buffer[17] | (Buffer[18] << 8));

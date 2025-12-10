@@ -8,8 +8,8 @@
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Implementations/Utils/GamepadCalibrationSensors.h"
 #include "SDL_hidapi.h"
-#include <string>
 #include <cstring>
+#include <string>
 #include <unordered_set>
 
 static const std::uint16_t SONY_VENDOR_ID = 0x054C;
@@ -29,7 +29,7 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 	{
 		return;
 	}
-	
+
 	if (Context->ConnectionType == EDSDeviceConnection::Bluetooth && Context->DeviceType == EDSDeviceType::DualShock4)
 	{
 		const size_t InputReportLength = 547;
@@ -59,7 +59,7 @@ void FCommonsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 	{
 		return;
 	}
-	
+
 	SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Context->Handle);
 
 	constexpr size_t Report = 142;
@@ -72,7 +72,7 @@ void FCommonsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 bool FCommonsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 {
 	SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Context->Handle);
-	
+
 	unsigned char FeatureBuffer[41] = {0};
 	std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
 
@@ -96,7 +96,7 @@ void FCommonsDeviceInfo::Write(FDeviceContext* Context)
 	{
 		return;
 	}
-	
+
 	SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Context->Handle);
 
 	const size_t InReportLength = (Context->DeviceType == EDSDeviceType::DualShock4) ? 32 : 74;
@@ -194,7 +194,7 @@ void FCommonsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		{
 			SDL_hid_close(DeviceHandle);
 		}
-		
+
 		Context->Handle = INVALID_PLATFORM_HANDLE;
 		Context->IsConnected = false;
 

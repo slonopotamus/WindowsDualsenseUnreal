@@ -3,9 +3,16 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include <cstdint>
-#include <cmath>
+
 #include <algorithm>
+#include <cmath>
+#include <cmath> // std::sqrt, std::abs
+#include <cstdint>
+#include <memory>        // std::unique_ptr, std::make_unique
+#include <string>        // std::string
+#include <unordered_map> // std::unordered_map
+#include <unordered_set> // std::unordered_set
+#include <vector>        // std::vector
 
 #define DS_ACC_RES_PER_G 8192
 #define DS_ACC_RANGE (4 * DS_ACC_RES_PER_G)
@@ -29,13 +36,15 @@ namespace DSCoreTypes
 		float X = 0.0f;
 		float Y = 0.0f;
 		float Z = 0.0f;
-		
+
 		void Normalize()
 		{
 			float LengthSq = (X * X) + (Y * Y) + (Z * Z);
-			if (LengthSq < 1e-8f) 
+			if (LengthSq < 1e-8f)
 			{
-				X = 0.0f; Y = 0.0f; Z = 0.0f;
+				X = 0.0f;
+				Y = 0.0f;
+				Z = 0.0f;
 				return;
 			}
 			float InvLength = 1.0f / std::sqrt(LengthSq);
@@ -44,14 +53,22 @@ namespace DSCoreTypes
 			Z *= InvLength;
 		}
 	};
-	
+
+	struct FDSColor
+	{
+		uint8_t R = 0;
+		uint8_t G = 0;
+		uint8_t B = 0;
+		uint8_t A = 1;
+	};
+
 	struct DSRotator
 	{
 		float Pitch = 0.0f;
 		float Yaw = 0.0f;
 		float Roll = 0.0f;
 	};
-	
+
 	struct DSQuat
 	{
 		float X = 0.0f;
@@ -60,8 +77,12 @@ namespace DSCoreTypes
 		float W = 1.0f;
 
 		constexpr DSQuat() = default;
-		constexpr DSQuat(float InX, float InY, float InZ, float InW) 
-			: X(InX), Y(InY), Z(InZ), W(InW) {}
+		constexpr DSQuat(float InX, float InY, float InZ, float InW)
+		    : X(InX)
+		    , Y(InY)
+		    , Z(InZ)
+		    , W(InW)
+		{}
 
 		DSQuat operator*(const DSQuat& B) const
 		{
@@ -76,10 +97,9 @@ namespace DSCoreTypes
 		DSVector3D GetUpVector() const
 		{
 			return DSVector3D{
-				2.0f * (X * Z - W * Y),
-				2.0f * (Y * Z + W * X),
-				1.0f - 2.0f * (X * X + Y * Y)
-			};
+			    2.0f * (X * Z - W * Y),
+			    2.0f * (Y * Z + W * X),
+			    1.0f - 2.0f * (X * X + Y * Y)};
 		}
 
 		// To Euler (DSRotator)
@@ -95,9 +115,13 @@ namespace DSCoreTypes
 			// Pitch (Y)
 			float sinp = 2.0f * (W * Y - Z * X);
 			if (std::abs(sinp) >= 1.0f)
+			{
 				R.Pitch = std::copysign(DS_PI / 2.0f, sinp) * DS_RAD_TO_DEG;
+			}
 			else
+			{
 				R.Pitch = std::asin(sinp) * DS_RAD_TO_DEG;
+			}
 
 			// Yaw (Z)
 			float siny_cosp = 2.0f * (W * Z + X * Y);

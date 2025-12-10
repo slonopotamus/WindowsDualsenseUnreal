@@ -120,9 +120,21 @@ void FAudioHapticsListener::ConsumeHapticsQueue()
 	if (AudioHaptics)
 	{
 		TArray<int8> PacketToProcess;
+
+		std::vector<std::uint8_t> Samples;
 		while (AudioPacketQueue.Dequeue(PacketToProcess))
 		{
-			AudioHaptics->AudioHapticUpdate(PacketToProcess);
+			if (PacketToProcess.Num() == 0)
+			{
+				continue;
+			}
+
+			Samples.clear();
+			Samples.reserve(PacketToProcess.Num());
+			const int8* RawData = PacketToProcess.GetData();
+			const uint8_t* RawDataUnsigned = reinterpret_cast<const uint8_t*>(RawData);
+			Samples.insert(Samples.end(), RawDataUnsigned, RawDataUnsigned + PacketToProcess.Num());
+			AudioHaptics->AudioHapticUpdate(Samples);
 		}
 		return;
 	}

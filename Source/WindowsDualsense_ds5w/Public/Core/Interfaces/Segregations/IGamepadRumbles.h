@@ -16,5 +16,5 @@ public:
 	 * @param LeftRumble The intensity of the left-side vibration motor. The value should range from 0 (no vibration) to 255 (maximum intensity). Defaults to 0 if not specified.
 	 * @param RightRumble The intensity of the right-side vibration motor. The value should range from 0 (no vibration) to 255 (maximum intensity). Defaults to 0 if not specified.
 	 */
-	virtual void SetVibration(uint8 LeftRumble = 0, uint8 RightRumble = 0) = 0;
+	virtual void SetVibration(std::uint8_t LeftRumble = 0, std::uint8_t RightRumble = 0) = 0;
 };

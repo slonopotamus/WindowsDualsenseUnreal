@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #pragma once
+#include "Core/Types/DSCoreTypes.h"
 
 /**
  *
@@ -18,5 +19,5 @@ public:
 	 * @param AudioData An array of integer values representing the audio waveform data
 	 *                  used to drive the haptic feedback effects on the triggers.
 	 */
-	virtual void AudioHapticUpdate(TArray<int8> AudioData) = 0;
+	virtual void AudioHapticUpdate(std::vector<std::uint8_t> AudioData) = 0;
 };

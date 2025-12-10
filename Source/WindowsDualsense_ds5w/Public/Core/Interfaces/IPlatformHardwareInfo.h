@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include <vector>
-#include <memory>
+#include "Core/Types/DSCoreTypes.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
 
-#define PLATFORM_SONY (PLATFORM_PS4 || PLATFORM_PS5)
+#define __SONY__ (PLATFORM_PS4 || PLATFORM_PS5)
 
 /**
  * Interface for platform-specific hardware information and operations.

@@ -36,11 +36,11 @@ void DeviceManager::Tick(float DeltaTime)
 	}
 	PollAccumulator = 0.0f;
 
-	FVector2D ScreenSize = FVector2D::ZeroVector;
-	if (GEngine && GEngine->GameViewport)
-	{
-		GEngine->GameViewport->GetViewportSize(ScreenSize);
-	}
+	// FVector2D ScreenSize = FVector2D::ZeroVector;
+	// if (GEngine && GEngine->GameViewport)
+	// {
+	// 	GEngine->GameViewport->GetViewportSize(ScreenSize);
+	// }
 	const float CurrentPollInterval = PollInterval;
 
 	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [=]() {
@@ -48,21 +48,21 @@ void DeviceManager::Tick(float DeltaTime)
 		{
 			if (ISonyGamepad* Ref = Pair.Value.Get())
 			{
-				if (FDeviceContext* Context = Ref->GetMutableDeviceContext())
-				{
-					if (FInputContext* FrameInput = Context->GetBackBuffer())
-					{
-						if (FrameInput->TouchRadius.X != ScreenSize.X || FrameInput->TouchRadius.Y != ScreenSize.Y)
-						{
-							if (ScreenSize.X > 0 && ScreenSize.Y > 0)
-							{
-								UE_LOG(LogDualSense, Log, TEXT("Setting TouchRadius to %f, %f"), ScreenSize.X, ScreenSize.Y);
-								FrameInput->TouchRadius.X = ScreenSize.X;
-								FrameInput->TouchRadius.Y = ScreenSize.Y;
-							}
-						}
-					}
-				}
+				// if (FDeviceContext* Context = Ref->GetMutableDeviceContext())
+				// {
+				// 	if (FInputContext* FrameInput = Context->GetBackBuffer())
+				// 	{
+				// 		// if (FrameInput->TouchRadius.X != ScreenSize.X || FrameInput->TouchRadius.Y != ScreenSize.Y)
+				// 		// {
+				// 		// 	if (ScreenSize.X > 0 && ScreenSize.Y > 0)
+				// 		// 	{
+				// 		// 		UE_LOG(LogDualSense, Log, TEXT("Setting TouchRadius to %f, %f"), ScreenSize.X, ScreenSize.Y);
+				// 		// 		FrameInput->TouchRadius.X = ScreenSize.X;
+				// 		// 		FrameInput->TouchRadius.Y = ScreenSize.Y;
+				// 		// 	}
+				// 		// }
+				// 	}
+				// }
 				Ref->UpdateInput(CurrentPollInterval);
 			}
 		}
@@ -107,7 +107,7 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 {
 	const auto HandleAnalogInput = [&](const FName& AnalogKey, const FName& ButtonKeyPositive, const FName& ButtonKeyNegative, float NewAxisValue) {
 		const std::string Str(TCHAR_TO_UTF8(*AnalogKey.ToString()));
-		
+
 		float& OldAxisValue = Context->AnalogStates[Str];
 		if (FMath::IsNearlyEqual(NewAxisValue, OldAxisValue))
 		{
@@ -214,7 +214,7 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 void DeviceManager::CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const
 {
 	const std::string Str(TCHAR_TO_UTF8(*ButtonName.ToString()));
-	const bool PreviousState = Context->AnalogStates[Str];
+	const bool PreviousState = Context->ButtonStates[Str];
 	if (IsButtonPressed && !PreviousState)
 	{
 		MessageHandler.Get().OnControllerButtonPressed(ButtonName, UserId, InputDeviceId, false);
@@ -290,17 +290,20 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 					RawPos = 200;
 				}
 
-				HexBytes.Add("0x21");
-				HexBytes.Add(FString::Printf(TEXT("0x%02X"), RawPos & 0xf0));
-				HexBytes.Add(FString::Printf(TEXT("0x%02X"), 0x03));
-				HexBytes.Add(FString::Printf(TEXT("0x%02X"), Force >> 24 & 0xff));
-				HexBytes.Add(FString::Printf(TEXT("0x%02X"), Force >> 16 & 0xff));
-				HexBytes.Add(FString::Printf(TEXT("0x%02X"), Force >> 8 & 0xff));
-				HexBytes.Add(FString::Printf(TEXT("0x%02X"), Force >> 0 & 0x3f));
-				HexBytes.Add("0x00");
-				HexBytes.Add("0x00");
-				HexBytes.Add("0x00");
-				GamepadTrigger->SetCustomTrigger(static_cast<EDSGamepadHand>(HandMask), HexBytes);
+				std::vector<uint8_t> StrBytes;
+				StrBytes.push_back(0x21);
+				StrBytes.push_back(RawPos);
+				StrBytes.push_back(RawPos & 0xf0);
+				StrBytes.push_back(0x03);
+				StrBytes.push_back(Force >> 24 & 0xff);
+				StrBytes.push_back(Force >> 16 & 0xff);
+				StrBytes.push_back(Force >> 8 & 0xff);
+				StrBytes.push_back(Force >> 0 & 0x3f);
+				StrBytes.push_back(0);
+				StrBytes.push_back(0);
+				StrBytes.push_back(0);
+
+				GamepadTrigger->SetCustomTrigger(static_cast<EDSGamepadHand>(HandMask), StrBytes);
 			}
 		}
 	}
@@ -324,7 +327,8 @@ void DeviceManager::SetLightColor(const int32 ControllerId, const FColor Color)
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		Gamepad->SetLightbar(Color);
+		FDSColor CastColor = {Color.R, Color.G, Color.B, Color.A};
+		Gamepad->SetLightbar(CastColor);
 	}
 }
 

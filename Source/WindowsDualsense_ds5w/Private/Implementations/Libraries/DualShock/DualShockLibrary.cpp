@@ -12,7 +12,7 @@
 bool FDualShockLibrary::Initialize(const FDeviceContext& Context)
 {
 	SetDeviceContexts(Context);
-	SetLightbar(FColor::Blue, 0.0f, 0.0f);
+	SetLightbar({0, 0, 220, 0}, 0.0f, 0.0f);
 	return true;
 }
 
@@ -60,7 +60,7 @@ void FDualShockLibrary::SetVibration(uint8 LeftRumble, uint8 RightRumble)
 	}
 }
 
-void FDualShockLibrary::SetLightbar(FColor Color, float BrithnessTime, float ToggleTime)
+void FDualShockLibrary::SetLightbar(FDSColor Color, float BrithnessTime, float ToggleTime)
 {
 	FDeviceContext* Context = GetMutableDeviceContext();
 	FOutputContext* HidOutput = &Context->Output;
@@ -75,5 +75,5 @@ void FDualShockLibrary::SetLightbar(FColor Color, float BrithnessTime, float Tog
 
 void FDualShockLibrary::ResetLights()
 {
-	SetLightbar(FColor::Blue, 0.0f, 0.0f);
+	SetLightbar({0, 0, 255, 0}, 0.0f, 0.0f);
 }

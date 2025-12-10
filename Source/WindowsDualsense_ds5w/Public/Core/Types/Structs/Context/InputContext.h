@@ -62,10 +62,10 @@ struct FInputContext
 	float LeftTriggerAnalog = 0.0f;
 	float RightTriggerAnalog = 0.0f;
 
-	DSVector3D Gyroscope = {0,0,0};
-	DSVector3D Accelerometer = {0,0,0};
-	DSVector3D Gravity = {0,0,0};
-	DSVector3D Tilt = {0,0,0};
+	DSVector3D Gyroscope = {0, 0, 0};
+	DSVector3D Accelerometer = {0, 0, 0};
+	DSVector3D Gravity = {0, 0, 0};
+	DSVector3D Tilt = {0, 0, 0};
 
 	// touch
 	int32 TouchId = 0;
@@ -79,7 +79,6 @@ struct FInputContext
 
 	float DirectionAngle = 0.0f;
 	uint8 DirectionRaw = 0.0f;
-	
 
 	DSVector2D P1_Current = {0, 0};
 	DSVector2D P1_Last = {0, 0};

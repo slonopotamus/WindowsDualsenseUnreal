@@ -3,15 +3,15 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
-#include "Core/Types/ECoreGamepadTypes.h"
+#include "Core/Types/DSCoreTypes.h"
 #include "Core/Types/Structs/Config/GamepadCalibration.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
-#include "Helpers/DualSenseLog.h"
 #include "Implementations/Utils/GamepadCalibrationSensors.h"
+#include <filesystem>
 #include <hidsdi.h>
 #include <setupapi.h>
 
-void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
+void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 {
 	GUID HidGuid;
 	HidD_GetHidGuid(&HidGuid);
@@ -20,16 +20,15 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 	                                                   DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 	if (DeviceInfoSet == INVALID_HANDLE_VALUE)
 	{
-		UE_LOG(LogDualSense, Error, TEXT("HIDManager: Falha ao obter informações dos dispositivos HID."));
 		return;
 	}
 
 	SP_DEVICE_INTERFACE_DATA DeviceInterfaceData = {};
 	DeviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
-	TMap<int32, FString> DevicePaths;
-	for (int32 DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
-	                                                        &DeviceInterfaceData);
+	std::unordered_map<int, std::string> DevicePaths;
+	for (int DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
+	                                                      &DeviceInterfaceData);
 	     DeviceIndex++)
 	{
 		DWORD RequiredSize = 0;
@@ -38,7 +37,6 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 		const auto DetailDataBuffer = static_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA>(malloc(RequiredSize));
 		if (!DetailDataBuffer)
 		{
-			UE_LOG(LogDualSense, Error, TEXT("HIDManager: Failed to allocate memory for device details."));
 			continue;
 		}
 
@@ -65,14 +63,14 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 					     Attributes.ProductID == 0x09CC))
 					{
 						FDeviceContext Context = {};
-						WCHAR DeviceProductString[260];
+						wchar_t DeviceProductString[260];
 						if (HidD_GetProductString(TempDeviceHandle, DeviceProductString, 260))
 						{
-							if (!DevicePaths.Contains(DeviceIndex))
+							if (DevicePaths.find(DeviceIndex) == DevicePaths.end())
 							{
-								FString PathStr(DetailDataBuffer->DevicePath);
-								Context.Path = PathStr;
-								DevicePaths.Add(DeviceIndex, PathStr);
+								std::string FinalString = std::filesystem::path(DetailDataBuffer->DevicePath).string();
+								Context.Path = FinalString;
+								DevicePaths[DeviceIndex] = FinalString;
 								switch (Attributes.ProductID)
 								{
 									case 0x05C4:
@@ -87,28 +85,23 @@ void FWindowsDeviceInfo::Detect(TArray<FDeviceContext>& Devices)
 
 								Context.IsConnected = true;
 								Context.ConnectionType = EDSDeviceConnection::Usb;
-								FString DevicePath(Context.Path);
-								if (DevicePath.Contains(TEXT("{00001124-0000-1000-8000-00805f9b34fb}")) ||
-								    DevicePath.Contains(TEXT("bth")) ||
-								    DevicePath.Contains(TEXT("BTHENUM")))
+								const std::string BtGuid = "{00001124-0000-1000-8000-00805f9b34fb}";
+								if (FinalString.find(BtGuid) != std::string::npos ||
+								    FinalString.find("bth") != std::string::npos ||
+								    FinalString.find("BTHENUM") != std::string::npos)
 								{
 									Context.ConnectionType = EDSDeviceConnection::Bluetooth;
 								}
-								Devices.Add(Context);
 							}
-						}
-						else
-						{
-							UE_LOG(LogDualSense, Error, TEXT("HIDManager: Failed to obtain device path for the DualSense."));
+							Devices.push_back(Context);
 						}
 					}
 				}
-				CloseHandle(TempDeviceHandle);
 			}
+			CloseHandle(TempDeviceHandle);
 		}
 		free(DetailDataBuffer);
 	}
-
 	SetupDiDestroyDeviceInfoList(DeviceInfoSet);
 }
 
@@ -116,19 +109,16 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 {
 	if (!Context)
 	{
-		UE_LOG(LogDualSense, Error, TEXT("Context nto found!"));
 		return;
 	}
 
-	if (Context->Handle == INVALID_HANDLE_VALUE)
+	if (Context->Handle == INVALID_PLATFORM_HANDLE)
 	{
-		UE_LOG(LogDualSense, Error, TEXT("Invalid device handle before attempting to read"));
 		return;
 	}
 
 	if (!Context->IsConnected)
 	{
-		UE_LOG(LogDualSense, Error, TEXT("Dualsense: DeviceContext->Connected, false"));
 		return;
 	}
 
@@ -158,29 +148,26 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
 	{
-		UE_LOG(LogDualSense, Error, TEXT("Failed to write output report 0x02/0x31 data to device. report %llu error Code: %d"),
-		       OutputReportLength, GetLastError());
 	}
 }
 
 bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 {
+	std::string Source = DeviceContext->Path;
+	std::wstring MyStdString = std::filesystem::path(Source).wstring();
 	const HANDLE DeviceHandle = CreateFileW(
-	    *DeviceContext->Path,
+	    MyStdString.data(),
 	    GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr);
 
-	if (DeviceHandle == INVALID_HANDLE_VALUE)
+	if (DeviceHandle == INVALID_PLATFORM_HANDLE)
 	{
 		DeviceContext->Handle = DeviceHandle;
-		UE_LOG(LogDualSense, Error, TEXT("HIDManager: Failed to open device handle for the DualSense."));
 		return false;
 	}
 
 	DeviceContext->Handle = DeviceHandle;
-
 	if (!ConfigureFeatures(DeviceContext))
 	{
-		UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to calibration sensors features."));
 	}
 	return true;
 }
@@ -192,12 +179,12 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		return;
 	}
 
-	if (Context->Handle != INVALID_HANDLE_VALUE)
+	if (Context->Handle != INVALID_PLATFORM_HANDLE)
 	{
 		CloseHandle(Context->Handle);
-		Context->Handle = INVALID_HANDLE_VALUE;
+		Context->Handle = INVALID_PLATFORM_HANDLE;
 		Context->IsConnected = false;
-		Context->Path = nullptr;
+		Context->Path.clear();
 
 		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
 		ZeroMemory(Context->BufferAudio, sizeof(Context->BufferAudio));
@@ -211,13 +198,12 @@ void FWindowsDeviceInfo::InvalidateHandle(HANDLE Handle)
 	if (Handle != INVALID_PLATFORM_HANDLE)
 	{
 		CloseHandle(Handle);
-		UE_LOG(LogDualSense, Log, TEXT("HIDManager: Invalidate Handle."));
 	}
 }
 
-EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, int32 Length, DWORD& OutBytesRead)
+EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, std::int32_t Length, DWORD& OutBytesRead)
 {
-	int32 Err = ERROR_SUCCESS;
+	std::int32_t Err = ERROR_SUCCESS;
 	PingOnce(Handle, &Err);
 
 	OutBytesRead = 0;
@@ -229,7 +215,7 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, i
 	return EPollResult::ReadOk;
 }
 
-bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, int32* OutLastError)
+bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, std::int32_t* OutLastError)
 {
 	FILE_STANDARD_INFO Info{};
 	if (!GetFileInformationByHandleEx(Handle, FileStandardInfo, &Info, sizeof(Info)))
@@ -254,7 +240,7 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		return;
 	}
 
-	if (Context->Handle == INVALID_HANDLE_VALUE)
+	if (Context->Handle == INVALID_PLATFORM_HANDLE)
 	{
 		return;
 	}
@@ -264,14 +250,13 @@ void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
 		return;
 	}
 
-	DWORD BytesWritten = 0;
+	unsigned long BytesWritten = 0;
 	constexpr size_t BufferSize = 142;
 	if (!WriteFile(Context->Handle, Context->BufferAudio, BufferSize, &BytesWritten, nullptr))
 	{
-		const DWORD Error = GetLastError();
+		const unsigned long Error = GetLastError();
 		if (Error != ERROR_IO_PENDING)
 		{
-			UE_LOG(LogDualSense, Error, TEXT("Failed to send audio haptics via WriteFile. Error: %d"), Error);
 		}
 	}
 }
@@ -280,14 +265,13 @@ bool FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 {
 	using namespace FGamepadCalibrationSensors;
 
-	unsigned char FeatureBuffer[41];
-	FMemory::Memzero(FeatureBuffer, sizeof(FeatureBuffer));
+	unsigned char FeatureBuffer[41] = {0};
+	std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
 
 	FeatureBuffer[0] = 0x05;
 	if (!HidD_GetFeature(Context->Handle, FeatureBuffer, 41))
 	{
-		const DWORD Error = GetLastError();
-		UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to get Feature 0x05. Error: %d"), Error);
+		const unsigned long Error = GetLastError();
 		return false;
 	}
 

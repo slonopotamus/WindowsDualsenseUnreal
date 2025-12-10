@@ -11,7 +11,8 @@ void USonyGamepadLightsProxy::Ligthbar(int32 ControllerId, FColor Color)
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		Gamepad->SetLightbar(Color);
+		FDSColor CastColor = {Color.R, Color.G, Color.B, Color.A};
+		Gamepad->SetLightbar(CastColor);
 	}
 }
 
@@ -19,7 +20,8 @@ void USonyGamepadLightsProxy::LigthbarFlash(int32 ControllerId, FColor Color, fl
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		Gamepad->SetLightbar(Color, BrithnessTime, ToggleTime);
+		FDSColor CastColor = {Color.R, Color.G, Color.B, Color.A};
+		Gamepad->SetLightbar(CastColor, BrithnessTime, ToggleTime);
 	}
 }
 

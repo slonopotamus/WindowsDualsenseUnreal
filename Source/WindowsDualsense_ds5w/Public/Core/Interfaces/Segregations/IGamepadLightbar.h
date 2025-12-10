@@ -20,7 +20,7 @@ public:
 	 * @param BrithnessTime The time duration for setting the brightness effect. Defaults to 0.0f.
 	 * @param ToggleTime The time interval for toggling the lightbar. Defaults to 0.0f.
 	 */
-	virtual void SetLightbar(FColor Color, float BrithnessTime = 0.0f, float ToggleTime = 0.0f) = 0;
+	virtual void SetLightbar(FDSColor Color, float BrithnessTime = 0.0f, float ToggleTime = 0.0f) = 0;
 	/**
 	 * Sets the LED associated with the player on the Sony gamepad to a specified brightness level.
 	 *

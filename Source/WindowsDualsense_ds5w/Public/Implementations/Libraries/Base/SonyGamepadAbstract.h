@@ -97,11 +97,11 @@ public:
 	/**
 	 * Sets the lightbar color and associated timing parameters on the gamepad DualShock4.
 	 *
-	 * @param Color The color to set the lightbar to, represented as an FColor.
+	 * @param Color The color to set the lightbar to, represented as an FDSColor.
 	 * @param BrithnessTime The time duration for setting the brightness effect. Defaults to 0.0f.
 	 * @param ToggleTime The time interval for toggling the lightbar. Defaults to 0.0f.
 	 */
-	virtual void SetLightbar(FColor Color, float BrithnessTime = 0.0f, float ToggleTime = 0.0f) override {}
+	virtual void SetLightbar(FDSColor Color, float BrithnessTime = 0.0f, float ToggleTime = 0.0f) override {}
 
 	/**
 	 * Sets the LED associated with the player on the Sony gamepad to a specified brightness level.

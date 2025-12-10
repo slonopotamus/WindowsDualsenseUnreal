@@ -193,7 +193,7 @@ void FDeviceRegistry::CreateLibraryInstance(FDeviceContext& Context)
 
 	FInputDeviceId UniqueInputDeviceId;
 	FString PathStr(Context.Path.data());
-	
+
 	const FName UniqueNamespace = TEXT("DeviceManager.WindowsDualsense");
 	const FHardwareDeviceIdentifier HardwareId(UniqueNamespace, *PathStr);
 	if (HistoryDevices.Contains(PathStr))

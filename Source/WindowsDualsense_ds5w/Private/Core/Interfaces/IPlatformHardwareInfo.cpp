@@ -3,12 +3,14 @@
 // Planned Release Year: 2025
 
 #include "Core/Interfaces/IPlatformHardwareInfo.h"
-#include <memory>
-#if PLATFORM_WINDOWS
+
+#if defined(_WIN32)
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
-#elif PLATFORM_MAC || PLATFORM_LINUX
+#elif defined(__unix__) || defined(__linux__) || defined(__unix) || defined(__linux) || defined(linux) || defined(__gnu_linux__) || defined(__linux)
 #include "Implementations/Platforms/Commons/CommonsDeviceInfo.h"
-#elif PLATFORM_SONY
+#elif defined(__APPLE__)
+#include "Implementations/Platforms/Mac/FNullHardwareInterface.h" // Ou seu header real
+#elif defined(__SONY__)
 #include "Implementations/Platforms/Sony/FNullHardwareInterface.h"
 #endif
 
@@ -39,11 +41,13 @@ IPlatformHardwareInfo& IPlatformHardwareInfo::Get()
 		// - PLATFORM_LINUX: Reserved for future Linux implementation using hidapi
 		// - PLATFORM_SONY: Reserved for future PlayStation implementation
 		//
-#if PLATFORM_WINDOWS
+#ifdef _WIN32
 		PlatformInfoInstance = std::make_unique<FWindowsDeviceInfo>();
-#elif PLATFORM_MAC || PLATFORM_LINUX
+#elif defined(__unix__) || defined(__linux__) || defined(__unix) || defined(__linux) || defined(linux) || defined(__gnu_linux__) || defined(__linux)
 		PlatformInfoInstance = std::make_unique<FCommonsDeviceInfo>();
-#elif PLATFORM_SONY
+#elif defined(__APPLE__)
+		PlatformInfoInstance = std::make_unique<FCommonsDeviceInfo>(); // FAppleDeviceInfo
+#elif defined(__SONY__)
 		// Note: PLATFORM_SONY implementation is reserved for licensed PlayStation developers only
 		// Example:
 		// To implement for PlayStation platforms, create a class in Platforms/Sony directory:
@@ -51,7 +55,9 @@ IPlatformHardwareInfo& IPlatformHardwareInfo::Get()
 		// {
 		//	// Implement required interface methods
 		// };
-		PlatformInfoInstance = MakeUnique<FPlayStationDeviceInfo>();
+		PlatformInfoInstance = std::make_unique<FPlayStationDeviceInfo>();
+#else
+		PlatformInfoInstance = nullptr;
 #endif
 	}
 	return *PlatformInfoInstance;
