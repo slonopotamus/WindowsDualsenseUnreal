@@ -38,7 +38,7 @@ public:
 				Devices.Reset();
 
 				IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
-					IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
+				    IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser(), Devices);
 
 				bool AllocateDeviceToDefaultUser = false;
 				if (Devices.Num() <= 1)
@@ -47,8 +47,8 @@ public:
 				}
 
 				UserId = AllocateDeviceToDefaultUser
-					         ? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
-					         : IPlatformInputDeviceMapper::Get().AllocateNewUserId();
+				             ? IPlatformInputDeviceMapper::Get().GetPrimaryPlatformUser()
+				             : IPlatformInputDeviceMapper::Get().AllocateNewUserId();
 
 #else
 				UserId = IPlatformInputDeviceMapper::Get().GetPlatformUserForNewlyConnectedDevice();

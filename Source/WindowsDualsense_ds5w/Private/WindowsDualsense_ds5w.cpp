@@ -3,11 +3,11 @@
 // Planned Release Year: 2025
 
 #include "WindowsDualsense_ds5w/Public/WindowsDualsense_ds5w.h"
+#include "API/SonyGamepadProxyHelpers.h"
 #include "GCore/Interfaces/IPlatformHardwareInfo.h"
 #include "Implementations/Adapters/DeviceRegistry.h"
 #include "Implementations/Platforms/Commons/LinuxHardwarePolicy.h"
 #include "Implementations/Platforms/Windows/WindowsHardwarePolicy.h"
-#include "API/SonyGamepadProxyHelpers.h"
 
 #if PLATFORM_LINUX || PLATFORM_MAC
 #include "Framework/Application/SlateApplication.h"
@@ -29,7 +29,7 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
 	std::unique_ptr<IPlatformHardwareInfo> WindowsInstance = std::make_unique<FWindowsPlatform::FWindowsHardware>();
 	IPlatformHardwareInfo::SetInstance(std::move(WindowsInstance));
-	
+
 #elif PLATFORM_LINUX || PLATFORM_MAC
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -41,12 +41,12 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 		TSharedPtr<FSonyInputProcessor> SonyInputProcessor = MakeShared<FSonyInputProcessor>();
 		FSlateApplication::Get().RegisterInputPreProcessor(SonyInputProcessor);
 	}
-	
+
 	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
 	std::unique_ptr<IPlatformHardwareInfo> LinuxInstance = std::make_unique<FLinuxPlatform::FLinuxHardware>();
 	IPlatformHardwareInfo::SetInstance(std::move(LinuxInstance));
 #endif
-	
+
 	// Initialize DeviceResgistry
 	FDeviceRegistry::Initialize();
 }

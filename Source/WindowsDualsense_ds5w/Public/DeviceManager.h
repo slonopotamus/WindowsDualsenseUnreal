@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "CoreMinimal.h"
+#include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "IHapticDevice.h"
 #include "IInputDevice.h"
 #include "InputCoreTypes.h"

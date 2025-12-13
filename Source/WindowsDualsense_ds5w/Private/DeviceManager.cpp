@@ -3,11 +3,11 @@
 // Planned Release Year: 2025
 
 #include "DeviceManager.h"
-#include "GCore/Types/DSCoreTypes.h"
-#include "GCore/Types/ECoreGamepad.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
+#include "GCore/Types/DSCoreTypes.h"
+#include "GCore/Types/ECoreGamepad.h"
 #include "Misc/CoreDelegates.h"
 #include <locale>
 
@@ -15,7 +15,7 @@ using namespace DSCoreTypes;
 using namespace SonyGamepadProxyHelpers;
 
 DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler)
-	: MessageHandler(InMessageHandler)
+    : MessageHandler(InMessageHandler)
 {
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
 }
@@ -32,7 +32,6 @@ void DeviceManager::Tick(float DeltaTime)
 	{
 		Registry->DiscoverDevices(DeltaTime);
 	}
-	
 
 	TArray<FInputDeviceId> OutInputDevices;
 	OutInputDevices.Reset();
@@ -46,7 +45,7 @@ void DeviceManager::Tick(float DeltaTime)
 			{
 				continue;
 			}
-			
+
 			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [=]() {
 				if (ISonyGamepad* Ref = Registry->GetLibraryInstance(Device); Ref)
 				{
@@ -55,7 +54,7 @@ void DeviceManager::Tick(float DeltaTime)
 			});
 		}
 	}
-	
+
 	SendControllerEvents();
 }
 
@@ -174,29 +173,29 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 	if (FrameInput.bIsTouching && !FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchStarted(
-			nullptr,
-			FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-			1.0f,
-			FrameInput.TouchId,
-			UserId,
-			InputDeviceId);
+		    nullptr,
+		    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+		    1.0f,
+		    FrameInput.TouchId,
+		    UserId,
+		    InputDeviceId);
 	}
 	else if (FrameInput.bIsTouching && FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchMoved(
-			FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-			1.0f,
-			FrameInput.TouchId,
-			UserId,
-			InputDeviceId);
+		    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+		    1.0f,
+		    FrameInput.TouchId,
+		    UserId,
+		    InputDeviceId);
 	}
 	else if (!FrameInput.bIsTouching && FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchEnded(
-			FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-			FrameInput.TouchId,
-			UserId,
-			InputDeviceId);
+		    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+		    FrameInput.TouchId,
+		    UserId,
+		    InputDeviceId);
 	}
 	FrameInput.bWasTouchDown = FrameInput.bIsTouching;
 }

@@ -56,5 +56,3 @@ ISonyGamepad* FDeviceRegistry::GetLibraryInstance(FInputDeviceId DeviceId)
 	}
 	return nullptr;
 }
-
-

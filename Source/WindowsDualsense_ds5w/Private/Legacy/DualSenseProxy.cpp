@@ -3,10 +3,10 @@
 // Planned Release Year: 2025
 
 #include "Legacy/DualSenseProxy.h"
-#include "API/SonyGamepadProxyHelpers.h"
 #include "API/SonyGamepadBaseProxy.h"
 #include "API/SonyGamepadHapticsProxy.h"
 #include "API/SonyGamepadLightsProxy.h"
+#include "API/SonyGamepadProxyHelpers.h"
 #include "API/SonyGamepadTriggerProxy.h"
 #include "Helpers/ValidateHelpers.h"
 
@@ -142,7 +142,6 @@ void UDualSenseProxy::Galloping(
 		SecondFoot = 9;
 	}
 
-	
 	// USonyGamepadTriggerProxy::Galloping(ControllerId);
 }
 
@@ -194,7 +193,7 @@ void UDualSenseProxy::Bow(int32 ControllerId, int32 StartPosition, int32 EndPosi
 	{
 		EndStrength = 8;
 	}
-	
+
 	USonyGamepadTriggerProxy::Bow(ControllerId, MakeTPosition(StartPosition), MakeSnap(), MakeHand(Hand));
 }
 

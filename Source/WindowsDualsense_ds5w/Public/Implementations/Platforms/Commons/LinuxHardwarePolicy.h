@@ -7,7 +7,6 @@
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "Implementations/Platforms/Commons/CommonsDeviceInfo.h"
 
-
 // Sample Linux hardware policy adapter template
 //
 // This example satisfies the `IsHardwarePolicy` concept used by
@@ -19,39 +18,39 @@ namespace FLinuxPlatform
 {
 	struct FLinuxHardwarePolicy;
 	using FLinuxHardware = GamepadCore::TGenericHardwareInfo<FLinuxHardwarePolicy>;
-	
-    struct FLinuxHardwarePolicy
-    {
-        FLinuxHardwarePolicy() = default;
 
-        void Read(FDeviceContext* Context)
-        {
+	struct FLinuxHardwarePolicy
+	{
+		FLinuxHardwarePolicy() = default;
+
+		void Read(FDeviceContext* Context)
+		{
 			FCommonsDeviceInfo::Read(Context);
-        }
+		}
 
-        void Write(FDeviceContext* Context)
-        {
-        	FCommonsDeviceInfo::Write(Context);
-        }
+		void Write(FDeviceContext* Context)
+		{
+			FCommonsDeviceInfo::Write(Context);
+		}
 
-        void Detect(std::vector<FDeviceContext>& Devices)
-        {
-        	FCommonsDeviceInfo::Detect(Devices);
-        }
+		void Detect(std::vector<FDeviceContext>& Devices)
+		{
+			FCommonsDeviceInfo::Detect(Devices);
+		}
 
-        bool CreateHandle(FDeviceContext* Context)
-        {
-        	return FCommonsDeviceInfo::CreateHandle(Context);
-        }
+		bool CreateHandle(FDeviceContext* Context)
+		{
+			return FCommonsDeviceInfo::CreateHandle(Context);
+		}
 
-        void InvalidateHandle(FDeviceContext* Context)
-        {
-        	FCommonsDeviceInfo::InvalidateHandle(Context);
-        }
+		void InvalidateHandle(FDeviceContext* Context)
+		{
+			FCommonsDeviceInfo::InvalidateHandle(Context);
+		}
 
-        void ProcessAudioHaptic(FDeviceContext* Context)
-        {
-        	FCommonsDeviceInfo::ProcessAudioHapitc(Context);
-        }
-    };
-}
+		void ProcessAudioHaptic(FDeviceContext* Context)
+		{
+			FCommonsDeviceInfo::ProcessAudioHapitc(Context);
+		}
+	};
+} // namespace FLinuxPlatform

@@ -199,5 +199,4 @@ public:
 	{
 		EnableGyroscopeValues(ControllerId, bEnableAccelerometer);
 	}
-
 };

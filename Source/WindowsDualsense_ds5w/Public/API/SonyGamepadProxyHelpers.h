@@ -54,7 +54,7 @@ namespace SonyGamepadProxyHelpers
 	inline ISonyGamepad* GetGamepad(int32 ControllerId, bool bLogOnFailure = true)
 	{
 		check(IsInGameThread());
-		
+
 		TArray<FInputDeviceId> Devices;
 		IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
 		    FPlatformUserId::CreateFromInternalId(ControllerId),
@@ -142,7 +142,7 @@ namespace SonyGamepadProxyHelpers
 	inline FInputDeviceId GetDeviceId(int32 ControllerId)
 	{
 		check(IsInGameThread());
-		
+
 		TArray<FInputDeviceId> Devices;
 		IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
 		    FPlatformUserId::CreateFromInternalId(ControllerId),

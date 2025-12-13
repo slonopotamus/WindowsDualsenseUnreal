@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "GCore/Interfaces/ISonyGamepad.h"
 #include "CoreMinimal.h"
+#include "GCore/Interfaces/ISonyGamepad.h"
 #include "InputCoreTypes.h"
 
 /**

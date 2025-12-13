@@ -3,7 +3,6 @@
 // Planned Release Year: 2025
 
 #include "Subsystems/SonyInputProcessor.h"
-
 #include "GCore/Interfaces/ISonyGamepad.h"
 #include "Implementations/Adapters/DeviceRegistry.h"
 

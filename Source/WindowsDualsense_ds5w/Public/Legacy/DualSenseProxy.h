@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "API/Types/Enums/EDeviceCommons.h"
 #include "API/SonyGamepadTriggerProxy.h"
 #include "API/Types/DualSenseFeatureReport.h"
+#include "API/Types/Enums/EDeviceCommons.h"
 #include "CoreMinimal.h"
 #include "InputCoreTypes.h"
 #include "SonyGamepadProxy.h"

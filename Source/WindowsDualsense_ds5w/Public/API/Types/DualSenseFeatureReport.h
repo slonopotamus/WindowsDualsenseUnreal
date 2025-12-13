@@ -129,11 +129,11 @@ struct FDualSenseFeatureReport
 	 * Display Name: Soft haptic feedback, advanced vibrate
 	 */
 	UPROPERTY(
-		EditAnywhere,
-		BlueprintReadWrite,
-		Category = "DualSense Settings",
-		meta = (DisplayName = "Vibration mode",
-				ToolTip = "Advanced vibration that are directly generated from real-time audio analysis for a more immersive haptic experience."))
+	    EditAnywhere,
+	    BlueprintReadWrite,
+	    Category = "DualSense Settings",
+	    meta = (DisplayName = "Vibration mode",
+	            ToolTip = "Advanced vibration that are directly generated from real-time audio analysis for a more immersive haptic experience."))
 	EDualSenseDeviceFeatureReport VibrationMode;
 	/**
 	 * Determines the reduction intensity of the soft rumble effect for a DualSense device.
@@ -188,7 +188,7 @@ struct FDualSenseFeatureReport
 	    , AudioSpeaker(EDualSenseAudioFeatureReport::On)
 	    , MicVolume(0)
 	    , AudioVolume(0)
-		, VibrationMode(EDualSenseDeviceFeatureReport::DefaultRumble)
+	    , VibrationMode(EDualSenseDeviceFeatureReport::DefaultRumble)
 	    , SoftRumbleReduce(0)
 	    , TriggerSoftnessLevel(EDualSenseTriggerSoftnessLevel::Medium)
 	{

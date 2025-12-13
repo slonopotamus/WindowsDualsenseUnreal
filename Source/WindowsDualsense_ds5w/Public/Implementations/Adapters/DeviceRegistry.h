@@ -4,10 +4,10 @@
 #pragma once
 
 #include "Async/TaskGraphInterfaces.h"
-#include "GCore/Interfaces/ISonyGamepad.h"
-#include "GCore/Templates/TBasicDeviceRegistry.h"
 #include "CoreMinimal.h"
 #include "DeviceRegistryPolicy.h"
+#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GCore/Templates/TBasicDeviceRegistry.h"
 #include "HAL/PlatformProcess.h"
 
 /**
@@ -17,7 +17,7 @@
  */
 class FDeviceRegistry : public FNoncopyable
 {
-	
+
 public:
 	virtual ~FDeviceRegistry();
 	/**
@@ -64,8 +64,9 @@ public:
 	 *         or nullptr if none exists or the registry is not initialized.
 	 */
 	static ISonyGamepad* GetLibraryInstance(FInputDeviceId DeviceId);
-	
+
 	using FRegistryLogic = GamepadCore::TBasicDeviceRegistry<FDeviceRegistryPolicy>;
+
 private:
 	FDeviceRegistry();
 	/**
@@ -82,5 +83,4 @@ private:
 	 * Ensures clean separation and abstraction of the registry's internal mechanics.
 	 */
 	static std::unique_ptr<FRegistryLogic> RegistryImplementation;
-	
 };

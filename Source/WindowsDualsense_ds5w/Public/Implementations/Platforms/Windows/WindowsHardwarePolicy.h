@@ -3,14 +3,14 @@
 // Description: Cross-platform library for DualSense and generic gamepad input support.
 // Targets: Windows, Linux, macOS.
 #pragma once
-#include "WindowsDeviceInfo.h"
 #include "GCore/Templates/TGenericHardwareInfo.h"
+#include "WindowsDeviceInfo.h"
 
 namespace FWindowsPlatform
 {
 	struct FWindowsHardwarePolicy;
 	using FWindowsHardware = GamepadCore::TGenericHardwareInfo<FWindowsHardwarePolicy>;
-	
+
 	struct FWindowsHardwarePolicy
 	{
 	public:
@@ -44,4 +44,4 @@ namespace FWindowsPlatform
 			FWindowsDeviceInfo::ProcessAudioHapitc(Context);
 		}
 	};
-}
+} // namespace FWindowsPlatform
