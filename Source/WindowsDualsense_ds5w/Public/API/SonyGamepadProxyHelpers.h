@@ -5,9 +5,9 @@
 #pragma once
 
 #include "Core/Interfaces/ISonyGamepad.h"
-#include "Core/Managers/DeviceRegistry.h"
 #include "GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Helpers/DualSenseLog.h"
+#include "Implementations/Adapters/DeviceRegistry.h"
 #include "Types/Enums/EDeviceCommons.h"
 #include "Types/Enums/EDeviceConnection.h"
 
@@ -54,15 +54,16 @@ namespace SonyGamepadProxyHelpers
 	inline ISonyGamepad* GetGamepad(int32 ControllerId, bool bLogOnFailure = true)
 	{
 		check(IsInGameThread());
-
+		
 		TArray<FInputDeviceId> Devices;
 		IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
 		    FPlatformUserId::CreateFromInternalId(ControllerId),
 		    Devices);
 
+		FDeviceRegistry* Registry = FDeviceRegistry::Get();
 		for (const FInputDeviceId& DeviceId : Devices)
 		{
-			if (ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId))
+			if (ISonyGamepad* Gamepad = Registry->GetLibraryInstance(DeviceId))
 			{
 				return Gamepad;
 			}
@@ -141,15 +142,16 @@ namespace SonyGamepadProxyHelpers
 	inline FInputDeviceId GetDeviceId(int32 ControllerId)
 	{
 		check(IsInGameThread());
-
+		
 		TArray<FInputDeviceId> Devices;
 		IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(
 		    FPlatformUserId::CreateFromInternalId(ControllerId),
 		    Devices);
 
+		FDeviceRegistry* Registry = FDeviceRegistry::Get();
 		for (const FInputDeviceId& DeviceId : Devices)
 		{
-			if (FDeviceRegistry::Get()->GetLibraryInstance(DeviceId))
+			if (Registry->GetLibraryInstance(DeviceId))
 			{
 				return DeviceId;
 			}

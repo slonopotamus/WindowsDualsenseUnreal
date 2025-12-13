@@ -3,13 +3,14 @@
 // Planned Release Year: 2025
 
 #include "Legacy/DualSenseProxy.h"
+#include "API/SonyGamepadProxyHelpers.h"
 #include "API/SonyGamepadBaseProxy.h"
 #include "API/SonyGamepadHapticsProxy.h"
 #include "API/SonyGamepadLightsProxy.h"
 #include "API/SonyGamepadTriggerProxy.h"
 #include "Helpers/ValidateHelpers.h"
-#include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
 
+using namespace SonyGamepadProxyHelpers;
 void UDualSenseProxy::DeviceSettings(int32 ControllerId, FDualSenseFeatureReport Settings)
 {
 	USonyGamepadBaseProxy::DualSenseSettings(ControllerId, Settings);
@@ -64,12 +65,6 @@ void UDualSenseProxy::Resistance(int32 ControllerId, int32 StartPosition, int32 
 		Strength = 0;
 	}
 
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
 	USonyGamepadTriggerProxy::Resistance(ControllerId, MakePosition(StartPosition), MakeStrength(Strength), MakeHand(Hand));
 }
 
@@ -88,12 +83,6 @@ void UDualSenseProxy::AutomaticGun(int32 ControllerId, int32 BeginStrength, int3
 		EndStrength = 8;
 	}
 
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
 	ETriggerEffectBehavior Behavior = ETriggerEffectBehavior::Sustained;
 	if (!KeepEffect)
 	{
@@ -106,22 +95,11 @@ void UDualSenseProxy::AutomaticGun(int32 ControllerId, int32 BeginStrength, int3
 
 void UDualSenseProxy::GameCube(int32 ControllerId, EControllerHand Hand)
 {
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
 	USonyGamepadTriggerProxy::GameCube(ControllerId, MakeHand(Hand));
 }
 
 void UDualSenseProxy::CustomTrigger(int32 ControllerId, EControllerHand Hand, const TArray<FString>& HexBytes)
 {
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
 	if (HexBytes.Num() > 10)
 	{
 		return;
@@ -138,12 +116,6 @@ void UDualSenseProxy::ContinuousResistance(int32 ControllerId, int32 StartPositi
 	if (!FValidateHelpers::ValidateMaxPosition(Strength))
 	{
 		Strength = 8;
-	}
-
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
 	}
 
 	USonyGamepadTriggerProxy::Resistance(ControllerId, MakePosition(StartPosition), MakeStrength(Strength), MakeHand(Hand));
@@ -170,11 +142,7 @@ void UDualSenseProxy::Galloping(
 		SecondFoot = 9;
 	}
 
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
+	
 	// USonyGamepadTriggerProxy::Galloping(ControllerId);
 }
 
@@ -202,11 +170,6 @@ void UDualSenseProxy::Weapon(int32 ControllerId, int32 StartPosition, int32 EndP
 		Strength = 8;
 	}
 
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
 	EDualSenseWeaponTrigger Weapon = EDualSenseWeaponTrigger::Max;
 	ETriggerEffectBehavior Behavior = ETriggerEffectBehavior::Sustained;
 	USonyGamepadTriggerProxy::Weapon(ControllerId, MakeTPosition(StartPosition), MakeAmplitude(EndPosition), Behavior, Weapon, MakeHand(Hand));
@@ -231,52 +194,26 @@ void UDualSenseProxy::Bow(int32 ControllerId, int32 StartPosition, int32 EndPosi
 	{
 		EndStrength = 8;
 	}
-
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
+	
 	USonyGamepadTriggerProxy::Bow(ControllerId, MakeTPosition(StartPosition), MakeSnap(), MakeHand(Hand));
 }
 
 void UDualSenseProxy::NoResistance(int32 ControllerId, EControllerHand Hand)
 {
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
-
 	USonyGamepadTriggerProxy::StopTrigger(ControllerId, MakeHand(Hand));
 }
 
 void UDualSenseProxy::StopTriggerEffect(const int32 ControllerId, EControllerHand HandStop)
 {
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
 	USonyGamepadTriggerProxy::StopTrigger(ControllerId, MakeHand(HandStop));
 }
 
 void UDualSenseProxy::StopAllTriggersEffects(const int32 ControllerId)
 {
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
 	USonyGamepadTriggerProxy::StopTrigger(ControllerId, MakeHand(EControllerHand::AnyHand));
 }
 
 void UDualSenseProxy::ResetEffects(const int32 ControllerId)
 {
-	const FInputDeviceId DeviceId = GetGamepadInterface(ControllerId);
-	if (!DeviceId.IsValid())
-	{
-		return;
-	}
 	USonyGamepadTriggerProxy::StopTrigger(ControllerId, MakeHand(EControllerHand::AnyHand));
 }

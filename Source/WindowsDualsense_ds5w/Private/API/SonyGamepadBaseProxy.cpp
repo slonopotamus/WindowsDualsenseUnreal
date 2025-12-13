@@ -38,7 +38,17 @@ void USonyGamepadBaseProxy::DualSenseSettings(int32 ControllerId, FDualSenseFeat
 	{
 		return;
 	}
-	Gamepad->Settings(Value);
+	
+	Gamepad->DualSenseSettings(
+		static_cast<std::uint8_t>(Value.MicStatus),
+		static_cast<std::uint8_t>(Value.AudioHeadset),
+		static_cast<std::uint8_t>(Value.AudioSpeaker),
+		static_cast<std::uint8_t>(Value.MicVolume),
+		static_cast<std::uint8_t>(Value.AudioVolume),
+		static_cast<std::uint8_t>(Value.VibrationMode),
+		static_cast<std::uint8_t>(Value.SoftRumbleReduce),
+		static_cast<std::uint8_t>(Value.TriggerSoftnessLevel)
+	);
 }
 bool USonyGamepadBaseProxy::DeviceIsConnected(int32 ControllerId)
 {

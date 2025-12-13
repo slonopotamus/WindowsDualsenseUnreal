@@ -4,15 +4,11 @@
 
 #pragma once
 
-#include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
 #include <memory>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
-class FCommonsDeviceInfo : public IPlatformHardwareInfo
+class FCommonsDeviceInfo
 {
 	/**
 	 * Virtual destructor for the FCommonsDeviceInfo class.
@@ -25,7 +21,7 @@ class FCommonsDeviceInfo : public IPlatformHardwareInfo
 	 * of derived class objects through base class pointers.
 	 */
 public:
-	virtual ~FCommonsDeviceInfo() override
+	~FCommonsDeviceInfo()
 	{
 	}
 
@@ -42,7 +38,7 @@ public:
 	 *                haptic feedback. Must be a valid, properly initialized
 	 *                pointer.
 	 */
-	virtual void ProcessAudioHapitc(FDeviceContext* Context) override;
+	static void ProcessAudioHapitc(FDeviceContext* Context);
 	/**
 	 * @brief Configures Bluetooth-specific features for a given HID device.
 	 *
@@ -65,7 +61,7 @@ public:
 	 *        the necessary context and interface for accessing device-related
 	 *        information. It must be valid and properly initialized.
 	 */
-	virtual void Read(FDeviceContext* Context) override;
+	static void Read(FDeviceContext* Context);
 	/**
 	 * Writes device-specific information to the provided device context.
 	 *
@@ -77,7 +73,7 @@ public:
 	 *                target for the device information. Must be a valid,
 	 *                non-null pointer.
 	 */
-	virtual void Write(FDeviceContext* Context) override;
+	static void Write(FDeviceContext* Context);
 	/**
 	 * Detects and populates a list of device contexts.
 	 *
@@ -87,7 +83,7 @@ public:
 	 * @param Devices A reference to an array of FDeviceContext objects
 	 *                that will be populated with the detected device information.
 	 */
-	virtual void Detect(std::vector<FDeviceContext>& Devices) override;
+	static void Detect(std::vector<FDeviceContext>& Devices);
 	/**
 	 * Creates a handle for the FCommonsDeviceInfo class using the provided device context.
 	 *
@@ -98,7 +94,7 @@ public:
 	 * @param Context A pointer to the FDeviceContext instance used for handle creation.
 	 * @return A boolean value indicating whether the handle was successfully created.
 	 */
-	virtual bool CreateHandle(FDeviceContext* Context) override;
+	static bool CreateHandle(FDeviceContext* Context);
 	/**
 	 * Invalidates the device handle associated with the specified device context.
 	 *
@@ -109,5 +105,5 @@ public:
 	 * @param Context A pointer to the FDeviceContext instance whose handle is to
 	 *                be invalidated. This parameter must not be null.
 	 */
-	virtual void InvalidateHandle(FDeviceContext* Context) override;
+	static void InvalidateHandle(FDeviceContext* Context);
 };

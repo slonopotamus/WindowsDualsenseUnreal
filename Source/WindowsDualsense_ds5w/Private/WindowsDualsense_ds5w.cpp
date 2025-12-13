@@ -12,6 +12,11 @@
 #endif
 #include "DeviceManager.h"
 #include "InputCoreTypes.h"
+#include "Core/Interfaces/IPlatformHardwareInfo.h"
+#include "Core/Templates/TBasicDeviceRegistry.h"
+#include "Implementations/Adapters/DeviceRegistry.h"
+#include "Implementations/Adapters/DeviceRegistryPolicy.h"
+#include "Implementations/Platforms/Commons/LinuxHardwarePolicy.h"
 #include "Misc/Paths.h"
 
 #define LOCTEXT_NAMESPACE "FWindowsDualsense_ds5wModule"
@@ -20,6 +25,7 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 {
 	IModularFeatures::Get().RegisterModularFeature(GetModularFeatureName(), this);
 	RegisterCustomKeys();
+	
 #if PLATFORM_LINUX || PLATFORM_MAC
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -28,10 +34,17 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 
 	if (FSlateApplication::IsInitialized())
 	{
-		SonyInputProcessor = MakeShared<FSonyInputProcessor>();
+		TSharedPtr<FSonyInputProcessor> SonyInputProcessor = MakeShared<FSonyInputProcessor>();
 		FSlateApplication::Get().RegisterInputPreProcessor(SonyInputProcessor);
 	}
 #endif
+
+	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
+	std::unique_ptr<IPlatformHardwareInfo> LinuxInstance = std::make_unique<FLinuxPlatform::FLinuxHardware>();
+	IPlatformHardwareInfo::SetInstance(std::move(LinuxInstance));
+	
+	// Initialize DeviceResgistry
+	FDeviceRegistry::Initialize();
 }
 
 void FWindowsDualsense_ds5wModule::ShutdownModule()

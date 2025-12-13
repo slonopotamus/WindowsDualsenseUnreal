@@ -200,7 +200,4 @@ public:
 		EnableGyroscopeValues(ControllerId, bEnableAccelerometer);
 	}
 
-protected:
-	UFUNCTION()
-	static FInputDeviceId GetGamepadInterface(int32 ControllerId);
 };

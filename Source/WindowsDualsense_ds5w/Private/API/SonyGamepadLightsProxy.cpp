@@ -4,7 +4,9 @@
 
 #include "API/SonyGamepadLightsProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
+#include "Core/Types/DSCoreTypes.h"
 
+using namespace DSCoreTypes;
 using namespace SonyGamepadProxyHelpers;
 
 void USonyGamepadLightsProxy::Ligthbar(int32 ControllerId, FColor Color)
@@ -21,7 +23,7 @@ void USonyGamepadLightsProxy::LigthbarFlash(int32 ControllerId, FColor Color, fl
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
 		FDSColor CastColor = {Color.R, Color.G, Color.B, Color.A};
-		Gamepad->SetLightbar(CastColor, BrithnessTime, ToggleTime);
+		Gamepad->SetLightbarFlash(CastColor, BrithnessTime, ToggleTime);
 	}
 }
 

@@ -1,7 +1,6 @@
 // Copyright (c) 2025 Rafael Valoto/Publisher. All rights reserved.
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
-
 #pragma once
 
 #ifdef _WIN32
@@ -12,8 +11,8 @@
 #include <Windows.h>
 #endif
 
-#include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Types/DSCoreTypes.h"
+#include "Core/Interfaces/IPlatformHardwareInfo.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
 
 /**
@@ -37,11 +36,12 @@ enum class EPollResult
  * This class encapsulates various tasks related to managing multiple HID devices, including handling connections,
  * transmitting and receiving data, detecting device presence, and managing device-specific states or contexts.
  */
-class FWindowsDeviceInfo final : public IPlatformHardwareInfo
+class FWindowsDeviceInfo
 {
 
 public:
-	virtual void ProcessAudioHapitc(FDeviceContext* Context) override;
+	virtual ~FWindowsDeviceInfo() = default;
+	static void ProcessAudioHapitc(FDeviceContext* Context);
 	/**
 	 * @brief Configures Bluetooth-specific features for a given HID device.
 	 *
@@ -51,7 +51,7 @@ public:
 	 * @param Context A reference to the device context object that holds device-specific settings and state information.
 	 * @return A boolean indicating whether the Bluetooth feature configuration was successful (true) or failed (false).
 	 */
-	static bool ConfigureFeatures(FDeviceContext* Context);
+	static void ConfigureFeatures(FDeviceContext* Context);
 	/**
 	 * @brief Reads data from the specified HID device context.
 	 *
@@ -63,7 +63,7 @@ public:
 	 *        should contain a valid device handle and input buffer. If the context is invalid or disconnected,
 	 *        the method will handle associated cleanup and reporting.
 	 */
-	virtual void Read(FDeviceContext* Context) override;
+	static void Read(FDeviceContext* Context) override;
 	/**
 	 * @brief Writes data to the specified HID device context.
 	 *
@@ -76,7 +76,7 @@ public:
 	 *        handle, connection type, device type, and output buffer. Must not be null and must
 	 *        represent a valid device handle for a successful write operation.
 	 */
-	virtual void Write(FDeviceContext* Context) override;
+	static void Write(FDeviceContext* Context) override;
 	/**
 	 * @brief Detects available HID devices and updates the provided list of device contexts.
 	 *
@@ -87,7 +87,7 @@ public:
 	 * @param Devices A reference to an array of FDeviceContext objects that will be updated to include
 	 *        the detected and initialized HID device contexts. Existing data in the array will be overwritten.
 	 */
-	virtual void Detect(std::vector<FDeviceContext>& Devices) override;
+	static void Detect(std::vector<FDeviceContext>& Devices) override;
 	/**
 	 * @brief Creates a handle for the specified device context.
 	 *
@@ -97,7 +97,7 @@ public:
 	 * @param Context A pointer to the device context containing the device path and other relevant information.
 	 * @return True if the handle creation is successful; otherwise, false.
 	 */
-	virtual bool CreateHandle(FDeviceContext* Context) override;
+	static bool CreateHandle(FDeviceContext* Context) override;
 	/**
 	 * @brief Invalidates the handle of the specified HID device context and updates its connection status.
 	 *
@@ -108,7 +108,7 @@ public:
 	 * @param Context Pointer to the device context representing the HID device whose handle is to be invalidated.
 	 *        If the provided context is null, the method will return without performing any operations.
 	 */
-	virtual void InvalidateHandle(FDeviceContext* Context) override;
+	static void InvalidateHandle(FDeviceContext* Context) override;
 	/**
 	 * @brief Invalidates the specified handle to prevent further use.
 	 *

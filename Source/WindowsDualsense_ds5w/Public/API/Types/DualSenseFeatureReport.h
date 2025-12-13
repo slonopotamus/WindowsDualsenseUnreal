@@ -75,30 +75,6 @@ struct FDualSenseFeatureReport
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DualSense Settings", meta = (ToolTip = "Enables the speaker.", DisplayName = "Speaker Audio"))
 	EDualSenseAudioFeatureReport AudioSpeaker;
 	/**
-	 * Specifies the vibration mode for the DualSense device. Controls the type of haptic feedback
-	 * or vibration effect to be applied on the controller using the available feature report.
-	 *
-	 * The possible values are:
-	 * - EDualSenseDeviceFeatureReport::Off: Disables vibration feedback.
-	 * - EDualSenseDeviceFeatureReport::DefaultRumble: Enables default rumble feedback.
-	 * - EDualSenseDeviceFeatureReport::HapticSoftRumble: Enables soft haptic rumble feedback.
-	 *
-	 * This property can be edited within the editor and accessed in Blueprints, allowing advanced customization
-	 * of the DualSense controller's haptic behavior to provide a tailored user experience.
-	 *
-	 * Category: DualSense Settings
-	 *
-	 * Display Name: Soft haptic feedback, advanced vibrate
-	 */
-	UPROPERTY(
-	    EditAnywhere,
-	    BlueprintReadWrite,
-	    Category = "DualSense Settings",
-	    meta = (DisplayName = "Vibration mode",
-	            ToolTip = "Advanced vibration that are directly generated from real-time audio analysis for a more immersive haptic experience."))
-	EDualSenseDeviceFeatureReport VibrationMode;
-
-	/**
 	 * The microphone volume level for the DualSense device.
 	 *
 	 * This variable determines the intensity of the microphone input, allowing users
@@ -136,6 +112,29 @@ struct FDualSenseFeatureReport
 	          meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100", ToolTip = "Adjusts the audio output volume level.", DisplayName = "Audio Volume"))
 	int32 AudioVolume;
 
+	/**
+	 * Specifies the vibration mode for the DualSense device. Controls the type of haptic feedback
+	 * or vibration effect to be applied on the controller using the available feature report.
+	 *
+	 * The possible values are:
+	 * - EDualSenseDeviceFeatureReport::Off: Disables vibration feedback.
+	 * - EDualSenseDeviceFeatureReport::DefaultRumble: Enables default rumble feedback.
+	 * - EDualSenseDeviceFeatureReport::HapticSoftRumble: Enables soft haptic rumble feedback.
+	 *
+	 * This property can be edited within the editor and accessed in Blueprints, allowing advanced customization
+	 * of the DualSense controller's haptic behavior to provide a tailored user experience.
+	 *
+	 * Category: DualSense Settings
+	 *
+	 * Display Name: Soft haptic feedback, advanced vibrate
+	 */
+	UPROPERTY(
+		EditAnywhere,
+		BlueprintReadWrite,
+		Category = "DualSense Settings",
+		meta = (DisplayName = "Vibration mode",
+				ToolTip = "Advanced vibration that are directly generated from real-time audio analysis for a more immersive haptic experience."))
+	EDualSenseDeviceFeatureReport VibrationMode;
 	/**
 	 * Determines the reduction intensity of the soft rumble effect for a DualSense device.
 	 *
@@ -187,9 +186,9 @@ struct FDualSenseFeatureReport
 	    : MicStatus(EDualSenseAudioFeatureReport::Off)
 	    , AudioHeadset(EDualSenseAudioFeatureReport::Off)
 	    , AudioSpeaker(EDualSenseAudioFeatureReport::On)
-	    , VibrationMode(EDualSenseDeviceFeatureReport::DefaultRumble)
 	    , MicVolume(0)
 	    , AudioVolume(0)
+		, VibrationMode(EDualSenseDeviceFeatureReport::DefaultRumble)
 	    , SoftRumbleReduce(0)
 	    , TriggerSoftnessLevel(EDualSenseTriggerSoftnessLevel::Medium)
 	{

@@ -3,18 +3,19 @@
 // Planned Release Year: 2025
 
 #include "DeviceManager.h"
+#include "Core/Types/DSCoreTypes.h"
+#include "Core/Types/ECoreGamepad.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
-#include "Core/Managers/DeviceRegistry.h"
-#include "Core/Types/DSCoreTypes.h"
-#include "Core/Types/ECoreGamepadTypes.h"
 #include "Misc/CoreDelegates.h"
 #include <locale>
 
+using namespace DSCoreTypes;
 using namespace SonyGamepadProxyHelpers;
+
 DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler)
-    : MessageHandler(InMessageHandler)
+	: MessageHandler(InMessageHandler)
 {
 	FCoreDelegates::OnUserLoginChangedEvent.AddRaw(this, &DeviceManager::OnUserLoginChangedEvent);
 }
@@ -26,47 +27,36 @@ DeviceManager::~DeviceManager()
 
 void DeviceManager::Tick(float DeltaTime)
 {
-	SendControllerEvents();
-	FDeviceRegistry::Get()->DetectedChangeConnections(DeltaTime);
-
-	PollAccumulator += DeltaTime;
-	if (PollAccumulator < PollInterval)
+	FDeviceRegistry* Registry = FDeviceRegistry::Get();
+	if (Registry)
 	{
-		return;
+		Registry->DiscoverDevices(DeltaTime);
 	}
-	PollAccumulator = 0.0f;
+	
 
-	// FVector2D ScreenSize = FVector2D::ZeroVector;
-	// if (GEngine && GEngine->GameViewport)
-	// {
-	// 	GEngine->GameViewport->GetViewportSize(ScreenSize);
-	// }
-	const float CurrentPollInterval = PollInterval;
-
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [=]() {
-		for (const auto& Pair : FDeviceRegistry::Get()->GetAllocatedDevicesMap())
+	TArray<FInputDeviceId> OutInputDevices;
+	OutInputDevices.Reset();
+	IPlatformInputDeviceMapper::Get().GetAllConnectedInputDevices(OutInputDevices);
+	for (const FInputDeviceId& Device : OutInputDevices)
+	{
+		if (ISonyGamepad* Gamepad = Registry->GetLibraryInstance(Device); Gamepad)
 		{
-			if (ISonyGamepad* Ref = Pair.Value.Get())
+			const FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(Device);
+			if (const int32 ControllerId = FPlatformMisc::GetUserIndexForPlatformUser(UserId); ControllerId == -1)
 			{
-				// if (FDeviceContext* Context = Ref->GetMutableDeviceContext())
-				// {
-				// 	if (FInputContext* FrameInput = Context->GetBackBuffer())
-				// 	{
-				// 		// if (FrameInput->TouchRadius.X != ScreenSize.X || FrameInput->TouchRadius.Y != ScreenSize.Y)
-				// 		// {
-				// 		// 	if (ScreenSize.X > 0 && ScreenSize.Y > 0)
-				// 		// 	{
-				// 		// 		UE_LOG(LogDualSense, Log, TEXT("Setting TouchRadius to %f, %f"), ScreenSize.X, ScreenSize.Y);
-				// 		// 		FrameInput->TouchRadius.X = ScreenSize.X;
-				// 		// 		FrameInput->TouchRadius.Y = ScreenSize.Y;
-				// 		// 	}
-				// 		// }
-				// 	}
-				// }
-				Ref->UpdateInput(CurrentPollInterval);
+				continue;
 			}
+			
+			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [=]() {
+				if (ISonyGamepad* Ref = Registry->GetLibraryInstance(Device); Ref)
+				{
+					Ref->UpdateInput(DeltaTime);
+				}
+			});
 		}
-	});
+	}
+	
+	SendControllerEvents();
 }
 
 void DeviceManager::SendControllerEvents()
@@ -184,29 +174,29 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 	if (FrameInput.bIsTouching && !FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchStarted(
-		    nullptr,
-		    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-		    1.0f,
-		    FrameInput.TouchId,
-		    UserId,
-		    InputDeviceId);
+			nullptr,
+			FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+			1.0f,
+			FrameInput.TouchId,
+			UserId,
+			InputDeviceId);
 	}
 	else if (FrameInput.bIsTouching && FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchMoved(
-		    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-		    1.0f,
-		    FrameInput.TouchId,
-		    UserId,
-		    InputDeviceId);
+			FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+			1.0f,
+			FrameInput.TouchId,
+			UserId,
+			InputDeviceId);
 	}
 	else if (!FrameInput.bIsTouching && FrameInput.bWasTouchDown)
 	{
 		MessageHandler->OnTouchEnded(
-		    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-		    FrameInput.TouchId,
-		    UserId,
-		    InputDeviceId);
+			FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+			FrameInput.TouchId,
+			UserId,
+			InputDeviceId);
 	}
 	FrameInput.bWasTouchDown = FrameInput.bIsTouching;
 }
@@ -327,14 +317,13 @@ void DeviceManager::SetLightColor(const int32 ControllerId, const FColor Color)
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		FDSColor CastColor = {Color.R, Color.G, Color.B, Color.A};
-		Gamepad->SetLightbar(CastColor);
+		Gamepad->SetLightbar({Color.R, Color.G, Color.B, Color.A});
 	}
 }
 
 bool DeviceManager::IsGamepadAttached() const
 {
-	return FDeviceRegistry::Get()->GetAllocatedDevices() > 0;
+	return true;
 }
 
 void DeviceManager::OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex)

@@ -4,10 +4,9 @@
 
 #include "API/SonyGamepadHapticsProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "Core/Managers/HapticsRegistry.h"
+#include "Implementations/Managers/HapticsRegistry.h"
 
 using namespace SonyGamepadProxyHelpers;
-
 void USonyGamepadHapticsProxy::RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix)
 {
 	const FInputDeviceId DeviceId = GetDeviceId(ControllerId);

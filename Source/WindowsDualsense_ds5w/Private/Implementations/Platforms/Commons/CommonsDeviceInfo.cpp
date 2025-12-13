@@ -6,8 +6,11 @@
 
 #ifdef __unix__
 #include "API/SonyGamepadProxyHelpers.h"
-#include "Implementations/Utils/GamepadCalibrationSensors.h"
+#include "Implementations/Utils/GamepadSensors.h"
 #include "SDL_hidapi.h"
+#include "Core/Types/ECoreGamepad.h"
+#include "Core/Types/Structs/Config/GamepadSensors.h"
+#include "Core/Types/Structs/Context/DeviceContext.h"
 #include <cstring>
 #include <string>
 #include <unordered_set>
@@ -82,7 +85,7 @@ bool FCommonsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 		return false;
 	}
 
-	using namespace FGamepadCalibrationSensors;
+	using namespace FGamepadSensors;
 	FGamepadCalibration Calibration;
 	DualSenseCalibrationSensors(FeatureBuffer, Calibration);
 

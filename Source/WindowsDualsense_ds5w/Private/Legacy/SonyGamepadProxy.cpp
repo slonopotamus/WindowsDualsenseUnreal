@@ -8,9 +8,6 @@
 #include "API/SonyGamepadProxyHelpers.h"
 #include "API/SonyGamepadSenorsProxy.h"
 #include "API/Types/Enums/EDeviceConnection.h"
-#include "Core/Interfaces/ISonyGamepad.h"
-#include "Core/Managers/DeviceRegistry.h"
-#include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
 
 using namespace SonyGamepadProxyHelpers;
 
@@ -65,24 +62,4 @@ void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope)
 {
 	USonyGamepadSenorsProxy::EnableGyroscopeValues(ControllerId, bEnableGyroscope);
-}
-
-FInputDeviceId USonyGamepadProxy::GetGamepadInterface(int32 ControllerId)
-{
-	// We should never call into IPlatformInputDeviceMapper from non-game thread because it is not thread-safe
-	check(IsInGameThread());
-
-	TArray<FInputDeviceId> Devices;
-
-	IPlatformInputDeviceMapper::Get().GetAllInputDevicesForUser(FPlatformUserId::CreateFromInternalId(ControllerId), Devices);
-
-	for (const FInputDeviceId& DeviceId : Devices)
-	{
-		if (FDeviceRegistry::Get()->GetLibraryInstance(DeviceId))
-		{
-			return DeviceId;
-		}
-	}
-
-	return FInputDeviceId::CreateFromInternalId(INDEX_NONE);
 }

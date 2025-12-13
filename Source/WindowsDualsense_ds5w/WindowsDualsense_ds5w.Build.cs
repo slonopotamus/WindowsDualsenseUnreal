@@ -11,10 +11,15 @@ public class WindowsDualsense_ds5w : ModuleRules
 	public WindowsDualsense_ds5w(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "ApplicationCore", "InputCore", "InputDevice"});
 		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore"});
 		PrivateDependencyModuleNames.AddRange(new string[] {   "AudioMixer", "SignalProcessing", "AudioExtensions", "AudioPlatformConfiguration" });
 		bEnableExceptions = true;
+		
+		var GamepadCoreRoot = Path.Combine(ModuleDirectory, "GamepadCore/Source");
+		PublicIncludePaths.Add(Path.Combine(GamepadCoreRoot, "Public"));
+		PrivateIncludePaths.Add(Path.Combine(GamepadCoreRoot, "Private"));
 	    
 		
 		if (Target.Platform == UnrealTargetPlatform.Win64)

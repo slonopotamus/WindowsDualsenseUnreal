@@ -5,10 +5,9 @@
 #include "Helpers/CommandHelpers.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Core/Interfaces/ISonyGamepad.h"
-#include "Core/Managers/DeviceRegistry.h"
 #include "Core/Types/Structs/Context/DeviceContext.h"
 #include "HAL/IConsoleManager.h"
-#include "Implementations/Utils/PlayStationOutputComposer.h"
+#include "Implementations/Utils/GamepadOutput.h"
 
 static FAutoConsoleCommand GCmd_SetAudioByte(
     TEXT("ds.SetAudioByte"),
@@ -158,7 +157,7 @@ void FCommandHelpers::HandleSetAudioByte(const TArray<FString>& Args)
 	}
 	Ctx->BufferAudio[Index] = ClampByte(Value);
 	UE_LOG(LogDualSense, Log, TEXT("Audio byte[%d] = %d"), Index, (int32)Ctx->BufferAudio[Index]);
-	FPlayStationOutputComposer::OutputDualSense(Ctx);
+	FGamepadOutput::OutputDualSense(Ctx);
 }
 
 void FCommandHelpers::HandleSetAudioLR(const TArray<FString>& Args)
@@ -195,7 +194,7 @@ void FCommandHelpers::HandleSetAudioLR(const TArray<FString>& Args)
 	Ctx->BufferAudio[8] = ClampByte(R2);
 	Ctx->BufferAudio[9] = ClampByte(X);
 	UE_LOG(LogDualSense, Log, TEXT("Audio [5..9] = %d, %d, %d, %d, %d"), (int32)Ctx->BufferAudio[5], (int32)Ctx->BufferAudio[6], (int32)Ctx->BufferAudio[7], (int32)Ctx->BufferAudio[8], (int32)Ctx->BufferAudio[9]);
-	FPlayStationOutputComposer::OutputDualSense(Ctx);
+	FGamepadOutput::OutputDualSense(Ctx);
 }
 
 void FCommandHelpers::HandleDumpAudioBytes(const TArray<FString>& Args)
@@ -253,7 +252,7 @@ void FCommandHelpers::HandleSetTrigR(const TArray<FString>& Args)
 	}
 	Ctx->bOverrideTriggerBytes = true;
 	UE_LOG(LogDualSense, Log, TEXT("Right trigger override updated."));
-	FPlayStationOutputComposer::OutputDualSense(Ctx);
+	FGamepadOutput::OutputDualSense(Ctx);
 }
 
 void FCommandHelpers::HandleSetTrigL(const TArray<FString>& Args)
@@ -287,7 +286,7 @@ void FCommandHelpers::HandleSetTrigL(const TArray<FString>& Args)
 	}
 	Ctx->bOverrideTriggerBytes = true;
 	UE_LOG(LogDualSense, Log, TEXT("Left trigger override updated."));
-	FPlayStationOutputComposer::OutputDualSense(Ctx);
+	FGamepadOutput::OutputDualSense(Ctx);
 }
 
 void FCommandHelpers::HandleDumpTrig(const TArray<FString>& Args)
@@ -346,7 +345,7 @@ void FCommandHelpers::HandleClearTrig(const TArray<FString>& Args)
 	UE_LOG(LogDualSense, Log, TEXT("Trigger overrides cleared."));
 	if (Ctx->IsConnected)
 	{
-		FPlayStationOutputComposer::OutputDualSense(Ctx);
+		FGamepadOutput::OutputDualSense(Ctx);
 	}
 }
 
@@ -472,7 +471,7 @@ void FCommandHelpers::HandleBowTrigR(const TArray<FString>& Args)
 	FMemory::Memcpy(Ctx->OverrideTriggerRight, Bytes, 10);
 	Ctx->bOverrideTriggerBytes = true;
 	UE_LOG(LogDualSense, Log, TEXT("Right trigger set to Bow effect: [%02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3]);
-	FPlayStationOutputComposer::OutputDualSense(Ctx);
+	FGamepadOutput::OutputDualSense(Ctx);
 }
 
 void FCommandHelpers::HandleBowTrigL(const TArray<FString>& Args)
@@ -511,7 +510,7 @@ void FCommandHelpers::HandleBowTrigL(const TArray<FString>& Args)
 	FMemory::Memcpy(Ctx->OverrideTriggerLeft, Bytes, 10);
 	Ctx->bOverrideTriggerBytes = true;
 	UE_LOG(LogDualSense, Log, TEXT("Left trigger set to Bow effect: [%02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3]);
-	FPlayStationOutputComposer::OutputDualSense(Ctx);
+	FGamepadOutput::OutputDualSense(Ctx);
 }
 
 void FCommandHelpers::HandleGallopTrigR(const TArray<FString>& Args)
@@ -551,7 +550,7 @@ void FCommandHelpers::HandleGallopTrigR(const TArray<FString>& Args)
 	FMemory::Memcpy(Ctx->OverrideTriggerRight, Bytes, 10);
 	Ctx->bOverrideTriggerBytes = true;
 	UE_LOG(LogDualSense, Log, TEXT("Right trigger set to Gallop effect: [%02X %02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3], Bytes[4]);
-	FPlayStationOutputComposer::OutputDualSense(Ctx);
+	FGamepadOutput::OutputDualSense(Ctx);
 }
 
 void FCommandHelpers::HandleGallopTrigL(const TArray<FString>& Args)
@@ -591,5 +590,5 @@ void FCommandHelpers::HandleGallopTrigL(const TArray<FString>& Args)
 	FMemory::Memcpy(Ctx->OverrideTriggerLeft, Bytes, 10);
 	Ctx->bOverrideTriggerBytes = true;
 	UE_LOG(LogDualSense, Log, TEXT("Left trigger set to Gallop effect: [%02X %02X %02X %02X %02X]"), Bytes[0], Bytes[1], Bytes[2], Bytes[3], Bytes[4]);
-	FPlayStationOutputComposer::OutputDualSense(Ctx);
+	FGamepadOutput::OutputDualSense(Ctx);
 }

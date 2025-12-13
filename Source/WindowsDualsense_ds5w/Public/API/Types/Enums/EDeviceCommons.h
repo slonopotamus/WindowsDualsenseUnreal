@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "Core/Types/ECoreGamepadTypes.h"
 #include "CoreMinimal.h"
+#include "Core/Types/DSCoreTypes.h"
 #include "EDeviceCommons.generated.h"
 
 /**
