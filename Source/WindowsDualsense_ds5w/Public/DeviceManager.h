@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Core/Types/Structs/Context/DeviceContext.h"
+#include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "CoreMinimal.h"
 #include "IHapticDevice.h"
 #include "IInputDevice.h"

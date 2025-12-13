@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Core/Interfaces/ISonyGamepad.h"
+#include "GCore/Interfaces/ISonyGamepad.h"
 #include "GenericPlatform/GenericApplicationMessageHandler.h"
 #include "Helpers/DualSenseLog.h"
 #include "Implementations/Adapters/DeviceRegistry.h"

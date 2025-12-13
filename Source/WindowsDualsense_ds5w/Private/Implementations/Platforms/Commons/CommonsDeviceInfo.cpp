@@ -6,11 +6,11 @@
 
 #ifdef __unix__
 #include "API/SonyGamepadProxyHelpers.h"
-#include "Implementations/Utils/GamepadSensors.h"
+#include "GImplementations/Utils/GamepadSensors.h"
 #include "SDL_hidapi.h"
-#include "Core/Types/ECoreGamepad.h"
-#include "Core/Types/Structs/Config/GamepadSensors.h"
-#include "Core/Types/Structs/Context/DeviceContext.h"
+#include "GCore/Types/ECoreGamepad.h"
+#include "GCore/Types/Structs/Config/GamepadSensors.h"
+#include "GCore/Types/Structs/Context/DeviceContext.h"
 #include <cstring>
 #include <string>
 #include <unordered_set>

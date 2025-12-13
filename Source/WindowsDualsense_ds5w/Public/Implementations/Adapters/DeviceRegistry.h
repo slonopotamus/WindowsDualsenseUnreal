@@ -4,8 +4,8 @@
 #pragma once
 
 #include "Async/TaskGraphInterfaces.h"
-#include "Core/Interfaces/ISonyGamepad.h"
-#include "Core/Templates/TBasicDeviceRegistry.h"
+#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GCore/Templates/TBasicDeviceRegistry.h"
 #include "CoreMinimal.h"
 #include "DeviceRegistryPolicy.h"
 #include "HAL/PlatformProcess.h"

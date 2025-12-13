@@ -4,10 +4,10 @@
 
 #include "Helpers/CommandHelpers.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "Core/Interfaces/ISonyGamepad.h"
-#include "Core/Types/Structs/Context/DeviceContext.h"
+#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "HAL/IConsoleManager.h"
-#include "Implementations/Utils/GamepadOutput.h"
+#include "GImplementations/Utils/GamepadOutput.h"
 
 static FAutoConsoleCommand GCmd_SetAudioByte(
     TEXT("ds.SetAudioByte"),

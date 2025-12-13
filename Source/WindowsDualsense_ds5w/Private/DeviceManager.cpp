@@ -3,8 +3,8 @@
 // Planned Release Year: 2025
 
 #include "DeviceManager.h"
-#include "Core/Types/DSCoreTypes.h"
-#include "Core/Types/ECoreGamepad.h"
+#include "GCore/Types/DSCoreTypes.h"
+#include "GCore/Types/ECoreGamepad.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"

@@ -4,7 +4,7 @@
 
 #include "API/SonyGamepadLightsProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "Core/Types/DSCoreTypes.h"
+#include "GCore/Types/DSCoreTypes.h"
 
 using namespace DSCoreTypes;
 using namespace SonyGamepadProxyHelpers;

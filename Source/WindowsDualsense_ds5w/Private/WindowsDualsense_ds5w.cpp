@@ -3,9 +3,10 @@
 // Planned Release Year: 2025
 
 #include "WindowsDualsense_ds5w/Public/WindowsDualsense_ds5w.h"
-#include "Core/Interfaces/IPlatformHardwareInfo.h"
+#include "GCore/Interfaces/IPlatformHardwareInfo.h"
 #include "Implementations/Adapters/DeviceRegistry.h"
 #include "Implementations/Platforms/Commons/LinuxHardwarePolicy.h"
+#include "Implementations/Platforms/Windows/WindowsHardwarePolicy.h"
 #include "API/SonyGamepadProxyHelpers.h"
 
 #if PLATFORM_LINUX || PLATFORM_MAC
@@ -23,8 +24,13 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 {
 	IModularFeatures::Get().RegisterModularFeature(GetModularFeatureName(), this);
 	RegisterCustomKeys();
+
+#if PLATFORM_WINDOWS
+	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
+	std::unique_ptr<IPlatformHardwareInfo> WindowsInstance = std::make_unique<FWindowsPlatform::FWindowsHardware>();
+	IPlatformHardwareInfo::SetInstance(std::move(WindowsInstance));
 	
-#if PLATFORM_LINUX || PLATFORM_MAC
+#elif PLATFORM_LINUX || PLATFORM_MAC
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
 	{
 		UE_LOG(LogDualSense, Error, TEXT("Failed to initialize subsystems of SDL: %s"), UTF8_TO_TCHAR(SDL_GetError()));
@@ -35,11 +41,11 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 		TSharedPtr<FSonyInputProcessor> SonyInputProcessor = MakeShared<FSonyInputProcessor>();
 		FSlateApplication::Get().RegisterInputPreProcessor(SonyInputProcessor);
 	}
-#endif
-
+	
 	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
 	std::unique_ptr<IPlatformHardwareInfo> LinuxInstance = std::make_unique<FLinuxPlatform::FLinuxHardware>();
 	IPlatformHardwareInfo::SetInstance(std::move(LinuxInstance));
+#endif
 	
 	// Initialize DeviceResgistry
 	FDeviceRegistry::Initialize();

@@ -4,7 +4,7 @@
 
 #include "Subsystems/SonyInputProcessor.h"
 
-#include "Core/Interfaces/ISonyGamepad.h"
+#include "GCore/Interfaces/ISonyGamepad.h"
 #include "Implementations/Adapters/DeviceRegistry.h"
 
 bool FSonyInputProcessor::HandleKeyDownEvent(FSlateApplication& SlateApp, const FKeyEvent& InKeyEvent)

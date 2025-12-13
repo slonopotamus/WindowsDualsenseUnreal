@@ -5,8 +5,8 @@
 #include "API/SonyGamepadBaseProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "API/Types/Enums/EDeviceConnection.h"
-#include "Core/Interfaces/ISonyGamepad.h"
-#include "Implementations/Libraries/DualSense/DualSenseLibrary.h"
+#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GImplementations/Libraries/DualSense/DualSenseLibrary.h"
 #include "Misc/CoreDelegates.h"
 
 using namespace SonyGamepadProxyHelpers;

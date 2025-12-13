@@ -3,7 +3,7 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Adapters/DeviceRegistry.h"
-#include "Core/Interfaces/ISonyGamepad.h"
+#include "GCore/Interfaces/ISonyGamepad.h"
 #include "HAL/PlatformProcess.h"
 #include "Runtime/Launch/Resources/Version.h"
 

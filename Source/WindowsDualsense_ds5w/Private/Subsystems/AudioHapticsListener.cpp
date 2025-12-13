@@ -4,7 +4,7 @@
 
 #include "Subsystems/AudioHapticsListener.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "Core/Interfaces/Segregations/IGamepadAudioHaptics.h"
+#include "GCore/Interfaces/Segregations/IGamepadAudioHaptics.h"
 
 FAudioHapticsListener::FAudioHapticsListener(FInputDeviceId InDeviceId, USoundSubmix* InSubmix)
     : Submix(InSubmix)

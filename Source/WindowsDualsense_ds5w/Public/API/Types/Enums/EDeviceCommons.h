@@ -5,7 +5,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Core/Types/DSCoreTypes.h"
+#include "GCore/Types/DSCoreTypes.h"
 #include "EDeviceCommons.generated.h"
 
 /**
