@@ -27,13 +27,6 @@ Integre todos os recursos do controle DualSense™ e DualShock 4® da Sony no se
 <img src="https://img.shields.io/badge/PlayStation-0070D1?style=for-the-badge&logo=playstation&logoColor=white" alt="Platform: PlayStation">
 </p>
 
-## Aviso Legal e Marcas Registradas
-
-"PlayStation", "PlayStation Family Mark", "PS5 logo", "PS5", "DualSense" e "DualShock" são marcas registradas ou marcas comerciais da Sony Interactive Entertainment Inc. "SONY" é uma marca registrada da Sony Corporation. "Windows" é uma marca registrada da Microsoft Corporation. "Linux" é uma marca registrada de Linus Torvalds. "Mac" é uma marca registrada da Apple Inc.
-
-O autor deste projeto não é afiliado, associado, autorizado ou de qualquer forma oficialmente conectado com a Sony Interactive Entertainment Inc., Microsoft Corporation, Apple Inc. ou Linus Torvalds. Este é um projeto independente e não oficial.
-
-
 ## 📖 Sobre o Projeto
 
 Construído com uma arquitetura multiplataforma, este plugin para Unreal Engine fornece uma solução unificada para integrar os controles DualSense™ (PlayStation 5) e DualShock 4® (PlayStation 4). Ele oferece suporte nativo no PC e, ao mesmo tempo, foi projetado para ser facilmente compilado para outras plataformas da Unreal Engine, incluindo PlayStation®. Este ativo fornece acesso direto à API ao conjunto completo de recursos de cada controlador, incluindo o revolucionário Haptic Feedback e Adaptive Triggers do DualSense™. Todos os recursos são expostos por meio de uma biblioteca de funções limpa e bem documentada para Blueprint e C++.
@@ -61,6 +54,65 @@ Use the `ds.SetTrigL` and `ds.SetTrigR` commands to send raw 10-byte HEX arrays 
 For a complete guide on the available commands and the raw byte structure for each effect, please see the new Wiki documentation page:
 **[➡️ Wiki Page: Console Commands & HEX Reference](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%AE-DualSense-Trigger-Effects:-Console-Commands-&-HEX-Reference)**
 
+
+## 🚀 Começando
+
+### Pré-requisitos
+* **Unreal Engine**: 5.2 ou superior.
+* **Sistema Operacional**: Windows 10 ou 11.
+* **Controle**: DualSense™ ou DualShock 4®.
+
+### Instalação Rápida
+1.  Acesse a página oficial do plugin na Unreal Engine Marketplace (FAB): [Página do Plugin - FAB](https://www.fab.com/listings/e77a8f1d-8bbe-4673-a5ae-7f222c8c0960)
+2.  Clique em **Install** ou **Add to Project** e selecione seu projeto Unreal Engine.
+3.  Ative o plugin no Unreal Engine:
+    * Abra seu projeto.
+    * Vá até `Edit > Plugins`.
+    * Procure por **Windows Dualsense Plugin** e ative a caixa de seleção.
+4.  Reinicie o Unreal Engine quando solicitado.
+
+### Instalação Manual
+Para garantir que o plugin compile corretamente na Unreal Engine, é necessário configurar o sub-módulo GamepadCore para excluir os projetos de exemplo (Sparse Checkout).
+
+Execute os seguintes comandos no seu terminal:
+```bash
+# 1. Clone o repositório recursivamente
+git clone --recursive https://github.com/rafaelvaloto/WindowsDualsenseUnreal.git
+
+# 2. Entre na pasta do repositório
+cd WindowsDualsenseUnreal
+
+# 3. Atualize o sub-módulo para a versão mais recente
+git submodule update --remote --merge
+
+# 4. Navegue até o diretório do sub-módulo Core
+cd Source/WindowsDualsense_ds5w/Private/GamepadCore
+
+# 5. Habilite o Sparse Checkout e filtre apenas a pasta 'Source'
+# Isso impede que o Unreal Build Tool tente compilar exemplos externos desnecessários.
+git config core.sparseCheckout true
+git sparse-checkout set Source
+```
+
+## 💻 Uso Básico
+
+O plugin expõe todas as funcionalidades através de bibliotecas de funções estáticas em Blueprint, o que significa que você pode chamar os métodos de qualquer lugar sem precisar adicionar componentes.
+
+### Bibliotecas de Funções em Blueprint
+As funções são divididas em duas categorias principais para facilitar o acesso:
+
+* **Sony Gamepad**: Contém métodos de gerenciamento comuns a controles Sony (DualShock e DualSense), como controle de LED, giroscópio, nível de bateria, etc.
+* **DualSense Effects**: Contém métodos específicos para os recursos exclusivos do DualSense, como a configuração dos Gatilhos Adaptáveis.
+
+Chame as funções diretamente para controlar os recursos do DualSense. Alguns dos efeitos disponíveis incluem:
+
+* 🐎 **Galope (Galloping)**: Simula o trote de um cavalo.
+* 💪 **Resistência (Resistance)**: Aplica uma força contrária constante ao pressionar o gatilho.
+* 🔫 **Arma (Weapon)**: Cria um efeito de recuo para armas semiautomáticas.
+* 🔥 **Tiro Automático (Automatic Gun)**: Vibra rapidamente para simular uma arma automática.
+
+### 📚 Para a documentação completa, acesse a **[Wiki](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki)**.
+
 ## 🎮 Projeto de Exemplo: Arena Shooter UE 5.6
 
 To demonstrate the practical use of the **Dualsense Unreal Plugin**, a sample project has been developed using the [*Arena Shooter* template](https://www.unrealengine.com/marketplace/en-US/product/arena-shooter-template) and upgraded to Unreal Engine 5.6. This project integrates key features of the DualSense controller to enhance the player's experience.
@@ -87,70 +139,6 @@ Neste exemplo, as seguintes funcionalidades do DualSense foram integradas para p
 Você pode baixar o Parrot Game Sample com a integração do DualSense diretamente pelo link.
 
 - [**Download the example project for the editor here**](https://drive.google.com/file/d/1oornHLpanEoHoDPRL1jfF_hvU17phsbp/view?usp=drive_link)
-- [**Download the compiled version of the example project here**](https://drive.google.com/file/d/1H6lvd0Ta-M4Pwtu2w2s4YyTaPobaqKfc/view?usp=drive_link)
-
-> 📝 **Note**: The examples for these features are implemented directly within the Arena Shooter template's `BP_ShooterPlayerController` and `BP_ShooterCharacter` Blueprints.
-
-## 🎮 Projeto de Exemplo: Parrot Game Sample
-
-Para demonstrar o uso prático do **Windows Dualsense Unreal Plugin**, foi desenvolvido um projeto de exemplo utilizando o [*Parrot Game Sample*](https://dev.epicgames.com/documentation/pt-br/unreal-engine/parrot-game-sample-for-unreal-engine) da Epic Games. Este projeto integra funcionalidades-chave do controle DualSense para aprimorar a experiência do jogador.
-
-![Parrot Game Sample](Images/parrot-game-sample-banner.jpg)
-
-### Funcionalidades Implementadas
-
-Neste exemplo, as seguintes funcionalidades do DualSense foram integradas para proporcionar uma jogabilidade mais imersiva:
-
-* **Feedback Visual**: A Lightbar do controle é utilizada para fornecer feedback visual em tempo real ao jogador, alterando cores e efeitos de acordo com eventos do jogo.
-* **Vibração (Force Feedback)**: O sistema nativo de Force Feedback foi utilizado para criar efeitos de vibração detalhados, aumentando a imersão em momentos importantes do gameplay.
-
-> 💡 **Dica Pro para Maior Imersão**: Para uma experiência de áudio ainda mais profunda, conecte o controle via USB e utilize um fone de ouvido diretamente nele. Essa configuração também funciona com o controle conectado via Bluetooth, oferecendo maior flexibilidade.
-
-Este projeto serve como um guia prático para desenvolvedores que desejam ver o plugin em ação e aprender como integrar os recursos exclusivos do controle DualSense em seus próprios jogos.
-
-### Onde Baixar
-
-Você pode baixar o projeto de exemplo *Parrot Game Sample* com a integração do DualSense diretamente do nosso repositório no GitHub.
-
-
-- [**Baixe o projeto de exemplo para o editor aqui**](https://drive.google.com/file/d/198Dko7ZwIX1vz9jw7RtYp4arY9Qp5bJ4/view?usp=drive_link)
-- [**Baixe a versão compilada do projeto de exemplo aqui**](https://drive.google.com/file/d/144hM71xZufBe29UzpTNQ1rRe0AYWC-Ka/view?usp=drive_link)
-
-
-## 🚀 Começando
-
-### Pré-requisitos
-* **Unreal Engine**: 5.2 ou superior.
-* **Sistema Operacional**: Windows 10 ou 11.
-* **Controle**: DualSense™ ou DualShock 4®.
-
-### Instalação Rápida
-1.  Acesse a página oficial do plugin na Unreal Engine Marketplace (FAB): [Página do Plugin - FAB](https://www.fab.com/listings/e77a8f1d-8bbe-4673-a5ae-7f222c8c0960)
-2.  Clique em **Install** ou **Add to Project** e selecione seu projeto Unreal Engine.
-3.  Ative o plugin no Unreal Engine:
-    * Abra seu projeto.
-    * Vá até `Edit > Plugins`.
-    * Procure por **Windows Dualsense Plugin** e ative a caixa de seleção.
-4.  Reinicie o Unreal Engine quando solicitado.
-
-## 💻 Uso Básico
-
-O plugin expõe todas as funcionalidades através de bibliotecas de funções estáticas em Blueprint, o que significa que você pode chamar os métodos de qualquer lugar sem precisar adicionar componentes.
-
-### Bibliotecas de Funções em Blueprint
-As funções são divididas em duas categorias principais para facilitar o acesso:
-
-* **Sony Gamepad**: Contém métodos de gerenciamento comuns a controles Sony (DualShock e DualSense), como controle de LED, giroscópio, nível de bateria, etc.
-* **DualSense Effects**: Contém métodos específicos para os recursos exclusivos do DualSense, como a configuração dos Gatilhos Adaptáveis.
-
-Chame as funções diretamente para controlar os recursos do DualSense. Alguns dos efeitos disponíveis incluem:
-
-* 🐎 **Galope (Galloping)**: Simula o trote de um cavalo.
-* 💪 **Resistência (Resistance)**: Aplica uma força contrária constante ao pressionar o gatilho.
-* 🔫 **Arma (Weapon)**: Cria um efeito de recuo para armas semiautomáticas.
-* 🔥 **Tiro Automático (Automatic Gun)**: Vibra rapidamente para simular uma arma automática.
-
-### 📚 Para a documentação completa, acesse a **[Wiki](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki)**.
 
 ## 🛠️ Estendendo para Outras Plataformas (ex: PlayStation)
 O plugin foi projetado com uma arquitetura extensível, permitindo que desenvolvedores com acesso a outros SDKs de plataforma (como o SDK oficial da Sony PlayStation®) possam integrá-los com o mínimo de esforço.
@@ -182,3 +170,18 @@ Um agradecimento especial também à equipe da Epic Games por criar e disponibil
 * [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db)
 * [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master)
 * [flok pydualsense](https://github.com/flok/pydualsense)
+
+## ⚖️ Disclaimer and Trademarks
+
+This software is an independent and unofficial project. It is **not** affiliated, associated, authorized, endorsed by, or in any way officially connected with Sony Interactive Entertainment Inc., Microsoft Corporation, Apple Inc., Epic Games, Unity Technologies, the Godot Engine project, or the Open 3D Foundation.
+
+**Trademarks belong to their respective owners:**
+
+* **Sony:** "PlayStation", "PlayStation Family Mark", "PS5 logo", "PS5", "DualSense", and "DualShock" are registered trademarks or trademarks of Sony Interactive Entertainment Inc. "SONY" is a registered trademark of Sony Corporation.
+* **Microsoft:** "Windows" and "Xbox" are registered trademarks of Microsoft Corporation.
+* **Apple:** "Mac" and "macOS" are registered trademarks of Apple Inc.
+* **Linux:** "Linux" is the registered trademark of Linus Torvalds in the U.S. and other countries.
+* **Epic Games:** "Unreal" and "Unreal Engine" are trademarks or registered trademarks of Epic Games, Inc. in the United States of America and elsewhere.
+* **Unity:** "Unity", Unity logos, and other Unity trademarks are trademarks or registered trademarks of Unity Technologies or its affiliates in the U.S. and elsewhere.
+* **Godot:** "Godot" and the Godot logo are trademarks of the Godot Engine project.
+* **O3DE:** "O3DE" and the O3DE logo are trademarks of the Open 3D Foundation.
