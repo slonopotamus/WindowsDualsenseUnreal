@@ -5,7 +5,6 @@
 #include "Implementations/Adapters/DeviceRegistry.h"
 #include "GCore/Interfaces/ISonyGamepad.h"
 
-
 TUniquePtr<FDeviceRegistry> FDeviceRegistry::Instance;
 std::unique_ptr<FDeviceRegistry::FRegistryLogic> FDeviceRegistry::RegistryImplementation = nullptr;
 

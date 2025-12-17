@@ -270,7 +270,7 @@ void FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 		const unsigned long Error = GetLastError();
 		return;
 	}
-	
+
 	using namespace FGamepadSensors;
 	FGamepadCalibration Calibration;
 	DualSenseCalibrationSensors(FeatureBuffer, Calibration);

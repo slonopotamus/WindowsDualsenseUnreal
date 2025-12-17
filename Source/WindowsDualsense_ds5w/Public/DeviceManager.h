@@ -159,7 +159,7 @@ public:
 	virtual void SetChannelValue(int32 ControllerId, FForceFeedbackChannelType ChannelType, float Value) override
 	{
 	}
-	
+
 	/**
 	 * Stores and manages sensor filters for input devices, using a mapping between
 	 * input device identifiers and Madgwick AHRS instances.
