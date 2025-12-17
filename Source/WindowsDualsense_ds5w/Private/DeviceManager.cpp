@@ -32,14 +32,13 @@ void DeviceManager::Tick(float DeltaTime)
 	{
 		Registry->DiscoverDevices(DeltaTime);
 	}
-	
+
 	PollAccumulator += DeltaTime;
 	if (PollAccumulator < PollInterval)
 	{
 		return;
 	}
 	PollAccumulator = 0.0f;
-	
 
 	TArray<FInputDeviceId> OutInputDevices;
 	OutInputDevices.Reset();
@@ -185,15 +184,15 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 			TUniquePtr<FMadgwickAhrs> MadgwickAhrs = MakeUnique<FMadgwickAhrs>(0.8f);
 			FilterSensors.Add(InputDeviceId, MadgwickAhrs.Release());
 		}
-		
+
 		if (Context->bIsResetGyroscope)
 		{
 			FilterSensors[InputDeviceId]->Reset();
 			Context->bIsResetGyroscope = false;
 		}
-		
-		FilterSensors[InputDeviceId]->UpdateImu(RawGyroZ, RawGyroY, -RawGyroX,RawAcclZ, RawAcclY, -RawAcclX,DeltaTime);
-		
+
+		FilterSensors[InputDeviceId]->UpdateImu(RawGyroZ, RawGyroY, -RawGyroX, RawAcclZ, RawAcclY, -RawAcclX, DeltaTime);
+
 		float qw, qx, qy, qz;
 		FilterSensors[InputDeviceId]->GetQuaternion(qw, qx, qy, qz);
 
@@ -201,7 +200,7 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 		const FQuat CorrectionQuat(FVector::ForwardVector, DS_PI);
 		const FQuat FinalQuat = CorrectionQuat * RawSensorQuat;
 		const FRotator ControlRotation = FinalQuat.Rotator();
-	
+
 		FVector UnrealGyro(RawGyroX, RawGyroY, RawGyroZ);
 		FVector UnrealAccel(RawAcclX, RawAcclY, RawAcclZ);
 		FVector UnrealTilt = FVector(ControlRotation.Roll, ControlRotation.Yaw, ControlRotation.Pitch);
@@ -222,7 +221,7 @@ void DeviceManager::CheckButtonInput(FDeviceContext* Context, const FPlatformUse
 	{
 		MessageHandler.Get().OnControllerButtonReleased(ButtonName, UserId, InputDeviceId, false);
 	}
-	
+
 	Context->ButtonStates[Str] = IsButtonPressed;
 }
 
