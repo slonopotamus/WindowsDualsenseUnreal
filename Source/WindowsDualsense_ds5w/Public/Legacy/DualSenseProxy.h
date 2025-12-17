@@ -171,9 +171,9 @@ public:
 	 * @param Settings The settings to be applied to the controller, encapsulated in an FDualSenseFeatureReport structure.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DualSense Settings",
-	          meta = (DisplayName = "Register Submix",
+	          meta = (DisplayName = "DualSense Settings",
 	                  DeprecatedFunction,
-	                  DeprecationMessage = "Use (DualSenseSettings) USonyGamepadBaseProxy::DualSenseSettings instead"))
+	                  DeprecationMessage = "Use (DualSenseSettings) USonyGamepadSettingsProxy::DualSenseSettings instead"))
 	static void DeviceSettings(int32 ControllerId, FDualSenseFeatureReport Settings);
 	/**
 	 * @brief Registers a specific audio submix for a DualSense controller.

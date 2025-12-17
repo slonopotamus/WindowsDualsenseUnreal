@@ -4,6 +4,8 @@
 
 #include "DeviceManager.h"
 #include "API/SonyGamepadProxyHelpers.h"
+#include "API/SonyGamepadSettingsProxy.h"
+#include "API/SonyGamepadTouchProxy.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
 #include "GCore/Types/DSCoreTypes.h"
@@ -32,9 +34,9 @@ void DeviceManager::Tick(float DeltaTime)
 	{
 		Registry->DiscoverDevices(DeltaTime);
 	}
-
+	
 	PollAccumulator += DeltaTime;
-	if (PollAccumulator < PollInterval)
+	if (PollAccumulator < PluginSettings::PollInterval)
 	{
 		return;
 	}
@@ -56,13 +58,13 @@ void DeviceManager::Tick(float DeltaTime)
 			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [=]() {
 				if (ISonyGamepad* Ref = Registry->GetLibraryInstance(Device); Ref)
 				{
-					Ref->UpdateInput(DeltaTime);
+					Ref->UpdateInput(PluginSettings::PollInterval);
 				}
 			});
 		}
 	}
 
-	SendControllerEvents(DeltaTime);
+	SendControllerEvents(PluginSettings::PollInterval);
 }
 
 void DeviceManager::SendControllerEvents(float DeltaTime)
@@ -96,6 +98,33 @@ void DeviceManager::SendControllerEvents(float DeltaTime)
 				CheckEvents(Context, FrameInput, UserId, Device, DeltaTime);
 			}
 		}
+	}
+}
+
+
+namespace TouchGestureDirectRaw
+{
+	// Se o seu "0" não apontar para a direita, ajuste esse offset (em graus).
+	// Ex.: se 0 aponta pra cima, use -90 ou +90 até alinhar.
+	constexpr float DirectionRawDegreesOffset = 0.0f;
+
+	// Se ficar invertido (direita vira esquerda, etc.), troque para -1.0f em X e/ou Y.
+	constexpr float DirectionFlipX = 1.0f;
+	constexpr float DirectionFlipY = 1.0f;
+
+	static FVector2D DirectionRawToUnitVector(std::uint8_t Raw)
+	{
+		// Interpreta Raw como ângulo 0..255 => 0..360 graus
+		const float Degrees = (static_cast<float>(Raw) * (360.0f / 256.0f)) + DirectionRawDegreesOffset;
+		const float Radians = FMath::DegreesToRadians(Degrees);
+
+		// Vetor unitário a partir do ângulo
+		FVector2D Dir(FMath::Cos(Radians), FMath::Sin(Radians));
+		Dir.X *= DirectionFlipX;
+		Dir.Y *= DirectionFlipY;
+
+		// Normaliza por segurança (cos/sin já é unitário, mas ok)
+		return Dir.GetSafeNormal();
 	}
 }
 
@@ -181,7 +210,7 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 
 		if (!FilterSensors.Contains(InputDeviceId))
 		{
-			TUniquePtr<FMadgwickAhrs> MadgwickAhrs = MakeUnique<FMadgwickAhrs>(0.8f);
+			TUniquePtr<FMadgwickAhrs> MadgwickAhrs = MakeUnique<FMadgwickAhrs>(PluginSettings::MadgwickBeta);
 			FilterSensors.Add(InputDeviceId, MadgwickAhrs.Release());
 		}
 
@@ -197,14 +226,137 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 		FilterSensors[InputDeviceId]->GetQuaternion(qw, qx, qy, qz);
 
 		const FQuat RawSensorQuat = FQuat(qx, qy, qz, qw);
-		const FQuat CorrectionQuat(FVector::ForwardVector, DS_PI);
-		const FQuat FinalQuat = CorrectionQuat * RawSensorQuat;
+		const FQuat FinalQuat = RawSensorQuat;
 		const FRotator ControlRotation = FinalQuat.Rotator();
 
 		FVector UnrealGyro(RawGyroX, RawGyroY, RawGyroZ);
 		FVector UnrealAccel(RawAcclX, RawAcclY, RawAcclZ);
 		FVector UnrealTilt = FVector(ControlRotation.Roll, ControlRotation.Yaw, ControlRotation.Pitch);
 		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, FinalQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
+	}
+	
+	if (Context->bEnableTouch && !Context->bEnableGesture)
+	{
+		const FInputDeviceId* bPrevTouch = ActiveTouches.Find(InputDeviceId);
+		if (const bool bIsTouching = FrameInput.bIsTouching)
+		{
+			if (!bPrevTouch)
+			{
+				MessageHandler->OnTouchStarted(
+				   nullptr,
+				   FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+				   1.0f,
+				   1,
+				   UserId,
+				   InputDeviceId);
+
+				ActiveTouches.Add(InputDeviceId);
+			}
+			else 
+			{
+				MessageHandler->OnTouchMoved(
+				   FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+				   1.0f,
+				   1,
+				   UserId,
+				   InputDeviceId);
+			}
+		}
+		else if (bPrevTouch)
+		{
+			MessageHandler->OnTouchEnded(
+			   FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+			   1,
+			   UserId,
+			   InputDeviceId);
+			
+			ActiveTouches.Remove(InputDeviceId);
+		}
+	}
+	else if (Context->bEnableGesture)
+	{
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 5
+		auto& [bGestureActive, LastFingerCount, bHasPrev, PrevTouchPos, PrevSeparation] = TouchGestureStates.FindOrAdd(InputDeviceId);
+
+		const bool bIsTouching = FrameInput.bIsTouching;
+		const int32 FingerCount = static_cast<int32>(FrameInput.TouchFingerCount);
+
+		if (!bIsTouching)
+		{
+			if (bGestureActive)
+			{
+				MessageHandler->OnEndGesture();
+			}
+
+			bGestureActive = false;
+			LastFingerCount = 0;
+			bHasPrev = false;
+			PrevSeparation = 0.0f;
+			return;
+		}
+
+		if (!bGestureActive)
+		{
+			MessageHandler->OnBeginGesture();
+			bGestureActive = true;
+			LastFingerCount = FingerCount;
+			bHasPrev = false;
+		}
+
+		if (FingerCount != LastFingerCount)
+		{
+			MessageHandler->OnEndGesture();
+			LastFingerCount = FingerCount;
+			bHasPrev = false;
+			PrevSeparation = 0.0f;
+		}
+
+		const FVector2D TouchPos(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y);
+
+		FVector2D CenterDelta = FVector2D::ZeroVector;
+		if (bHasPrev)
+		{
+			CenterDelta = TouchPos - PrevTouchPos;
+		}
+
+		if (FingerCount >= 2)
+		{
+			const FVector2D SeparationVec(FrameInput.TouchRelative.X, FrameInput.TouchRelative.Y);
+			const float Separation = SeparationVec.Size();
+
+			if (!bHasPrev)
+			{
+				PrevSeparation = Separation;
+			}
+
+			const float MagnifyDelta = Separation - PrevSeparation;
+
+			if (constexpr float PinchThreshold = 1.0f; FMath::Abs(MagnifyDelta) >= PinchThreshold)
+			{
+				const float WheelDelta = MagnifyDelta;
+				constexpr bool bInvertedFromDevice = false;
+				MessageHandler->OnTouchGesture(EGestureEvent::Magnify, CenterDelta, WheelDelta, bInvertedFromDevice);
+			}
+			else
+			{
+				const float WheelDelta = CenterDelta.Y;
+				constexpr bool bInvertedFromDevice = false;
+				MessageHandler->OnTouchGesture(EGestureEvent::Scroll, CenterDelta, WheelDelta, bInvertedFromDevice);
+			}
+
+			PrevSeparation = Separation;
+		}
+		else
+		{
+			constexpr float WheelDelta = 0.0f;
+			constexpr bool bInvertedFromDevice = false;
+
+			MessageHandler->OnTouchGesture(EGestureEvent::Swipe, CenterDelta, WheelDelta, bInvertedFromDevice);
+		}
+
+		PrevTouchPos = TouchPos;
+		bHasPrev = true;
+#endif
 	}
 }
 

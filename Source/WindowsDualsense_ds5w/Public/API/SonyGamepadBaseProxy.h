@@ -23,11 +23,6 @@ class WINDOWSDUALSENSE_DS5W_API USonyGamepadBaseProxy : public UObject
 	GENERATED_BODY()
 public:
 	/**
-	 * Temporary
-	 */
-	UFUNCTION(BlueprintCallable, Category = "DualSenseSettings")
-	static void DualSenseSettings(int32 ControllerId, FDualSenseFeatureReport Value);
-	/**
 	 * Checks if the DualSense or DualShock device with the specified Controller ID is connected.
 	 *
 	 * @param ControllerId The ID of the controller to check for connectivity.
@@ -62,13 +57,4 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "SonyGamepad Status", meta = (DisplayName = "Battery Level (0.0f-100.0f)"))
 	static float BatteryLevelDevice(int32 ControllerId);
-
-	/**
-	 * Enables or disables the touch functionality on a specified DualSense controller.
-	 *
-	 * @param ControllerId The identifier of the controller for which the touch functionality should be enabled or disabled.
-	 * @param bEnableTouch A boolean indicating whether to enable (true) or disable (false) the touch functionality.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepad Status", meta = (AdvancedDisplay = "EnableTouch"))
-	static void EnableTouch(int32 ControllerId, bool bEnableTouch);
 };

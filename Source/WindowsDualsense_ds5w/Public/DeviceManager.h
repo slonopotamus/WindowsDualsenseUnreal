@@ -177,6 +177,18 @@ public:
 	 * detection of touch interactions.
 	 */
 	TSet<FInputDeviceId>& ActiveTouches = *new TSet<FInputDeviceId>();
+	
+	struct FTouchGestureState
+	{
+		bool bGestureActive = false;
+		int32 LastFingerCount = 0;
+		
+		bool bHasPrev = false;
+		FVector2D PrevTouchPos = FVector2D::ZeroVector;
+		float PrevSeparation = 0.0f;
+	};
+
+	mutable TMap<FInputDeviceId, FTouchGestureState> TouchGestureStates;
 
 protected:
 	void CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const;
@@ -199,12 +211,6 @@ private:
 	 * This variable is typically used to manage timing or frequency of polling processes.
 	 */
 	float PollAccumulator = 0.0f;
-	/**
-	 * Defines the interval, in seconds, between periodic polling operations.
-	 * This variable determines how often certain tasks, such as device state checks
-	 * or updates, are performed within the system.
-	 */
-	float PollInterval = 0.033f;
 	/**
 	 * Handles application-level messages and events, facilitating communication
 	 * between the application framework and platform-specific input systems.

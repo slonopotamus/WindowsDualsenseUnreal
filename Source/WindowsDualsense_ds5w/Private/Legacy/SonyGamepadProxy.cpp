@@ -7,6 +7,7 @@
 #include "API/SonyGamepadLightsProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "API/SonyGamepadSenorsProxy.h"
+#include "API/SonyGamepadTouchProxy.h"
 #include "API/Types/Enums/EDeviceConnection.h"
 
 using namespace SonyGamepadProxyHelpers;
@@ -56,7 +57,7 @@ bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, flo
 
 void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 {
-	USonyGamepadBaseProxy::EnableTouch(ControllerId, bEnableTouch);
+	USonyGamepadTouchProxy::EnableTouch(ControllerId, bEnableTouch);
 }
 
 void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope)

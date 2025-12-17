@@ -28,7 +28,6 @@ void FDeviceRegistry::Initialize()
 
 void FDeviceRegistry::Shutdown()
 {
-	check(IsInGameThread());
 	Instance.Reset();
 }
 

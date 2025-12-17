@@ -7,13 +7,14 @@
 #include "API/SonyGamepadHapticsProxy.h"
 #include "API/SonyGamepadLightsProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
+#include "API/SonyGamepadSettingsProxy.h"
 #include "API/SonyGamepadTriggerProxy.h"
 #include "Helpers/ValidateHelpers.h"
 
 using namespace SonyGamepadProxyHelpers;
 void UDualSenseProxy::DeviceSettings(int32 ControllerId, FDualSenseFeatureReport Settings)
 {
-	USonyGamepadBaseProxy::DualSenseSettings(ControllerId, Settings);
+	USonyGamepadSettingsProxy::DualSenseSettings(ControllerId, Settings);
 }
 
 void UDualSenseProxy::RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix)

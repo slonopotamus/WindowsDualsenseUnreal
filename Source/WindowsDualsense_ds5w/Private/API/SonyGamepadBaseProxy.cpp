@@ -31,24 +31,6 @@ EDeviceConnection USonyGamepadBaseProxy::GetConnectionType(int32 ControllerId)
 
 	return static_cast<EDeviceConnection>(Gamepad->GetConnectionType());
 }
-void USonyGamepadBaseProxy::DualSenseSettings(int32 ControllerId, FDualSenseFeatureReport Value)
-{
-	FDualSenseLibrary* Gamepad = static_cast<FDualSenseLibrary*>(GetTriggerInterface(ControllerId));
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	Gamepad->DualSenseSettings(
-	    static_cast<std::uint8_t>(Value.MicStatus),
-	    static_cast<std::uint8_t>(Value.AudioHeadset),
-	    static_cast<std::uint8_t>(Value.AudioSpeaker),
-	    static_cast<std::uint8_t>(Value.MicVolume),
-	    static_cast<std::uint8_t>(Value.AudioVolume),
-	    static_cast<std::uint8_t>(Value.VibrationMode),
-	    static_cast<std::uint8_t>(Value.SoftRumbleReduce),
-	    static_cast<std::uint8_t>(Value.TriggerSoftnessLevel));
-}
 bool USonyGamepadBaseProxy::DeviceIsConnected(int32 ControllerId)
 {
 	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
@@ -68,14 +50,4 @@ float USonyGamepadBaseProxy::BatteryLevelDevice(int32 ControllerId)
 	}
 
 	return Gamepad->GetBattery();
-}
-void USonyGamepadBaseProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
-{
-	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
-	if (!Gamepad)
-	{
-		return;
-	}
-
-	return Gamepad->EnableTouch(bEnableTouch);
 }
