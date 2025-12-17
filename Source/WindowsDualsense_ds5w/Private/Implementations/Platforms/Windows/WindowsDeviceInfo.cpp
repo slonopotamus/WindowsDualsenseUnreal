@@ -4,7 +4,7 @@
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
 #include "GCore/Types/DSCoreTypes.h"
-#include "GCore/Types/Structs/Config/GamepadSensors.h"
+#include "GCore/Types/Structs/Config/GamepadCalibration.h"
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "GImplementations/Utils/GamepadSensors.h"
 #include <filesystem>
@@ -270,9 +270,9 @@ void FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 		const unsigned long Error = GetLastError();
 		return;
 	}
-
+	
+	using namespace FGamepadSensors;
 	FGamepadCalibration Calibration;
-	FGamepadSensors::DualSenseCalibrationSensors(FeatureBuffer, Calibration);
-
+	DualSenseCalibrationSensors(FeatureBuffer, Calibration);
 	Context->Calibration = Calibration;
 }

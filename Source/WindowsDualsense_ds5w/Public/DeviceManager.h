@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include "Algorithms/MadgwickAhrs.h"
 #include "CoreMinimal.h"
+#include "GCore/Interfaces/ISonyGamepad.h"
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "IHapticDevice.h"
 #include "IInputDevice.h"
@@ -132,7 +134,8 @@ public:
 	 * This method is overridden to handle specific input events from the DualSense controller,
 	 * ensuring they are relayed correctly within the application.
 	 */
-	virtual void SendControllerEvents() override;
+	void SendControllerEvents(float DeltaTime);
+	virtual void SendControllerEvents() override {}
 	/**
 	 * Sets the message handler for the application to process input events.
 	 *
@@ -153,9 +156,17 @@ public:
 	virtual void SetChannelValue(int32 ControllerId, FForceFeedbackChannelType ChannelType, float Value) override
 	{
 	}
+	
+	/**
+	 * Stores and manages sensor filters for input devices, using a mapping between
+	 * input device identifiers and Madgwick AHRS instances.
+	 * This variable helps maintain orientation and motion-filtering data for each
+	 * connected input device.
+	 */
+	TMap<int32, FMadgwickAhrs*>& FilterSensors = *new TMap<int32, FMadgwickAhrs*>();
 
 protected:
-	void CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId) const;
+	void CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const;
 	/**
 	 * @brief Handles button input events for a DualSense controller.
 	 *
@@ -180,14 +191,7 @@ private:
 	 * This variable determines how often certain tasks, such as device state checks
 	 * or updates, are performed within the system.
 	 */
-	float PollInterval = 0.00f;
-	/**
-	 * Stores a mapping of connection states for devices, where the key represents
-	 * a device ID (int32) and the value indicates whether a connection change
-	 * has occurred (true or false).
-	 * This data structure is used to track and update connection status dynamically.
-	 */
-	TMap<int32, bool> IsConnectionChange = TMap<int32, bool>();
+	float PollInterval = 0.033f;
 	/**
 	 * Handles application-level messages and events, facilitating communication
 	 * between the application framework and platform-specific input systems.
