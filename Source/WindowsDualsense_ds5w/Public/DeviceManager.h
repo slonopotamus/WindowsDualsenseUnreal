@@ -13,9 +13,12 @@
 #include "InputCoreTypes.h"
 
 /**
- * Manages DualSense controllers, providing input and haptic feedback functionality.
- * This class interacts with platform-specific input device frameworks to handle
- * controllers, manage connections, update states, and process haptic feedback.
+ * Represents the primary interface for managing DualSense controllers, extending functionality
+ * as both an input and haptic device. The class handles input events, haptic feedback, light color,
+ * and other controller properties.
+ *
+ * This class encapsulates the logic specific to DualSense devices, providing mechanisms to
+ * configure device properties, manage controller state updates, and deliver force feedback.
  */
 class WINDOWSDUALSENSE_DS5W_API DeviceManager final : public IInputDevice, public IHapticDevice
 {
@@ -163,7 +166,17 @@ public:
 	 * This variable helps maintain orientation and motion-filtering data for each
 	 * connected input device.
 	 */
-	TMap<int32, FMadgwickAhrs*>& FilterSensors = *new TMap<int32, FMadgwickAhrs*>();
+	TMap<FInputDeviceId, FMadgwickAhrs*>& FilterSensors = *new TMap<FInputDeviceId, FMadgwickAhrs*>();
+
+	/**
+	 * Represents a mapping between touch IDs and their respective states. The key is an integer
+	 * identifier for a specific touch event, and the value is a boolean indicating whether the
+	 * touch was previously registered.
+	 *
+	 * This structure is used to track the touch state of multiple input sources, ensuring accurate
+	 * detection of touch interactions.
+	 */
+	TSet<FInputDeviceId>& ActiveTouches = *new TSet<FInputDeviceId>();
 
 protected:
 	void CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const;

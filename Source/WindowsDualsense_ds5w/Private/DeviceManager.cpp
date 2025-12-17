@@ -99,8 +99,7 @@ void DeviceManager::SendControllerEvents(float DeltaTime)
 		}
 	}
 }
-FQuat CalibrationQuat = FQuat::Identity;
-bool bHasCalibrated = false;
+
 void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const
 {
 	const auto HandleAnalogInput = [&](const FName& AnalogKey, const FName& ButtonKeyPositive, const FName& ButtonKeyNegative, float NewAxisValue) {
@@ -169,68 +168,45 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Menu"), FrameInput.bStart);
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Share"), FrameInput.bShare);
-	
-	constexpr float GToMSq = GRAVITY_MS2;
-	float RawGyroX = FrameInput.Gyroscope.X;
-	float RawGyroY = FrameInput.Gyroscope.Y;
-	float RawGyroZ = FrameInput.Gyroscope.Z;
 
-	float RawAcclX = FrameInput.Accelerometer.X * GToMSq;
-	float RawAcclY = FrameInput.Accelerometer.Y * GToMSq;
-	float RawAcclZ = FrameInput.Accelerometer.Z * GToMSq;
-
-	if (!FilterSensors.Contains(InputDeviceId.GetId()))
+	if (Context->bEnableAccelerometerAndGyroscope)
 	{
-	   TUniquePtr<FMadgwickAhrs> MadgwickAhrs = MakeUnique<FMadgwickAhrs>(0.8f);
-	   FilterSensors.Add(InputDeviceId.GetId(), MadgwickAhrs.Release());
-	}
+		constexpr float GToMSq = GRAVITY_MS2;
+		float RawGyroX = FrameInput.Gyroscope.X;
+		float RawGyroY = FrameInput.Gyroscope.Y;
+		float RawGyroZ = FrameInput.Gyroscope.Z;
 
-	if (RawGyroZ > 0 || RawGyroY > 0 || RawGyroX > 0 && RawAcclZ > 0 || RawAcclY > 0 || RawAcclX > 0)
-	{
-		FilterSensors[InputDeviceId.GetId()]->UpdateImu(RawGyroZ, RawGyroY, -RawGyroX,RawAcclZ, RawAcclY, -RawAcclX,DeltaTime);
+		float RawAcclX = FrameInput.Accelerometer.X * GToMSq;
+		float RawAcclY = FrameInput.Accelerometer.Y * GToMSq;
+		float RawAcclZ = FrameInput.Accelerometer.Z * GToMSq;
+
+		if (!FilterSensors.Contains(InputDeviceId))
+		{
+			TUniquePtr<FMadgwickAhrs> MadgwickAhrs = MakeUnique<FMadgwickAhrs>(0.8f);
+			FilterSensors.Add(InputDeviceId, MadgwickAhrs.Release());
+		}
+		
+		if (Context->bIsResetGyroscope)
+		{
+			FilterSensors[InputDeviceId]->Reset();
+			Context->bIsResetGyroscope = false;
+		}
+		
+		FilterSensors[InputDeviceId]->UpdateImu(RawGyroZ, RawGyroY, -RawGyroX,RawAcclZ, RawAcclY, -RawAcclX,DeltaTime);
 		
 		float qw, qx, qy, qz;
-		FilterSensors[InputDeviceId.GetId()]->GetQuaternion(qw, qx, qy, qz);
+		FilterSensors[InputDeviceId]->GetQuaternion(qw, qx, qy, qz);
 
 		const FQuat RawSensorQuat = FQuat(qx, qy, qz, qw);
 		const FQuat CorrectionQuat(FVector::ForwardVector, DS_PI);
 		const FQuat FinalQuat = CorrectionQuat * RawSensorQuat;
 		const FRotator ControlRotation = FinalQuat.Rotator();
 	
-		FVector UnrealAccel(RawAcclX, RawAcclY, RawAcclZ);
 		FVector UnrealGyro(RawGyroX, RawGyroY, RawGyroZ);
+		FVector UnrealAccel(RawAcclX, RawAcclY, RawAcclZ);
 		FVector UnrealTilt = FVector(ControlRotation.Roll, ControlRotation.Yaw, ControlRotation.Pitch);
 		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, FinalQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
 	}
-
-	// if (FrameInput.bIsTouching)
-	// {
-	// 	MessageHandler->OnTouchStarted(
-	// 	    nullptr,
-	// 	    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-	// 	    1.0f,
-	// 	    FrameInput.TouchId,
-	// 	    UserId,
-	// 	    InputDeviceId);
-	// }
-	// else if (FrameInput.bIsTouching)
-	// {
-	// 	MessageHandler->OnTouchMoved(
-	// 	    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-	// 	    1.0f,
-	// 	    FrameInput.TouchId,
-	// 	    UserId,
-	// 	    InputDeviceId);
-	// }
-	// else if (!FrameInput.bIsTouching)
-	// {
-	// 	MessageHandler->OnTouchEnded(
-	// 	    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-	// 	    FrameInput.TouchId,
-	// 	    UserId,
-	// 	    InputDeviceId);
-	// }
-	
 }
 
 void DeviceManager::CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const
