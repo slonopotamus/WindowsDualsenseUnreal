@@ -147,7 +147,9 @@ In this sample, the following DualSense functionalities were integrated to provi
 
 You can download the *Arena Shooter UE 5.6* with the DualSense integration directly from link.
 
-- [**Download the example project for the editor here**](https://drive.google.com/file/d/1oornHLpanEoHoDPRL1jfF_hvU17phsbp/view?usp=drive_link)
+- [**Download the example project v2.0.0 for the editor here**](https://drive.google.com/file/d/11iUQuWwA4zkFI_eP0roYbTDh0ss8614m/view?usp=drive_link)
+
+
 
 ### 🎓 Hands-On Tutorial
 
