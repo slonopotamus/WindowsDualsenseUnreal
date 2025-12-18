@@ -13,14 +13,14 @@ void USonyGamepadSettingsProxy::DualSenseSettings(int32 ControllerId, FDualSense
 	}
 
 	Gamepad->DualSenseSettings(
-		static_cast<std::uint8_t>(Value.MicStatus),
-		static_cast<std::uint8_t>(Value.AudioHeadset),
-		static_cast<std::uint8_t>(Value.AudioSpeaker),
-		static_cast<std::uint8_t>(Value.MicVolume),
-		static_cast<std::uint8_t>(Value.AudioVolume),
-		static_cast<std::uint8_t>(Value.VibrationMode),
-		static_cast<std::uint8_t>(Value.SoftRumbleReduce),
-		static_cast<std::uint8_t>(Value.TriggerSoftnessLevel));
+	    static_cast<std::uint8_t>(Value.MicStatus),
+	    static_cast<std::uint8_t>(Value.AudioHeadset),
+	    static_cast<std::uint8_t>(Value.AudioSpeaker),
+	    static_cast<std::uint8_t>(Value.MicVolume),
+	    static_cast<std::uint8_t>(Value.AudioVolume),
+	    static_cast<std::uint8_t>(Value.VibrationMode),
+	    static_cast<std::uint8_t>(Value.SoftRumbleReduce),
+	    static_cast<std::uint8_t>(Value.TriggerSoftnessLevel));
 }
 void USonyGamepadSettingsProxy::MadgwickBeta(float Value)
 {

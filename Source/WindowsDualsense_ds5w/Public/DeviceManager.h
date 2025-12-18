@@ -177,12 +177,12 @@ public:
 	 * detection of touch interactions.
 	 */
 	TSet<FInputDeviceId>& ActiveTouches = *new TSet<FInputDeviceId>();
-	
+
 	struct FTouchGestureState
 	{
 		bool bGestureActive = false;
 		int32 LastFingerCount = 0;
-		
+
 		bool bHasPrev = false;
 		FVector2D PrevTouchPos = FVector2D::ZeroVector;
 		float PrevSeparation = 0.0f;

@@ -34,7 +34,7 @@ void DeviceManager::Tick(float DeltaTime)
 	{
 		Registry->DiscoverDevices(DeltaTime);
 	}
-	
+
 	PollAccumulator += DeltaTime;
 	if (PollAccumulator < PluginSettings::PollInterval)
 	{
@@ -101,7 +101,6 @@ void DeviceManager::SendControllerEvents(float DeltaTime)
 	}
 }
 
-
 namespace TouchGestureDirectRaw
 {
 	// Se o seu "0" não apontar para a direita, ajuste esse offset (em graus).
@@ -126,7 +125,7 @@ namespace TouchGestureDirectRaw
 		// Normaliza por segurança (cos/sin já é unitário, mas ok)
 		return Dir.GetSafeNormal();
 	}
-}
+} // namespace TouchGestureDirectRaw
 
 void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const
 {
@@ -234,7 +233,7 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 		FVector UnrealTilt = FVector(ControlRotation.Roll, ControlRotation.Pitch, ControlRotation.Yaw);
 		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, FinalQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
 	}
-	
+
 	if (Context->bEnableTouch && !Context->bEnableGesture)
 	{
 		const FInputDeviceId* bPrevTouch = ActiveTouches.Find(InputDeviceId);
@@ -243,33 +242,33 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 			if (!bPrevTouch)
 			{
 				MessageHandler->OnTouchStarted(
-				   nullptr,
-				   FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-				   1.0f,
-				   1,
-				   UserId,
-				   InputDeviceId);
+				    nullptr,
+				    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+				    1.0f,
+				    1,
+				    UserId,
+				    InputDeviceId);
 
 				ActiveTouches.Add(InputDeviceId);
 			}
-			else 
+			else
 			{
 				MessageHandler->OnTouchMoved(
-				   FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-				   1.0f,
-				   1,
-				   UserId,
-				   InputDeviceId);
+				    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+				    1.0f,
+				    1,
+				    UserId,
+				    InputDeviceId);
 			}
 		}
 		else if (bPrevTouch)
 		{
 			MessageHandler->OnTouchEnded(
-			   FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-			   1,
-			   UserId,
-			   InputDeviceId);
-			
+			    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+			    1,
+			    UserId,
+			    InputDeviceId);
+
 			ActiveTouches.Remove(InputDeviceId);
 		}
 	}

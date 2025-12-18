@@ -9,7 +9,7 @@
 #include "SonyGamepadTouchProxy.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS(Blueprintable, BlueprintType)
 class WINDOWSDUALSENSE_DS5W_API USonyGamepadTouchProxy : public UObject
@@ -22,7 +22,7 @@ public:
 	 * @param ControllerId The identifier of the controller for which the touch functionality should be enabled or disabled.
 	 * @param bEnableTouch A boolean indicating whether to enable (true) or disable (false) the touch functionality.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTouchProxy", meta = (DisplayName = "Enables Touch", ToolTip="Touch X and Y position will only be enabled if gestures are disabled; if touch is enabled, you will only receive gestures."))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadTouchProxy", meta = (DisplayName = "Enables Touch", ToolTip = "Touch X and Y position will only be enabled if gestures are disabled; if touch is enabled, you will only receive gestures."))
 	static void EnableTouch(int32 ControllerId, bool bEnableTouch);
 
 	/**
