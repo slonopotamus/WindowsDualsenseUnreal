@@ -231,7 +231,7 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 
 		FVector UnrealGyro(RawGyroX, RawGyroY, RawGyroZ);
 		FVector UnrealAccel(RawAcclX, RawAcclY, RawAcclZ);
-		FVector UnrealTilt = FVector(ControlRotation.Roll, ControlRotation.Yaw, ControlRotation.Pitch);
+		FVector UnrealTilt = FVector(ControlRotation.Roll, ControlRotation.Pitch, ControlRotation.Yaw);
 		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, FinalQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
 	}
 	
