@@ -4,7 +4,9 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Misc/CoreDelegates.h"
+#include "InputCoreTypes.h"
 #include "GenericPlatform/IInputInterface.h"
+#include "GenericPlatform/GenericPlatformInputDeviceMapper.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 struct FDeviceRegistryPolicy
