@@ -3,15 +3,17 @@
 // Planned Release Year: 2025
 
 #include "DeviceManager.h"
-#include "API/SonyGamepadProxyHelpers.h"
-#include "API/SonyGamepadSettingsProxy.h"
-#include "API/SonyGamepadTouchProxy.h"
 #include "Async/Async.h"
 #include "Async/TaskGraphInterfaces.h"
+#include "Misc/CoreDelegates.h"
+#include "API/SonyGamepadProxyHelpers.h"
+#include "API/SonyGamepadSettingsProxy.h"
+#include "IInputDevice.h"
+#include "InputCoreTypes.h"
+#include "GenericPlatform/IInputInterface.h"
 #include "GCore/Types/DSCoreTypes.h"
 #include "GCore/Types/ECoreGamepad.h"
-#include "Misc/CoreDelegates.h"
-#include <locale>
+#include "Runtime/Launch/Resources/Version.h"
 
 using namespace DSCoreTypes;
 using namespace SonyGamepadProxyHelpers;

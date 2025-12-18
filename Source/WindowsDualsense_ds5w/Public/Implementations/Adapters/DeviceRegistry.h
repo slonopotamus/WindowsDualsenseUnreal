@@ -9,6 +9,7 @@
 #include "GCore/Interfaces/ISonyGamepad.h"
 #include "GCore/Templates/TBasicDeviceRegistry.h"
 #include "HAL/PlatformProcess.h"
+#include "GenericPlatform/GenericPlatformInputDeviceMapper.h"
 
 /**
  * A manager class that handles the creation, storage, and lifecycle management of device library

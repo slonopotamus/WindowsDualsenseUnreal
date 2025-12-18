@@ -1,12 +1,12 @@
 ﻿// Copyright (c) 2025 Rafael Valoto/Publisher. All rights reserved.
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GCore/Interfaces/ISonyGamepad.h"
 #include "InputCoreTypes.h"
+
+class ISonyGamepadInterface;
 
 /**
  * CommandHelpers centralizes all in-game console commands (ds.*) previously located in DualSenseLibrary.
@@ -42,7 +42,6 @@ public:
 
 private:
 	static bool ParseDeviceId(const TArray<FString>& Args, FInputDeviceId& OutDeviceId);
-	static ISonyGamepad* GetGamepad(const FInputDeviceId& DeviceId);
 	static uint8 ClampByte(int32 V) { return static_cast<uint8>(FMath::Clamp(V, 0, 255)); }
 	static bool ParseHexByte(const FString& Token, uint8& OutByte);
 };

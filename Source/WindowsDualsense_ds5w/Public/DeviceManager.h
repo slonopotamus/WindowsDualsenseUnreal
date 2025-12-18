@@ -4,13 +4,15 @@
 
 #pragma once
 
-#include "Algorithms/MadgwickAhrs.h"
 #include "CoreMinimal.h"
+#include "GenericPlatform/IInputInterface.h"
+#include "Algorithms/MadgwickAhrs.h"
 #include "GCore/Interfaces/ISonyGamepad.h"
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "IHapticDevice.h"
 #include "IInputDevice.h"
 #include "InputCoreTypes.h"
+
 
 /**
  * Represents the primary interface for managing DualSense controllers, extending functionality
