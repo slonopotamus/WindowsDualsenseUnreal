@@ -3,10 +3,10 @@
 // Description: Example implementation of DeviceRegistry Policy for Unreal Engine.
 #pragma once
 #include "CoreMinimal.h"
-#include "Misc/CoreDelegates.h"
-#include "InputCoreTypes.h"
-#include "GenericPlatform/IInputInterface.h"
 #include "GenericPlatform/GenericPlatformInputDeviceMapper.h"
+#include "GenericPlatform/IInputInterface.h"
+#include "InputCoreTypes.h"
+#include "Misc/CoreDelegates.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 struct FDeviceRegistryPolicy

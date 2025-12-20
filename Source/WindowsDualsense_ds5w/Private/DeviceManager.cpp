@@ -3,16 +3,16 @@
 // Planned Release Year: 2025
 
 #include "DeviceManager.h"
-#include "Async/Async.h"
-#include "Async/TaskGraphInterfaces.h"
-#include "Misc/CoreDelegates.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "API/SonyGamepadSettingsProxy.h"
-#include "IInputDevice.h"
-#include "InputCoreTypes.h"
-#include "GenericPlatform/IInputInterface.h"
+#include "Async/Async.h"
+#include "Async/TaskGraphInterfaces.h"
 #include "GCore/Types/DSCoreTypes.h"
 #include "GCore/Types/ECoreGamepad.h"
+#include "GenericPlatform/IInputInterface.h"
+#include "IInputDevice.h"
+#include "InputCoreTypes.h"
+#include "Misc/CoreDelegates.h"
 #include "Runtime/Launch/Resources/Version.h"
 
 using namespace DSCoreTypes;
@@ -202,17 +202,17 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 		float RawAcclX = FrameInput.Accelerometer.X;
 		float RawAcclY = FrameInput.Accelerometer.Y;
 		float RawAcclZ = FrameInput.Accelerometer.Z;
-		
+
 		// Z from X, X from Y, Y from Z
-		float G_Roll  = RawGyroZ * RadDeg;
+		float G_Roll = RawGyroZ * RadDeg;
 		float G_Pitch = RawGyroX * RadDeg;
-		float G_Yaw   = -RawGyroY * RadDeg;
-		float A_Roll  = RawAcclZ * GToMSq;
+		float G_Yaw = -RawGyroY * RadDeg;
+		float A_Roll = RawAcclZ * GToMSq;
 		float A_Pitch = RawAcclX * GToMSq;
-		float A_Yaw   = -RawAcclY * GToMSq;
-		
-		//UE_LOG(LogTemp, Log, TEXT("G(Roll, Pitch, Yaw) X: %f Y: %f Z: %f"), G_Roll, G_Pitch, G_Yaw);
-		//UE_LOG(LogTemp, Log, TEXT("A(Roll, Pitch, Yaw) X: %f Y: %f Z: %f"), A_Roll, A_Pitch, A_Yaw);
+		float A_Yaw = -RawAcclY * GToMSq;
+
+		// UE_LOG(LogTemp, Log, TEXT("G(Roll, Pitch, Yaw) X: %f Y: %f Z: %f"), G_Roll, G_Pitch, G_Yaw);
+		// UE_LOG(LogTemp, Log, TEXT("A(Roll, Pitch, Yaw) X: %f Y: %f Z: %f"), A_Roll, A_Pitch, A_Yaw);
 
 		if (!FilterSensors.Contains(InputDeviceId))
 		{
@@ -235,11 +235,11 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 		FVector UnrealGyro(G_Roll, G_Pitch, G_Yaw);
 		FVector UnrealAccel(A_Roll, A_Pitch, A_Yaw);
 		FVector UnrealTilt = FVector(TiltRotator.Roll, TiltRotator.Pitch, TiltRotator.Yaw);
-		
-		//UE_LOG(LogTemp, Log, TEXT("UnrealGyro: %s"), *UnrealGyro.ToString());
-		//UE_LOG(LogTemp, Log, TEXT("UnrealAccel: %s"), *UnrealAccel.ToString());
-		//UE_LOG(LogTemp, Log, TEXT("UnrealTilt: %s"), *UnrealTilt.ToString());
-		
+
+		// UE_LOG(LogTemp, Log, TEXT("UnrealGyro: %s"), *UnrealGyro.ToString());
+		// UE_LOG(LogTemp, Log, TEXT("UnrealAccel: %s"), *UnrealAccel.ToString());
+		// UE_LOG(LogTemp, Log, TEXT("UnrealTilt: %s"), *UnrealTilt.ToString());
+
 		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, RawSensorQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
 	}
 
