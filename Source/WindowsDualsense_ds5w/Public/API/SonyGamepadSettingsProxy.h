@@ -10,8 +10,8 @@
 #include "SonyGamepadSettingsProxy.generated.h"
 namespace PluginSettings
 {
-	inline float PollInterval = 0.033f;
-	inline float MadgwickBeta = 0.8f;
+	inline float PollInterval = 0.0166f;
+	inline float MadgwickBeta = 0.08f;
 } // namespace PluginSettings
 /**
  *

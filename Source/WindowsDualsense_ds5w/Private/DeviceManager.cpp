@@ -105,26 +105,20 @@ void DeviceManager::SendControllerEvents(float DeltaTime)
 
 namespace TouchGestureDirectRaw
 {
-	// Se o seu "0" não apontar para a direita, ajuste esse offset (em graus).
-	// Ex.: se 0 aponta pra cima, use -90 ou +90 até alinhar.
 	constexpr float DirectionRawDegreesOffset = 0.0f;
 
-	// Se ficar invertido (direita vira esquerda, etc.), troque para -1.0f em X e/ou Y.
 	constexpr float DirectionFlipX = 1.0f;
 	constexpr float DirectionFlipY = 1.0f;
 
 	static FVector2D DirectionRawToUnitVector(std::uint8_t Raw)
 	{
-		// Interpreta Raw como ângulo 0..255 => 0..360 graus
 		const float Degrees = (static_cast<float>(Raw) * (360.0f / 256.0f)) + DirectionRawDegreesOffset;
 		const float Radians = FMath::DegreesToRadians(Degrees);
 
-		// Vetor unitário a partir do ângulo
 		FVector2D Dir(FMath::Cos(Radians), FMath::Sin(Radians));
 		Dir.X *= DirectionFlipX;
 		Dir.Y *= DirectionFlipY;
 
-		// Normaliza por segurança (cos/sin já é unitário, mas ok)
 		return Dir.GetSafeNormal();
 	}
 } // namespace TouchGestureDirectRaw
@@ -200,14 +194,25 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 
 	if (Context->bEnableAccelerometerAndGyroscope)
 	{
+		constexpr float RadDeg = DS_RAD_TO_DEG;
 		constexpr float GToMSq = GRAVITY_MS2;
 		float RawGyroX = FrameInput.Gyroscope.X;
 		float RawGyroY = FrameInput.Gyroscope.Y;
 		float RawGyroZ = FrameInput.Gyroscope.Z;
-
-		float RawAcclX = FrameInput.Accelerometer.X * GToMSq;
-		float RawAcclY = FrameInput.Accelerometer.Y * GToMSq;
-		float RawAcclZ = FrameInput.Accelerometer.Z * GToMSq;
+		float RawAcclX = FrameInput.Accelerometer.X;
+		float RawAcclY = FrameInput.Accelerometer.Y;
+		float RawAcclZ = FrameInput.Accelerometer.Z;
+		
+		// Z from X, X from Y, Y from Z
+		float G_Roll  = RawGyroZ * RadDeg;
+		float G_Pitch = RawGyroX * RadDeg;
+		float G_Yaw   = -RawGyroY * RadDeg;
+		float A_Roll  = RawAcclZ * GToMSq;
+		float A_Pitch = RawAcclX * GToMSq;
+		float A_Yaw   = -RawAcclY * GToMSq;
+		
+		//UE_LOG(LogTemp, Log, TEXT("G(Roll, Pitch, Yaw) X: %f Y: %f Z: %f"), G_Roll, G_Pitch, G_Yaw);
+		//UE_LOG(LogTemp, Log, TEXT("A(Roll, Pitch, Yaw) X: %f Y: %f Z: %f"), A_Roll, A_Pitch, A_Yaw);
 
 		if (!FilterSensors.Contains(InputDeviceId))
 		{
@@ -221,19 +226,21 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 			Context->bIsResetGyroscope = false;
 		}
 
-		FilterSensors[InputDeviceId]->UpdateImu(RawGyroZ, RawGyroY, -RawGyroX, RawAcclZ, RawAcclY, -RawAcclX, DeltaTime);
+		FilterSensors[InputDeviceId]->UpdateImu(G_Roll, G_Pitch, G_Yaw, A_Roll, A_Pitch, A_Yaw, DeltaTime);
 
 		float qw, qx, qy, qz;
 		FilterSensors[InputDeviceId]->GetQuaternion(qw, qx, qy, qz);
-
 		const FQuat RawSensorQuat = FQuat(qx, qy, qz, qw);
-		const FQuat FinalQuat = RawSensorQuat;
-		const FRotator ControlRotation = FinalQuat.Rotator();
-
-		FVector UnrealGyro(RawGyroX, RawGyroY, RawGyroZ);
-		FVector UnrealAccel(RawAcclX, RawAcclY, RawAcclZ);
-		FVector UnrealTilt = FVector(ControlRotation.Roll, ControlRotation.Pitch, ControlRotation.Yaw);
-		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, FinalQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
+		FRotator TiltRotator = RawSensorQuat.Rotator();
+		FVector UnrealGyro(G_Roll, G_Pitch, G_Yaw);
+		FVector UnrealAccel(A_Roll, A_Pitch, A_Yaw);
+		FVector UnrealTilt = FVector(TiltRotator.Roll, TiltRotator.Pitch, TiltRotator.Yaw);
+		
+		//UE_LOG(LogTemp, Log, TEXT("UnrealGyro: %s"), *UnrealGyro.ToString());
+		//UE_LOG(LogTemp, Log, TEXT("UnrealAccel: %s"), *UnrealAccel.ToString());
+		//UE_LOG(LogTemp, Log, TEXT("UnrealTilt: %s"), *UnrealTilt.ToString());
+		
+		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, RawSensorQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
 	}
 
 	if (Context->bEnableTouch && !Context->bEnableGesture)
