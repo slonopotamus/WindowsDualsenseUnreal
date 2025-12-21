@@ -37,6 +37,8 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 > 🎮 **New Example:** Check the updated **[Arena Shooter v2 Sample](https://drive.google.com/file/d/11iUQuWwA4zkFI_eP0roYbTDh0ss8614m/view?usp=drive_link)** to see the new implementation in action.
 >
 > 🎬 **Gyroscope Demo:** Watch the new aiming mechanics in action on **[YouTube](https://youtu.be/r_NhoODeELU?si=IdqRFx8_aimeIToD)**.
+> 
+> ⚠️ **Version 2.0.0 has the controller's touchpad feature disabled because it wasn't working correctly.**
 
 
 ## 📖 About the Project
