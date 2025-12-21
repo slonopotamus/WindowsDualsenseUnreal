@@ -35,6 +35,8 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 > 🔄 **Upgrading from v1.x?** Please read our [**Migration Guide**](https://github.com/rafaelvaloto/Unreal-Dualsense/wiki/Migration-Guide:-Unreal%E2%80%90Dualsense-v1.x-to-v2.0).
 >  
 > 🎮 **New Example:** Check the updated **[Arena Shooter v2 Sample](https://drive.google.com/file/d/11iUQuWwA4zkFI_eP0roYbTDh0ss8614m/view?usp=drive_link)** to see the new implementation in action.
+>
+> [![YouTube](https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white)](https://youtu.be/r_NhoODeELU?si=IdqRFx8_aimeIToD)
 
 
 ## 📖 About the Project
