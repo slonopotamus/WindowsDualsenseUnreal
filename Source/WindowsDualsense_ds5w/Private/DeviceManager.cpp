@@ -243,128 +243,79 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, RawSensorQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
 	}
 
-	if (Context->bEnableTouch && !Context->bEnableGesture)
+	if (false)
 	{
 		const FInputDeviceId* bPrevTouch = ActiveTouches.Find(InputDeviceId);
-		if (const bool bIsTouching = FrameInput.bIsTouching)
-		{
-			if (!bPrevTouch)
-			{
-				MessageHandler->OnTouchStarted(
-				    nullptr,
-				    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-				    1.0f,
-				    1,
-				    UserId,
-				    InputDeviceId);
+		const FInputDeviceId* bPrevTouchRelative = ActiveTouchesRelative.Find(InputDeviceId);
 
-				ActiveTouches.Add(InputDeviceId);
-			}
-			else
-			{
-				MessageHandler->OnTouchMoved(
-				    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
-				    1.0f,
-				    1,
-				    UserId,
-				    InputDeviceId);
-			}
+		const bool bIsTouching = FrameInput.bIsTouching;
+
+		FVector2D TouchPosition = FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y);
+		FVector2D TouchRelative = FVector2D(FrameInput.TouchRelative.X, FrameInput.TouchRelative.Y);
+
+		if (bIsTouching && !bPrevTouch)
+		{
+			MessageHandler->OnTouchStarted(
+			    nullptr,
+			    TouchPosition,
+			    1.0f,
+			    1,
+			    UserId,
+			    InputDeviceId);
+
+			ActiveTouches.Add(InputDeviceId);
 		}
-		else if (bPrevTouch)
+		else if (bIsTouching && bPrevTouch)
+		{
+			MessageHandler->OnTouchMoved(
+			    TouchPosition,
+			    1.0f,
+			    1,
+			    UserId,
+			    InputDeviceId);
+		}
+		else if (!bIsTouching && bPrevTouch)
 		{
 			MessageHandler->OnTouchEnded(
-			    FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y),
+			    TouchPosition,
 			    1,
 			    UserId,
 			    InputDeviceId);
 
 			ActiveTouches.Remove(InputDeviceId);
 		}
-	}
-	else if (Context->bEnableGesture)
-	{
-#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 5
-		auto& [bGestureActive, LastFingerCount, bHasPrev, PrevTouchPos, PrevSeparation] = TouchGestureStates.FindOrAdd(InputDeviceId);
 
-		const bool bIsTouching = FrameInput.bIsTouching;
-		const int32 FingerCount = static_cast<int32>(FrameInput.TouchFingerCount);
-
-		if (!bIsTouching)
+		if (FrameInput.TouchFingerCount == 2 && !bPrevTouchRelative)
 		{
-			if (bGestureActive)
-			{
-				MessageHandler->OnEndGesture();
-			}
+			MessageHandler->OnTouchStarted(
+			    nullptr,
+			    TouchRelative,
+			    1.0f,
+			    2,
+			    UserId,
+			    InputDeviceId);
 
-			bGestureActive = false;
-			LastFingerCount = 0;
-			bHasPrev = false;
-			PrevSeparation = 0.0f;
-			return;
+			ActiveTouchesRelative.Add(InputDeviceId);
 		}
-
-		if (!bGestureActive)
+		else if (FrameInput.TouchFingerCount == 2 && bPrevTouchRelative)
 		{
-			MessageHandler->OnBeginGesture();
-			bGestureActive = true;
-			LastFingerCount = FingerCount;
-			bHasPrev = false;
+			MessageHandler->OnTouchMoved(
+			    TouchRelative,
+			    1.0f,
+			    2,
+			    UserId,
+			    InputDeviceId);
 		}
-
-		if (FingerCount != LastFingerCount)
+		else if (FrameInput.TouchFingerCount < 2 && bPrevTouchRelative)
 		{
-			MessageHandler->OnEndGesture();
-			LastFingerCount = FingerCount;
-			bHasPrev = false;
-			PrevSeparation = 0.0f;
+			MessageHandler->OnTouchEnded(
+			    TouchRelative,
+			    2,
+			    UserId,
+			    InputDeviceId);
+
+			ActiveTouchesRelative.Remove(InputDeviceId);
 		}
-
-		const FVector2D TouchPos(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y);
-
-		FVector2D CenterDelta = FVector2D::ZeroVector;
-		if (bHasPrev)
-		{
-			CenterDelta = TouchPos - PrevTouchPos;
-		}
-
-		if (FingerCount >= 2)
-		{
-			const FVector2D SeparationVec(FrameInput.TouchRelative.X, FrameInput.TouchRelative.Y);
-			const float Separation = SeparationVec.Size();
-
-			if (!bHasPrev)
-			{
-				PrevSeparation = Separation;
-			}
-
-			const float MagnifyDelta = Separation - PrevSeparation;
-
-			if (constexpr float PinchThreshold = 1.0f; FMath::Abs(MagnifyDelta) >= PinchThreshold)
-			{
-				const float WheelDelta = MagnifyDelta;
-				constexpr bool bInvertedFromDevice = false;
-				MessageHandler->OnTouchGesture(EGestureEvent::Magnify, CenterDelta, WheelDelta, bInvertedFromDevice);
-			}
-			else
-			{
-				const float WheelDelta = CenterDelta.Y;
-				constexpr bool bInvertedFromDevice = false;
-				MessageHandler->OnTouchGesture(EGestureEvent::Scroll, CenterDelta, WheelDelta, bInvertedFromDevice);
-			}
-
-			PrevSeparation = Separation;
-		}
-		else
-		{
-			constexpr float WheelDelta = 0.0f;
-			constexpr bool bInvertedFromDevice = false;
-
-			MessageHandler->OnTouchGesture(EGestureEvent::Swipe, CenterDelta, WheelDelta, bInvertedFromDevice);
-		}
-
-		PrevTouchPos = TouchPos;
-		bHasPrev = true;
-#endif
 	}
 }
 

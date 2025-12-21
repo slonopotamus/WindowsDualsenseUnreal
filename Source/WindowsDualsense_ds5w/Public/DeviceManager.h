@@ -178,6 +178,7 @@ public:
 	 * detection of touch interactions.
 	 */
 	TSet<FInputDeviceId>& ActiveTouches = *new TSet<FInputDeviceId>();
+	TSet<FInputDeviceId>& ActiveTouchesRelative = *new TSet<FInputDeviceId>();
 
 	struct FTouchGestureState
 	{
