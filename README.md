@@ -47,23 +47,6 @@ Designed to bridge the gap left by generic controller support, this asset empowe
 * ⚙️ **Force Feedback**: Native integration with Unreal Engine's Force Feedback system for standard motor vibration.
 * 🎮 **Multi-Controller Support**: Manage up to 4 controllers simultaneously.
 
-
-## 🚀 New Workflow: Live Haptic Prototyping (Console to Blueprint)
-
-You can now discover, test, and implement advanced trigger effects with a new, highly efficient workflow.
-
-**1. Test Live in Console:** Fine-tune adaptive trigger effects directly in the Unreal Engine console. This is the fastest way to prototype and debug haptic sensations without recompiling. Use the `ds.SetTrigL` and `ds.SetTrigR` commands to send raw 10-byte HEX arrays until you discover the perfect effect.
-
-**2. Store and Reuse:** Once you have your ideal HEX values, don't hard-code them! Store them in a reusable **Data Table** to be called from any Blueprint using the `Custom Trigger` node.
-
-This complete workflow—from live console discovery to clean Blueprint implementation—is covered in our new Wiki guides:
-
-* ➡️ **[Wiki Page: Console Commands & HEX Reference](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%AE-DualSense-Trigger-Effects:-Console-Commands-&-HEX-Reference)**
-    * (Learn to *find and test* effects using the console)
-* ➡️ **[Wiki Page: Tutorial: Creating a Reusable Trigger Effect Data Table](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%93-Tutorial:-Creating-a-Reusable-Trigger-Effect-Data-Table)**
-    * (Learn to *store and use* your effects in Blueprints)
-
-
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -106,6 +89,21 @@ git config core.sparseCheckout true
 git sparse-checkout set Source
 ```
 
+## 🚀 Live Haptic Prototyping (Console to Blueprint)
+
+You can now discover, test, and implement advanced trigger effects with a new, highly efficient workflow.
+
+**1. Test Live in Console:** Fine-tune adaptive trigger effects directly in the Unreal Engine console. This is the fastest way to prototype and debug haptic sensations without recompiling. Use the `ds.SetTrigL` and `ds.SetTrigR` commands to send raw 10-byte HEX arrays until you discover the perfect effect.
+
+**2. Store and Reuse:** Once you have your ideal HEX values, don't hard-code them! Store them in a reusable **Data Table** to be called from any Blueprint using the `Custom Trigger` node.
+
+This complete workflow—from live console discovery to clean Blueprint implementation—is covered in our new Wiki guides:
+
+* ➡️ **[Wiki Page: Console Commands & HEX Reference](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%AE-DualSense-Trigger-Effects:-Console-Commands-&-HEX-Reference)**
+    * (Learn to *find and test* effects using the console)
+* ➡️ **[Wiki Page: Tutorial: Creating a Reusable Trigger Effect Data Table](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%93-Tutorial:-Creating-a-Reusable-Trigger-Effect-Data-Table)**
+    * (Learn to *store and use* your effects in Blueprints)
+    
 ## 💻 Basic Usage
 
 The plugin exposes all functionality through static Blueprint function libraries, meaning you can call methods from anywhere without needing to add components.
@@ -149,8 +147,6 @@ You can download the *Arena Shooter UE 5.6* with the DualSense integration direc
 
 - [**Download the example project v2.0.0 for the editor here**](https://drive.google.com/file/d/11iUQuWwA4zkFI_eP0roYbTDh0ss8614m/view?usp=drive_link)
 
-
-
 ### 🎓 Hands-On Tutorial
 
 We've created a detailed, step-by-step tutorial that breaks down the entire implementation within the example project. It's the perfect guide to get you started.
@@ -188,19 +184,95 @@ Play various "playback albums" (sets of Sound Cues) to test and feel a wide vari
 
 - [**Download the example project for the editor here**](https://drive.google.com/file/d/1Dxj8403_tIeJECtE8rrZDrBXcnS2LaCW/view?usp=drive_link)
 
-
 ## 🛠️ Extending for Other Platforms (e.g., PlayStation)
+The plugin features a decoupled architecture using Policy-Based Design, allowing developers to integrate other platform SDKs (such as the official Sony PlayStation® SDK) or custom HID wrappers directly from their Game Project.
 
-The plugin has been designed with an extensible architecture, allowing developers with access to other platform SDKs (such as the official Sony PlayStation® SDK) to integrate them with minimal effort.
+The primary advantage is that you do not need to modify the plugin's source code. You can inject your implementation during the application startup.
 
-The low-level hardware communication is abstracted through the `IPlatformHardwareInfoInterface`. The default implementation for Windows and Linux uses the HID API to communicate with the controllers.
+1. Implementation via Hardware Policy
+   Low-level hardware communication is abstracted through a Template-Policy system. To add a new platform, you create a simple C++ struct in your project that implements the required hardware methods (Read, Write, Detect, etc.).
+```cpp
+#pragma once
+#include "CoreMinimal.h"
 
-For licensed developers, extending the plugin involves these steps:
+namespace SonyPlatformPolicy 
+{
+    struct FSonyHardware 
+    {
+        FSonyHardware() = default;
 
-1.  **Create a new implementation class**: Create a new C++ class that inherits from `IPlatformHardwareInfoInterface` and implements its virtual methods using the specific SDK's functions.
-2.  **Modify the Singleton**: In the `IPlatformHardwareInfoInterface.cpp` file, include the header for your new class and instantiate it within the appropriate conditional compilation block.
+        // Implementation of the required Hardware Policy methods
+        void Read(FDeviceContext* Context) { /* Your SDK Read */ }
+        void Write(FDeviceContext* Context) { /* Your SDK Write */ }
+        void Detect(TArray<FDeviceContext>& Devices) { /* Your SDK Detect */ }
+        bool CreateHandle(FDeviceContext* Context) { return true; }
+        void InvalidateHandle(FDeviceContext* Context) { /* Cleanup */ }
+        void ProcessAudioHaptic(FDeviceContext* Context) { /* Haptics logic */ }
+    };
+}
+```
+2. Injection via Game Module
+      Instead of modifying a singleton inside the plugin, you "inject" your custom hardware platform during your Game Module's startup. This ensures your project-specific logic takes precedence over the default HID implementation.
+   Example Implementation in your Game Module (NewDeveloper.cpp):
+```cpp
+#include "NewDeveloper.h"
+#include "Modules/ModuleManager.h"
+#include "Implementations/Platforms/Others/GamepadHardwareBridge.h"
+#include "Platforms/SonyPlatformPolicy.h"
+#include <memory>
 
-> ➡️ **For a detailed, step-by-step guide on how to add support for a new platform, [please see our tutorial on the Wiki](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/🎮-Extending-the-Plugin-for-Other-Platforms).**
+class FNewDeveloper : public FDefaultGameModuleImpl {
+public:
+    virtual bool IsGameModule() const override { return true; }
+
+    virtual void StartupModule() override {
+        // Injecting the custom hardware platform into the Plugin Bridge
+        auto CustomPlatform = std::make_unique<SonyPlatformPolicy::FSonyHardware>();
+        FGamepadHardwareBridge::InjectHardwarePlatform(std::move(CustomPlatform));
+        
+        UE_LOG(LogTemp, Log, TEXT("NewDeveloper Game Module: Custom Hardware Policy Injected."));
+    }
+};
+
+IMPLEMENT_PRIMARY_GAME_MODULE(FNewDeveloper, NewDeveloper, "NewDeveloper");
+```
+
+3. Build Configuration
+   Ensure your project's Build.cs includes the plugin module and enables C++20 support:
+```csharp
+public class NewDeveloper : ModuleRules
+{
+    public NewDeveloper(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        
+        // Required for Concepts and Policy-Based architecture
+        CppStandard = CppStandardVersion.Cpp20;
+
+        PublicDependencyModuleNames.AddRange(new string[] { 
+            ...
+            "WindowsDualsense_ds5w" 
+        });
+
+        // Add your custom SDK libraries here
+        // PublicSystemLibraries.Add("MySDK.lib");
+    }
+}
+```
+
+## 🏗️ Core Architecture: [GamepadCore 🕹️](https://github.com/rafaelvaloto/Gamepad-Core)
+
+This plugin is built upon the **GamepadCore** framework, a high-performance C++20 library designed for cross-platform controller support. By using **GamepadCore** as its foundation, this plugin inherits several key architectural benefits:
+
+* **Policy-Based Design**: Direct separation of hardware logic from the Unreal Engine interface.
+* **Zero-Overhead Abstraction**: Uses C++ templates and concepts instead of heavy virtual dispatch for low-level I/O operations.
+* **Compile-Time Validation**: Leverages C++20 Concepts to ensure that any custom hardware implementation satisfies all requirements before the code even runs.
+
+### 🛠️ Technical Stack
+* **Core Logic**: GamepadCore (C++20 Standard).
+* **Platforms**: Windows (HID API), with extensible support for Linux, macOS, and PlayStation® SDKs.
+
+
 
 ## 🤝 How to Contribute
 
@@ -212,9 +284,7 @@ This project is distributed under the MIT License. See the `LICENSE` file for mo
 
 ## ⭐ Credits and Acknowledgments
 
-Special thanks to everyone who has contributed with suggestions, reported bugs, and offered implementation improvements. Thanks also to the developers of the libraries used as inspiration and reference for creating this project.
 
-A special thanks as well to the Epic Games team for creating and providing the *Parrot Game Sample*, which served as an excellent foundation for the example project demonstrating this plugin's features.
 
 * [DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows)
 * [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db)
@@ -222,7 +292,9 @@ A special thanks as well to the Epic Games team for creating and providing the *
 * [flok pydualsense](https://github.com/flok/pydualsense)
 * [SAxense](https://github.com/egormanga/SAxense)
 
+Special thanks to everyone who has contributed with suggestions, reported bugs, and offered implementation improvements. Thanks also to the developers of the libraries used as inspiration and reference for creating this project.
 
+A special thanks to the Unreal Engine team for providing the Arena Shooter templates, which served as an excellent foundation for the example project demonstrating this plugin's features.
 
 ## ⚖️ Disclaimer and Trademarks
 
