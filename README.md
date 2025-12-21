@@ -29,6 +29,14 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 </p>
 
 
+> [!IMPORTANT]
+> **v2.0.0-pre-release is now available!** We are testing major architecture improvements. Check it out in the [Releases](https://github.com/rafaelvaloto/Unreal-Dualsense/releases) section and help us with feedback.
+>
+> 🔄 **Upgrading from v1.x?** Please read our [**Migration Guide**](https://github.com/rafaelvaloto/Unreal-Dualsense/wiki/Migration-Guide:-Unreal%E2%80%90Dualsense-v1.x-to-v2.0).
+>  
+> 🎮 **New Example:** Check the updated **[Arena Shooter v2 Sample](https://drive.google.com/file/d/11iUQuWwA4zkFI_eP0roYbTDh0ss8614m/view?usp=drive_link)** to see the new implementation in action.
+
+
 ## 📖 About the Project
 
 Built with a cross-platform architecture, this Unreal Engine plugin provides a unified solution for integrating DualSense™ (PlayStation 5) and DualShock 4® (PlayStation 4) controllers. It delivers native support on PC while being architected for easy compilation across other Unreal Engine platforms, including PlayStation®. This asset provides direct API access to the complete feature set of each controller, including the revolutionary Haptic Feedback and Adaptive Triggers of the DualSense™. All features are exposed through a clean and well-documented function library for both Blueprint and C++.
@@ -283,14 +291,15 @@ Contributions are welcome! If you have ideas, suggestions, or bug fixes, feel fr
 This project is distributed under the MIT License. See the `LICENSE` file for more details.
 
 ## ⭐ Credits and Acknowledgments
-
-
-
+  
 * [DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows)
 * [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db)
 * [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master)
 * [flok pydualsense](https://github.com/flok/pydualsense)
 * [SAxense](https://github.com/egormanga/SAxense)
+* [Ryochan7/DS4Windows](https://github.com/Ryochan7/DS4Windowshttps://github.com/Ryochan7/DS4Windows)
+* [linux/drivers/hid/hid-playstation.c](https://github.com/torvalds/linux/blob/master/drivers/hid/hid-playstation.c#L1709)
+
 
 Special thanks to everyone who has contributed with suggestions, reported bugs, and offered implementation improvements. Thanks also to the developers of the libraries used as inspiration and reference for creating this project.
 
