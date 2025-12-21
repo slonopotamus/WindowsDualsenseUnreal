@@ -30,6 +30,9 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 	std::unique_ptr<IPlatformHardwareInfo> WindowsInstance = std::make_unique<FWindowsPlatform::FWindowsHardware>();
 	IPlatformHardwareInfo::SetInstance(std::move(WindowsInstance));
 
+	// Initialize DeviceResgistry
+	FDeviceRegistry::Initialize();
+
 #elif PLATFORM_LINUX || PLATFORM_MAC
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -45,10 +48,9 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
 	std::unique_ptr<IPlatformHardwareInfo> LinuxInstance = std::make_unique<FLinuxPlatform::FLinuxHardware>();
 	IPlatformHardwareInfo::SetInstance(std::move(LinuxInstance));
-#endif
 
-	// Initialize DeviceResgistry
 	FDeviceRegistry::Initialize();
+#endif
 }
 
 void FWindowsDualsense_ds5wModule::ShutdownModule()

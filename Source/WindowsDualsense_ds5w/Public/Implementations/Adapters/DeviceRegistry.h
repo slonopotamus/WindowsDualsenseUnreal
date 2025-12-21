@@ -16,7 +16,7 @@
  * instances associated with Sony gamepad controllers. This class ensures proper initialization,
  * cleanup, and access control for the controller devices.
  */
-class FDeviceRegistry : public FNoncopyable
+class WINDOWSDUALSENSE_DS5W_API FDeviceRegistry : public FNoncopyable
 {
 
 public:

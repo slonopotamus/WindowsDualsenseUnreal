@@ -11,7 +11,6 @@
 #include <Windows.h>
 #endif
 
-#include "GCore/Interfaces/IPlatformHardwareInfo.h"
 #include "GCore/Types/DSCoreTypes.h"
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 
