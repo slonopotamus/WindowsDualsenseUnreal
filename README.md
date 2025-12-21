@@ -98,21 +98,6 @@ cd Source/WindowsDualsense_ds5w/Private/GamepadCore
 git config core.sparseCheckout true
 git sparse-checkout set Source
 ```
-
-## 🚀 Live Haptic Prototyping (Console to Blueprint)
-
-You can now discover, test, and implement advanced trigger effects with a new, highly efficient workflow.
-
-**1. Test Live in Console:** Fine-tune adaptive trigger effects directly in the Unreal Engine console. This is the fastest way to prototype and debug haptic sensations without recompiling. Use the `ds.SetTrigL` and `ds.SetTrigR` commands to send raw 10-byte HEX arrays until you discover the perfect effect.
-
-**2. Store and Reuse:** Once you have your ideal HEX values, don't hard-code them! Store them in a reusable **Data Table** to be called from any Blueprint using the `Custom Trigger` node.
-
-This complete workflow—from live console discovery to clean Blueprint implementation—is covered in our new Wiki guides:
-
-* ➡️ **[Wiki Page: Console Commands & HEX Reference](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%AE-DualSense-Trigger-Effects:-Console-Commands-&-HEX-Reference)**
-    * (Learn to *find and test* effects using the console)
-* ➡️ **[Wiki Page: Tutorial: Creating a Reusable Trigger Effect Data Table](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%93-Tutorial:-Creating-a-Reusable-Trigger-Effect-Data-Table)**
-    * (Learn to *store and use* your effects in Blueprints)
     
 ## 💻 Basic Usage
 
@@ -190,9 +175,23 @@ Play various "playback albums" (sets of Sound Cues) to test and feel a wide vari
 
 🛠️ New Developer/Debug Tools: For advanced users, new console commands have been added to test and fine-tune trigger vibrations and frequencies directly over wireless and wired connections (e.g., ds.SetAudioLR). 
 
-➡️ Check out the full tutorial on the Wiki to implement this in your own project!
-
 - [**Download the example project for the editor here**](https://drive.google.com/file/d/1Dxj8403_tIeJECtE8rrZDrBXcnS2LaCW/view?usp=drive_link)
+
+
+## 🚀 Live Haptic Prototyping (Console to Blueprint)
+
+You can now discover, test, and implement advanced trigger effects with a new, highly efficient workflow.
+
+**1. Test Live in Console:** Fine-tune adaptive trigger effects directly in the Unreal Engine console. This is the fastest way to prototype and debug haptic sensations without recompiling. Use the `ds.SetTrigL` and `ds.SetTrigR` commands to send raw 10-byte HEX arrays until you discover the perfect effect.
+
+**2. Store and Reuse:** Once you have your ideal HEX values, don't hard-code them! Store them in a reusable **Data Table** to be called from any Blueprint using the `Custom Trigger` node.
+
+This complete workflow—from live console discovery to clean Blueprint implementation—is covered in our new Wiki guides:
+
+* ➡️ **[Wiki Page: Console Commands & HEX Reference](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%AE-DualSense-Trigger-Effects:-Console-Commands-&-HEX-Reference)**
+    * (Learn to *find and test* effects using the console)
+* ➡️ **[Wiki Page: Tutorial: Creating a Reusable Trigger Effect Data Table](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%93-Tutorial:-Creating-a-Reusable-Trigger-Effect-Data-Table)**
+    * (Learn to *store and use* your effects in Blueprints)
 
 ## 🛠️ Extending for Other Platforms (e.g., PlayStation)
 The plugin features a decoupled architecture using Policy-Based Design, allowing developers to integrate other platform SDKs (such as the official Sony PlayStation® SDK) or custom HID wrappers directly from their Game Project.
