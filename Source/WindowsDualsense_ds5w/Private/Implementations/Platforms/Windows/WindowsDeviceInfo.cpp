@@ -6,6 +6,7 @@
 #include "GCore/Types/Structs/Config/GamepadCalibration.h"
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "GImplementations/Utils/GamepadSensors.h"
+#include "Helpers/DualSenseLog.h"
 #include <filesystem>
 #include <hidsdi.h>
 #include <setupapi.h>
@@ -35,7 +36,7 @@ void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 		const auto DetailDataBuffer = static_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA>(malloc(RequiredSize));
 		if (!DetailDataBuffer)
 		{
-			UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to allocate memory for device details."));
+			UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to allocate memory for device details."));
 			continue;
 		}
 

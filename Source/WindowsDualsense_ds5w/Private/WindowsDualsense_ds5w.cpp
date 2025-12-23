@@ -5,6 +5,7 @@
 #include "WindowsDualsense_ds5w/Public/WindowsDualsense_ds5w.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "GCore/Interfaces/IPlatformHardwareInfo.h"
+#include "Helpers/DualSenseLog.h"
 #include "Implementations/Adapters/DeviceRegistry.h"
 #include "Implementations/Platforms/Commons/LinuxHardwarePolicy.h"
 #include "Implementations/Platforms/Windows/WindowsHardwarePolicy.h"
