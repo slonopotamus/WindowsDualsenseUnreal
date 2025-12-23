@@ -9,18 +9,16 @@
 using namespace SonyGamepadProxyHelpers;
 void USonyGamepadHapticsProxy::RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix)
 {
-	const FInputDeviceId DeviceId = GetDeviceId(ControllerId);
-	if (IGamepadAudioHaptics* GamepadHaptics = GetAudioHapticsInterface(ControllerId))
+	if (GetAudioHapticsInterface(ControllerId))
 	{
-		FHapticsRegistry::Get()->CreateListenerForDevice(DeviceId, Submix);
+		FHapticsRegistry::Get()->CreateListenerForDevice(ControllerId, Submix);
 	}
 }
 
 void USonyGamepadHapticsProxy::UnregisterSubmixForDevice(int32 ControllerId)
 {
-	const FInputDeviceId DeviceId = GetDeviceId(ControllerId);
-	if (IGamepadAudioHaptics* GamepadHaptics = GetAudioHapticsInterface(ControllerId))
+	if (GetAudioHapticsInterface(ControllerId))
 	{
-		FHapticsRegistry::Get()->RemoveListenerForDevice(DeviceId);
+		FHapticsRegistry::Get()->RemoveListenerForDevice(ControllerId);
 	}
 }

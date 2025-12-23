@@ -125,26 +125,15 @@ namespace TouchGestureDirectRaw
 
 void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const
 {
-	const auto HandleAnalogInput = [&](const FName& AnalogKey, const FName& ButtonKeyPositive, const FName& ButtonKeyNegative, float NewAxisValue) {
-		const std::string Str(TCHAR_TO_UTF8(*AnalogKey.ToString()));
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::LeftStickLeft, FrameInput.bLeftAnalogLeft);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::LeftStickRight, FrameInput.bLeftAnalogRight);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::LeftStickDown, FrameInput.bLeftAnalogDown);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::LeftStickUp, FrameInput.bLeftAnalogUp);
 
-		float& OldAxisValue = Context->AnalogStates[Str];
-		if (FMath::IsNearlyEqual(NewAxisValue, OldAxisValue))
-		{
-			return;
-		}
-
-		MessageHandler->OnControllerAnalog(AnalogKey, UserId, InputDeviceId, NewAxisValue);
-		OldAxisValue = NewAxisValue;
-
-		CheckButtonInput(Context, UserId, InputDeviceId, ButtonKeyPositive, NewAxisValue > 0);
-		CheckButtonInput(Context, UserId, InputDeviceId, ButtonKeyNegative, NewAxisValue < 0);
-	};
-
-	HandleAnalogInput(FGamepadKeyNames::LeftAnalogX, FGamepadKeyNames::LeftStickLeft, FGamepadKeyNames::LeftStickRight, FrameInput.LeftAnalog.X);
-	HandleAnalogInput(FGamepadKeyNames::LeftAnalogY, FGamepadKeyNames::LeftStickDown, FGamepadKeyNames::LeftStickUp, FrameInput.LeftAnalog.Y);
-	HandleAnalogInput(FGamepadKeyNames::RightAnalogX, FGamepadKeyNames::RightStickLeft, FGamepadKeyNames::RightStickRight, FrameInput.RightAnalog.X);
-	HandleAnalogInput(FGamepadKeyNames::RightAnalogY, FGamepadKeyNames::RightStickDown, FGamepadKeyNames::RightStickUp, FrameInput.RightAnalog.Y);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightStickLeft, FrameInput.bRightAnalogLeft);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightStickRight, FrameInput.bRightAnalogRight);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightStickDown, FrameInput.bRightAnalogDown);
+	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightStickUp, FrameInput.bRightAnalogUp);
 
 	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftTriggerAnalog, UserId, InputDeviceId, FrameInput.LeftTriggerAnalog);
 	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightTriggerAnalog, UserId, InputDeviceId, FrameInput.RightTriggerAnalog);
@@ -211,9 +200,6 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 		float A_Pitch = RawAcclX * GToMSq;
 		float A_Yaw = -RawAcclY * GToMSq;
 
-		// UE_LOG(LogTemp, Log, TEXT("G(Roll, Pitch, Yaw) X: %f Y: %f Z: %f"), G_Roll, G_Pitch, G_Yaw);
-		// UE_LOG(LogTemp, Log, TEXT("A(Roll, Pitch, Yaw) X: %f Y: %f Z: %f"), A_Roll, A_Pitch, A_Yaw);
-
 		if (!FilterSensors.Contains(InputDeviceId))
 		{
 			TUniquePtr<FMadgwickAhrs> MadgwickAhrs = MakeUnique<FMadgwickAhrs>(PluginSettings::MadgwickBeta);
@@ -236,87 +222,9 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 		FVector UnrealAccel(A_Roll, A_Pitch, A_Yaw);
 		FVector UnrealTilt = FVector(TiltRotator.Roll, TiltRotator.Pitch, TiltRotator.Yaw);
 
-		// UE_LOG(LogTemp, Log, TEXT("UnrealGyro: %s"), *UnrealGyro.ToString());
-		// UE_LOG(LogTemp, Log, TEXT("UnrealAccel: %s"), *UnrealAccel.ToString());
-		// UE_LOG(LogTemp, Log, TEXT("UnrealTilt: %s"), *UnrealTilt.ToString());
-
 		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, RawSensorQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
 	}
-
-	if (false)
-	{
-		const FInputDeviceId* bPrevTouch = ActiveTouches.Find(InputDeviceId);
-		const FInputDeviceId* bPrevTouchRelative = ActiveTouchesRelative.Find(InputDeviceId);
-
-		const bool bIsTouching = FrameInput.bIsTouching;
-
-		FVector2D TouchPosition = FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y);
-		FVector2D TouchRelative = FVector2D(FrameInput.TouchRelative.X, FrameInput.TouchRelative.Y);
-
-		if (bIsTouching && !bPrevTouch)
-		{
-			MessageHandler->OnTouchStarted(
-			    nullptr,
-			    TouchPosition,
-			    1.0f,
-			    1,
-			    UserId,
-			    InputDeviceId);
-
-			ActiveTouches.Add(InputDeviceId);
-		}
-		else if (bIsTouching && bPrevTouch)
-		{
-			MessageHandler->OnTouchMoved(
-			    TouchPosition,
-			    1.0f,
-			    1,
-			    UserId,
-			    InputDeviceId);
-		}
-		else if (!bIsTouching && bPrevTouch)
-		{
-			MessageHandler->OnTouchEnded(
-			    TouchPosition,
-			    1,
-			    UserId,
-			    InputDeviceId);
-
-			ActiveTouches.Remove(InputDeviceId);
-		}
-
-		if (FrameInput.TouchFingerCount == 2 && !bPrevTouchRelative)
-		{
-			MessageHandler->OnTouchStarted(
-			    nullptr,
-			    TouchRelative,
-			    1.0f,
-			    2,
-			    UserId,
-			    InputDeviceId);
-
-			ActiveTouchesRelative.Add(InputDeviceId);
-		}
-		else if (FrameInput.TouchFingerCount == 2 && bPrevTouchRelative)
-		{
-			MessageHandler->OnTouchMoved(
-			    TouchRelative,
-			    1.0f,
-			    2,
-			    UserId,
-			    InputDeviceId);
-		}
-		else if (FrameInput.TouchFingerCount < 2 && bPrevTouchRelative)
-		{
-			MessageHandler->OnTouchEnded(
-			    TouchRelative,
-			    2,
-			    UserId,
-			    InputDeviceId);
-
-			ActiveTouchesRelative.Remove(InputDeviceId);
-		}
-	}
+	
 }
 
 void DeviceManager::CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const

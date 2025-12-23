@@ -49,7 +49,11 @@ ISonyGamepad* FDeviceRegistry::GetLibraryInstance(FInputDeviceId DeviceId)
 {
 	if (RegistryImplementation)
 	{
-		return RegistryImplementation->GetLibrary(DeviceId);
+		if (ISonyGamepad* Lib = RegistryImplementation->GetLibrary(DeviceId))
+		{
+			return Lib;
+		}
+		RegistryImplementation->RemoveLibraryInstance(DeviceId);
 	}
 	return nullptr;
 }

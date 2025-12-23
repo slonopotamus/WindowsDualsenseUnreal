@@ -6,7 +6,7 @@
 #include "API/SonyGamepadProxyHelpers.h"
 #include "GCore/Interfaces/Segregations/IGamepadAudioHaptics.h"
 
-FAudioHapticsListener::FAudioHapticsListener(FInputDeviceId InDeviceId, USoundSubmix* InSubmix)
+FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix)
     : Submix(InSubmix)
     , DeviceId(InDeviceId)
 {
@@ -42,7 +42,7 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 
 	if (OutputFramesWritten != 64)
 	{
-		UE_LOG(LogDualSense, Warning, TEXT("OutputFramesWritten not 64 bytes! (%d)"), OutputFramesWritten);
+		UE_LOG(LogDualSense, Log, TEXT("OutputFramesWritten not 64 bytes! (%d)"), OutputFramesWritten);
 		return;
 	}
 
@@ -112,10 +112,8 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 	AudioPacketQueue.Enqueue(Packet2);
 }
 
-void FAudioHapticsListener::ConsumeHapticsQueue()
+void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHaptics)
 {
-	using namespace SonyGamepadProxyHelpers;
-	IGamepadAudioHaptics* AudioHaptics = GetAudioHapticsInterface(DeviceId.GetId());
 	if (AudioHaptics)
 	{
 		TArray<int8> PacketToProcess;

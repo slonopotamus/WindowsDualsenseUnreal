@@ -34,7 +34,7 @@ public:
 	 * @param Submix A pointer to the sound submix to which the audio haptics listener will be bound.
 	 *               If this is null, the method will return without taking any action.
 	 */
-	void CreateListenerForDevice(const FInputDeviceId& DeviceId, USoundSubmix* Submix);
+	void CreateListenerForDevice(int32 DeviceId, USoundSubmix* Submix);
 	/**
 	 * Removes the audio haptics listener for the specified input device.
 	 *
@@ -45,7 +45,7 @@ public:
 	 * @param DeviceId The unique identifier of the input device whose associated
 	 *                 haptics listener is to be removed.
 	 */
-	void RemoveListenerForDevice(const FInputDeviceId& DeviceId);
+	void RemoveListenerForDevice(int32 DeviceId);
 	/**
 	 * Destructor for the FHapticsRegistry class.
 	 *
@@ -66,7 +66,7 @@ public:
 	 * @param DeviceId The unique identifier of the input device to check for a listener.
 	 * @return True if a listener is registered for the specified device, otherwise false.
 	 */
-	bool HasListenerForDevice(const FInputDeviceId& DeviceId) const;
+	bool HasListenerForDevice(int32 DeviceId) const;
 	/**
 	 * Removes all haptics listeners from the registry and unregisters them from the audio device.
 	 *
@@ -124,5 +124,5 @@ private:
 	 * The map is used primarily within the FHapticsRegistry class to register, retrieve,
 	 * and remove audio haptics listeners as devices are added or removed.
 	 */
-	TMap<FInputDeviceId, TSharedPtr<FAudioHapticsListener>> ControllerListeners;
+	TMap<int32, TSharedPtr<FAudioHapticsListener>> ControllerListeners;
 };

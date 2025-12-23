@@ -3,7 +3,6 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
-#include "GCore/Types/DSCoreTypes.h"
 #include "GCore/Types/Structs/Config/GamepadCalibration.h"
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "GImplementations/Utils/GamepadSensors.h"
@@ -13,9 +12,10 @@
 
 void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 {
+	Devices.clear();
+	
 	GUID HidGuid;
 	HidD_GetHidGuid(&HidGuid);
-
 	const HDEVINFO DeviceInfoSet = SetupDiGetClassDevs(&HidGuid, nullptr, nullptr,
 	                                                   DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 	if (DeviceInfoSet == INVALID_HANDLE_VALUE)
@@ -25,10 +25,8 @@ void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 
 	SP_DEVICE_INTERFACE_DATA DeviceInterfaceData = {};
 	DeviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-
-	std::unordered_map<int, std::string> DevicePaths;
-	for (int DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
-	                                                      &DeviceInterfaceData);
+	for (int32 DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
+	                                                        &DeviceInterfaceData);
 	     DeviceIndex++)
 	{
 		DWORD RequiredSize = 0;
@@ -37,6 +35,7 @@ void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 		const auto DetailDataBuffer = static_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA>(malloc(RequiredSize));
 		if (!DetailDataBuffer)
 		{
+			UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to allocate memory for device details."));
 			continue;
 		}
 
@@ -44,6 +43,7 @@ void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 		if (SetupDiGetDeviceInterfaceDetail(DeviceInfoSet, &DeviceInterfaceData, DetailDataBuffer, RequiredSize,
 		                                    nullptr, nullptr))
 		{
+			std::string InPath = std::filesystem::path(DetailDataBuffer->DevicePath).string();
 			const HANDLE TempDeviceHandle = CreateFileW(
 			    DetailDataBuffer->DevicePath,
 			    GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, NULL, nullptr);
@@ -52,7 +52,6 @@ void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 			{
 				HIDD_ATTRIBUTES Attributes = {};
 				Attributes.Size = sizeof(HIDD_ATTRIBUTES);
-
 				if (HidD_GetAttributes(TempDeviceHandle, &Attributes))
 				{
 					if (
@@ -63,42 +62,42 @@ void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 					     Attributes.ProductID == 0x09CC))
 					{
 						FDeviceContext Context = {};
-						wchar_t DeviceProductString[260];
-						if (HidD_GetProductString(TempDeviceHandle, DeviceProductString, 260))
+						Context.Handle = nullptr;
+						Context.Path = std::filesystem::path(DetailDataBuffer->DevicePath).string();
+						switch (Attributes.ProductID)
 						{
-							if (DevicePaths.find(DeviceIndex) == DevicePaths.end())
+							case 0x05C4:
+							case 0x09CC:
+								Context.DeviceType = EDSDeviceType::DualShock4;
+								break;
+							case 0x0CE6:
+								Context.DeviceType = EDSDeviceType::DualSense;
+								break;
+							case 0x0DF2:
+								Context.DeviceType = EDSDeviceType::DualSenseEdge;
+								break;
+							default: 
+								Context.DeviceType = EDSDeviceType::NotFound;
+						}
+								
+						if (Context.DeviceType != EDSDeviceType::NotFound)
+						{
+							Context.IsConnected = true;
+							Context.ConnectionType = EDSDeviceConnection::Usb;
+							std::string BluetoothGUID = "{00001124-0000-1000-8000-00805f9b34fb}";
+							if (Context.Path.find(BluetoothGUID) != std::string::npos)
 							{
-								std::string FinalString = std::filesystem::path(DetailDataBuffer->DevicePath).string();
-								Context.Path = FinalString;
-								DevicePaths[DeviceIndex] = FinalString;
-								switch (Attributes.ProductID)
-								{
-									case 0x05C4:
-									case 0x09CC:
-										Context.DeviceType = EDSDeviceType::DualShock4;
-										break;
-									case 0x0DF2:
-										Context.DeviceType = EDSDeviceType::DualSenseEdge;
-										break;
-									default: Context.DeviceType = EDSDeviceType::DualSense;
-								}
-
-								Context.IsConnected = true;
-								Context.ConnectionType = EDSDeviceConnection::Usb;
-								const std::string BtGuid = "{00001124-0000-1000-8000-00805f9b34fb}";
-								if (FinalString.find(BtGuid) != std::string::npos ||
-								    FinalString.find("bth") != std::string::npos ||
-								    FinalString.find("BTHENUM") != std::string::npos)
-								{
-									Context.ConnectionType = EDSDeviceConnection::Bluetooth;
-								}
+								Context.ConnectionType = EDSDeviceConnection::Bluetooth;
 							}
 							Devices.push_back(Context);
 						}
 					}
 				}
+				if (TempDeviceHandle != INVALID_HANDLE_VALUE)
+				{
+					CloseHandle(TempDeviceHandle);
+				}
 			}
-			CloseHandle(TempDeviceHandle);
 		}
 		free(DetailDataBuffer);
 	}
@@ -121,17 +120,25 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 	{
 		return;
 	}
-
+	
 	DWORD BytesRead = 0;
 	if (Context->ConnectionType == EDSDeviceConnection::Bluetooth && Context->DeviceType == EDSDeviceType::DualShock4)
 	{
 		constexpr size_t InputReportLength = 547;
-		PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
+		EPollResult Result = PollTick(Context->Handle, Context->BufferDS4, InputReportLength, BytesRead);
+		if (Result != EPollResult::ReadOk)
+		{
+			InvalidateHandle(Context);
+		}
 	}
 	else
 	{
 		const size_t InputBufferSize = Context->ConnectionType == EDSDeviceConnection::Bluetooth ? 78 : 64;
-		PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
+		EPollResult Result = PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
+		if (Result != EPollResult::ReadOk)
+		{
+			InvalidateHandle(Context);
+		}
 	}
 }
 
@@ -148,6 +155,7 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	DWORD BytesWritten = 0;
 	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
 	{
+		InvalidateHandle(Context);
 	}
 }
 
@@ -188,14 +196,6 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		ZeroMemory(Context->BufferAudio, sizeof(Context->BufferAudio));
 		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
 		ZeroMemory(Context->BufferDS4, sizeof(Context->BufferDS4));
-	}
-}
-
-void FWindowsDeviceInfo::InvalidateHandle(HANDLE Handle)
-{
-	if (Handle != INVALID_PLATFORM_HANDLE)
-	{
-		CloseHandle(Handle);
 	}
 }
 
@@ -267,7 +267,7 @@ void FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 	FeatureBuffer[0] = 0x05;
 	if (!HidD_GetFeature(Context->Handle, FeatureBuffer, 41))
 	{
-		const unsigned long Error = GetLastError();
+		InvalidateHandle(Context);
 		return;
 	}
 

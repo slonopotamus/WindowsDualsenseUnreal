@@ -7,6 +7,7 @@
 #include "AudioResampler.h"
 #include "Containers/Queue.h"
 #include "CoreMinimal.h"
+#include "GCore/Interfaces/Segregations/IGamepadAudioHaptics.h"
 #include "ISubmixBufferListener.h"
 
 /**
@@ -28,7 +29,7 @@ class FAudioHapticsListener : public ISubmixBufferListener
 	 @return An instance of FAudioHapticsListener initialized with the provided input device ID and submix reference.
 	 */
 public:
-	FAudioHapticsListener(FInputDeviceId InDeviceId, USoundSubmix* InSubmix);
+	FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix);
 
 	/**
 	 Determines if the audio processing system is actively rendering audio.
@@ -54,7 +55,7 @@ public:
 	 It integrates with device-specific haptic systems using interfaces like ISonyGamepadTriggerInterface to achieve real-time
 	 audio-haptic feedback conversion.
 	 */
-	void ConsumeHapticsQueue();
+	void ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHaptics);
 
 	/**
 	 Returns the associated audio submix instance.
@@ -127,7 +128,7 @@ private:
 	 It provides a consistent and unique mechanism for identifying devices, enabling
 	 their integration into various systems, including haptic feedback and input processing pipelines.
 	 */
-	FInputDeviceId DeviceId;
+	int32 DeviceId;
 	/**
 	 Variable used to maintain the state of the left channel for a low-pass filter.
 

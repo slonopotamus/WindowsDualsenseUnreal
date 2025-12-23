@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Managers/HapticsRegistry.h"
+#include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "AudioDevice.h"
 #include "Misc/App.h"
@@ -19,7 +20,7 @@ FHapticsRegistry::~FHapticsRegistry()
 	}
 }
 
-bool FHapticsRegistry::HasListenerForDevice(const FInputDeviceId& DeviceId) const
+bool FHapticsRegistry::HasListenerForDevice(int32 DeviceId) const
 {
 	return ControllerListeners.Contains(DeviceId);
 }
@@ -37,18 +38,13 @@ TSharedPtr<FHapticsRegistry> FHapticsRegistry::Get()
 	return Instance;
 }
 
-void FHapticsRegistry::CreateListenerForDevice(const FInputDeviceId& DeviceId, USoundSubmix* Submix)
+void FHapticsRegistry::CreateListenerForDevice(int32 DeviceId, USoundSubmix* Submix)
 {
 	if (!Submix)
 	{
 		return;
 	}
-
-	if (ControllerListeners.Contains(DeviceId))
-	{
-		RemoveListenerForDevice(DeviceId);
-	}
-
+	
 	const TSharedPtr<FAudioHapticsListener> Listener = MakeShared<FAudioHapticsListener>(DeviceId, Submix);
 	if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
 	{
@@ -85,15 +81,19 @@ bool FHapticsRegistry::Tick(float DeltaTime)
 		if (Pair.Value.IsValid())
 		{
 			TSharedPtr<FAudioHapticsListener> Context = Pair.Value;
-			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context)]() {
-				NewContext->ConsumeHapticsQueue();
-			});
+			if (IGamepadAudioHaptics* HapiticsInterface = SonyGamepadProxyHelpers::GetAudioHapticsInterface(Pair.Key))
+			{
+				AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context), NewHapiticsInterface = MoveTemp(HapiticsInterface)]() {
+					NewContext->ConsumeHapticsQueue(NewHapiticsInterface);
+				});	
+			}
 		}
 	}
 	return true;
 }
 
-void FHapticsRegistry::RemoveListenerForDevice(const FInputDeviceId& DeviceId)
+
+void FHapticsRegistry::RemoveListenerForDevice(int32 DeviceId)
 {
 	if (const TSharedPtr<FAudioHapticsListener>* ExistingListener = ControllerListeners.Find(DeviceId))
 	{

@@ -109,14 +109,6 @@ public:
 	 */
 	static void InvalidateHandle(FDeviceContext* Context);
 	/**
-	 * @brief Invalidates the specified handle to prevent further use.
-	 *
-	 * This method ensures that the provided handle is marked invalid, preventing unintended operations on invalid resources.
-	 *
-	 * @param Handle The handle to be invalidated.
-	 */
-	static void InvalidateHandle(HANDLE Handle);
-	/**
 	 * @brief Sends a single ping operation to check the state of the specified handle.
 	 *
 	 * This method determines whether the provided handle is in a valid state and retrieves
