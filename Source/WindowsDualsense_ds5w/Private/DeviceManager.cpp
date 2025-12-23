@@ -135,6 +135,11 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightStickDown, FrameInput.bRightAnalogDown);
 	CheckButtonInput(Context, UserId, InputDeviceId, FGamepadKeyNames::RightStickUp, FrameInput.bRightAnalogUp);
 
+	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftAnalogX, UserId, InputDeviceId, FrameInput.LeftAnalog.X);
+	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftAnalogY, UserId, InputDeviceId, FrameInput.LeftAnalog.Y);
+	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightAnalogX, UserId, InputDeviceId, FrameInput.RightAnalog.X);
+	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightAnalogY, UserId, InputDeviceId, FrameInput.RightAnalog.Y);
+	
 	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::LeftTriggerAnalog, UserId, InputDeviceId, FrameInput.LeftTriggerAnalog);
 	MessageHandler.Get().OnControllerAnalog(FGamepadKeyNames::RightTriggerAnalog, UserId, InputDeviceId, FrameInput.RightTriggerAnalog);
 
