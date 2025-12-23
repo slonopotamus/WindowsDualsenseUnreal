@@ -44,7 +44,7 @@ void FHapticsRegistry::CreateListenerForDevice(int32 DeviceId, USoundSubmix* Sub
 	{
 		return;
 	}
-	
+
 	const TSharedPtr<FAudioHapticsListener> Listener = MakeShared<FAudioHapticsListener>(DeviceId, Submix);
 	if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
 	{
@@ -85,13 +85,12 @@ bool FHapticsRegistry::Tick(float DeltaTime)
 			{
 				AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context), NewHapiticsInterface = MoveTemp(HapiticsInterface)]() {
 					NewContext->ConsumeHapticsQueue(NewHapiticsInterface);
-				});	
+				});
 			}
 		}
 	}
 	return true;
 }
-
 
 void FHapticsRegistry::RemoveListenerForDevice(int32 DeviceId)
 {

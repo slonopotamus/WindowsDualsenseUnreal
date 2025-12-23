@@ -13,7 +13,7 @@
 void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 {
 	Devices.clear();
-	
+
 	GUID HidGuid;
 	HidD_GetHidGuid(&HidGuid);
 	const HDEVINFO DeviceInfoSet = SetupDiGetClassDevs(&HidGuid, nullptr, nullptr,
@@ -76,10 +76,10 @@ void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 							case 0x0DF2:
 								Context.DeviceType = EDSDeviceType::DualSenseEdge;
 								break;
-							default: 
+							default:
 								Context.DeviceType = EDSDeviceType::NotFound;
 						}
-								
+
 						if (Context.DeviceType != EDSDeviceType::NotFound)
 						{
 							Context.IsConnected = true;
@@ -120,7 +120,7 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 	{
 		return;
 	}
-	
+
 	DWORD BytesRead = 0;
 	if (Context->ConnectionType == EDSDeviceConnection::Bluetooth && Context->DeviceType == EDSDeviceType::DualShock4)
 	{
