@@ -5,7 +5,7 @@
 
 #ifdef _WIN32
 #define NOMINMAX
-
+// clang-format off
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include <initguid.h>
 #include <cfgmgr32.h>
@@ -19,6 +19,8 @@
 #include <vector>
 #include <functiondiscoverykeys_devpkey.h>
 
+// clang-format on
+
 // Undefine Windows macros that collide with Unreal Engine names
 #ifdef PlaySound
 #undef PlaySound
@@ -26,6 +28,7 @@
 
 #endif
 
+// clang-format on
 #include "GCore/Types/DSCoreTypes.h"
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 

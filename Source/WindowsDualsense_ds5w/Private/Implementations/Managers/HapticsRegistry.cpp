@@ -45,14 +45,14 @@ void FHapticsRegistry::CreateListenerForDevice(int32 DeviceId, USoundSubmix* Sub
 	{
 		return;
 	}
-	
+
 	using namespace SonyGamepadProxyHelpers;
 	ISonyGamepad* Gamepad = GetGamepad(DeviceId);
 	if (!Gamepad)
 	{
 		return;
 	}
-	
+
 	if (Gamepad->GetConnectionType() == EDSDeviceConnection::Usb)
 	{
 		if (Gamepad->GetIGamepadHaptics())
