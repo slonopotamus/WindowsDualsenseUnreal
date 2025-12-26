@@ -7,9 +7,9 @@
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "GImplementations/Utils/GamepadSensors.h"
 #include "Helpers/DualSenseLog.h"
+#include <setupapi.h>
 #include <filesystem>
 #include <hidsdi.h>
-#include <setupapi.h>
 
 void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 {
@@ -36,7 +36,7 @@ void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 		const auto DetailDataBuffer = static_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA>(malloc(RequiredSize));
 		if (!DetailDataBuffer)
 		{
-			UE_LOG(LogDualSense, Warning, TEXT("HIDManager: Failed to allocate memory for device details."));
+			UE_LOG(LogTemp, Error, TEXT("HIDManager: Failed to allocate memory for device details."));
 			continue;
 		}
 
@@ -212,6 +212,82 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, s
 	}
 
 	return EPollResult::ReadOk;
+}
+
+void FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)
+{
+	if (!Context || Context->ConnectionType != EDSDeviceConnection::Usb) return;
+    
+    GUID ControllerContainerID = GetHidDeviceContainerID(Context->Path);
+    if (ControllerContainerID == GUID_NULL) return;
+
+    IMMDeviceEnumerator* pEnumerator = nullptr;
+    IMMDeviceCollection* pCollection = nullptr;
+
+    HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
+    if (FAILED(hr)) return;
+
+    hr = pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection);
+    if (SUCCEEDED(hr))
+    {
+        UINT count;
+        pCollection->GetCount(&count);
+        for (UINT i = 0; i < count; i++)
+        {
+            IMMDevice* pDevice = nullptr;
+            pCollection->Item(i, &pDevice);
+            if (pDevice)
+            {
+                GUID AudioContainerID = GetAudioDeviceContainerID(pDevice);
+                if (IsEqualGUID(ControllerContainerID, AudioContainerID))
+                {
+                    IAudioClient* pAudioClient = nullptr;
+                    IAudioRenderClient* pRenderClient = nullptr;
+                    WAVEFORMATEX* pwfx = nullptr;
+
+                    if (SUCCEEDED(pDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&pAudioClient)))
+                    {
+                        if (SUCCEEDED(pAudioClient->GetMixFormat(&pwfx)))
+                        {
+                            REFERENCE_TIME hnsRequestedDuration = 10000000;
+                            hr = pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, hnsRequestedDuration, 0, pwfx, nullptr);
+                            
+                            if (SUCCEEDED(hr))
+                            {
+                                hr = pAudioClient->GetService(__uuidof(IAudioRenderClient), (void**)&pRenderClient);
+                                if (SUCCEEDED(hr))
+                                {
+                                    pAudioClient->Start();
+                                    std::shared_ptr<FAudioDeviceContext> audioContext = Context->AudioContext;
+                                    
+                                	audioContext->Device = pDevice;
+                                    audioContext->AudioClient = pAudioClient;
+                                    audioContext->RenderClient = pRenderClient;
+                                    audioContext->MixFormat = pwfx;
+                                    audioContext->SampleRate = pwfx->nSamplesPerSec;
+                                    audioContext->NumChannels = pwfx->nChannels;
+                                    UE_LOG(LogDualSense, Log, TEXT("Successfully paired and initialized haptic audio for DualSense USB"));
+                                }
+                            }
+                        }
+                    }
+
+                    if (!Context->AudioContext->IsValid())
+                    {
+                        if (pwfx) CoTaskMemFree(pwfx);
+                        if (pRenderClient) pRenderClient->Release();
+                        if (pAudioClient) pAudioClient->Release();
+                        pDevice->Release();
+                    }
+
+                    break;
+                }
+                pDevice->Release();
+            }
+        }
+        pCollection->Release();
+    }
+    pEnumerator->Release();
 }
 
 bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, std::int32_t* OutLastError)

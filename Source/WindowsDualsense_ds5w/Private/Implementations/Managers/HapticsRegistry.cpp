@@ -6,6 +6,7 @@
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "AudioDevice.h"
+#include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
 #include "Misc/App.h"
 #include "Runtime/Launch/Resources/Version.h"
 
@@ -44,8 +45,29 @@ void FHapticsRegistry::CreateListenerForDevice(int32 DeviceId, USoundSubmix* Sub
 	{
 		return;
 	}
+	
+	using namespace SonyGamepadProxyHelpers;
+	ISonyGamepad* Gamepad = GetGamepad(DeviceId);
+	if (!Gamepad)
+	{
+		return;
+	}
+	
+	if (Gamepad->GetConnectionType() == EDSDeviceConnection::Usb)
+	{
+		if (Gamepad->GetIGamepadHaptics())
+		{
+			FDeviceContext* Ctx = Gamepad->GetMutableDeviceContext();
+			if (!Ctx->AudioContext || !Ctx->AudioContext->IsValid())
+			{
+				Ctx->AudioContext = std::make_shared<FAudioDeviceContext>();
+				FWindowsDeviceInfo::InitializeAudioDevice(Ctx);
+			}
+		}
+	}
 
-	const TSharedPtr<FAudioHapticsListener> Listener = MakeShared<FAudioHapticsListener>(DeviceId, Submix);
+	bool IsWireless = Gamepad->GetConnectionType() == EDSDeviceConnection::Bluetooth;
+	const TSharedPtr<FAudioHapticsListener> Listener = MakeShared<FAudioHapticsListener>(DeviceId, Submix, IsWireless);
 	if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())
 	{
 #if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION > 3

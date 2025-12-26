@@ -29,7 +29,7 @@ class FAudioHapticsListener : public ISubmixBufferListener
 	 @return An instance of FAudioHapticsListener initialized with the provided input device ID and submix reference.
 	 */
 public:
-	FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix);
+	FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix, bool IsWireless);
 
 	/**
 	 Determines if the audio processing system is actively rendering audio.
@@ -92,6 +92,7 @@ public:
 	 */
 private:
 	TQueue<TArray<int8>, EQueueMode::Spsc> AudioPacketQueue;
+	TQueue<std::vector<std::int16_t>, EQueueMode::Spsc> AudioPacketQueueUSB;
 	/**
 	 A buffer used to store audio data that has been resampled for haptic feedback systems.
 
@@ -129,6 +130,14 @@ private:
 	 their integration into various systems, including haptic feedback and input processing pipelines.
 	 */
 	int32 DeviceId;
+	/**
+	 Flag indicating whether the device or connection operates wirelessly.
+
+	 The bIsWireless variable determines if the communication or operation mode is wireless.
+	 This can be used to configure specific behaviors or optimizations for wireless systems
+	 versus wired systems within the software's logic or settings.
+	 */
+	bool bIsWireless;
 	/**
 	 Variable used to maintain the state of the left channel for a low-pass filter.
 
