@@ -291,17 +291,20 @@ Contributions are welcome! If you have ideas, suggestions, or bug fixes, feel fr
 This project is distributed under the MIT License. See the `LICENSE` file for more details.
 
 ## ⭐ Credits and Acknowledgments
-  
-* [DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows)
-* [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db)
-* [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master)
-* [flok pydualsense](https://github.com/flok/pydualsense)
-* [SAxense](https://github.com/egormanga/SAxense)
-* [Ryochan7/DS4Windows](https://github.com/Ryochan7/DS4Windowshttps://github.com/Ryochan7/DS4Windows)
-* [linux/drivers/hid/hid-playstation.c](https://github.com/torvalds/linux/blob/master/drivers/hid/hid-playstation.c#L1709)
 
+The foundation of this plugin was built upon the research and code from several amazing projects in the community:
 
-Special thanks to everyone who has contributed with suggestions, reported bugs, and offered implementation improvements. Thanks also to the developers of the libraries used as inspiration and reference for creating this project.
+* [DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows) - Initial DS5 implementation logic.
+* [Nielk1 on GIST](https://gist.github.com/Nielk1/6d54cc2c00d2201ccb8c2720ad7538db) - HID report structures.
+* [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master) - Hardware communication references.
+* [flok pydualsense](https://github.com/flok/pydualsense) - Feature report research.
+* [SAxense](https://github.com/egormanga/SAxense) - Base for Bluetooth Audio Haptics.
+* [Ryochan7/DS4Windows](https://github.com/Ryochan7/DS4Windows) - Industry standard for DualShock/DualSense on Windows.
+* [linux/drivers/hid/hid-playstation.c](https://github.com/torvalds/linux/blob/master/drivers/hid/hid-playstation.c#L1709) - Reference for calibration, gyroscope, and Linux driver standards.
+
+Special thanks to the community members who helped improve this plugin:
+
+*   **[yncat](https://github.com/yncat)**: For the extensive research and implementation logic regarding **USB Audio Haptics**, which was crucial for supporting high-fidelity haptics via USB ([Issue #105](https://github.com/rafaelvaloto/Unreal-Dualsense/issues/105)).
 
 A special thanks to the Unreal Engine team for providing the Arena Shooter templates, which served as an excellent foundation for the example project demonstrating this plugin's features.
 

@@ -1,6 +1,8 @@
 // Copyright (c) 2025 Rafael Valoto/Publisher. All rights reserved.
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
+// Acknowledgement: USB Audio Haptics logic based on research and code shared by yncat (https://github.com/yncat)
+// in Issue #105: https://github.com/rafaelvaloto/Unreal-Dualsense/issues/105
 
 #include "Subsystems/AudioHapticsListener.h"
 #include "API/SonyGamepadProxyHelpers.h"
