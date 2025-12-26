@@ -24,6 +24,7 @@ public class WindowsDualsense_ds5w : ModuleRules
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			PublicSystemLibraries.Add("hid.lib");
+			PublicSystemLibraries.Add("Cfgmgr32.lib");
 		}
 	    
 		if (Target.Platform == UnrealTargetPlatform.Linux || Target.Platform == UnrealTargetPlatform.Mac)
