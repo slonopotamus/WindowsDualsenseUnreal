@@ -87,7 +87,7 @@ enum class EDualSenseDeviceFeatureReport : uint8
 {
 	Off = 0,
 	DefaultRumble = 0xFF UMETA(DisplayName = "Default"),
-	HapticsRumble = 0xFC UMETA(DisplayName = "Audio based vibration")
+	HapticsRumble = 0x0C UMETA(DisplayName = "Audio based vibration")
 };
 
 /**
