@@ -71,9 +71,7 @@ namespace SonyGamepadProxyHelpers
 
 		if (bLogOnFailure)
 		{
-			UE_LOG(LogDualSense, Warning,
-			       TEXT("Controller %d not found or not a Sony gamepad"),
-			       ControllerId);
+			
 		}
 
 		return nullptr;
@@ -98,9 +96,7 @@ namespace SonyGamepadProxyHelpers
 
 		if (!TriggerInterface && bLogOnFailure)
 		{
-			UE_LOG(LogDualSense, Warning,
-			       TEXT("Controller %d does not support trigger interface"),
-			       ControllerId);
+			
 		}
 
 		return TriggerInterface;
@@ -125,9 +121,7 @@ namespace SonyGamepadProxyHelpers
 
 		if (!AudioInterface && bLogOnFailure)
 		{
-			UE_LOG(LogDualSense, Warning,
-			       TEXT("Controller %d does not support audio haptics interface"),
-			       ControllerId);
+			
 		}
 
 		return AudioInterface;
