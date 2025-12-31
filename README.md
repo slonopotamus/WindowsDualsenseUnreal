@@ -83,18 +83,10 @@ Please run the following commands in your terminal (Git Bash, PowerShell, or CMD
 git clone --recursive https://github.com/rafaelvaloto/WindowsDualsenseUnreal.git
 
 # 2. Enter the repository folder
-cd WindowsDualsenseUnreal
+cd Unreal-Dualsense
 
 # 3. Update the submodule to the latest version
 git submodule update --remote --merge
-
-# 4. Navigate to the Core submodule directory
-cd Source/WindowsDualsense_ds5w/Private/GamepadCore
-
-# 5. Enable Sparse Checkout and filter only the 'Source' folder
-# This prevents Unreal Build Tool from trying to compile external examples.
-git config core.sparseCheckout true
-git sparse-checkout set Source
 ```
     
 ## 💻 Basic Usage
