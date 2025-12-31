@@ -106,4 +106,17 @@ public:
 	 *                be invalidated. This parameter must not be null.
 	 */
 	static void InvalidateHandle(FDeviceContext* Context);
+
+	/**
+	 * @brief Initializes the audio device associated with the given device context.
+	 *
+	 * This method is responsible for setting up and configuring the audio device
+	 * based on the provided device context and device identifier.
+	 *
+	 * @param Context Pointer to the device context that holds relevant device information.
+	 */
+	static void InitializeAudioDevice(FDeviceContext* /*Context*/)
+	{
+		// TODO Implement the discovery and registration of DualSense audio devices to send audio haptics via USB. Example using WindowsDeviceInfo mini audio.
+	}
 };

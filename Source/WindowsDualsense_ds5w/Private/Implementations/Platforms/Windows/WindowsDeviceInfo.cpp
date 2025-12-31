@@ -3,13 +3,13 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
-#include "GCore/Types/Structs/Config/GamepadCalibration.h"
-#include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "GImplementations/Utils/GamepadSensors.h"
-#include "Helpers/DualSenseLog.h"
+#include "GCore/Types/Structs/Config/GamepadCalibration.h"
 #include <filesystem>
 #include <hidsdi.h>
 #include <setupapi.h>
+
+using namespace FGamepadAudio;
 
 void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 {
@@ -26,7 +26,7 @@ void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 
 	SP_DEVICE_INTERFACE_DATA DeviceInterfaceData = {};
 	DeviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
-	for (int32 DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
+	for (std::int32_t DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
 	                                                        &DeviceInterfaceData);
 	     DeviceIndex++)
 	{
@@ -214,98 +214,71 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, s
 	return EPollResult::ReadOk;
 }
 
+/**
+ * @brief Initializes the audio device for a DualSense controller.
+ *
+ * Enumerates available audio playback devices, searches for one matching
+ * the DualSense controller (by name containing "DualSense" or "Wireless Controller"),
+ * and initializes the FAudioDeviceContext with the found device.
+ *
+ * @param Context The device context to store the audio device in
+ */
 void FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)
 {
-	if (!Context || Context->ConnectionType != EDSDeviceConnection::Usb)
+	if (!Context)
+		return;
+
+	// Initialize miniaudio context for device enumeration
+	ma_context maContext;
+	if (ma_context_init(nullptr, 0, nullptr, &maContext) != MA_SUCCESS)
 	{
 		return;
 	}
 
-	GUID ControllerContainerID = GetHidDeviceContainerID(Context->Path);
-	if (ControllerContainerID == GUID_NULL)
+	// Get playback devices
+	ma_device_info* pPlaybackInfos;
+	ma_uint32 playbackCount;
+	ma_device_info* pCaptureInfos;
+	ma_uint32 captureCount;
+
+	if (ma_context_get_devices(&maContext, &pPlaybackInfos, &playbackCount, &pCaptureInfos, &captureCount) != MA_SUCCESS)
 	{
+		ma_context_uninit(&maContext);
 		return;
 	}
 
-	IMMDeviceEnumerator* pEnumerator = nullptr;
-	IMMDeviceCollection* pCollection = nullptr;
+	// Search for DualSense audio device
+	ma_device_id* pFoundDeviceId = nullptr;
+	ma_device_id foundDeviceId;
 
-	HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
-	if (FAILED(hr))
+	for (ma_uint32 i = 0; i < playbackCount; i++)
 	{
-		return;
-	}
+		std::string deviceName(pPlaybackInfos[i].name);
 
-	hr = pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection);
-	if (SUCCEEDED(hr))
-	{
-		UINT count;
-		pCollection->GetCount(&count);
-		for (UINT i = 0; i < count; i++)
+		// Check if device name contains DualSense identifiers
+		// DualSense appears as "Wireless Controller" or "DualSense Wireless Controller"
+		if (deviceName.find("DualSense") != std::string::npos ||
+		    deviceName.find("Wireless Controller") != std::string::npos)
 		{
-			IMMDevice* pDevice = nullptr;
-			pCollection->Item(i, &pDevice);
-			if (pDevice)
-			{
-				GUID AudioContainerID = GetAudioDeviceContainerID(pDevice);
-				if (IsEqualGUID(ControllerContainerID, AudioContainerID))
-				{
-					IAudioClient* pAudioClient = nullptr;
-					IAudioRenderClient* pRenderClient = nullptr;
-					WAVEFORMATEX* pwfx = nullptr;
-
-					if (SUCCEEDED(pDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&pAudioClient)))
-					{
-						if (SUCCEEDED(pAudioClient->GetMixFormat(&pwfx)))
-						{
-							REFERENCE_TIME hnsRequestedDuration = 10000000;
-							hr = pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, hnsRequestedDuration, 0, pwfx, nullptr);
-
-							if (SUCCEEDED(hr))
-							{
-								hr = pAudioClient->GetService(__uuidof(IAudioRenderClient), (void**)&pRenderClient);
-								if (SUCCEEDED(hr))
-								{
-									pAudioClient->Start();
-									std::shared_ptr<FAudioDeviceContext> audioContext = Context->AudioContext;
-
-									audioContext->Device = pDevice;
-									audioContext->AudioClient = pAudioClient;
-									audioContext->RenderClient = pRenderClient;
-									audioContext->MixFormat = pwfx;
-									audioContext->SampleRate = pwfx->nSamplesPerSec;
-									audioContext->NumChannels = pwfx->nChannels;
-									UE_LOG(LogDualSense, Log, TEXT("Successfully paired and initialized haptic audio for DualSense USB"));
-								}
-							}
-						}
-					}
-
-					if (!Context->AudioContext->IsValid())
-					{
-						if (pwfx)
-						{
-							CoTaskMemFree(pwfx);
-						}
-						if (pRenderClient)
-						{
-							pRenderClient->Release();
-						}
-						if (pAudioClient)
-						{
-							pAudioClient->Release();
-						}
-						pDevice->Release();
-					}
-
-					break;
-				}
-				pDevice->Release();
-			}
+			// Verify it has 4 channels (stereo + haptic L/R)
+			// DualSense audio device typically has 4 channels for haptics
+			foundDeviceId = pPlaybackInfos[i].id;
+			pFoundDeviceId = &foundDeviceId;
+			break;
 		}
-		pCollection->Release();
 	}
-	pEnumerator->Release();
+
+	// Initialize audio context with found device (or default if not found)
+	Context->AudioContext = std::make_shared<FAudioDeviceContext>();
+
+	if (pFoundDeviceId)
+	{
+		// Initialize with specific DualSense device
+		// DualSense haptics use 4 channels at 48000 Hz
+		Context->AudioContext->InitializeWithDeviceId(pFoundDeviceId, 48000, 4);
+	}
+
+	ma_context_uninit(&maContext);
 }
 
 bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, std::int32_t* OutLastError)

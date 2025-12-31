@@ -5,33 +5,14 @@
 
 #ifdef _WIN32
 #define NOMINMAX
-// clang-format off
-#include "Windows/AllowWindowsPlatformTypes.h"
-#include <initguid.h>
-#include <cfgmgr32.h>
-#include <devpkey.h>
-#include "Windows/HideWindowsPlatformTypes.h"
-
-#include <Windows.h>
-#include <audioclient.h>
-#include <mmdeviceapi.h>
-#include <string>
-#include <vector>
-#include <functiondiscoverykeys_devpkey.h>
-
-// clang-format on
-
-// Undefine Windows macros that collide with Unreal Engine names
-#ifdef PlaySound
-#undef PlaySound
-#endif
-
-#endif
-
-// clang-format on
+#include "CoreMinimal.h"
 #include "GCore/Types/DSCoreTypes.h"
-#include "GCore/Types/Structs/Context/DeviceContext.h"
+#include "Windows/AllowWindowsPlatformTypes.h"
+#include "Windows/HideWindowsPlatformTypes.h"
+#include <Windows.h>
+#endif
 
+#include "GCore/Types/Structs/Context/DeviceContext.h"
 /**
  * @brief Enumerates the possible outcomes of a polling operation in HID device communication.
  *
@@ -52,12 +33,6 @@ struct FAudioDeviceInfo
 	std::wstring Id;           // O ID maluco que o WASAPI precisa: "{0.0.0.0000}..."
 	std::wstring FriendlyName; // O nome legível: "Speakers (Wireless Controller)"
 };
-
-#define EXIT_ON_ERROR(hres) \
-	if (FAILED(hres)) \
-	{ \
-		goto Exit; \
-	}
 
 /**
  * @brief Represents a static class for HID device management and operations.
@@ -172,73 +147,6 @@ public:
 	 * @param Context Pointer to the device context that holds relevant device information.
 	 */
 	static void InitializeAudioDevice(FDeviceContext* Context);
-
-	static bool IsDualSenseAudio(const std::string& FriendlyName)
-	{
-		// Converte para minúsculo para busca case-insensitive
-		std::string Name = FriendlyName;
-		std::transform(Name.begin(), Name.end(), Name.begin(), ::tolower);
-
-		// Deve conter DualSense
-		bool bIsDualSense = Name.find("dualsense") != std::string::npos;
-
-		// NÃO deve conter "Link" ou "Wireless Adapter" (filtros para adaptadores Sony que não suportam haptics USB)
-		bool bIsAdapter = Name.find("link") != std::string::npos ||
-		                  Name.find("adapter") != std::string::npos;
-
-		return bIsDualSense && !bIsAdapter;
-	}
-
-	// Função auxiliar para obter o Container ID de um dispositivo de áudio
-	static GUID GetAudioDeviceContainerID(IMMDevice* pDevice)
-	{
-		GUID ContainerID = GUID_NULL;
-		IPropertyStore* pProps = nullptr;
-		if (SUCCEEDED(pDevice->OpenPropertyStore(STGM_READ, &pProps)))
-		{
-			PROPVARIANT var;
-			PropVariantInit(&var);
-			if (SUCCEEDED(pProps->GetValue(PKEY_Device_ContainerId, &var)))
-			{
-				if (var.vt == VT_CLSID)
-				{
-					ContainerID = *var.puuid;
-				}
-				PropVariantClear(&var);
-			}
-			pProps->Release();
-		}
-		return ContainerID;
-	}
-
-	// Função auxiliar para obter o Container ID do controle HID (Simplificada)
-	static GUID GetHidDeviceContainerID(const std::string& DevicePath)
-	{
-		GUID ContainerID = GUID_NULL;
-
-		// Converter std::string para std::wstring (exigido pela versão W da função)
-		std::wstring WPath(DevicePath.begin(), DevicePath.end());
-
-		DEVPROPTYPE PropType;
-		ULONG PropSize = sizeof(GUID);
-
-		// Usamos a função de Interface de Dispositivo, que aceita o caminho (Symbolic Link) diretamente
-		CONFIGRET cr = ::CM_Get_Device_Interface_PropertyW(
-		    WPath.c_str(),
-		    &DEVPKEY_Device_ContainerId,
-		    &PropType,
-		    (PBYTE)&ContainerID,
-		    &PropSize,
-		    0);
-
-		if (cr != CR_SUCCESS)
-		{
-			// Se falhar, você pode logar o erro do CONFIGRET se necessário
-			return GUID_NULL;
-		}
-
-		return ContainerID;
-	}
 
 	/**
 	 * @brief Determines whether the given error code should be treated as a device disconnection.

@@ -71,7 +71,6 @@ namespace SonyGamepadProxyHelpers
 
 		if (bLogOnFailure)
 		{
-			
 		}
 
 		return nullptr;
@@ -96,7 +95,6 @@ namespace SonyGamepadProxyHelpers
 
 		if (!TriggerInterface && bLogOnFailure)
 		{
-			
 		}
 
 		return TriggerInterface;
@@ -121,7 +119,6 @@ namespace SonyGamepadProxyHelpers
 
 		if (!AudioInterface && bLogOnFailure)
 		{
-			
 		}
 
 		return AudioInterface;

@@ -52,5 +52,10 @@ namespace FLinuxPlatform
 		{
 			FCommonsDeviceInfo::ProcessAudioHapitc(Context);
 		}
+
+		void InitializeAudioDevice(FDeviceContext* Context)
+		{
+			FCommonsDeviceInfo::InitializeAudioDevice(Context);
+		}
 	};
 } // namespace FLinuxPlatform
