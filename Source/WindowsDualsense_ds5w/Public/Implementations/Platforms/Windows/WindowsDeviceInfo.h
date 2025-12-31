@@ -45,7 +45,7 @@ class FWindowsDeviceInfo
 
 public:
 	virtual ~FWindowsDeviceInfo() = default;
-	static void ProcessAudioHapitc(FDeviceContext* Context);
+	static void ProcessAudioHaptic(FDeviceContext* Context);
 	/**
 	 * @brief Configures Bluetooth-specific features for a given HID device.
 	 *

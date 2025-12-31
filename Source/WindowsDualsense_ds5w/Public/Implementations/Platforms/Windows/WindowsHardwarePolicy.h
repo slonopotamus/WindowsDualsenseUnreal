@@ -41,7 +41,7 @@ namespace FWindowsPlatform
 
 		void ProcessAudioHaptic(FDeviceContext* Context)
 		{
-			FWindowsDeviceInfo::ProcessAudioHapitc(Context);
+			FWindowsDeviceInfo::ProcessAudioHaptic(Context);
 		}
 
 		void InitializeAudioDevice(FDeviceContext* Context)

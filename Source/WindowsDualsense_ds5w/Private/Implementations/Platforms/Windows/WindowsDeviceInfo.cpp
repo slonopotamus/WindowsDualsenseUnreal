@@ -301,7 +301,7 @@ bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, std::int32_t* OutLastError)
 	return true;
 }
 
-void FWindowsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
+void FWindowsDeviceInfo::ProcessAudioHaptic(FDeviceContext* Context)
 {
 	if (!Context || !Context->Handle)
 	{

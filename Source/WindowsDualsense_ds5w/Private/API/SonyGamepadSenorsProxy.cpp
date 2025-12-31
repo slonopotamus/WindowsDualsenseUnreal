@@ -7,7 +7,7 @@
 
 using namespace SonyGamepadProxyHelpers;
 
-void USonyGamepadSenorsProxy::ResetGyroOrientation(int32 ControllerId)
+void USonyGamepadSensorsProxy::ResetGyroOrientation(int32 ControllerId)
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
@@ -15,7 +15,7 @@ void USonyGamepadSenorsProxy::ResetGyroOrientation(int32 ControllerId)
 	}
 }
 
-void USonyGamepadSenorsProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope)
+void USonyGamepadSensorsProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope)
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{

@@ -12,7 +12,7 @@
  *
  */
 UCLASS(Blueprintable, BlueprintType)
-class WINDOWSDUALSENSE_DS5W_API USonyGamepadSenorsProxy : public UObject
+class WINDOWSDUALSENSE_DS5W_API USonyGamepadSensorsProxy : public UObject
 {
 	GENERATED_BODY()
 public:

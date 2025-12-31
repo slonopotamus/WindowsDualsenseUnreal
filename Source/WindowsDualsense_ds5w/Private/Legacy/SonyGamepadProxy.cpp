@@ -34,7 +34,7 @@ float USonyGamepadProxy::LevelBatteryDevice(int32 ControllerId)
 
 void USonyGamepadProxy::LedColorEffects(int32 ControllerId, FColor Color, float BrightnessTime, float ToogleTime)
 {
-	return USonyGamepadLightsProxy::LigthbarFlash(ControllerId, Color, BrightnessTime, ToogleTime);
+	return USonyGamepadLightsProxy::LightbarFlash(ControllerId, Color, BrightnessTime, ToogleTime);
 }
 
 void USonyGamepadProxy::LedMicEffects(int32 ControllerId, ELedMicEnum Value)
@@ -47,7 +47,7 @@ void USonyGamepadProxy::StartMotionSensorCalibration(int32 ControllerId, float D
 
 void USonyGamepadProxy::ResetGyroOrientation(int32 ControllerId)
 {
-	USonyGamepadSenorsProxy::ResetGyroOrientation(ControllerId);
+	USonyGamepadSensorsProxy::ResetGyroOrientation(ControllerId);
 }
 
 bool USonyGamepadProxy::GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress)
@@ -62,5 +62,5 @@ void USonyGamepadProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 
 void USonyGamepadProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope)
 {
-	USonyGamepadSenorsProxy::EnableGyroscopeValues(ControllerId, bEnableGyroscope);
+	USonyGamepadSensorsProxy::EnableGyroscopeValues(ControllerId, bEnableGyroscope);
 }

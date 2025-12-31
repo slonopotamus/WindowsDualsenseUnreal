@@ -9,7 +9,7 @@
 using namespace DSCoreTypes;
 using namespace SonyGamepadProxyHelpers;
 
-void USonyGamepadLightsProxy::Ligthbar(int32 ControllerId, FColor Color)
+void USonyGamepadLightsProxy::Lightbar(int32 ControllerId, FColor Color)
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
@@ -18,12 +18,12 @@ void USonyGamepadLightsProxy::Ligthbar(int32 ControllerId, FColor Color)
 	}
 }
 
-void USonyGamepadLightsProxy::LigthbarFlash(int32 ControllerId, FColor Color, float BrithnessTime, float ToggleTime)
+void USonyGamepadLightsProxy::LightbarFlash(int32 ControllerId, FColor Color, float BrightnessTime, float ToggleTime)
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
 		FDSColor CastColor = {Color.R, Color.G, Color.B, Color.A};
-		Gamepad->SetLightbarFlash(CastColor, BrithnessTime, ToggleTime);
+		Gamepad->SetLightbarFlash(CastColor, BrightnessTime, ToggleTime);
 	}
 }
 
