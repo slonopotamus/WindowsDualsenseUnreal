@@ -6,7 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "SonyGamepadSenorsProxy.generated.h"
+#include "SonyGamepadSensorsProxy.generated.h"
 
 /**
  *
@@ -23,7 +23,7 @@ public:
 	 *
 	 * @param ControllerId The ID of the controller whose gyroscope orientation should be reset.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepadSenors", meta = (AdvancedDisplay = "Reset Gyroscope Orientation", ToolTip = "Resets the gyroscope orientation for the specified controller. This can be used to recalibrate the orientation when the controller's current orientation does not align with the expected neutral position."))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadSensors", meta = (AdvancedDisplay = "Reset Gyroscope Orientation", ToolTip = "Resets the gyroscope orientation for the specified controller. This can be used to recalibrate the orientation when the controller's current orientation does not align with the expected neutral position."))
 	static void ResetGyroOrientation(int32 ControllerId);
 	/**
 	 * Enables or disables the gyroscope functionality for a specified controller.
@@ -31,7 +31,7 @@ public:
 	 * @param ControllerId The ID of the controller for which the gyroscope functionality is to be modified.
 	 * @param bEnableGyroscope Set to true to enable the gyroscope, or false to disable it.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepadSenors", meta = (ToolTip = "Enables or disables the gyroscope functionality for a specified controller."))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadSensors", meta = (ToolTip = "Enables or disables the gyroscope functionality for a specified controller."))
 	static void EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope);
 
 	/**
@@ -43,7 +43,7 @@ public:
 	 * @param Duration The duration of the calibration process in seconds.
 	 * @param DeadZone The sensitivity threshold below which motion input will be ignored.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepadSenors", meta = (AdvancedDisplay = "Calibration Duration (Legacy)", ToolTip = "Deprecated v1.2.20"))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadSensors", meta = (AdvancedDisplay = "Calibration Duration (Legacy)", ToolTip = "Deprecated v1.2.20"))
 	static void StartMotionSensorCalibration(
 	    int32 ControllerId,
 	    UPARAM(DisplayName = "Calibration Duration (Seconds)", meta = (ClampMin = "1.0", ClampMax = "10.0", UIMin = "1.0", UIMax = "10.0",
@@ -59,6 +59,6 @@ public:
 	 * @param Progress A reference to a variable where the calibration progress will be stored, expressed as a percentage.
 	 * @return True if the calibration process is in progress, false otherwise.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepadSenors (Legacy)", meta = (ToolTip = "Deprecated v1.2.20"))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadSensors (Legacy)", meta = (ToolTip = "Deprecated v1.2.20"))
 	static bool GetMotionSensorCalibrationStatus(int32 ControllerId, float& Progress) { return false; }
 };

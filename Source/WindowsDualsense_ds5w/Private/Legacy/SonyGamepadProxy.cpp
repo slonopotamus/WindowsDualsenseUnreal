@@ -6,7 +6,7 @@
 #include "API/SonyGamepadBaseProxy.h"
 #include "API/SonyGamepadLightsProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "API/SonyGamepadSenorsProxy.h"
+#include "API/SonyGamepadSensorsProxy.h"
 #include "API/SonyGamepadTouchProxy.h"
 #include "API/Types/Enums/EDeviceConnection.h"
 

@@ -23,7 +23,7 @@ public:
 	 * @param ControllerId The ID of the DualSense controller to be affected.
 	 * @param Color The desired lightbar color, represented as an FColor value.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepadLights", meta = (AdvancedDisplay = "Ligthbar Color (R,G,B)", ToolTip = "Sets the lightbar color on a controller."))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadLights", meta = (AdvancedDisplay = "Lightbar Color (R,G,B)", ToolTip = "Sets the lightbar color on a controller."))
 	static void Lightbar(int32 ControllerId, FColor Color);
 	/**
 	 * Sets the lightbar to flash with specified color and timing on a DualShock4 controller.
@@ -33,7 +33,7 @@ public:
 	 * @param BrightnessTime The duration of brightness during the flash cycle, in seconds. Defaults to 0.0f.
 	 * @param ToggleTime The interval between lightbar flashes, in seconds. Defaults to 0.0f.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "SonyGamepadLights", meta = (AdvancedDisplay = "Ligthbar Flash (DualShock4)", ToolTip = "Sets the flash lightbar toogle."))
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepadLights", meta = (AdvancedDisplay = "Lightbar Flash (DualShock4)", ToolTip = "Sets the flash lightbar toogle."))
 	static void LightbarFlash(int32 ControllerId, FColor Color, float BrightnessTime = 0.0f, float ToggleTime = 0.0f);
 	/**
 	 * Configures the player LED on a DualSense controller.

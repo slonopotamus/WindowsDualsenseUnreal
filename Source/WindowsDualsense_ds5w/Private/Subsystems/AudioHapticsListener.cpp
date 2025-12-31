@@ -7,6 +7,7 @@
 #include "Subsystems/AudioHapticsListener.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "GCore/Interfaces/Segregations/IGamepadAudioHaptics.h"
+constexpr float kLowPassAlpha = 0.2f;
 
 FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix, bool bIsWireless)
     : Submix(InSubmix)
@@ -40,16 +41,15 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 			return;
 		}
 
-		const float alpha = 0.2f;
-		const float one_minus_alpha = 1.0f - alpha;
+		const float one_minus_alpha = 1.0f - kLowPassAlpha;
 
 		for (int32 i = 0; i < NumSamples; i += NumChannels)
 		{
 			float InLeft = AudioData[i];
 			float InRight = (NumChannels > 1) ? AudioData[i + 1] : InLeft;
 
-			LowPassState_Left = one_minus_alpha * InLeft + alpha * LowPassState_Left;
-			LowPassState_Right = one_minus_alpha * InRight + alpha * LowPassState_Right;
+			LowPassState_Left = one_minus_alpha * InLeft + kLowPassAlpha * LowPassState_Left;
+			LowPassState_Right = one_minus_alpha * InRight + kLowPassAlpha * LowPassState_Right;
 
 			float OutLeft = FMath::Clamp(InLeft - LowPassState_Left, -1.0f, 1.0f);
 			float OutRight = FMath::Clamp(InRight - LowPassState_Right, -1.0f, 1.0f);
@@ -93,8 +93,7 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 		return;
 	}
 
-	constexpr float alpha = 0.2f;
-	constexpr float one_minus_alpha = 1.0f - alpha;
+	constexpr float one_minus_alpha = 1.0f - kLowPassAlpha;
 
 	float* Data = ResampledAudioBuffer.GetData();
 	const int32 NumFrames = OutputFramesWritten; // 64 frames
@@ -107,8 +106,8 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 		const float InRight = Data[DataIndex + 1];
 
 		// y_lp[n] = (1 - alpha) * x[n] + alpha * y_lp[n-1]
-		LowPassState_Left = one_minus_alpha * InLeft + alpha * LowPassState_Left;
-		LowPassState_Right = one_minus_alpha * InRight + alpha * LowPassState_Right;
+		LowPassState_Left = one_minus_alpha * InLeft + kLowPassAlpha * LowPassState_Left;
+		LowPassState_Right = one_minus_alpha * InRight + kLowPassAlpha * LowPassState_Right;
 
 		// y_hp[n] = x[n] - y_lp[n]
 		const float OutLeft = InLeft - LowPassState_Left;
