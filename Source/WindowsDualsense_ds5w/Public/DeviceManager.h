@@ -167,7 +167,7 @@ public:
 	 * This variable helps maintain orientation and motion-filtering data for each
 	 * connected input device.
 	 */
-	TMap<FInputDeviceId, FMadgwickAhrs*>& FilterSensors = *new TMap<FInputDeviceId, FMadgwickAhrs*>();
+	mutable TMap<FInputDeviceId, TSharedPtr<FMadgwickAhrs>> FilterSensors;
 
 	/**
 	 * Represents a mapping between touch IDs and their respective states. The key is an integer
@@ -177,8 +177,8 @@ public:
 	 * This structure is used to track the touch state of multiple input sources, ensuring accurate
 	 * detection of touch interactions.
 	 */
-	TSet<FInputDeviceId>& ActiveTouches = *new TSet<FInputDeviceId>();
-	TSet<FInputDeviceId>& ActiveTouchesRelative = *new TSet<FInputDeviceId>();
+	TSet<FInputDeviceId> ActiveTouches;
+	TSet<FInputDeviceId> ActiveTouchesRelative;
 
 	struct FTouchGestureState
 	{

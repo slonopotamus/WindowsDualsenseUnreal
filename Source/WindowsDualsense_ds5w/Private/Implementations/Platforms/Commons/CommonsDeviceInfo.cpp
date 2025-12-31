@@ -56,7 +56,7 @@ void FCommonsDeviceInfo::Read(FDeviceContext* Context)
 	}
 }
 
-void FCommonsDeviceInfo::ProcessAudioHapitc(FDeviceContext* Context)
+void FCommonsDeviceInfo::ProcessAudioHaptic(FDeviceContext* Context)
 {
 	if (!Context || !Context->Handle)
 	{
@@ -116,7 +116,7 @@ void FCommonsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 {
 	Devices.clear();
 
-	const std::unordered_set<uint16_t> SupportedPIDs = {
+	static const std::unordered_set<uint16_t> SupportedPIDs = {
 	    DUALSHOCK4_PID_V1,
 	    DUALSHOCK4_PID_V2,
 	    DUALSENSE_PID,

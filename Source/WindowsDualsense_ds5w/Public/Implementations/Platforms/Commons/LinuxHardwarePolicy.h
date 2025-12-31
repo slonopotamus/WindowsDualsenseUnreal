@@ -50,7 +50,7 @@ namespace FLinuxPlatform
 
 		void ProcessAudioHaptic(FDeviceContext* Context)
 		{
-			FCommonsDeviceInfo::ProcessAudioHapitc(Context);
+			FCommonsDeviceInfo::ProcessAudioHaptic(Context);
 		}
 
 		void InitializeAudioDevice(FDeviceContext* Context)

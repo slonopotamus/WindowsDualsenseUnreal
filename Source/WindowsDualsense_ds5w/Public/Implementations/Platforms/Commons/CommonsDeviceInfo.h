@@ -38,7 +38,7 @@ public:
 	 *                haptic feedback. Must be a valid, properly initialized
 	 *                pointer.
 	 */
-	static void ProcessAudioHapitc(FDeviceContext* Context);
+	static void ProcessAudioHaptic(FDeviceContext* Context);
 	/**
 	 * @brief Configures Bluetooth-specific features for a given HID device.
 	 *

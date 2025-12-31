@@ -27,6 +27,7 @@ DeviceManager::DeviceManager(const TSharedRef<FGenericApplicationMessageHandler>
 DeviceManager::~DeviceManager()
 {
 	FCoreDelegates::OnUserLoginChangedEvent.RemoveAll(this);
+	FilterSensors.Empty();
 }
 
 void DeviceManager::Tick(float DeltaTime)
@@ -207,8 +208,8 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 
 		if (!FilterSensors.Contains(InputDeviceId))
 		{
-			TUniquePtr<FMadgwickAhrs> MadgwickAhrs = MakeUnique<FMadgwickAhrs>(PluginSettings::MadgwickBeta);
-			FilterSensors.Add(InputDeviceId, MadgwickAhrs.Release());
+			TSharedPtr<FMadgwickAhrs> NewSensor = MakeShared<FMadgwickAhrs>(PluginSettings::MadgwickBeta);
+			FilterSensors.Add(InputDeviceId, NewSensor);
 		}
 
 		if (Context->bIsResetGyroscope)
