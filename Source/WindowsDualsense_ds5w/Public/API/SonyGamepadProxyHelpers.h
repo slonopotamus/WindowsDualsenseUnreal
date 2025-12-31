@@ -17,24 +17,28 @@ class IGamepadAudioHaptics;
 
 static_assert(static_cast<uint8>(EDeviceType::DualSense) == static_cast<uint8>(EDSDeviceType::DualSense), "Enum mismatch: DualSense value differs between Core and API!");
 static_assert(static_cast<uint8>(EDeviceType::DualShock4) == static_cast<uint8>(EDSDeviceType::DualShock4), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(EDeviceType::DualSenseEdge) == static_cast<uint8>(EDSDeviceType::DualSenseEdge), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(EDeviceType::DualSenseEdge) == static_cast<uint8>(EDSDeviceType::DualSenseEdge), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(EDeviceConnection::Usb) == static_cast<uint8>(EDSDeviceConnection::Usb), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(EDeviceConnection::Bluetooth) == static_cast<uint8>(EDSDeviceConnection::Bluetooth), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(EDeviceConnection::Unrecognized) == static_cast<uint8>(EDSDeviceConnection::Unrecognized), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(EGamepadHand::Left) == static_cast<uint8>(EDSGamepadHand::Left), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(EGamepadHand::Right) == static_cast<uint8>(EDSGamepadHand::Right), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(EGamepadHand::AnyHand) == static_cast<uint8>(EDSGamepadHand::AnyHand), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(EDualSenseAudioFeatureReport::On) == static_cast<uint8>(EDSAudioMode::On), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(EDualSenseAudioFeatureReport::Off) == static_cast<uint8>(EDSAudioMode::Off), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(ELedPlayerEnum::Off) == static_cast<uint8>(EDSPlayer::Off), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(ELedPlayerEnum::One) == static_cast<uint8>(EDSPlayer::One), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(ELedPlayerEnum::Two) == static_cast<uint8>(EDSPlayer::Two), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(ELedPlayerEnum::Three) == static_cast<uint8>(EDSPlayer::Three), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(ELedPlayerEnum::All) == static_cast<uint8>(EDSPlayer::All), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(ELedMicEnum::MicOn) == static_cast<uint8>(EDSMic::MicOn), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(ELedMicEnum::MicOff) == static_cast<uint8>(EDSMic::MicOff), "Enum mismatch: DualShock4 value differs between Core and API!");
-static_assert(static_cast<uint8>(ELedMicEnum::Pulse) == static_cast<uint8>(EDSMic::Pulse), "Enum mismatch: DualShock4 value differs between Core and API!");
+static_assert(static_cast<uint8>(EDeviceType::DualSenseEdge) == static_cast<uint8>(EDSDeviceType::DualSenseEdge), "Enum mismatch: DualSenseEdge value differs between Core and API!");
+
+static_assert(static_cast<uint8>(EDeviceConnection::Usb) == static_cast<uint8>(EDSDeviceConnection::Usb), "Enum mismatch: DeviceConnection USB value differs between Core and API!");
+static_assert(static_cast<uint8>(EDeviceConnection::Bluetooth) == static_cast<uint8>(EDSDeviceConnection::Bluetooth), "Enum mismatch: DeviceConnection Bluetooth value differs between Core and API!");
+static_assert(static_cast<uint8>(EDeviceConnection::Unrecognized) == static_cast<uint8>(EDSDeviceConnection::Unrecognized), "Enum mismatch: DeviceConnection Unrecognized value differs between Core and API!");
+
+static_assert(static_cast<uint8>(EGamepadHand::Left) == static_cast<uint8>(EDSGamepadHand::Left), "Enum mismatch: GamepadHand Left value differs between Core and API!");
+static_assert(static_cast<uint8>(EGamepadHand::Right) == static_cast<uint8>(EDSGamepadHand::Right), "Enum mismatch: GamepadHand Right value differs between Core and API!");
+static_assert(static_cast<uint8>(EGamepadHand::AnyHand) == static_cast<uint8>(EDSGamepadHand::AnyHand), "Enum mismatch: GamepadHand AnyHand value differs between Core and API!");
+
+static_assert(static_cast<uint8>(EDualSenseAudioFeatureReport::On) == static_cast<uint8>(EDSAudioMode::On), "Enum mismatch: AudioFeature On value differs between Core and API!");
+static_assert(static_cast<uint8>(EDualSenseAudioFeatureReport::Off) == static_cast<uint8>(EDSAudioMode::Off), "Enum mismatch: AudioFeature Off value differs between Core and API!");
+
+static_assert(static_cast<uint8>(ELedPlayerEnum::Off) == static_cast<uint8>(EDSPlayer::Off), "Enum mismatch: LedPlayer Off value differs between Core and API!");
+static_assert(static_cast<uint8>(ELedPlayerEnum::One) == static_cast<uint8>(EDSPlayer::One), "Enum mismatch: LedPlayer One value differs between Core and API!");
+static_assert(static_cast<uint8>(ELedPlayerEnum::Two) == static_cast<uint8>(EDSPlayer::Two), "Enum mismatch: LedPlayer Two value differs between Core and API!");
+static_assert(static_cast<uint8>(ELedPlayerEnum::Three) == static_cast<uint8>(EDSPlayer::Three), "Enum mismatch: LedPlayer Three value differs between Core and API!");
+static_assert(static_cast<uint8>(ELedPlayerEnum::All) == static_cast<uint8>(EDSPlayer::All), "Enum mismatch: LedPlayer All value differs between Core and API!");
+
+static_assert(static_cast<uint8>(ELedMicEnum::MicOn) == static_cast<uint8>(EDSMic::MicOn), "Enum mismatch: LedMic MicOn value differs between Core and API!");
+static_assert(static_cast<uint8>(ELedMicEnum::MicOff) == static_cast<uint8>(EDSMic::MicOff), "Enum mismatch: LedMic MicOff value differs between Core and API!");
+static_assert(static_cast<uint8>(ELedMicEnum::Pulse) == static_cast<uint8>(EDSMic::Pulse), "Enum mismatch: LedMic Pulse value differs between Core and API!");
 
 /**
  * @namespace SonyGamepadProxyHelpers
