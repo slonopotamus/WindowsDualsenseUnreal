@@ -2,8 +2,8 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 
-#include "API/SonyGamepadProxyHelpers.h"
 #include "API/SonyGamepadSensorsProxy.h"
+#include "API/SonyGamepadProxyHelpers.h"
 
 using namespace SonyGamepadProxyHelpers;
 
