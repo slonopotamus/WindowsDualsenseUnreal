@@ -8,12 +8,13 @@
 #include "API/SonyGamepadProxyHelpers.h"
 #include "GCore/Interfaces/Segregations/IGamepadAudioHaptics.h"
 
-FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix, bool IsWireless)
+FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix, bool bIsWireless)
     : Submix(InSubmix)
     , DeviceId(InDeviceId)
-    , bIsWireless(IsWireless)
+    , bIsWireless(bIsWireless)
 {
-	if (IsWireless)
+
+	if (bIsWireless)
 	{
 		ResampledAudioBuffer.SetNumUninitialized(64);
 	}
@@ -26,6 +27,12 @@ FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InS
 void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples,
                                               int32 NumChannels, const int32 SampleRate, double AudioClock)
 {
+	// ----------------------------------------------------------------------------------------------------------------
+	// Acknowledgement:
+	// The following USB Audio Haptics processing logic (LowPass filter & buffer handling) is based on
+	// research and implementation originally shared by yncat (https://github.com/yncat).
+	// Reference Issue #105: https://github.com/rafaelvaloto/Unreal-Dualsense/issues/105
+	// ----------------------------------------------------------------------------------------------------------------
 	if (!bIsWireless) // USB
 	{
 		if (NumSamples <= 0)

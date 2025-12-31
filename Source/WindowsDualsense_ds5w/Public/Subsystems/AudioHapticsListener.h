@@ -29,7 +29,7 @@ class FAudioHapticsListener : public ISubmixBufferListener
 	 @return An instance of FAudioHapticsListener initialized with the provided input device ID and submix reference.
 	 */
 public:
-	FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix, bool IsWireless);
+	FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix, bool bIsWireless);
 
 	/**
 	 Determines if the audio processing system is actively rendering audio.

@@ -66,7 +66,7 @@ For a complete guide on the available commands and the raw byte structure for ea
 ## 🚀 Começando
 
 ### Pré-requisitos
-* **Unreal Engine**: 5.2 ou superior.
+* **Unreal Engine**: 5.2 ou superior (Plugin uses C++20 features).
 * **Sistema Operacional**: Windows 10 ou 11.
 * **Controle**: DualSense™ ou DualShock 4®.
 

@@ -66,7 +66,7 @@ Designed to bridge the gap left by generic controller support, this asset empowe
 
 ### Prerequisites
 
-* **Unreal Engine**: 5.2 or higher.
+* **Unreal Engine**: 5.2 or higher (Plugin uses C++20 features).
 * **Operating System**: Windows 10 or 11.
 * **Controller**: DualSense™ or DualShock 4®.
 
