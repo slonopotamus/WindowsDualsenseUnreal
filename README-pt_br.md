@@ -160,6 +160,7 @@ Contribuições são bem-vindas! Se você tiver ideias, sugestões ou correçõe
 
 Este projeto é distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
+This project is distributed under the MIT License. See the `LICENSE` file for more details.
 ## ⭐ Credits and Acknowledgments
 
 The foundation of this plugin was built upon the research and code from several amazing projects in the community:
@@ -169,15 +170,15 @@ The foundation of this plugin was built upon the research and code from several 
 * [DualSenseAPI](https://github.com/BadMagic100/DualSenseAPI/tree/master) - Hardware communication references.
 * [flok pydualsense](https://github.com/flok/pydualsense) - Feature report research.
 * [SAxense](https://github.com/egormanga/SAxense) - Base for Bluetooth Audio Haptics.
+* [miniaudio](https://github.com/mackron/miniaudio) - Audio playback and conversion library.
 * [Ryochan7/DS4Windows](https://github.com/Ryochan7/DS4Windows) - Industry standard for DualShock/DualSense on Windows.
 * [linux/drivers/hid/hid-playstation.c](https://github.com/torvalds/linux/blob/master/drivers/hid/hid-playstation.c#L1709) - Reference for calibration, gyroscope, and Linux driver standards.
 
 Special thanks to the community members who helped improve this plugin:
 
-*   **[yncat](https://github.com/yncat)**: For the extensive research and implementation logic regarding **USB Audio Haptics**, which was crucial for supporting high-fidelity haptics via USB ([Issue #105](https://github.com/rafaelvaloto/Unreal-Dualsense/issues/105)).
+* **[yncat](https://github.com/yncat)**: For the extensive research and implementation logic regarding **USB Audio Haptics**, which was crucial for supporting high-fidelity haptics via USB ([Issue #105](https://github.com/rafaelvaloto/Unreal-Dualsense/issues/105)).
 
 A special thanks to the Unreal Engine team for providing the Arena Shooter templates, which served as an excellent foundation for the example project demonstrating this plugin's features.
-
 ## ⚖️ Disclaimer and Trademarks
 
 This software is an independent and unofficial project. It is **not** affiliated, associated, authorized, endorsed by, or in any way officially connected with Sony Interactive Entertainment Inc., Microsoft Corporation, Apple Inc., Epic Games, Unity Technologies, the Godot Engine project, or the Open 3D Foundation.
