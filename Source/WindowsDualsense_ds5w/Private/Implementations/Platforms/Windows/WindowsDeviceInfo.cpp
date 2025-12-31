@@ -3,8 +3,8 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
-#include "GImplementations/Utils/GamepadSensors.h"
 #include "GCore/Types/Structs/Config/GamepadCalibration.h"
+#include "GImplementations/Utils/GamepadSensors.h"
 #include <filesystem>
 #include <hidsdi.h>
 #include <setupapi.h>
@@ -27,7 +27,7 @@ void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 	SP_DEVICE_INTERFACE_DATA DeviceInterfaceData = {};
 	DeviceInterfaceData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 	for (std::int32_t DeviceIndex = 0; SetupDiEnumDeviceInterfaces(DeviceInfoSet, nullptr, &HidGuid, DeviceIndex,
-	                                                        &DeviceInterfaceData);
+	                                                               &DeviceInterfaceData);
 	     DeviceIndex++)
 	{
 		DWORD RequiredSize = 0;
@@ -226,7 +226,9 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, s
 void FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)
 {
 	if (!Context)
+	{
 		return;
+	}
 
 	// Initialize miniaudio context for device enumeration
 	ma_context maContext;
