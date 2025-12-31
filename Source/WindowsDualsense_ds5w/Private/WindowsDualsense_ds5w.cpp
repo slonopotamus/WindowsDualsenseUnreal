@@ -31,7 +31,7 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 	std::unique_ptr<IPlatformHardwareInfo> WindowsInstance = std::make_unique<FWindowsPlatform::FWindowsHardware>();
 	IPlatformHardwareInfo::SetInstance(std::move(WindowsInstance));
 
-	// Initialize DeviceResgistry
+	// Initialize FDeviceRegistry
 	FDeviceRegistry::Initialize();
 
 #elif PLATFORM_LINUX || PLATFORM_MAC

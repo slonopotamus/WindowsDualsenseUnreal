@@ -115,8 +115,5 @@ public:
 	 *
 	 * @param Context Pointer to the device context that holds relevant device information.
 	 */
-	static void InitializeAudioDevice(FDeviceContext* /*Context*/)
-	{
-		// TODO Implement the discovery and registration of DualSense audio devices to send audio haptics via USB. Example using WindowsDeviceInfo mini audio.
-	}
+	static void InitializeAudioDevice(FDeviceContext* Context);
 };
