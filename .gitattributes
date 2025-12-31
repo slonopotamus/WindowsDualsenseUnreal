@@ -2,5 +2,4 @@
 **/miniaudio_impl.cpp linguist-vendored
 **/miniaudio.cpp    linguist-vendored
 
-Source/**/Libs/** linguist-vendored
 **.h linguist-language=C++
