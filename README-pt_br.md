@@ -27,6 +27,14 @@ Integre todos os recursos do controle DualSense™ e DualShock 4® da Sony no se
 <img src="https://img.shields.io/badge/PlayStation-0070D1?style=for-the-badge&logo=playstation&logoColor=white" alt="Platform: PlayStation">
 </p>
 
+<p align="center">
+  <a href="#-começando">Começando</a> •
+  <a href="#-uso-básico">Uso Básico</a> •
+  <a href="#-projeto-de-exemplo-arena-shooter-ue-56">Exemplos</a> •
+  <a href="#-estendendo-para-outras-plataformas-ex-playstation">Estendendo</a> •
+  <a href="#-como-contribuir">Contribuir</a>
+</p>
+
 ## 📖 Sobre o Projeto
 
 Construído com uma arquitetura multiplataforma, este plugin para Unreal Engine fornece uma solução unificada para integrar os controles DualSense™ (PlayStation 5) e DualShock 4® (PlayStation 4). Ele oferece suporte nativo no PC e, ao mesmo tempo, foi projetado para ser facilmente compilado para outras plataformas da Unreal Engine, incluindo PlayStation®. Este ativo fornece acesso direto à API ao conjunto completo de recursos de cada controlador, incluindo o revolucionário Haptic Feedback e Adaptive Triggers do DualSense™. Todos os recursos são expostos por meio de uma biblioteca de funções limpa e bem documentada para Blueprint e C++.

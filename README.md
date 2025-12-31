@@ -28,6 +28,13 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 <img src="https://img.shields.io/badge/PlayStation-0070D1?style=for-the-badge&logo=playstation&logoColor=white" alt="Platform: PlayStation">
 </p>
 
+<p align="center">
+  <a href="#-getting-started">Getting Started</a> •
+  <a href="#-basic-usage">Basic Usage</a> •
+  <a href="#-example-project-arena-shooter-ue-56">Example Project</a> •
+  <a href="#-extending-for-other-platforms-eg-playstation">Extending</a> •
+  <a href="#-live-haptic-prototyping-console-to-blueprint">Prototyping</a>
+</p>
 
 > [!IMPORTANT]
 > **v2.0.0-pre-release is now available!** We are testing major architecture improvements. Check it out in the [Releases](https://github.com/rafaelvaloto/Unreal-Dualsense/releases) section and help us with feedback.
