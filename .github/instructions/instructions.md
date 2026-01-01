@@ -1,4 +1,4 @@
-﻿# Copilot Instructions for Unreal-Dualsense Plugin
+# Copilot Instructions for Unreal-Dualsense Plugin
 
 Act as a pragmatic Senior Software Engineer. Review this code focusing strictly on:
 
@@ -16,20 +16,20 @@ DO NOT comment on:
 ## 🚫 Ignore Rules (False Positives)
 
 1. **Enum Values & Compatibility:**
-    - **Do NOT** flag the values in `ELedMicEnum`.
-    - The order `MicOff = 0` and `MicOn = 1` is intentional to maintain backward compatibility with Blueprint assets from version 1.x.
-    - Ignore discrepancies between the enum integer values and the documentation order.
+   - **Do NOT** flag the values in `ELedMicEnum`. 
+   - The order `MicOff = 0` and `MicOn = 1` is intentional to maintain backward compatibility with Blueprint assets from version 1.x.
+   - Ignore discrepancies between the enum integer values and the documentation order.
 
 2. **Empty Logging Blocks:**
-    - In `SonyGamepadProxyHelpers.h`, ignore empty `if (bLogOnFailure)` blocks.
-    - These are intentional placeholders for future implementation. Do not suggest removing them or filling them unless explicitly asked.
+   - In `SonyGamepadProxyHelpers.h`, ignore empty `if (bLogOnFailure)` blocks.
+   - These are intentional placeholders for future implementation. Do not suggest removing them or filling them unless explicitly asked.
 
 3. **Legacy Code:**
     - Files in `Source/WindowsDualsense_ds5w/Private/Legacy/` may contain commented-out code or deprecated logic.
     - **Do NOT** suggest removing commented-out code in these specific files; they are kept for reference.
 
 4. **Variable Scope in Slate:**
-    - Regarding `SonyInputProcessor` in `WindowsDualsense_ds5w.cpp`: If flagged as a scope/lifetime issue, ignore it. The Slate application registry handles the shared pointer reference counting internally in this specific context.
+   - Regarding `SonyInputProcessor` in `WindowsDualsense_ds5w.cpp`: If flagged as a scope/lifetime issue, ignore it. The Slate application registry handles the shared pointer reference counting internally in this specific context.
 
 ## 📝 Documentation Style
 
