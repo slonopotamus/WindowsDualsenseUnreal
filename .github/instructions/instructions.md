@@ -39,7 +39,7 @@ If the code works as intended and won't crash, respond with "No critical issues 
 ## 🚫 Ignore Rules (False Positives)
 
 1. **Enum Values & Compatibility:**
-   - **Do NOT** flag the values in `ELedMicEnum`. 
+   - **Do NOT** flag the values in `ELedMicEnum`. h as incorrect.
    - The order `MicOff = 0` and `MicOn = 1` is intentional to maintain backward compatibility with Blueprint assets from version 1.x.
    - Ignore discrepancies between the enum integer values and the documentation order.
 
