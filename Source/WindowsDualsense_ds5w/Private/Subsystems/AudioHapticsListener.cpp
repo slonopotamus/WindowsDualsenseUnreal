@@ -7,7 +7,7 @@
 #include "Subsystems/AudioHapticsListener.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "GCore/Interfaces/Segregations/IGamepadAudioHaptics.h"
-constexpr float kLowPassAlpha = 0.2f;
+constexpr float kLowPassAlpha = 0.98f;
 
 FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix, bool bIsWireless)
     : Submix(InSubmix)
@@ -55,6 +55,7 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 			float OutRight = FMath::Clamp(InRight - LowPassState_Right, -1.0f, 1.0f);
 
 			std::vector<std::int16_t> StereoPair;
+			StereoPair.reserve(2);
 			StereoPair.push_back(static_cast<int16>(OutLeft * 32767.0f));
 			StereoPair.push_back(static_cast<int16>(OutRight * 32767.0f));
 
@@ -190,7 +191,7 @@ void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHapti
 		{
 			if (QSamplePair.size() == 2)
 			{
-				BurstBuffer.push_back(std::move(QSamplePair));
+				BurstBuffer.push_back(QSamplePair);
 			}
 		}
 
