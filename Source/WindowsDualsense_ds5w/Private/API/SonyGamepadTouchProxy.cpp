@@ -9,22 +9,16 @@
 using namespace SonyGamepadProxyHelpers;
 void USonyGamepadTouchProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 {
-	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
-	if (!Gamepad)
+	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		return;
+		Gamepad->EnableTouch(bEnableTouch);
 	}
-
-	return Gamepad->EnableTouch(bEnableTouch);
 }
 
 void USonyGamepadTouchProxy::EnableGesture(int32 ControllerId, bool bEnableGesture)
 {
-	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
-	if (!Gamepad)
+	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		return;
+		Gamepad->EnableGesture(bEnableGesture);
 	}
-
-	return Gamepad->EnableGesture(bEnableGesture);
 }
