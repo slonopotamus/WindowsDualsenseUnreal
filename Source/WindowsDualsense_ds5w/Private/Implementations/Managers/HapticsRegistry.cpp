@@ -52,7 +52,7 @@ void FHapticsRegistry::CreateListenerForDevice(int32 DeviceId, USoundSubmix* Sub
 	{
 		return;
 	}
-	
+
 	if (Gamepad->GetConnectionType() == EDSDeviceConnection::Usb)
 	{
 		if (Gamepad->GetIGamepadHaptics())
@@ -65,12 +65,12 @@ void FHapticsRegistry::CreateListenerForDevice(int32 DeviceId, USoundSubmix* Sub
 			}
 		}
 	}
-	
+
 	if (ControllerListeners.Contains(DeviceId))
 	{
 		return;
 	}
-	
+
 	bool IsWireless = Gamepad->GetConnectionType() == EDSDeviceConnection::Bluetooth;
 	const TSharedPtr<FAudioHapticsListener> Listener = MakeShared<FAudioHapticsListener>(DeviceId, Submix, IsWireless);
 	if (FAudioDeviceHandle AudioDevice = GEngine->GetActiveAudioDevice())

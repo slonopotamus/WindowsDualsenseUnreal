@@ -42,7 +42,7 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 		{
 			return;
 		}
-		
+
 		std::vector<std::int16_t> StereoPair;
 		StereoPair.resize(2);
 		for (int32 i = 0; i < NumSamples; i += NumChannels)
@@ -165,7 +165,10 @@ void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHapti
 		PacketToProcess.reserve(64);
 		while (AudioPacketQueue.Dequeue(PacketToProcess))
 		{
-			if (PacketToProcess.size() == 0) continue;
+			if (PacketToProcess.size() == 0)
+			{
+				continue;
+			}
 
 			Samples.insert(Samples.end(), PacketToProcess.begin(), PacketToProcess.end());
 			AudioHaptics->AudioHapticUpdate(Samples);
@@ -175,20 +178,23 @@ void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHapti
 	{
 		std::vector<std::int16_t> QSamplePair;
 		QSamplePair.reserve(2);
-		
+
 		std::vector<std::int16_t> Samples;
 		Samples.reserve(2048 * 2);
 		while (AudioPacketQueueUSB.Dequeue(QSamplePair))
 		{
-			if (QSamplePair.size() < 2) continue;
-			
+			if (QSamplePair.size() < 2)
+			{
+				continue;
+			}
+
 			std::int16_t SampleLeft = QSamplePair[0];
 			std::int16_t SampleRight = QSamplePair[1];
-			
+
 			Samples.push_back(SampleLeft);
 			Samples.push_back(SampleRight);
 		}
-		
+
 		if (!Samples.empty() && AudioHaptics)
 		{
 			AudioHaptics->AudioHapticUpdate(Samples);
