@@ -21,7 +21,7 @@ FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InS
 {
 	AudioPacketQueue.Empty();
 	AudioPacketQueueUSB.Empty();
-	
+
 	if (bIsWireless)
 	{
 		ResampledAudioBuffer.SetNumUninitialized(64);
