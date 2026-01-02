@@ -7,7 +7,9 @@
 #include "Subsystems/AudioHapticsListener.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "GCore/Interfaces/Segregations/IGamepadAudioHaptics.h"
+
 constexpr float kLowPassAlpha = 0.98f;
+constexpr float one_minus_alpha = 1.0f - kLowPassAlpha;
 
 FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix, bool bIsWireless)
     : Submix(InSubmix)
@@ -40,9 +42,9 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 		{
 			return;
 		}
-
-		const float one_minus_alpha = 1.0f - kLowPassAlpha;
-
+		
+		std::vector<std::int16_t> StereoPair;
+		StereoPair.resize(2);
 		for (int32 i = 0; i < NumSamples; i += NumChannels)
 		{
 			float InLeft = AudioData[i];
@@ -54,11 +56,8 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 			float OutLeft = FMath::Clamp(InLeft - LowPassState_Left, -1.0f, 1.0f);
 			float OutRight = FMath::Clamp(InRight - LowPassState_Right, -1.0f, 1.0f);
 
-			std::vector<std::int16_t> StereoPair;
-			StereoPair.reserve(2);
-			StereoPair.push_back(static_cast<int16>(OutLeft * 32767.0f));
-			StereoPair.push_back(static_cast<int16>(OutRight * 32767.0f));
-
+			StereoPair[0] = static_cast<std::int16_t>(OutLeft * 32767.0f);
+			StereoPair[1] = static_cast<std::int16_t>(OutRight * 32767.0f);
 			AudioPacketQueueUSB.Enqueue(StereoPair);
 		}
 		return;
@@ -94,8 +93,6 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 		return;
 	}
 
-	constexpr float one_minus_alpha = 1.0f - kLowPassAlpha;
-
 	float* Data = ResampledAudioBuffer.GetData();
 	const int32 NumFrames = OutputFramesWritten; // 64 frames
 
@@ -119,9 +116,9 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 	}
 
 	const float* ResampledData = ResampledAudioBuffer.GetData();
-	TArray<int8> Packet1, Packet2;
-	Packet1.SetNumUninitialized(64);
-	Packet2.SetNumUninitialized(64);
+	std::vector<std::int8_t> Packet1, Packet2;
+	Packet1.reserve(64);
+	Packet2.reserve(64);
 
 	for (int32 i = 0; i < 32; ++i)
 	{
@@ -130,9 +127,8 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 		const float LeftSample = ResampledData[DataIndex];      // L
 		const float RightSample = ResampledData[DataIndex + 1]; // R
 
-		const int8 LeftSampleInt8 = static_cast<int8>(FMath::Clamp(FMath::RoundToInt(LeftSample * 127.0f), -128, 127));
-		const int8 RightSampleInt8 = static_cast<int8>(FMath::Clamp(FMath::RoundToInt(RightSample * 127.0f), -128, 127));
-
+		const std::int8_t LeftSampleInt8 = static_cast<std::int8_t>(FMath::Clamp(FMath::RoundToInt(LeftSample * 127.0f), -128, 127));
+		const std::int8_t RightSampleInt8 = static_cast<std::int8_t>(FMath::Clamp(FMath::RoundToInt(RightSample * 127.0f), -128, 127));
 		Packet1[DataIndex] = LeftSampleInt8;      // L
 		Packet1[DataIndex + 1] = RightSampleInt8; // R
 	}
@@ -146,8 +142,8 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 		const float LeftSample = ResampledData[DataIndex];
 		const float RightSample = ResampledData[DataIndex + 1];
 
-		const int8 LeftSampleInt8 = static_cast<int8>(FMath::Clamp(FMath::RoundToInt(LeftSample * 127.0f), -128, 127));
-		const int8 RightSampleInt8 = static_cast<int8>(FMath::Clamp(FMath::RoundToInt(RightSample * 127.0f), -128, 127));
+		const std::int8_t LeftSampleInt8 = static_cast<std::int8_t>(FMath::Clamp(FMath::RoundToInt(LeftSample * 127.0f), -128, 127));
+		const std::int8_t RightSampleInt8 = static_cast<std::int8_t>(FMath::Clamp(FMath::RoundToInt(RightSample * 127.0f), -128, 127));
 
 		// Index *Packet 2* (Packet2)
 		const int32 PacketIndex = i * 2;            // (0, 2, 4...)
@@ -164,40 +160,38 @@ void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHapti
 
 	if (AudioHaptics && bIsWireless)
 	{
-		TArray<int8> PacketToProcess;
-
-		std::vector<std::uint8_t> Samples;
+		std::vector<std::int8_t> PacketToProcess;
+		std::vector<std::int8_t> Samples;
+		PacketToProcess.reserve(64);
 		while (AudioPacketQueue.Dequeue(PacketToProcess))
 		{
-			if (PacketToProcess.Num() == 0)
-			{
-				continue;
-			}
+			if (PacketToProcess.size() == 0) continue;
 
-			Samples.clear();
-			Samples.reserve(PacketToProcess.Num());
-			const int8* RawData = PacketToProcess.GetData();
-			const uint8_t* RawDataUnsigned = reinterpret_cast<const uint8_t*>(RawData);
-			Samples.insert(Samples.end(), RawDataUnsigned, RawDataUnsigned + PacketToProcess.Num());
+			Samples.insert(Samples.end(), PacketToProcess.begin(), PacketToProcess.end());
 			AudioHaptics->AudioHapticUpdate(Samples);
 		}
 	}
 	else
 	{
 		std::vector<std::int16_t> QSamplePair;
-		std::vector<std::vector<std::int16_t>> BurstBuffer;
-
+		QSamplePair.reserve(2);
+		
+		std::vector<std::int16_t> Samples;
+		Samples.reserve(2048 * 2);
 		while (AudioPacketQueueUSB.Dequeue(QSamplePair))
 		{
-			if (QSamplePair.size() == 2)
-			{
-				BurstBuffer.push_back(QSamplePair);
-			}
+			if (QSamplePair.size() < 2) continue;
+			
+			std::int16_t SampleLeft = QSamplePair[0];
+			std::int16_t SampleRight = QSamplePair[1];
+			
+			Samples.push_back(SampleLeft);
+			Samples.push_back(SampleRight);
 		}
-
-		if (!BurstBuffer.empty())
+		
+		if (!Samples.empty() && AudioHaptics)
 		{
-			AudioHaptics->AudioHapticUpdate(BurstBuffer);
+			AudioHaptics->AudioHapticUpdate(Samples);
 		}
 	}
 

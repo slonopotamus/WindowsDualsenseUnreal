@@ -91,7 +91,7 @@ public:
 	 for haptic feedback systems.
 	 */
 private:
-	TQueue<TArray<int8>, EQueueMode::Spsc> AudioPacketQueue;
+	TQueue<std::vector<std::int8_t>, EQueueMode::Spsc> AudioPacketQueue;
 	TQueue<std::vector<std::int16_t>, EQueueMode::Spsc> AudioPacketQueueUSB;
 	/**
 	 A buffer used to store audio data that has been resampled for haptic feedback systems.
