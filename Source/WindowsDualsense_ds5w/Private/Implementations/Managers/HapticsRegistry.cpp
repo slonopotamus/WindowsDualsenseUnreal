@@ -68,6 +68,7 @@ void FHapticsRegistry::CreateListenerForDevice(int32 DeviceId, USoundSubmix* Sub
 
 	if (ControllerListeners.Contains(DeviceId))
 	{
+		UE_LOG(LogDualSense, Warning, TEXT("Controller %d already has a listener registered."), DeviceId);
 		return;
 	}
 
