@@ -189,7 +189,7 @@ void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHapti
 		std::vector<std::int16_t> Samples;
 		Samples.clear();
 		Samples.reserve(2048 * 2);
-		do
+		while (AudioPacketQueueUSB.Dequeue(QSamplePair))
 		{
 			if (QSamplePair.size() < 2)
 			{
@@ -201,7 +201,7 @@ void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHapti
 
 			Samples.push_back(SampleLeft);
 			Samples.push_back(SampleRight);
-		} while (AudioPacketQueueUSB.Dequeue(QSamplePair));
+		}
 
 		if (!Samples.empty() && AudioHaptics)
 		{
