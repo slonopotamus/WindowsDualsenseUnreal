@@ -19,6 +19,9 @@ FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InS
     , DeviceId(InDeviceId)
     , bIsWireless(bIsWireless)
 {
+	AudioPacketQueue.Empty();
+	AudioPacketQueueUSB.Empty();
+	
 	if (bIsWireless)
 	{
 		ResampledAudioBuffer.SetNumUninitialized(64);
@@ -184,8 +187,9 @@ void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHapti
 		QSamplePair.reserve(2);
 
 		std::vector<std::int16_t> Samples;
+		Samples.clear();
 		Samples.reserve(2048 * 2);
-		while (AudioPacketQueueUSB.Dequeue(QSamplePair))
+		do
 		{
 			if (QSamplePair.size() < 2)
 			{
@@ -197,16 +201,11 @@ void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHapti
 
 			Samples.push_back(SampleLeft);
 			Samples.push_back(SampleRight);
-		}
+		} while (AudioPacketQueueUSB.Dequeue(QSamplePair));
 
 		if (!Samples.empty() && AudioHaptics)
 		{
 			AudioHaptics->AudioHapticUpdate(Samples);
 		}
-	}
-	else
-	{
-		AudioPacketQueue.Empty();
-		AudioPacketQueueUSB.Empty();
 	}
 }
