@@ -209,5 +209,4 @@ void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHapti
 		AudioPacketQueue.Empty();
 		AudioPacketQueueUSB.Empty();
 	}
-	
 }
