@@ -52,10 +52,9 @@ namespace SonyGamepadProxyHelpers
 	 * @brief Finds the ISonyGamepad instance for a given controller ID.
 	 *
 	 * @param ControllerId The platform user ID (0-3 typically)
-	 * @param bLogOnFailure Whether to log when gamepad is not found
 	 * @return ISonyGamepad pointer or nullptr if not found
 	 */
-	inline ISonyGamepad* GetGamepad(int32 ControllerId, bool bLogOnFailure = true)
+	inline ISonyGamepad* GetGamepad(int32 ControllerId)
 	{
 		check(IsInGameThread());
 
@@ -72,11 +71,6 @@ namespace SonyGamepadProxyHelpers
 				return Gamepad;
 			}
 		}
-
-		if (bLogOnFailure)
-		{
-		}
-
 		return nullptr;
 	}
 
@@ -84,21 +78,20 @@ namespace SonyGamepadProxyHelpers
 	 * @brief Gets the trigger interface for a controller.
 	 *
 	 * @param ControllerId The controller ID
-	 * @param bLogOnFailure Whether to log failures
 	 * @return IGamepadTrigger pointer or nullptr
 	 */
-	inline IGamepadTrigger* GetTriggerInterface(int32 ControllerId, bool bLogOnFailure = true)
+	inline IGamepadTrigger* GetTriggerInterface(int32 ControllerId)
 	{
-		ISonyGamepad* Gamepad = GetGamepad(ControllerId, bLogOnFailure);
+		ISonyGamepad* Gamepad = GetGamepad(ControllerId);
 		if (!Gamepad)
 		{
 			return nullptr;
 		}
 
 		IGamepadTrigger* TriggerInterface = Gamepad->GetIGamepadTrigger();
-
-		if (!TriggerInterface && bLogOnFailure)
+		if (!TriggerInterface)
 		{
+			return nullptr;
 		}
 
 		return TriggerInterface;
@@ -108,21 +101,20 @@ namespace SonyGamepadProxyHelpers
 	 * @brief Gets the audio haptics interface for a controller.
 	 *
 	 * @param ControllerId The controller ID
-	 * @param bLogOnFailure Whether to log failures
 	 * @return IGamepadAudioHaptics pointer or nullptr
 	 */
-	inline IGamepadAudioHaptics* GetAudioHapticsInterface(int32 ControllerId, bool bLogOnFailure = true)
+	inline IGamepadAudioHaptics* GetAudioHapticsInterface(int32 ControllerId)
 	{
-		ISonyGamepad* Gamepad = GetGamepad(ControllerId, bLogOnFailure);
+		ISonyGamepad* Gamepad = GetGamepad(ControllerId);
 		if (!Gamepad)
 		{
 			return nullptr;
 		}
 
 		IGamepadAudioHaptics* AudioInterface = Gamepad->GetIGamepadHaptics();
-
-		if (!AudioInterface && bLogOnFailure)
+		if (!AudioInterface)
 		{
+			return nullptr;
 		}
 
 		return AudioInterface;

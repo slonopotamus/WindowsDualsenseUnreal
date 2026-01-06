@@ -8,10 +8,10 @@
 #include "API/SonyGamepadProxyHelpers.h"
 #include "GCore/Interfaces/Segregations/IGamepadAudioHaptics.h"
 
-constexpr float kLowPassAlpha = 0.99f;
+constexpr float kLowPassAlpha = 0.98f;
 constexpr float one_minus_alpha = 1.0f - kLowPassAlpha;
 
-constexpr float kLowPassAlphaBt = 0.75f;
+constexpr float kLowPassAlphaBt = 0.50f;
 constexpr float one_minus_alpha_bt = 1.0f - kLowPassAlphaBt;
 
 FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InSubmix, bool bIsWireless)
