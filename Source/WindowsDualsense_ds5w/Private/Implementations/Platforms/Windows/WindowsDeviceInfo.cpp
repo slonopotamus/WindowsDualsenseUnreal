@@ -162,7 +162,7 @@ void FWindowsDeviceInfo::Write(FDeviceContext* Context)
 	size_t OutputReportLength = Context->ConnectionType == EDSDeviceConnection::Bluetooth ? 78 : InReportLength;
 
 	DWORD BytesWritten = 0;
-	if (!WriteFile(Context->Handle, Context->BufferOutput, OutputReportLength, &BytesWritten, nullptr))
+	if (!WriteFile(Context->Handle, Context->GetRawOutputBuffer(), OutputReportLength, &BytesWritten, nullptr))
 	{
 		InvalidateHandle(Context);
 	}
@@ -201,10 +201,11 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		Context->IsConnected = false;
 		Context->Path.clear();
 
-		ZeroMemory(Context->BufferOutput, sizeof(Context->BufferOutput));
-		ZeroMemory(Context->BufferAudio, sizeof(Context->BufferAudio));
-		ZeroMemory(Context->Buffer, sizeof(Context->Buffer));
-		ZeroMemory(Context->BufferDS4, sizeof(Context->BufferDS4));
+		unsigned char* RawOutput = Context->GetRawOutputBuffer();
+		std::memset(RawOutput, 0, 78);
+		std::memset(Context->Buffer, 0, 78);
+		std::memset(Context->BufferDS4, 0, 547);
+		std::memset(Context->BufferAudio, 0, 142);
 	}
 }
 
