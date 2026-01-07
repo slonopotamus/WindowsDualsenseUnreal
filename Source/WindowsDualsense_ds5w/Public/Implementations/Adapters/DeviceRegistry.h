@@ -66,6 +66,12 @@ public:
 	 */
 	static ISonyGamepad* GetLibraryInstance(FInputDeviceId DeviceId);
 
+	/**
+	 * Requests an immediate device scan on the next PlugAndPlay call.
+	 * Called when WM_DEVICECHANGE is received via SetDeviceProperty with Request_Device_Update.
+	 */
+	static void RequestImmediateDetection();
+
 	using FRegistryLogic = GamepadCore::TBasicDeviceRegistry<FDeviceRegistryPolicy>;
 
 private:

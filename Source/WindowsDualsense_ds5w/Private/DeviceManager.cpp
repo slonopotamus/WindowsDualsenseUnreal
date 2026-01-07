@@ -256,6 +256,14 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 		return;
 	}
 
+	// Handle Request_Device_Update from WM_DEVICECHANGE to trigger immediate device scan.
+	static const FName RequestDeviceUpdateName(TEXT("Request_Device_Update"));
+	if (Property->Name == RequestDeviceUpdateName)
+	{
+		FDeviceRegistry::RequestImmediateDetection();
+		return;
+	}
+
 	if (Property->Name == FInputDeviceLightColorProperty::PropertyName())
 	{
 		const FInputDeviceLightColorProperty* ColorProperty = static_cast<const FInputDeviceLightColorProperty*>(Property);
