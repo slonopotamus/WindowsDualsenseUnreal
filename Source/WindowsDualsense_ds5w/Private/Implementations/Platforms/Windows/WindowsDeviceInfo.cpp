@@ -138,7 +138,7 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 		const size_t InputBufferSize = Context->ConnectionType == EDSDeviceConnection::Bluetooth ? 78 : 64;
 
 		// Flush all queued reports from HID buffer to prevent input lag.
-		if(Context->ConnectionType == EDSDeviceConnection::Usb)
+		if (Context->ConnectionType == EDSDeviceConnection::Usb)
 		{
 			HidD_FlushQueue(Context->Handle);
 		}
