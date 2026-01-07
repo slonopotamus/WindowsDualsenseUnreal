@@ -57,3 +57,11 @@ ISonyGamepad* FDeviceRegistry::GetLibraryInstance(FInputDeviceId DeviceId)
 	}
 	return nullptr;
 }
+
+void FDeviceRegistry::RequestImmediateDetection()
+{
+	if (RegistryImplementation)
+	{
+		RegistryImplementation->RequestImmediateDetection();
+	}
+}

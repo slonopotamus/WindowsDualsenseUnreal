@@ -136,6 +136,13 @@ void FWindowsDeviceInfo::Read(FDeviceContext* Context)
 	else
 	{
 		const size_t InputBufferSize = Context->ConnectionType == EDSDeviceConnection::Bluetooth ? 78 : 64;
+
+		// Flush all queued reports from HID buffer to prevent input lag.
+		if(Context->ConnectionType == EDSDeviceConnection::Usb)
+		{
+			HidD_FlushQueue(Context->Handle);
+		}
+
 		EPollResult Result = PollTick(Context->Handle, Context->Buffer, InputBufferSize, BytesRead);
 		if (Result != EPollResult::ReadOk)
 		{
