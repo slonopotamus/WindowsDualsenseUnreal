@@ -31,12 +31,6 @@ FAudioHapticsListener::FAudioHapticsListener(int32 InDeviceId, USoundSubmix* InS
 void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, float* AudioData, int32 NumSamples,
                                               int32 NumChannels, const int32 SampleRate, double AudioClock)
 {
-	// ----------------------------------------------------------------------------------------------------------------
-	// Acknowledgement:
-	// The following USB Audio Haptics processing logic (LowPass filter & buffer handling) is based on
-	// research and implementation originally shared by yncat (https://github.com/yncat).
-	// Reference Issue #105: https://github.com/rafaelvaloto/Unreal-Dualsense/issues/105
-	// ----------------------------------------------------------------------------------------------------------------
 	if (!bIsWireless) // USB
 	{
 		if (NumSamples <= 0)
@@ -93,8 +87,6 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 	{
 		return;
 	}
-
-	// constexpr float one_minus_alpha = 1.0f - kLowPassAlpha;
 
 	float* Data = ResampledAudioBuffer.GetData();
 	const int32 NumFrames = OutputFramesWritten; // 64 frames
