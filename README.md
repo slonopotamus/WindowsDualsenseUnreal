@@ -100,6 +100,13 @@ git submodule update --remote --merge
 
 The plugin exposes all functionality through static Blueprint function libraries, meaning you can call methods from anywhere without needing to add components.
 
+> [!IMPORTANT]
+> **New in v2: Update Output Node**
+>
+> In version 2.x, after configuring any controller effects (such as Lightbar, Adaptive Triggers, or Mic LED), you **must** call the **Update Output** node to apply these changes to the controller. This optimization allows you to batch multiple effect changes and send them in a single update.
+>
+> **Example:** Set Lightbar Color ⮕ Set Weapon Effect (Trigger) ⮕ **Update Output**.
+
 ### Blueprint Function Libraries
 
 The functions are divided into two main categories for easy access:

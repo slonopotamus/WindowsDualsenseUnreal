@@ -96,6 +96,13 @@ git submodule update --remote --merge
 
 ## 💻 Uso Básico
 
+> [!IMPORTANT]
+> **New in v2: Update Output Node**
+>
+> In version 2.x, after configuring any controller effects (such as Lightbar, Adaptive Triggers, or Mic LED), you **must** call the **Update Output** node to apply these changes to the controller. This optimization allows you to batch multiple effect changes and send them in a single update.
+>
+> **Example:** Set Lightbar Color ⮕ Set Weapon Effect (Trigger) ⮕ **Update Output**.
+
 O plugin expõe todas as funcionalidades através de bibliotecas de funções estáticas em Blueprint, o que significa que você pode chamar os métodos de qualquer lugar sem precisar adicionar componentes.
 
 ### Bibliotecas de Funções em Blueprint
