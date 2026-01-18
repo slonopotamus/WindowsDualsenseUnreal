@@ -16,7 +16,7 @@ public class WindowsDualsense_ds5w : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] {"Slate", "SlateCore"});
 		PrivateDependencyModuleNames.AddRange(new string[] {"AudioMixer", "SignalProcessing", "AudioExtensions", "AudioPlatformConfiguration" });
 		
-		var gamepadCoreRoot = Path.Combine(ModuleDirectory, "..", "..", "Source", "WindowsDualsense_ds5w", "Private", "GamepadCore");
+		var gamepadCoreRoot = Path.Combine(ModuleDirectory, "Private", "GamepadCore");
 		PublicIncludePaths.Add(Path.Combine(gamepadCoreRoot, "Source", "Public"));
 		PrivateIncludePaths.Add(Path.Combine(gamepadCoreRoot, "Source", "Private"));
 		

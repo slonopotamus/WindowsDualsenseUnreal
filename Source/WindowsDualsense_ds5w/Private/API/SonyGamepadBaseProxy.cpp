@@ -31,6 +31,16 @@ EDeviceConnection USonyGamepadBaseProxy::GetConnectionType(int32 ControllerId)
 
 	return static_cast<EDeviceConnection>(Gamepad->GetConnectionType());
 }
+void USonyGamepadBaseProxy::UpdateOutput(int32 ControllerId)
+{
+	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
+	if (!Gamepad)
+	{
+		return;
+	}
+
+	Gamepad->UpdateOutput();
+}
 bool USonyGamepadBaseProxy::DeviceIsConnected(int32 ControllerId)
 {
 	ISonyGamepad* Gamepad = GetGamepad(ControllerId);

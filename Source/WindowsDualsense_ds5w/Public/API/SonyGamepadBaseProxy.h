@@ -22,6 +22,8 @@ class WINDOWSDUALSENSE_DS5W_API USonyGamepadBaseProxy : public UObject
 {
 	GENERATED_BODY()
 public:
+	UFUNCTION(BlueprintCallable, Category = "SonyGamepad Status", meta = (DisplayName = "Update Output", ToolTip = ""))
+	static void UpdateOutput(int32 ControllerId);
 	/**
 	 * Checks if the DualSense or DualShock device with the specified Controller ID is connected.
 	 *

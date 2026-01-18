@@ -97,8 +97,10 @@ void DeviceManager::SendControllerEvents(float DeltaTime)
 			FInputDeviceScope InputScope(this, TEXT("DeviceManager.WindowsDualsense"), Device.GetId(), ContextDrive);
 			if (FDeviceContext* Context = Gamepad->GetMutableDeviceContext())
 			{
-				FInputContext FrameInput = Context->GetInputState();
-				CheckEvents(Context, FrameInput, UserId, Device, DeltaTime);
+				if (FInputContext* FrameInput = Context->GetInputState())
+				{
+					CheckEvents(Context, *FrameInput, UserId, Device, DeltaTime);
+				}
 			}
 		}
 	}
