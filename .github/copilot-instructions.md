@@ -1,4 +1,4 @@
-# Copilot Instructions for Unreal-Dualsense Plugin
+﻿# Copilot Instructions for Unreal-Dualsense Plugin
 
 Act as a pragmatic Senior Software Engineer. Review this code focusing strictly on:
 
@@ -17,16 +17,16 @@ Your ONLY goal is to prevent crashes, data corruption, or security breaches.
 
 STRICTLY IGNORE the following categories (DO NOT COMMENT on them):
 1. **Maintainability & Best Practices:** - Do not suggest `Path.Combine` over string concatenation.
-   - Do not suggest removing "fragile" code if it currently works.
-   - Do not suggest specific C++ modernizations (e.g., `constexpr` usage) unless the current code fails to compile.
+    - Do not suggest removing "fragile" code if it currently works.
+    - Do not suggest specific C++ modernizations (e.g., `constexpr` usage) unless the current code fails to compile.
 
 2. **Readability & Style:**
-   - Do not critique parameter ordering in constructors or functions.
-   - Do not suggest renaming variables or constants (e.g., `one_minus_alpha` vs `kLowPass...`).
-   - Do not suggest grouping parameters for "API consistency".
+    - Do not critique parameter ordering in constructors or functions.
+    - Do not suggest renaming variables or constants (e.g., `one_minus_alpha` vs `kLowPass...`).
+    - Do not suggest grouping parameters for "API consistency".
 
 3. **Logging & Strings:**
-   - Do not suggest improvements to error message wording or verbosity.
+    - Do not suggest improvements to error message wording or verbosity.
 
 REPORT ONLY:
 - Actual logic errors (e.g., math causing NaN, wrong conditional operators).
@@ -39,20 +39,20 @@ If the code works as intended and won't crash, respond with "No critical issues 
 ## 🚫 Ignore Rules (False Positives)
 
 1. **Enum Values & Compatibility:**
-   - **Do NOT** flag the values in `ELedMicEnum`. h as incorrect.
-   - The order `MicOff = 0` and `MicOn = 1` is intentional to maintain backward compatibility with Blueprint assets from version 1.x.
-   - Ignore discrepancies between the enum integer values and the documentation order.
+    - **Do NOT** flag the values in `ELedMicEnum`. h as incorrect.
+    - The order `MicOff = 0` and `MicOn = 1` is intentional to maintain backward compatibility with Blueprint assets from version 1.x.
+    - Ignore discrepancies between the enum integer values and the documentation order.
 
 2. **Empty Logging Blocks:**
-   - In `SonyGamepadProxyHelpers.h`, ignore empty `if (bLogOnFailure)` blocks.
-   - These are intentional placeholders for future implementation. Do not suggest removing them or filling them unless explicitly asked.
+    - In `SonyGamepadProxyHelpers.h`, ignore empty `if (bLogOnFailure)` blocks.
+    - These are intentional placeholders for future implementation. Do not suggest removing them or filling them unless explicitly asked.
 
 3. **Legacy Code:**
     - Files in `Source/WindowsDualsense_ds5w/Private/Legacy/` may contain commented-out code or deprecated logic.
     - **Do NOT** suggest removing commented-out code in these specific files; they are kept for reference.
 
 4. **Variable Scope in Slate:**
-   - Regarding `SonyInputProcessor` in `WindowsDualsense_ds5w.cpp`: If flagged as a scope/lifetime issue, ignore it. The Slate application registry handles the shared pointer reference counting internally in this specific context.
+    - Regarding `SonyInputProcessor` in `WindowsDualsense_ds5w.cpp`: If flagged as a scope/lifetime issue, ignore it. The Slate application registry handles the shared pointer reference counting internally in this specific context.
 
 ## 📝 Documentation Style
 
