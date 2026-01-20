@@ -32,8 +32,11 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
   <a href="#-getting-started">Getting Started</a> •
   <a href="#-basic-usage">Basic Usage</a> •
   <a href="#-example-project-arena-shooter-ue-56">Example Project</a> •
+<a href="#-live-haptic-prototyping-console-to-blueprint">Prototyping</a> •
   <a href="#%EF%B8%8F-extending-for-other-platforms-eg-playstation">Extending</a> •
-  <a href="#-live-haptic-prototyping-console-to-blueprint">Prototyping</a> •
+<a href="#-injecting-custom-device-logic-custom-devicemanager">Injecting Custom Device</a>
+  <br>
+  <br>
   <a href="#-sponsor-the-project">💖 Sponsor the Project</a>
 </p>
 
