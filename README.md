@@ -198,6 +198,97 @@ This complete workflow—from live console discovery to clean Blueprint implemen
 * ➡️ **[Wiki Page: Tutorial: Creating a Reusable Trigger Effect Data Table](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki/%F0%9F%8E%93-Tutorial:-Creating-a-Reusable-Trigger-Effect-Data-Table)**
     * (Learn to *store and use* your effects in Blueprints)
 
+
+## 💉 Injecting Custom Device Logic (Custom DeviceManager)
+Since version 2.1, you can also inject a custom implementation of the `DeviceManager`. This is useful if you want to implement your own input buffering, custom button mapping, or specialized haptic logic without modifying the plugin source.
+
+> [!TIP]
+> To ensure that your custom implementation works with native Unreal Engine assets (like **Haptic Feedback Effects**, **Force Feedback Assets**, and **Device Properties**), your class must correctly implement or override the methods from `IInputDevice` and `IHapticDevice`.
+
+### Required Interfaces for Native Assets
+
+If you want your custom manager to support native Unreal features, ensure it implements/overrides:
+
+*   **`IHapticDevice`**: Required for `UHapticFeedbackEffect_Curve` and other haptic assets.
+    *   `SetHapticFeedbackValues`: Processes frequency and amplitude values from assets.
+    *   `GetHapticFrequencyRange`: Determines the valid frequency range supported by the device.
+    *   `GetHapticAmplitudeScale`: Returns the scaling factor for amplitude mapping.
+*   **`IInputDevice`**: Required for standard vibration, light color, and properties.
+    *   `SetChannelValues` / `SetChannelValue`: Essential for `UForceFeedbackEffect` assets.
+    *   `SetLightColor` / `ResetLightColor`: Controls the controller's LED.
+    *   `SetDeviceProperty`: Handles `UInputDeviceProperty` (e.g., Adaptive Triggers via Unreal 5.1+ system).
+    *   `GetHapticDevice`: Returns the `IHapticDevice*` interface (usually `return this;`).
+    *   `IsGamepadAttached`: Returns whether the device is currently connected.
+
+### Custom implementation example:
+
+1. Create your custom class inheriting from `DeviceManager`:
+```cpp
+#include "DeviceManager.h"
+
+class FMyCustomDeviceManager : public DeviceManager
+{
+public:
+    using DeviceManager::DeviceManager; // Use base constructor
+
+protected:
+    // To completely replace the default logic, do NOT call the base implementation.
+    // To extend the default logic, call DeviceManager::[MethodName] where appropriate.
+    
+    virtual void CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const override
+    {
+        // Example: Adding custom logic before the default processing
+        // [Your custom logic here]
+
+        // Call base implementation if you still want default button/analog processing
+        DeviceManager::CheckEvents(Context, FrameInput, UserId, InputDeviceId, DeltaTime);
+        
+        // Or add logic after
+    }
+
+    virtual void SensorsImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const override
+    {
+        // Example: Completely replacing the sensor logic with your own filtering
+        // (Don't call DeviceManager::SensorsImpl in this case)
+        
+        if (Context->bEnableAccelerometerAndGyroscope)
+        {
+             // Your custom IMU/Motion logic...
+        }
+    }
+    
+    virtual void TouchpadImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const override
+    {
+        // Example: Adding custom touchpad gesture or coordinate processing
+        // [Your custom touchpad logic here]
+        
+        // Call base if you want default touchpad behavior, not implemented here
+    }
+
+    // --- Native Asset Support Example ---
+
+    virtual void SetHapticFeedbackValues(int32 ControllerId, int32 Hand, const FHapticFeedbackValues& Values) override
+    {
+        // Custom logic for Haptic Feedback assets
+        DeviceManager::SetHapticFeedbackValues(ControllerId, Hand, Values);
+    }
+};
+```
+
+2. Register your custom factory in your Game Module:
+```cpp
+#include "WindowsDualsense_ds5w.h"
+#include "FMyCustomDeviceManager.h"
+
+void FMyGameModule::StartupModule()
+{
+    FWindowsDualsense_ds5wModule::SetCustomInputDeviceFactory([](const TSharedRef<FGenericApplicationMessageHandler>& InHandler)
+    {
+        return MakeShared<FMyCustomDeviceManager>(InHandler);
+    });
+}
+```
+
 ## 🛠️ Extending for Other Platforms (e.g., PlayStation)
 The plugin features a decoupled architecture using Policy-Based Design, allowing developers to integrate other platform SDKs (such as the official Sony PlayStation® SDK) or custom HID wrappers directly from their Game Project.
 

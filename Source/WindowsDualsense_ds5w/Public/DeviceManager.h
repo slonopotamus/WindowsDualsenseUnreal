@@ -21,7 +21,7 @@
  * This class encapsulates the logic specific to DualSense devices, providing mechanisms to
  * configure device properties, manage controller state updates, and deliver force feedback.
  */
-class WINDOWSDUALSENSE_DS5W_API DeviceManager final : public IInputDevice, public IHapticDevice
+class WINDOWSDUALSENSE_DS5W_API DeviceManager : public IInputDevice, public IHapticDevice
 {
 public:
 	virtual ~DeviceManager() override;
@@ -138,7 +138,7 @@ public:
 	 * This method is overridden to handle specific input events from the DualSense controller,
 	 * ensuring they are relayed correctly within the application.
 	 */
-	void SendControllerEvents(float DeltaTime);
+	virtual void SendControllerEvents(float DeltaTime);
 	virtual void SendControllerEvents() override {}
 	/**
 	 * Sets the message handler for the application to process input events.
@@ -162,6 +162,38 @@ public:
 	}
 
 	/**
+	 * Processes sensor input data including gyroscope and accelerometer readings,
+	 * updates the sensor filters, and delivers motion detection events.
+	 *
+	 * This method calculates sensor values, applies transformations, and updates
+	 * the Madgwick AHRS filter to compute orientation and rotation. It also
+	 * communicates with the message handler to notify about motion events.
+	 *
+	 * @param Context The device context containing configuration flags and state information.
+	 * @param FrameInput The input context with raw gyroscope and accelerometer data for the current frame.
+	 * @param UserId The platform-specific user identifier associated with the controller.
+	 * @param InputDeviceId The unique identifier of the input device for which the data is being processed.
+	 * @param DeltaTime The elapsed time since the last update, used for temporal calculations in the filter.
+	 */
+	virtual void SensorsImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const;
+
+	/**
+	 * Processes input data from the touchpad, updating the input context with the latest state
+	 * and interactions for the specified user and input device.
+	 *
+	 * This function is responsible for handling and interpreting touchpad events, applying
+	 * them to the input context for the associated platform user and input device. It operates
+	 * over a single frame, taking into account the elapsed time to ensure accurate updates.
+	 *
+	 * @param Context       The device context providing access to device-specific state and operations.
+	 * @param FrameInput    The input context to be updated with touchpad interactions.
+	 * @param UserId        The unique identifier of the platform user associated with the input.
+	 * @param InputDeviceId The unique identifier of the input device generating the touchpad data.
+	 * @param DeltaTime     The elapsed time since the last frame, used for time-sensitive calculations.
+	 */
+	virtual void TouchpadImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const {}
+
+	/**
 	 * Stores and manages sensor filters for input devices, using a mapping between
 	 * input device identifiers and Madgwick AHRS instances.
 	 * This variable helps maintain orientation and motion-filtering data for each
@@ -180,20 +212,7 @@ public:
 	TSet<FInputDeviceId> ActiveTouches;
 	TSet<FInputDeviceId> ActiveTouchesRelative;
 
-	struct FTouchGestureState
-	{
-		bool bGestureActive = false;
-		int32 LastFingerCount = 0;
-
-		bool bHasPrev = false;
-		FVector2D PrevTouchPos = FVector2D::ZeroVector;
-		float PrevSeparation = 0.0f;
-	};
-
-	mutable TMap<FInputDeviceId, FTouchGestureState> TouchGestureStates;
-
-protected:
-	void CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const;
+	virtual void CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const;
 	/**
 	 * @brief Handles button input events for a DualSense controller.
 	 *
@@ -205,14 +224,14 @@ protected:
 	 * @param ButtonName The name of the button being checked.
 	 * @param IsButtonPressed A boolean indicating the current pressed state of the button (true if pressed, false otherwise).
 	 */
-	void CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const;
+	virtual void CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const;
 
-private:
 	/**
 	 * Tracks the accumulated time or events between periodic polling operations.
 	 * This variable is typically used to manage timing or frequency of polling processes.
 	 */
 	float PollAccumulator = 0.0f;
+
 	/**
 	 * Handles application-level messages and events, facilitating communication
 	 * between the application framework and platform-specific input systems.

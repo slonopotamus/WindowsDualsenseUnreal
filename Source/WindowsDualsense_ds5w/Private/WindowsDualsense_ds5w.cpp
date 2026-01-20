@@ -66,10 +66,22 @@ void FWindowsDualsense_ds5wModule::ShutdownModule()
 #endif
 }
 
+FWindowsDualsense_ds5wModule::FCustomInputDeviceFactory FWindowsDualsense_ds5wModule::CustomInputDeviceFactory = nullptr;
+
 TSharedPtr<IInputDevice> FWindowsDualsense_ds5wModule::CreateInputDevice(
     const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler)
 {
+	if (CustomInputDeviceFactory)
+	{
+		return CustomInputDeviceFactory(InCustomMessageHandler);
+	}
+
 	return MakeShareable(new DeviceManager(InCustomMessageHandler));
+}
+
+void FWindowsDualsense_ds5wModule::SetCustomInputDeviceFactory(FCustomInputDeviceFactory Factory)
+{
+	CustomInputDeviceFactory = Factory;
 }
 
 void FWindowsDualsense_ds5wModule::RegisterCustomKeys()

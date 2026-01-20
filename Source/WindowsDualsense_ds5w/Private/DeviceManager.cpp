@@ -106,25 +106,52 @@ void DeviceManager::SendControllerEvents(float DeltaTime)
 	}
 }
 
-namespace TouchGestureDirectRaw
+void DeviceManager::SensorsImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const
 {
-	constexpr float DirectionRawDegreesOffset = 0.0f;
-
-	constexpr float DirectionFlipX = 1.0f;
-	constexpr float DirectionFlipY = 1.0f;
-
-	static FVector2D DirectionRawToUnitVector(std::uint8_t Raw)
+	if (Context->bEnableAccelerometerAndGyroscope)
 	{
-		const float Degrees = (static_cast<float>(Raw) * (360.0f / 256.0f)) + DirectionRawDegreesOffset;
-		const float Radians = FMath::DegreesToRadians(Degrees);
+		constexpr float RadDeg = DS_RAD_TO_DEG;
+		constexpr float GToMSq = GRAVITY_MS2;
+		float RawGyroX = FrameInput.Gyroscope.X;
+		float RawGyroY = FrameInput.Gyroscope.Y;
+		float RawGyroZ = FrameInput.Gyroscope.Z;
+		float RawAcclX = FrameInput.Accelerometer.X;
+		float RawAcclY = FrameInput.Accelerometer.Y;
+		float RawAcclZ = FrameInput.Accelerometer.Z;
 
-		FVector2D Dir(FMath::Cos(Radians), FMath::Sin(Radians));
-		Dir.X *= DirectionFlipX;
-		Dir.Y *= DirectionFlipY;
+		// Z from X, X from Y, Y from Z
+		float G_Roll = RawGyroZ * RadDeg;
+		float G_Pitch = RawGyroX * RadDeg;
+		float G_Yaw = -RawGyroY * RadDeg;
+		float A_Roll = RawAcclZ * GToMSq;
+		float A_Pitch = RawAcclX * GToMSq;
+		float A_Yaw = -RawAcclY * GToMSq;
 
-		return Dir.GetSafeNormal();
+		if (!FilterSensors.Contains(InputDeviceId))
+		{
+			TSharedPtr<FMadgwickAhrs> NewSensor = MakeShared<FMadgwickAhrs>(PluginSettings::MadgwickBeta);
+			FilterSensors.Add(InputDeviceId, NewSensor);
+		}
+
+		if (Context->bIsResetGyroscope)
+		{
+			FilterSensors[InputDeviceId]->Reset();
+			Context->bIsResetGyroscope = false;
+		}
+
+		FilterSensors[InputDeviceId]->UpdateImu(G_Roll, G_Pitch, G_Yaw, A_Roll, A_Pitch, A_Yaw, DeltaTime);
+
+		float qw, qx, qy, qz;
+		FilterSensors[InputDeviceId]->GetQuaternion(qw, qx, qy, qz);
+		const FQuat RawSensorQuat = FQuat(qx, qy, qz, qw);
+		FRotator TiltRotator = RawSensorQuat.Rotator();
+		FVector UnrealGyro(G_Roll, G_Pitch, G_Yaw);
+		FVector UnrealAccel(A_Roll, A_Pitch, A_Yaw);
+		FVector UnrealTilt = FVector(TiltRotator.Roll, TiltRotator.Pitch, TiltRotator.Yaw);
+
+		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, RawSensorQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
 	}
-} // namespace TouchGestureDirectRaw
+}
 
 void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const
 {
@@ -189,49 +216,8 @@ void DeviceManager::CheckEvents(FDeviceContext* Context, FInputContext& FrameInp
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Menu"), FrameInput.bStart);
 	CheckButtonInput(Context, UserId, InputDeviceId, FName("PS_Share"), FrameInput.bShare);
 
-	if (Context->bEnableAccelerometerAndGyroscope)
-	{
-		constexpr float RadDeg = DS_RAD_TO_DEG;
-		constexpr float GToMSq = GRAVITY_MS2;
-		float RawGyroX = FrameInput.Gyroscope.X;
-		float RawGyroY = FrameInput.Gyroscope.Y;
-		float RawGyroZ = FrameInput.Gyroscope.Z;
-		float RawAcclX = FrameInput.Accelerometer.X;
-		float RawAcclY = FrameInput.Accelerometer.Y;
-		float RawAcclZ = FrameInput.Accelerometer.Z;
-
-		// Z from X, X from Y, Y from Z
-		float G_Roll = RawGyroZ * RadDeg;
-		float G_Pitch = RawGyroX * RadDeg;
-		float G_Yaw = -RawGyroY * RadDeg;
-		float A_Roll = RawAcclZ * GToMSq;
-		float A_Pitch = RawAcclX * GToMSq;
-		float A_Yaw = -RawAcclY * GToMSq;
-
-		if (!FilterSensors.Contains(InputDeviceId))
-		{
-			TSharedPtr<FMadgwickAhrs> NewSensor = MakeShared<FMadgwickAhrs>(PluginSettings::MadgwickBeta);
-			FilterSensors.Add(InputDeviceId, NewSensor);
-		}
-
-		if (Context->bIsResetGyroscope)
-		{
-			FilterSensors[InputDeviceId]->Reset();
-			Context->bIsResetGyroscope = false;
-		}
-
-		FilterSensors[InputDeviceId]->UpdateImu(G_Roll, G_Pitch, G_Yaw, A_Roll, A_Pitch, A_Yaw, DeltaTime);
-
-		float qw, qx, qy, qz;
-		FilterSensors[InputDeviceId]->GetQuaternion(qw, qx, qy, qz);
-		const FQuat RawSensorQuat = FQuat(qx, qy, qz, qw);
-		FRotator TiltRotator = RawSensorQuat.Rotator();
-		FVector UnrealGyro(G_Roll, G_Pitch, G_Yaw);
-		FVector UnrealAccel(A_Roll, A_Pitch, A_Yaw);
-		FVector UnrealTilt = FVector(TiltRotator.Roll, TiltRotator.Pitch, TiltRotator.Yaw);
-
-		MessageHandler.Get().OnMotionDetected(UnrealTilt, UnrealGyro, RawSensorQuat.GetUpVector(), UnrealAccel, UserId, InputDeviceId);
-	}
+	SensorsImpl(Context, FrameInput, UserId, InputDeviceId, DeltaTime);
+	TouchpadImpl(Context, FrameInput, UserId, InputDeviceId, DeltaTime);
 }
 
 void DeviceManager::CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const
@@ -280,63 +266,6 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 			if (IGamepadTrigger* GamepadTrigger = GetTriggerInterface(ControllerId))
 			{
 				GamepadTrigger->SetResistance(FeedbackProperty->Position, FeedbackProperty->Strengh, static_cast<EDSGamepadHand>(HandMask));
-			}
-		}
-	}
-
-	if (Property->Name == FInputDeviceTriggerResistanceProperty::PropertyName())
-	{
-		if (const FInputDeviceTriggerResistanceProperty* FeedbackAdvancedProperty = static_cast<const FInputDeviceTriggerResistanceProperty*>(Property))
-		{
-			EInputDeviceTriggerMask HandMask = FeedbackAdvancedProperty->AffectedTriggers;
-			if (IGamepadTrigger* GamepadTrigger = GetTriggerInterface(ControllerId))
-			{
-				TArray<FString> HexBytes;
-				HexBytes.Reserve(10);
-
-				const double P1 = (FMath::Clamp(FeedbackAdvancedProperty->StartPosition, 0.f, 9.f) / 9.f) * 1023.0f;
-				const double P2 = (FMath::Clamp(FeedbackAdvancedProperty->EndPosition, P1, 9.f) / 9.f) * 1023.0f;
-				const double F1 = (FMath::Clamp(FeedbackAdvancedProperty->StartStrengh, 0.f, 8.f) / 8.f) * 255.f;
-				const double F2 = (FMath::Clamp(FeedbackAdvancedProperty->EndStrengh, 0.f, 8.f) / 8.f) * 255.f;
-
-				const int PIndex = FeedbackAdvancedProperty->StartPosition;
-				const int PIndexEnd = FeedbackAdvancedProperty->EndPosition;
-
-				uint32 Force = 0;
-				const double Slope = ((F2 - F1) / (P2 - P1));
-				for (int i = PIndex; i < PIndexEnd; i++)
-				{
-					Force |= static_cast<uint32>((F1 + (Slope * i)) * 1023.0f);
-				}
-
-				uint8 RawPos;
-				if (PIndex < 3)
-				{
-					RawPos = 255;
-				}
-				else if (PIndex < 5 && PIndex > 3)
-				{
-					RawPos = 230;
-				}
-				else
-				{
-					RawPos = 200;
-				}
-
-				std::vector<uint8_t> StrBytes;
-				StrBytes.push_back(0x21);
-				StrBytes.push_back(RawPos);
-				StrBytes.push_back(RawPos & 0xf0);
-				StrBytes.push_back(0x03);
-				StrBytes.push_back(Force >> 24 & 0xff);
-				StrBytes.push_back(Force >> 16 & 0xff);
-				StrBytes.push_back(Force >> 8 & 0xff);
-				StrBytes.push_back(Force >> 0 & 0x3f);
-				StrBytes.push_back(0);
-				StrBytes.push_back(0);
-				StrBytes.push_back(0);
-
-				GamepadTrigger->SetCustomTrigger(static_cast<EDSGamepadHand>(HandMask), StrBytes);
 			}
 		}
 	}
