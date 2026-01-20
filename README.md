@@ -82,7 +82,7 @@ Designed to bridge the gap left by generic controller support, this asset empowe
 
 ### Manual Installation
 
-To ensure the plugin compiles correctly within Unreal Engine, you must configure the [GamepadCore](https://github.com/rafaelvaloto/GamepadCore_) submodule to exclude example projects (Sparse Checkout).
+To ensure the plugin compiles correctly within Unreal Engine, you must configure the [GamepadCore](https://github.com/rafaelvaloto/GamepadCore_) submodule.
 
 Please run the following commands in your terminal (Git Bash, PowerShell, or CMD):
 ```bash
