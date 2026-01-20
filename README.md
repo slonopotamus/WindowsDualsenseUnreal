@@ -58,7 +58,7 @@ Designed to bridge the gap left by generic controller support, this asset empowe
 * 🎧 **Audio Haptics (USB & Wireless)**: Haptic feedback based on in-game audio.
 * 🎯 **Adaptive Triggers**: Full control over resistance, effect, and vibration on R2/L2 triggers.
 * 💡 **Lightbar Control**: Dynamically change the controller's LED color.
-* 🎤 **Microphone and Audio**: Manage the mute button LED, speaker volume, and headset audio.
+* 🎤 **Smart Mute Detection** — Automatic mute LED control, no coding required
 * ⚙️ **Force Feedback**: Native integration with Unreal Engine's Force Feedback system for standard motor vibration.
 * 🎮 **Multi-Controller Support**: Manage up to 4 controllers simultaneously.
 
