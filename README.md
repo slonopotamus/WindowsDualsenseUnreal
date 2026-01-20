@@ -41,7 +41,7 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 >
 > 🔄 **Upgrading from v1.x?** Please read our [**Migration Guide**](https://github.com/rafaelvaloto/Unreal-Dualsense/wiki/Migration-Guide:-Unreal%E2%80%90Dualsense-v1.x-to-v2.0).
 > 
-> ⚠️ **Version 2.0.0 has the controller's touchpad feature disabled because it wasn't working correctly.**
+> ⚠️ **Version 2.0.0 has the controller's touchpad feature disabled because it wasn't working correctly.** [See how to implement it yourself.](#-injecting-custom-device-logic-custom-devicemanager)
 
 
 ## 📖 About the Project
@@ -200,7 +200,7 @@ This complete workflow—from live console discovery to clean Blueprint implemen
 
 
 ## 💉 Injecting Custom Device Logic (Custom DeviceManager)
-Since version 2.1, you can also inject a custom implementation of the `DeviceManager`. This is useful if you want to implement your own input buffering, custom button mapping, or specialized haptic logic without modifying the plugin source.
+Since version 2.0.0, you can also inject a custom implementation of the `DeviceManager`. This is useful if you want to implement your own input buffering, custom button mapping, or specialized haptic logic without modifying the plugin source.
 
 > [!TIP]
 > To ensure that your custom implementation works with native Unreal Engine assets (like **Haptic Feedback Effects**, **Force Feedback Assets**, and **Device Properties**), your class must correctly implement or override the methods from `IInputDevice` and `IHapticDevice`.
@@ -241,9 +241,7 @@ protected:
         // [Your custom logic here]
 
         // Call base implementation if you still want default button/analog processing
-        DeviceManager::CheckEvents(Context, FrameInput, UserId, InputDeviceId, DeltaTime);
-        
-        // Or add logic after
+        // DeviceManager::CheckEvents(Context, FrameInput, UserId, InputDeviceId, DeltaTime);
     }
 
     virtual void SensorsImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const override
@@ -260,17 +258,58 @@ protected:
     virtual void TouchpadImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const override
     {
         // Example: Adding custom touchpad gesture or coordinate processing
-        // [Your custom touchpad logic here]
+        // Context->bEnableTouch or Context->bEnableGesture indicates which touchpad mode is active.
         
-        // Call base if you want default touchpad behavior, not implemented here
+        if (Context->bEnableTouch || Context->bEnableGesture)
+        {
+            // You can implement your own event logic or touchpad reading here.
+            // Example of available attributes in FrameInput (FInputContext):
+            
+            std::int32_t ID = FrameInput.TouchId;
+            std::int32_t FingerCount = FrameInput.TouchFingerCount;
+            std::uint8_t RawDir = FrameInput.DirectionRaw;
+            bool bTouching = FrameInput.bIsTouching;
+
+            DSCoreTypes::DSVector2D Radius = FrameInput.TouchRadius;
+            DSCoreTypes::DSVector2D Pos = FrameInput.TouchPosition;
+            DSCoreTypes::DSVector2D Relative = FrameInput.TouchRelative;
+
+            // [Your custom touchpad logic here]
+        }
     }
 
     // --- Native Asset Support Example ---
-
     virtual void SetHapticFeedbackValues(int32 ControllerId, int32 Hand, const FHapticFeedbackValues& Values) override
     {
-        // Custom logic for Haptic Feedback assets
-        DeviceManager::SetHapticFeedbackValues(ControllerId, Hand, Values);
+        // You can implement your own event logic for Haptic Feedback assets
+        if (IGamepadAudioHaptics* GamepadAudioHaptics = GetAudioHapticsInterface(ControllerId))
+        {
+	        // Example:
+	    	GamepadAudioHaptics->AudioHapticUpdate(<AudioData>)
+        }
+	    
+        /**
+         * Updates the audio haptic feedback using the provided audio data.
+         * This method is expected to be implemented by subclasses to process
+         * and utilize the given audio data for triggering haptic feedback.
+         *
+         * @param AudioData A vector of unsigned 8-bit integers representing
+         *                  the audio data to be used for haptic feedback.
+         *                  The data is typically interpreted and processed
+         *                  to generate corresponding haptic effects.
+         */
+
+        /**
+         * Updates the audio haptic feedback using the provided multi-channel audio data.
+         * This method should be implemented by subclasses to process and utilize
+         * the given multi-dimensional audio data for delivering precise haptic effects.
+         *
+         * @param AudioData A two-dimensional vector where each inner vector represents
+         *                  audio samples for a specific channel. The samples are
+         *                  represented as 16-bit signed integers. The data is intended
+         *                  to be processed to create corresponding multi-channel haptic
+         *                  feedback effects.
+         */
     }
 };
 ```
