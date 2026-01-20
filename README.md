@@ -32,8 +32,9 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
   <a href="#-getting-started">Getting Started</a> •
   <a href="#-basic-usage">Basic Usage</a> •
   <a href="#-example-project-arena-shooter-ue-56">Example Project</a> •
-  <a href="#-extending-for-other-platforms-eg-playstation">Extending</a> •
-  <a href="#-live-haptic-prototyping-console-to-blueprint">Prototyping</a>
+  <a href="#%EF%B8%8F-extending-for-other-platforms-eg-playstation">Extending</a> •
+  <a href="#-live-haptic-prototyping-console-to-blueprint">Prototyping</a> •
+  <a href="#-sponsor-the-project">💖 Sponsor the Project</a>
 </p>
 
 > [!IMPORTANT]
@@ -443,6 +444,28 @@ Special thanks to the community members who helped improve this plugin:
 * **[yncat](https://github.com/yncat)**: For the extensive research and implementation logic regarding **USB Audio Haptics**, which was crucial for supporting high-fidelity haptics via USB ([Issue #105](https://github.com/rafaelvaloto/Unreal-Dualsense/issues/105)).
 
 A special thanks to the Unreal Engine team for providing the Arena Shooter templates, which served as an excellent foundation for the example project demonstrating this plugin's features.
+
+## 💖 Sponsor the Project
+
+Hi, I'm Rafael.
+
+I develop open-source tools like Unreal-Dualsense to bring "AAA" features—native haptic feedback, adaptive triggers, and advanced input—to every developer, from Indies to major studios.
+
+Why should your Studio sponsor?
+
+🔒 NDA Compliance & Safety:
+
+I engineered a Policy-Based Architecture specifically to democratize access to advanced features without compromising legal boundaries. The plugin creates a safe "bridge": you can inject your licensed, proprietary SDK layers (like Sony's official middleware) directly from your private project code. My open-source code handles the logic; your private code handles the drivers. Zero risk of leaking proprietary code.
+
+⚡ Engineering Efficiency:
+
+Stop reinventing the wheel. I handle the heavy lifting of complex HID communication, memory hooking, and input buffering. Your engineering team saves hundreds of hours and can focus on gameplay implementation rather than driver maintenance.
+
+🚀 Accelerated Workflow:
+
+This is a productivity tool. It offers fast, real-time prototyping, allowing designers to test tactile sensations and adaptive triggers instantly within Unreal Engine. Focus on Game Feel, not boilerplates.
+
+
 ## ⚖️ Disclaimer and Trademarks
 
 This software is an independent and unofficial project. It is **not** affiliated, associated, authorized, endorsed by, or in any way officially connected with Sony Interactive Entertainment Inc., Microsoft Corporation, Apple Inc., Epic Games, Unity Technologies, the Godot Engine project, or the Open 3D Foundation.
