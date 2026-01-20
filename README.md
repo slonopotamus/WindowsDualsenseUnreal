@@ -429,6 +429,38 @@ Contributions are welcome! If you have ideas, suggestions, or bug fixes, feel fr
 ## 📄 License
 
 This project is distributed under the MIT License. See the `LICENSE` file for more details.
+
+---
+## 💖 Sponsor the Project 
+<div align="center">
+
+<a href="https://github.com/sponsors/rafaelvaloto">
+  <img src="https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=ea4aaa&style=for-the-badge" height="45" alt="Sponsor Button">
+</a>
+
+<p><b>Help sustain open-source "AAA" tools for developers.</b></p>
+
+</div>
+Hi, I'm Rafael.
+
+I develop open-source tools like Unreal-Dualsense to bring "AAA" features—native haptic feedback, adaptive triggers, and advanced input—to every developer, from Indies to major studios.
+
+Why should your Studio sponsor?
+
+🔒 NDA Compliance & Safety:
+
+I engineered a Policy-Based Architecture specifically to democratize access to advanced features without compromising legal boundaries. The plugin creates a safe "bridge": you can inject your licensed, proprietary SDK layers (like Sony's official middleware) directly from your private project code. My open-source code handles the logic; your private code handles the drivers. Zero risk of leaking proprietary code.
+
+⚡ Engineering Efficiency:
+
+Stop reinventing the wheel. I handle the heavy lifting of complex HID communication, memory hooking, and input buffering. Your engineering team saves hundreds of hours and can focus on gameplay implementation rather than driver maintenance.
+
+🚀 Accelerated Workflow:
+
+This is a productivity tool. It offers fast, real-time prototyping, allowing designers to test tactile sensations and adaptive triggers instantly within Unreal Engine. Focus on Game Feel, not boilerplates.
+
+
+---
 ## ⭐ Credits and Acknowledgments
 
 The foundation of this plugin was built upon the research and code from several amazing projects in the community:
@@ -448,26 +480,7 @@ Special thanks to the community members who helped improve this plugin:
 
 A special thanks to the Unreal Engine team for providing the Arena Shooter templates, which served as an excellent foundation for the example project demonstrating this plugin's features.
 
-## 💖 Sponsor the Project
-
-Hi, I'm Rafael.
-
-I develop open-source tools like Unreal-Dualsense to bring "AAA" features—native haptic feedback, adaptive triggers, and advanced input—to every developer, from Indies to major studios.
-
-Why should your Studio sponsor?
-
-🔒 NDA Compliance & Safety:
-
-I engineered a Policy-Based Architecture specifically to democratize access to advanced features without compromising legal boundaries. The plugin creates a safe "bridge": you can inject your licensed, proprietary SDK layers (like Sony's official middleware) directly from your private project code. My open-source code handles the logic; your private code handles the drivers. Zero risk of leaking proprietary code.
-
-⚡ Engineering Efficiency:
-
-Stop reinventing the wheel. I handle the heavy lifting of complex HID communication, memory hooking, and input buffering. Your engineering team saves hundreds of hours and can focus on gameplay implementation rather than driver maintenance.
-
-🚀 Accelerated Workflow:
-
-This is a productivity tool. It offers fast, real-time prototyping, allowing designers to test tactile sensations and adaptive triggers instantly within Unreal Engine. Focus on Game Feel, not boilerplates.
-
+---
 
 ## ⚖️ Disclaimer and Trademarks
 
