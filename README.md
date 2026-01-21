@@ -398,7 +398,12 @@ This plugin is built upon the **GamepadCore** framework, a high-performance C++2
 * **Core Logic**: GamepadCore (C++20 Standard).
 * **Platforms**: Windows (HID API), with extensible support for Linux, macOS, and PlayStation® SDKs.
 
+## 🤝 Core Maintainers
 
+This plugin is actively maintained by:
+
+* **[Rafael Valoto](https://github.com/rafaelvaloto)** – Original author and lead developer
+* **[Marat Radchenko (@slonopotamus)](https://github.com/slonopotamus)** – Senior Engineer, enterprise-level and build systems
 
 ---
 ## 💖 Sponsor the Project
