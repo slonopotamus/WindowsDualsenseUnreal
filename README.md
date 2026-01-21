@@ -391,7 +391,7 @@ public class NewDeveloper : ModuleRules
 This plugin is actively maintained by:
 
 * **[Rafael Valoto](https://github.com/rafaelvaloto)** – Original author and lead developer
-* **[Marat Radchenko (@slonopotamus)](https://github.com/slonopotamus)** – Senior Engineer, enterprise-level and build systems
+* **[Marat Radchenko (@slonopotamus)](https://github.com/slonopotamus)** – Senior Engineer (CTO), enterprise-level build systems, CI/CD, and cross-platform compilation
 
 ---
 ## 💖 Sponsor the Project
