@@ -37,7 +37,7 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 <a href="#-injecting-custom-device-logic-custom-devicemanager">Injecting Custom Device</a>
   <br>
   <br>
-  <a href="#-sponsor-the-project">💖 Why should your Studio sponsor this project? 💖</a>
+  <a href="#-core-maintainers">💖 Why should your Studio sponsor this project? 💖</a>
 </p>
 
 > [!IMPORTANT]
@@ -385,19 +385,7 @@ public class NewDeveloper : ModuleRules
     }
 }
 ```
-
-## 🏗️ Core Architecture: [GamepadCore 🕹️](https://github.com/rafaelvaloto/Gamepad-Core)
-
-This plugin is built upon the **GamepadCore** framework, a high-performance C++20 library designed for cross-platform controller support. By using **GamepadCore** as its foundation, this plugin inherits several key architectural benefits:
-
-* **Policy-Based Design**: Direct separation of hardware logic from the Unreal Engine interface.
-* **Zero-Overhead Abstraction**: Uses C++ templates and concepts instead of heavy virtual dispatch for low-level I/O operations.
-* **Compile-Time Validation**: Leverages C++20 Concepts to ensure that any custom hardware implementation satisfies all requirements before the code even runs.
-
-### 🛠️ Technical Stack
-* **Core Logic**: GamepadCore (C++20 Standard).
-* **Platforms**: Windows (HID API), with extensible support for Linux, macOS, and PlayStation® SDKs.
-
+---
 ## 🤝 Core Maintainers
 
 This plugin is actively maintained by:
