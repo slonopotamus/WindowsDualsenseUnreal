@@ -3,6 +3,7 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
+#if PLATFORM_WINDOWS
 #include "GCore/Types/Structs/Config/GamepadCalibration.h"
 #include "GImplementations/Utils/GamepadSensors.h"
 #include "Helpers/DualSenseLog.h"
@@ -355,3 +356,4 @@ void FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 	DualSenseCalibrationSensors(FeatureBuffer, Calibration);
 	Context->Calibration = Calibration;
 }
+#endif PLATFORM_WINDOWS

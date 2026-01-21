@@ -5,7 +5,7 @@
 #pragma once
 #include "GCore/Templates/TGenericHardwareInfo.h"
 #include "WindowsDeviceInfo.h"
-
+#ifdef _WIN32
 namespace FWindowsPlatform
 {
 	struct FWindowsHardwarePolicy;
@@ -50,3 +50,4 @@ namespace FWindowsPlatform
 		}
 	};
 } // namespace FWindowsPlatform
+#endif

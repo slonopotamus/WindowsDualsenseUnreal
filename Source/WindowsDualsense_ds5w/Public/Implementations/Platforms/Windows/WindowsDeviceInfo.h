@@ -2,6 +2,7 @@
 // Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
 // Planned Release Year: 2025
 #pragma once
+#if PLATFORM_WINDOWS
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -171,3 +172,4 @@ public:
 		}
 	}
 };
+#endif

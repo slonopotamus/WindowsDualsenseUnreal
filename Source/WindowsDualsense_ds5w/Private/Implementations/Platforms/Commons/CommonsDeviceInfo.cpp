@@ -7,7 +7,7 @@
 #ifdef __unix__
 #include "API/SonyGamepadProxyHelpers.h"
 #include "GCore/Types/ECoreGamepad.h"
-#include "GCore/Types/Structs/Config/GamepadSensors.h"
+#include "GCore/Types/Structs/Config/GamepadCalibration.h"
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "GImplementations/Utils/GamepadSensors.h"
 #include "SDL_hidapi.h"

@@ -6,7 +6,11 @@
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "AudioDevice.h"
+#if PLATFORM_WINDOWS
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
+#elif PLATFORM_LINUX
+#include "Implementations/Platforms/Commons/CommonsDeviceInfo.h"
+#endif
 #include "Misc/App.h"
 #include "Runtime/Launch/Resources/Version.h"
 
@@ -61,7 +65,11 @@ void FHapticsRegistry::CreateListenerForDevice(int32 DeviceId, USoundSubmix* Sub
 			if (!Ctx->AudioContext || !Ctx->AudioContext->IsValid())
 			{
 				Ctx->AudioContext = std::make_shared<FAudioDeviceContext>();
+#if PLATFORM_WINDOWS
 				FWindowsDeviceInfo::InitializeAudioDevice(Ctx);
+#elif PLATFORM_LINUX
+				FCommonsDeviceInfo::InitializeAudioDevice(Ctx);
+#endif
 			}
 		}
 	}
