@@ -38,6 +38,10 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
   <br>
   <br>
   <a href="#-core-maintainers">💖 Why should your Studio sponsor this project? 💖</a>
+	<br>
+<a href="#-core-maintainers">🏛️ LTS & Legacy Support (UE 4.27 - 5.1) </a>
+	<br>
+	<br>
 </p>
 
 > [!IMPORTANT]
@@ -424,6 +428,28 @@ The plugin uses a Policy-Based Design that acts as a "bridge":  your NDA-covered
 
 **Looking for custom features or priority support?**
 📧 Reach out via [GitHub Sponsors](https://github.com/sponsors/rafaelvaloto) or [Discussions](https://github.com/rafaelvaloto/Unreal-Dualsense/discussions)
+
+---
+## 🏛️ LTS & Legacy Support (UE 4.27 - 5.1)
+
+Are you shipping a title on **Unreal Engine 4.27** or **5.0/5.1** and need reliable DualSense support?
+
+Thanks to our new [Policy-Based Architecture](#-about-the-project), we have successfully backported the entire **v2.0.0 core** to older engine versions. This means you get the stability, zero-overhead performance, and features of the modern plugin without upgrading your engine.
+
+> [!TIP]
+> **Why use this backport instead of v1.x?**
+> * **Stability**: Uses the new `GamepadHardwareBridge` architecture.
+> * **Features**: Includes Audio Haptics (USB/BT) and improved Adaptive Triggers.
+> * **Safety**: Full NDA-Safe implementation.
+
+### 🔒 How to Access LTS Builds
+Access to the **Unreal Engine 4.27 LTS repository** source code is available exclusively to our **Studio Sponsors**.
+
+<div align="center">
+  <a href="https://github.com/sponsors/rafaelvaloto">
+    <img src="https://img.shields.io/static/v1?label=Get%20UE%204.27%20Support&message=Become%20a%20Sponsor&color=blue&style=for-the-badge&logo=github" alt="Sponsor for LTS Access">
+  </a>
+</div>
 
 ---
 ## 📄 License
