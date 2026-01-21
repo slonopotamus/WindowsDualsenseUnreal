@@ -4,21 +4,21 @@
 Integrate all the features of Sony's DualSense™ and DualShock 4® controllers into your Unreal Engine project.
 <br />
 <br />
-<a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Report Bug</a>
+<a href="https://github.com/rafaelvaloto/Unreal-Dualsense/issues">Report Bug</a>
 ·
-<a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/issues">Suggest a Feature
+<a href="https://github.com/rafaelvaloto/Unreal-Dualsense/issues">Suggest a Feature
 </a>
 ·
-<a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki">Documentation
+<a href="https://github.com/rafaelvaloto/Unreal-Dualsense/wiki">Documentation
 </a>
 </p>
 
 <p align="center">
-<a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/releases">
-    <img src="https://img.shields.io/github/v/release/rafaelvaloto/WindowsDualsenseUnreal?style=for-the-badge&logo=github" alt="Latest Release">
+<a href="https://github.com/rafaelvaloto/Unreal-Dualsense/releases">
+    <img src="https://img.shields.io/github/v/release/rafaelvaloto/Unreal-Dualsense?style=for-the-badge&logo=github" alt="Latest Release">
 </a>
-<a href="https://github.com/rafaelvaloto/WindowsDualsenseUnreal/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/rafaelvaloto/WindowsDualsenseUnreal?style=for-the-badge" alt="License">
+<a href="https://github.com/rafaelvaloto/Unreal-Dualsense/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/rafaelvaloto/Unreal-Dualsense?style=for-the-badge" alt="License">
 </a>
 <img src="https://img.shields.io/badge/Unreal%20Engine-5.2+-blue?style=for-the-badge&logo=unrealengine" alt="Unreal Engine 5.x">
 <br/>
@@ -91,7 +91,7 @@ To ensure the plugin compiles correctly within Unreal Engine, you must configure
 Please run the following commands in your terminal (Git Bash, PowerShell, or CMD):
 ```bash
 # 1. Clone the repository recursively
-git clone --recursive https://github.com/rafaelvaloto/WindowsDualsenseUnreal.git
+git clone --recursive https://github.com/rafaelvaloto/Unreal-Dualsense.git
 
 # 2. Enter the repository folder
 cd Unreal-Dualsense
@@ -401,7 +401,7 @@ This plugin is built upon the **GamepadCore** framework, a high-performance C++2
 
 
 ---
-## 💖 Sponsor the Project 
+## 💖 Sponsor the Project
 <div align="center">
 
 <a href="https://github.com/sponsors/rafaelvaloto">
@@ -411,35 +411,31 @@ This plugin is built upon the **GamepadCore** framework, a high-performance C++2
 <p><b>Help sustain open-source "AAA" tools for developers.</b></p>
 
 </div>
-Hi, I'm Rafael.
+<br>
+This is a professional-grade, open-source tool built to bring advanced controller features to all developers—from indies to AAA studios.
 
-I develop open-source tools like Unreal-Dualsense to bring "AAA" features—native haptic feedback, adaptive triggers, and advanced input—to every developer, from Indies to major studios.
+### 🔒 NDA-Safe Architecture (PlayStation SDK Compatible)
 
-Why should your Studio sponsor?
+**You can inject your licensed/proprietary SDKs without modifying the plugin's source code.**
 
-**🔒 NDA Compliance & Safety:**
+The plugin uses a Policy-Based Design that acts as a "bridge":  your NDA-covered platform code (PlayStation SDK, custom HID implementations, etc.) stays in **your project**, not in the plugin.  This means: 
+- ✅ No NDA violations or license conflicts
+- ✅ Official Sony SDKs can be integrated safely
+- ✅ Your proprietary code remains under your control
 
-I engineered a Policy-Based Architecture specifically to democratize access to advanced features without compromising legal boundaries. The plugin creates a safe "bridge": you can inject your licensed, proprietary SDK layers (like Sony's official middleware) directly from your private project code. My open-source code handles the logic; your private code handles the drivers. Zero risk of leaking proprietary code.
+### Why Studios Choose This Plugin:
 
-**🌍 Seamless Cross-Platform Support:**
+- **🌍 Cross-Platform API** – Unified input logic for Windows, Linux, macOS, and PlayStation
+- **⚡ Production-Ready** – C++20 zero-overhead architecture, used in shipped titles
+- **🚀 Faster Development** – Real-time haptic prototyping via console commands
 
-Write your input logic once, deploy everywhere. The API is unified across **Windows, Linux, macOS, and PlayStation**. You don't need separate code paths or conditional logic for different platforms—the plugin handles the abstraction, ensuring your haptics and triggers work consistently whether you are testing on a Mac or shipping to a console.
-
-**⚡ Engineering Efficiency:**
-
-Stop reinventing the wheel. I handle the heavy lifting of complex HID communication, memory hooking, and input buffering. Your engineering team saves hundreds of hours and can focus on gameplay implementation rather than driver maintenance.
-
-
-
-**🚀 Accelerated Workflow:**
-
-This is a productivity tool. It offers fast, real-time prototyping, allowing designers to test tactile sensations and adaptive triggers instantly within Unreal Engine. Focus on Game Feel, not boilerplates.
+**Looking for custom features or priority support?**
+📧 Reach out via [GitHub Sponsors](https://github.com/sponsors/rafaelvaloto) or [Discussions](https://github.com/rafaelvaloto/Unreal-Dualsense/discussions)
 
 ---
 ## 📄 License
 
 This project is distributed under the MIT License. See the `LICENSE` file for more details.
-
 
 ## 🤝 How to Contribute
 
