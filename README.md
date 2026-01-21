@@ -37,7 +37,7 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 <a href="#-injecting-custom-device-logic-custom-devicemanager">Injecting Custom Device</a>
   <br>
   <br>
-  <a href="#-sponsor-the-project">💖 Sponsor the Project</a>
+  <a href="#-sponsor-the-project">💖 Why should your Studio sponsor this project? 💖</a>
 </p>
 
 > [!IMPORTANT]
@@ -422,14 +422,6 @@ This plugin is built upon the **GamepadCore** framework, a high-performance C++2
 
 
 
-## 🤝 How to Contribute
-
-Contributions are welcome! If you have ideas, suggestions, or bug fixes, feel free to open an *Issue* or submit a *Pull Request*.
-
-## 📄 License
-
-This project is distributed under the MIT License. See the `LICENSE` file for more details.
-
 ---
 ## 💖 Sponsor the Project 
 <div align="center">
@@ -447,18 +439,33 @@ I develop open-source tools like Unreal-Dualsense to bring "AAA" features—nati
 
 Why should your Studio sponsor?
 
-🔒 NDA Compliance & Safety:
+**🔒 NDA Compliance & Safety:**
 
 I engineered a Policy-Based Architecture specifically to democratize access to advanced features without compromising legal boundaries. The plugin creates a safe "bridge": you can inject your licensed, proprietary SDK layers (like Sony's official middleware) directly from your private project code. My open-source code handles the logic; your private code handles the drivers. Zero risk of leaking proprietary code.
 
-⚡ Engineering Efficiency:
+**🌍 Seamless Cross-Platform Support:**
+
+Write your input logic once, deploy everywhere. The API is unified across **Windows, Linux, macOS, and PlayStation**. You don't need separate code paths or conditional logic for different platforms—the plugin handles the abstraction, ensuring your haptics and triggers work consistently whether you are testing on a Mac or shipping to a console.
+
+**⚡ Engineering Efficiency:**
 
 Stop reinventing the wheel. I handle the heavy lifting of complex HID communication, memory hooking, and input buffering. Your engineering team saves hundreds of hours and can focus on gameplay implementation rather than driver maintenance.
 
-🚀 Accelerated Workflow:
+
+
+**🚀 Accelerated Workflow:**
 
 This is a productivity tool. It offers fast, real-time prototyping, allowing designers to test tactile sensations and adaptive triggers instantly within Unreal Engine. Focus on Game Feel, not boilerplates.
 
+---
+## 📄 License
+
+This project is distributed under the MIT License. See the `LICENSE` file for more details.
+
+
+## 🤝 How to Contribute
+
+Contributions are welcome! If you have ideas, suggestions, or bug fixes, feel free to open an *Issue* or submit a *Pull Request*.
 
 ---
 ## ⭐ Credits and Acknowledgments
