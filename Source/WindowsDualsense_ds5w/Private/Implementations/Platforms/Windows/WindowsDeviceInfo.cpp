@@ -182,8 +182,23 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 		DeviceContext->Handle = DeviceHandle;
 		return false;
 	}
+	
+	HANDLE DuplicatedHandle = INVALID_HANDLE_VALUE;
+	if (DuplicateHandle(GetCurrentProcess(), DeviceHandle, GetCurrentProcess(), &DuplicatedHandle, 0, FALSE, DUPLICATE_SAME_ACCESS))
+	{
+		CloseHandle(DeviceHandle);
+		DeviceContext->Handle = DuplicatedHandle;
+	}
+	else
+	{
+		DeviceContext->Handle = DeviceHandle;
+	}
 
-	DeviceContext->Handle = DeviceHandle;
+	if (DeviceContext->DeviceType == EDSDeviceType::DualShock4)
+	{
+		return true;
+	}
+
 	ConfigureFeatures(DeviceContext);
 	return true;
 }
