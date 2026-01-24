@@ -17,7 +17,7 @@
  * on the Windows platform. It integrates with the Unreal Engine input device system, allowing
  * for seamless management and input device creation.
  */
-class FWindowsDualsense_ds5wModule : public IInputDeviceModule
+class WINDOWSDUALSENSE_DS5W_API FWindowsDualsense_ds5wModule : public IInputDeviceModule
 {
 	/**
 	 * Initializes the FWindowsDualsense_ds5wModule during the startup of the module.

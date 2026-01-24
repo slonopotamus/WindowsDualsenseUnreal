@@ -123,9 +123,9 @@ void DeviceManager::SensorsImpl(FDeviceContext* Context, FInputContext& FrameInp
 		float G_Roll = RawGyroZ * RadDeg;
 		float G_Pitch = RawGyroX * RadDeg;
 		float G_Yaw = -RawGyroY * RadDeg;
-		float A_Roll = RawAcclZ * GToMSq;
-		float A_Pitch = RawAcclX * GToMSq;
-		float A_Yaw = -RawAcclY * GToMSq;
+		float A_Roll = RawAcclZ;
+		float A_Pitch = RawAcclX;
+		float A_Yaw = -RawAcclY;
 
 		if (!FilterSensors.Contains(InputDeviceId))
 		{

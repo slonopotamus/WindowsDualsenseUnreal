@@ -217,7 +217,7 @@ Since version 2.0.0, you can also inject a custom implementation of the `DeviceM
 
 If you want your custom manager to support native Unreal features, ensure it implements/overrides:
 
-*   **`IHapticDevice`**: Required for `UHapticFeedbackEffect_Curve` and other haptic assets.
+*   **`IHapticDevice`**: haptic assets.
     *   `SetHapticFeedbackValues`: Processes frequency and amplitude values from assets.
     *   `GetHapticFrequencyRange`: Determines the valid frequency range supported by the device.
     *   `GetHapticAmplitudeScale`: Returns the scaling factor for amplitude mapping.
@@ -232,47 +232,24 @@ If you want your custom manager to support native Unreal features, ensure it imp
 
 1. Create your custom class inheriting from `DeviceManager`:
 ```cpp
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#include "MyProject.h"
+
 #include "DeviceManager.h"
+#include "Modules/ModuleManager.h"
+#include "WindowsDualsense_ds5w.h"
 
 class FMyCustomDeviceManager : public DeviceManager
 {
 public:
-    using DeviceManager::DeviceManager; // Use base constructor
+    using DeviceManager::DeviceManager;
 
-protected:
-    // To completely replace the default logic, do NOT call the base implementation.
-    // To extend the default logic, call DeviceManager::[MethodName] where appropriate.
-    
-    virtual void CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const override
+    virtual void TouchpadImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId,
+                              const FInputDeviceId InputDeviceId, float DeltaTime) const override
     {
-        // Example: Adding custom logic before the default processing
-        // [Your custom logic here]
-
-        // Call base implementation if you still want default button/analog processing
-        // DeviceManager::CheckEvents(Context, FrameInput, UserId, InputDeviceId, DeltaTime);
-    }
-
-    virtual void SensorsImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const override
-    {
-        // Example: Completely replacing the sensor logic with your own filtering
-        // (Don't call DeviceManager::SensorsImpl in this case)
-        
-        if (Context->bEnableAccelerometerAndGyroscope)
-        {
-             // Your custom IMU/Motion logic...
-        }
-    }
-    
-    virtual void TouchpadImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const override
-    {
-        // Example: Adding custom touchpad gesture or coordinate processing
-        // Context->bEnableTouch or Context->bEnableGesture indicates which touchpad mode is active.
-        
         if (Context->bEnableTouch || Context->bEnableGesture)
         {
-            // You can implement your own event logic or touchpad reading here.
-            // Example of available attributes in FrameInput (FInputContext):
-            
             std::int32_t ID = FrameInput.TouchId;
             std::int32_t FingerCount = FrameInput.TouchFingerCount;
             std::uint8_t RawDir = FrameInput.DirectionRaw;
@@ -282,35 +259,53 @@ protected:
             DSCoreTypes::DSVector2D Pos = FrameInput.TouchPosition;
             DSCoreTypes::DSVector2D Relative = FrameInput.TouchRelative;
 
-            // [Your custom touchpad logic here]
+            UE_LOG(LogTemp, Log, TEXT("Custom Touchpad Event: ID=%d, FingerCount=%d, RawDir=%d, Touching=%d"),
+                   ID, FingerCount, RawDir, bTouching);
+            UE_LOG(LogTemp, Log, TEXT("Custom Touchpad Radius: x:%f y:%f"), Radius.X, Radius.Y);
+            UE_LOG(LogTemp, Log, TEXT("Custom Touchpad Pos: x:%f y:%f"), Pos.X, Pos.Y);
+            UE_LOG(LogTemp, Log, TEXT("Custom Touchpad Relative: x:%f y:%f"), Relative.X, Relative.Y);
         }
-    }
-
-    // --- Native Asset Support Example ---
-    virtual void SetHapticFeedbackValues(int32 ControllerId, int32 Hand, const FHapticFeedbackValues& Values) override
-    {
-        // You can implement your own event logic for Haptic Feedback assets
-        if (IGamepadAudioHaptics* GamepadAudioHaptics = GetAudioHapticsInterface(ControllerId))
-        {
-	        // Example:
-	    	GamepadAudioHaptics->AudioHapticUpdate(<AudioData>)
-        }
-	   
     }
 };
+
 ```
 
 2. Register your custom factory in your Game Module:
 ```cpp
-#include "WindowsDualsense_ds5w.h"
-#include "FMyCustomDeviceManager.h"
+class FMyProject : public FDefaultGameModuleImpl {
+public:
+    virtual bool IsGameModule() const override { return true; }
 
-void FMyGameModule::StartupModule()
+    virtual void StartupModule() override {
+        FWindowsDualsense_ds5wModule::SetCustomInputDeviceFactory([](const TSharedRef<FGenericApplicationMessageHandler>& InHandler)
+        {
+            UE_LOG(LogTemp, Log, TEXT("MyProject Game Module: Init FMyCustomDeviceManager."));
+            return MakeShared<FMyCustomDeviceManager>(InHandler);
+        });
+    }
+};
+
+IMPLEMENT_PRIMARY_GAME_MODULE( FMyProject, MyProject, "MyProject" );
+```
+
+
+3. Build Configuration
+   Ensure your project's Build.cs includes the plugin module and enables C++20 support:
+```csharp
+public class NewDeveloper : ModuleRules
 {
-    FWindowsDualsense_ds5wModule::SetCustomInputDeviceFactory([](const TSharedRef<FGenericApplicationMessageHandler>& InHandler)
+    public NewDeveloper(ReadOnlyTargetRules Target) : base(Target)
     {
-        return MakeShared<FMyCustomDeviceManager>(InHandler);
-    });
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        
+        // Required for Concepts and Policy-Based architecture
+        CppStandard = CppStandardVersion.Cpp20;
+
+        PublicDependencyModuleNames.AddRange(new string[] { 
+            ...
+            "WindowsDualsense_ds5w" 
+        });
+    }
 }
 ```
 
