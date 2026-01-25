@@ -45,11 +45,13 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 </p>
 
 > [!IMPORTANT]
-> **v2.0.0-pre-release is now available!** We are testing major architecture improvements. Check it out in the [Releases](https://github.com/rafaelvaloto/Unreal-Dualsense/releases) section and help us with feedback.
->
-> 🔄 **Upgrading from v1.x?** Please read our [**Migration Guide**](https://github.com/rafaelvaloto/Unreal-Dualsense/wiki/Migration-Guide:-Unreal%E2%80%90Dualsense-v1.x-to-v2.0).
+> **v2.0.2 is now available!**
 > 
-> ⚠️ **Version 2.0.0 has the controller's touchpad feature disabled because it wasn't working correctly.** [See how to implement it yourself.](#-injecting-custom-device-logic-custom-devicemanager)
+> You can now extend the plugin to implement custom logic for the **Gyroscope, Accelerometer, and Touchpad**, or even integrate native Unreal Engine assets. 
+> - **Extensible Architecture:** The plugin features a pre-configured IMU filter that can be fully overridden.
+> - **Custom Implementation:** Tailor the device behavior to your project's needs in the [Customization Section](#-injecting-custom-device-logic-custom-devicemanager).
+> 
+> 🔄 **Upgrading from v1.x?** Please read our [Migration Guide](https://github.com/rafaelvaloto/Unreal-Dualsense/wiki/Migration-Guide:-Unreal%E2%80%90Dualsense-v1.x-to-v2.0).
 
 
 ## 📖 About the Project
