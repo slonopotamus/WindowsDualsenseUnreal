@@ -194,11 +194,6 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 		DeviceContext->Handle = DeviceHandle;
 	}
 
-	if (DeviceContext->DeviceType == EDSDeviceType::DualShock4)
-	{
-		return true;
-	}
-
 	ConfigureFeatures(DeviceContext);
 	return true;
 }
@@ -356,19 +351,58 @@ void FWindowsDeviceInfo::ProcessAudioHaptic(FDeviceContext* Context)
 
 void FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 {
-	unsigned char FeatureBuffer[41] = {0};
-	std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
-
-	FeatureBuffer[0] = 0x05;
-	if (!HidD_GetFeature(Context->Handle, FeatureBuffer, 41))
-	{
-		InvalidateHandle(Context);
-		return;
-	}
-
 	using namespace FGamepadSensors;
 	FGamepadCalibration Calibration;
-	DualSenseCalibrationSensors(FeatureBuffer, Calibration);
-	Context->Calibration = Calibration;
+
+	if (Context->DeviceType == EDSDeviceType::DualShock4)
+	{
+		if (Context->ConnectionType == EDSDeviceConnection::Usb)
+		{
+			unsigned char FeatureBuffer[37] = {0};
+			std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
+
+			FeatureBuffer[0] = 0x02;
+			if (!HidD_GetFeature(Context->Handle, FeatureBuffer, 37))
+			{
+				const unsigned long Error = GetLastError();
+				return;
+			}
+
+			DualShockCalibrationSensors(FeatureBuffer, Calibration, Context->ConnectionType);
+		}
+		else
+		{
+
+			unsigned char FeatureBuffer[41] = {0};
+			std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
+
+			FeatureBuffer[0] = 0x05;
+			if (!HidD_GetFeature(Context->Handle, FeatureBuffer, 41))
+			{
+				const unsigned long Error = GetLastError();
+				return;
+			}
+
+			DualShockCalibrationSensors(FeatureBuffer, Calibration, Context->ConnectionType);
+		}
+
+		Context->Calibration = Calibration;
+	}
+	else
+	{
+		unsigned char FeatureBuffer[41] = {0};
+		std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
+
+		FeatureBuffer[0] = 0x05;
+		if (!HidD_GetFeature(Context->Handle, FeatureBuffer, 41))
+		{
+			const unsigned long Error = GetLastError();
+			return;
+		}
+
+		DualSenseCalibrationSensors(FeatureBuffer, Calibration);
+		Context->Calibration = Calibration;
+	}
 }
+
 #endif PLATFORM_WINDOWS

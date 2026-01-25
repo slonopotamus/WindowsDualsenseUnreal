@@ -40,15 +40,17 @@ public:
 	 */
 	static void ProcessAudioHaptic(FDeviceContext* Context);
 	/**
-	 * @brief Configures Bluetooth-specific features for a given HID device.
+	 * Configures the features of the device using the specified device context.
 	 *
-	 * This method is used to initialize and set up Bluetooth-related features on a HID device.
-	 * It communicates with the device using a feature report and updates the provided device context accordingly.
+	 * This static method is responsible for enabling or adjusting the features
+	 * of the device associated with the provided context. It leverages the context
+	 * to access and modify the underlying device's capabilities as needed.
 	 *
-	 * @param Context A reference to the device context object that holds device-specific settings and state information.
-	 * @return A boolean indicating whether the Bluetooth feature configuration was successful (true) or failed (false).
+	 * @param Context A pointer to the FDeviceContext object that represents the
+	 *                context of the device being configured. Must be a valid,
+	 *                non-null pointer.
 	 */
-	static bool ConfigureFeatures(FDeviceContext* Context);
+	static void ConfigureFeatures(FDeviceContext* Context);
 	/**
 	 * Reads device information using the provided device context.
 	 *

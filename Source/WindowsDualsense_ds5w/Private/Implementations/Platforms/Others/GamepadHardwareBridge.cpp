@@ -15,7 +15,6 @@ void FGamepadHardwareBridge::InjectHardwarePlatform(std::unique_ptr<IPlatformHar
 
 		// Re-Initialize devices
 		FDeviceRegistry::Initialize();
-
-		UE_LOG(LogDualSense, Warning, TEXT("GamepadCore: Platform swapped and Registry re-initialized."));
+		UE_LOG(LogDualSense, Log, TEXT("GamepadCore: Platform swapped and Registry re-initialized."));
 	}
 }

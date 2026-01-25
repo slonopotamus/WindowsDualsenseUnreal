@@ -72,25 +72,60 @@ void FCommonsDeviceInfo::ProcessAudioHaptic(FDeviceContext* Context)
 	}
 }
 
-bool FCommonsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
+void FCommonsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 {
 	SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Context->Handle);
 
-	unsigned char FeatureBuffer[41] = {0};
-	std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
-
-	FeatureBuffer[0] = 0x05;
-	if (!SDL_hid_get_feature_report(DeviceHandle, FeatureBuffer, 41))
-	{
-		return false;
-	}
-
 	using namespace FGamepadSensors;
 	FGamepadCalibration Calibration;
-	DualSenseCalibrationSensors(FeatureBuffer, Calibration);
 
-	Context->Calibration = Calibration;
-	return true;
+	if (Context->DeviceType == EDSDeviceType::DualShock4)
+	{
+		if (Context->ConnectionType == EDSDeviceConnection::Usb)
+		{
+			unsigned char FeatureBuffer[37] = {0};
+			std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
+
+			FeatureBuffer[0] = 0x02;
+			if (!SDL_hid_get_feature_report(DeviceHandle, FeatureBuffer, 41))
+			{
+				return;
+			}
+
+			DualShockCalibrationSensors(FeatureBuffer, Calibration, Context->ConnectionType);
+		}
+		else
+		{
+
+			unsigned char FeatureBuffer[41] = {0};
+			std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
+
+			FeatureBuffer[0] = 0x05;
+			if (!SDL_hid_get_feature_report(DeviceHandle, FeatureBuffer, 41))
+			{
+				return;
+			}
+
+			DualShockCalibrationSensors(FeatureBuffer, Calibration, Context->ConnectionType);
+		}
+
+		Context->Calibration = Calibration;
+	}
+	else
+	{
+		unsigned char FeatureBuffer[41] = {0};
+		std::memset(FeatureBuffer, 0, sizeof(FeatureBuffer));
+
+		FeatureBuffer[0] = 0x05;
+		if (!SDL_hid_get_feature_report(DeviceHandle, FeatureBuffer, 41))
+		{
+			return;
+		}
+
+		DualSenseCalibrationSensors(FeatureBuffer, Calibration);
+		Context->Calibration = Calibration;
+	}
+	return;
 }
 
 void FCommonsDeviceInfo::Write(FDeviceContext* Context)
