@@ -184,7 +184,7 @@ bool FWindowsDeviceInfo::CreateHandle(FDeviceContext* DeviceContext)
 	}
 
 	HANDLE DuplicatedHandle = INVALID_HANDLE_VALUE;
-	if (DuplicateHandle(GetCurrentProcess(), DeviceHandle, GetCurrentProcess(), &DuplicatedHandle, 0, FALSE, DUPLICATE_SAME_ACCESS))
+	if (DuplicateHandle(GetCurrentProcess(), DeviceHandle, GetCurrentProcess(), &DuplicatedHandle, 0, 0, DUPLICATE_SAME_ACCESS))
 	{
 		CloseHandle(DeviceHandle);
 		DeviceContext->Handle = DuplicatedHandle;

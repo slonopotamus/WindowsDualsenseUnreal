@@ -110,8 +110,6 @@ void DeviceManager::SensorsImpl(FDeviceContext* Context, FInputContext& FrameInp
 {
 	if (Context->bEnableAccelerometerAndGyroscope)
 	{
-		constexpr float RadDeg = DS_RAD_TO_DEG;
-		constexpr float GToMSq = GRAVITY_MS2;
 		float RawGyroX = FrameInput.Gyroscope.X;
 		float RawGyroY = FrameInput.Gyroscope.Y;
 		float RawGyroZ = FrameInput.Gyroscope.Z;
@@ -119,10 +117,10 @@ void DeviceManager::SensorsImpl(FDeviceContext* Context, FInputContext& FrameInp
 		float RawAcclY = FrameInput.Accelerometer.Y;
 		float RawAcclZ = FrameInput.Accelerometer.Z;
 
-		// Z from X, X from Y, Y from Z
-		float G_Roll = RawGyroZ * RadDeg;
-		float G_Pitch = RawGyroX * RadDeg;
-		float G_Yaw = -RawGyroY * RadDeg;
+		constexpr float DEG_TO_RAD = 3.14159265358979323846f / 180.0f;
+		float G_Roll = (RawGyroZ * DEG_TO_RAD);
+		float G_Pitch = (RawGyroX * DEG_TO_RAD);
+		float G_Yaw = -(RawGyroY * DEG_TO_RAD);
 		float A_Roll = RawAcclZ;
 		float A_Pitch = RawAcclX;
 		float A_Yaw = -RawAcclY;

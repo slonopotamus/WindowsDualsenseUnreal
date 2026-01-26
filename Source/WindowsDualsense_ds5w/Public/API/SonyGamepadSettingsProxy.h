@@ -11,7 +11,7 @@
 namespace PluginSettings
 {
 	inline float PollInterval = 0.0166f;
-	inline float MadgwickBeta = 0.08f;
+	inline float MadgwickBeta = 0.1f;
 } // namespace PluginSettings
 /**
  *
