@@ -96,8 +96,8 @@ To ensure the plugin compiles correctly within Unreal Engine, you must configure
 
 Please run the following commands in your terminal (Git Bash, PowerShell, or CMD):
 ```bash
-# 1. Clone the repository recursively
-git clone --recursive https://github.com/rafaelvaloto/Unreal-Dualsense.git
+# 1. Clone the repository v2 branch
+git clone -b v2 --recursive https://github.com/rafaelvaloto/Unreal-Dualsense.git
 
 # 2. Enter the repository folder
 cd Unreal-Dualsense
