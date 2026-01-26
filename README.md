@@ -82,7 +82,7 @@ Designed to bridge the gap left by generic controller support, this asset empowe
 
 ### Quick Installation
 
-1.  Go to the official plugin page on the Unreal Engine Marketplace (FAB): [Plugin Page - FAB](https://www.fab.com/listings/e77a8f1d-8bbe-4673-a5ae-7f222c8c0960)
+1.  Go to the official plugin page on the Unreal Engine Marketplace (FAB): [Plugin Page - FAB](https://www.fab.com/listings/cbc8b9df-12ea-4c52-949c-7ab79aa93928)
 2.  Click **Install** or **Add to Project** and select your Unreal Engine project.
 3.  Activate the plugin in Unreal Engine:
     * Open your project.
