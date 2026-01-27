@@ -3,6 +3,12 @@
 // Planned Release Year: 2025
 
 #include "WindowsDualsense_ds5w/Public/WindowsDualsense_ds5w.h"
+#include "API/SonyGamepadProxyHelpers.h"
+#include "GCore/Interfaces/IPlatformHardwareInfo.h"
+#include "Helpers/DualSenseLog.h"
+#include "Implementations/Adapters/DeviceRegistry.h"
+#include "Implementations/Platforms/Commons/LinuxHardwarePolicy.h"
+#include "Implementations/Platforms/Windows/WindowsHardwarePolicy.h"
 
 #if PLATFORM_LINUX || PLATFORM_MAC
 #include "Framework/Application/SlateApplication.h"
@@ -17,19 +23,34 @@
 
 void FWindowsDualsense_ds5wModule::StartupModule()
 {
-	IModularFeatures::Get().RegisterModularFeature(IInputDeviceModule::GetModularFeatureName(), this);
+	IModularFeatures::Get().RegisterModularFeature(GetModularFeatureName(), this);
 	RegisterCustomKeys();
-#if PLATFORM_LINUX || PLATFORM_MAC
+
+#if PLATFORM_WINDOWS
+	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
+	std::unique_ptr<IPlatformHardwareInfo> WindowsInstance = std::make_unique<FWindowsPlatform::FWindowsHardware>();
+	IPlatformHardwareInfo::SetInstance(std::move(WindowsInstance));
+
+	// Initialize FDeviceRegistry
+	FDeviceRegistry::Initialize();
+
+#elif PLATFORM_LINUX || PLATFORM_MAC
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER) != 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to initialize subsystems of SDL: %s"), UTF8_TO_TCHAR(SDL_GetError()));
+		UE_LOG(LogDualSense, Error, TEXT("Failed to initialize subsystems of SDL: %s"), UTF8_TO_TCHAR(SDL_GetError()));
 	}
 
 	if (FSlateApplication::IsInitialized())
 	{
-		SonyInputProcessor = MakeShared<FSonyInputProcessor>();
+		TSharedPtr<FSonyInputProcessor> SonyInputProcessor = MakeShared<FSonyInputProcessor>();
 		FSlateApplication::Get().RegisterInputPreProcessor(SonyInputProcessor);
 	}
+
+	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
+	std::unique_ptr<IPlatformHardwareInfo> LinuxInstance = std::make_unique<FLinuxPlatform::FLinuxHardware>();
+	IPlatformHardwareInfo::SetInstance(std::move(LinuxInstance));
+
+	FDeviceRegistry::Initialize();
 #endif
 }
 
@@ -45,10 +66,22 @@ void FWindowsDualsense_ds5wModule::ShutdownModule()
 #endif
 }
 
+FWindowsDualsense_ds5wModule::FCustomInputDeviceFactory FWindowsDualsense_ds5wModule::CustomInputDeviceFactory = nullptr;
+
 TSharedPtr<IInputDevice> FWindowsDualsense_ds5wModule::CreateInputDevice(
     const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler)
 {
+	if (CustomInputDeviceFactory)
+	{
+		return CustomInputDeviceFactory(InCustomMessageHandler);
+	}
+
 	return MakeShareable(new DeviceManager(InCustomMessageHandler));
+}
+
+void FWindowsDualsense_ds5wModule::SetCustomInputDeviceFactory(FCustomInputDeviceFactory Factory)
+{
+	CustomInputDeviceFactory = Factory;
 }
 
 void FWindowsDualsense_ds5wModule::RegisterCustomKeys()

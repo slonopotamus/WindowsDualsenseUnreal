@@ -4,17 +4,24 @@
 
 #pragma once
 
+#include "Algorithms/MadgwickAhrs.h"
 #include "CoreMinimal.h"
+#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GCore/Types/Structs/Context/DeviceContext.h"
+#include "GenericPlatform/IInputInterface.h"
 #include "IHapticDevice.h"
 #include "IInputDevice.h"
-#include "Subsystems/AudioHapticsListener.h"
+#include "InputCoreTypes.h"
 
 /**
- * Manages DualSense controllers, providing input and haptic feedback functionality.
- * This class interacts with platform-specific input device frameworks to handle
- * controllers, manage connections, update states, and process haptic feedback.
+ * Represents the primary interface for managing DualSense controllers, extending functionality
+ * as both an input and haptic device. The class handles input events, haptic feedback, light color,
+ * and other controller properties.
+ *
+ * This class encapsulates the logic specific to DualSense devices, providing mechanisms to
+ * configure device properties, manage controller state updates, and deliver force feedback.
  */
-class WINDOWSDUALSENSE_DS5W_API DeviceManager final : public IInputDevice, public IHapticDevice
+class WINDOWSDUALSENSE_DS5W_API DeviceManager : public IInputDevice, public IHapticDevice
 {
 public:
 	virtual ~DeviceManager() override;
@@ -43,6 +50,7 @@ public:
 	{
 		return true;
 	}
+
 	/**
 	 * Sets the force feedback values for a specific controller.
 	 * Updates the intensity of vibration or other force effects on the specified DualSense controller.
@@ -67,14 +75,6 @@ public:
 	 * @param Color The desired color to be applied to the controller's light bar.
 	 */
 	virtual void SetLightColor(int32 ControllerId, FColor Color) override;
-	/**
-	 * Resets the light color of the specified DualSense controller to its default state.
-	 * This function is a no-op if lazy loading mode is enabled or if the controller
-	 * library instance cannot be retrieved for the given controller ID.
-	 *
-	 * @param ControllerId The ID of the controller whose light color is to be reset.
-	 */
-	virtual void ResetLightColor(int32 ControllerId) override;
 	/**
 	 * Executes a command in the context of the provided world.
 	 * This function is typically used for handling console commands.
@@ -101,7 +101,10 @@ public:
 	 * @param MinFrequency Reference to a float where the minimum frequency will be stored.
 	 * @param MaxFrequency Reference to a float where the maximum frequency will be stored.
 	 */
-	virtual void GetHapticFrequencyRange(float& MinFrequency, float& MaxFrequency) const override {}
+	virtual void GetHapticFrequencyRange(float& MinFrequency, float& MaxFrequency) const override
+	{
+	}
+
 	/**
 	 * Retrieves the scale factor applied to haptic amplitude for the device.
 	 * Used to control the intensity of haptic feedback.
@@ -116,7 +119,6 @@ public:
 	 * @return Pointer to the current instance as an IHapticDevice interface.
 	 */
 	virtual IHapticDevice* GetHapticDevice() override { return this; }
-
 	/**
 	 * Determines whether a gamepad is currently attached.
 	 * This method always indicates that a DualSense gamepad is attached.
@@ -124,20 +126,20 @@ public:
 	 * @return True if a gamepad is attached; false otherwise.
 	 */
 	virtual bool IsGamepadAttached() const override;
-
 	/**
 	 * Handles user login state changes
 	 * @param bLoggedIn Whether a User is logged in
 	 * @param UserId Platform-specific user identifier
 	 * @param UserIndex Index of the user
 	 */
-	void OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex) const;
+	void OnUserLoginChangedEvent(bool bLoggedIn, int32 UserId, int32 UserIndex);
 	/**
 	 * Sends controller input events to the appropriate systems for processing.
 	 * This method is overridden to handle specific input events from the DualSense controller,
 	 * ensuring they are relayed correctly within the application.
 	 */
-	virtual void SendControllerEvents() override;
+	virtual void SendControllerEvents(float DeltaTime);
+	virtual void SendControllerEvents() override {}
 	/**
 	 * Sets the message handler for the application to process input events.
 	 *
@@ -146,6 +148,7 @@ public:
 	virtual void SetMessageHandler(const TSharedRef<FGenericApplicationMessageHandler>& InMessageHandler) override
 	{
 	}
+
 	/**
 	 * Sets the force feedback intensity for a specific channel on a particular controller.
 	 * Used to deliver haptic feedback through the given channel.
@@ -158,26 +161,77 @@ public:
 	{
 	}
 
-private:
-	FInputDeviceId GetGamepadInterface(int32 ControllerId);
+	/**
+	 * Processes sensor input data including gyroscope and accelerometer readings,
+	 * updates the sensor filters, and delivers motion detection events.
+	 *
+	 * This method calculates sensor values, applies transformations, and updates
+	 * the Madgwick AHRS filter to compute orientation and rotation. It also
+	 * communicates with the message handler to notify about motion events.
+	 *
+	 * @param Context The device context containing configuration flags and state information.
+	 * @param FrameInput The input context with raw gyroscope and accelerometer data for the current frame.
+	 * @param UserId The platform-specific user identifier associated with the controller.
+	 * @param InputDeviceId The unique identifier of the input device for which the data is being processed.
+	 * @param DeltaTime The elapsed time since the last update, used for temporal calculations in the filter.
+	 */
+	virtual void SensorsImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const;
+
+	/**
+	 * Processes input data from the touchpad, updating the input context with the latest state
+	 * and interactions for the specified user and input device.
+	 *
+	 * This function is responsible for handling and interpreting touchpad events, applying
+	 * them to the input context for the associated platform user and input device. It operates
+	 * over a single frame, taking into account the elapsed time to ensure accurate updates.
+	 *
+	 * @param Context       The device context providing access to device-specific state and operations.
+	 * @param FrameInput    The input context to be updated with touchpad interactions.
+	 * @param UserId        The unique identifier of the platform user associated with the input.
+	 * @param InputDeviceId The unique identifier of the input device generating the touchpad data.
+	 * @param DeltaTime     The elapsed time since the last frame, used for time-sensitive calculations.
+	 */
+	virtual void TouchpadImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const {}
+
+	/**
+	 * Stores and manages sensor filters for input devices, using a mapping between
+	 * input device identifiers and Madgwick AHRS instances.
+	 * This variable helps maintain orientation and motion-filtering data for each
+	 * connected input device.
+	 */
+	mutable TMap<FInputDeviceId, TSharedPtr<FMadgwickAhrs>> FilterSensors;
+
+	/**
+	 * Represents a mapping between touch IDs and their respective states. The key is an integer
+	 * identifier for a specific touch event, and the value is a boolean indicating whether the
+	 * touch was previously registered.
+	 *
+	 * This structure is used to track the touch state of multiple input sources, ensuring accurate
+	 * detection of touch interactions.
+	 */
+	TSet<FInputDeviceId> ActiveTouches;
+	TSet<FInputDeviceId> ActiveTouchesRelative;
+
+	virtual void CheckEvents(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, float DeltaTime) const;
+	/**
+	 * @brief Handles button input events for a DualSense controller.
+	 *
+	 * This function checks the current state of a button on a DualSense controller and triggers
+	 * appropriate input events (button press or release) based on the change in its state.
+	 *
+	 * @param UserId The platform user ID associated with the controller.
+	 * @param InputDeviceId The unique identifier for the DualSense input device.
+	 * @param ButtonName The name of the button being checked.
+	 * @param IsButtonPressed A boolean indicating the current pressed state of the button (true if pressed, false otherwise).
+	 */
+	virtual void CheckButtonInput(FDeviceContext* Context, const FPlatformUserId UserId, const FInputDeviceId InputDeviceId, const FName ButtonName, const bool IsButtonPressed) const;
+
 	/**
 	 * Tracks the accumulated time or events between periodic polling operations.
 	 * This variable is typically used to manage timing or frequency of polling processes.
 	 */
 	float PollAccumulator = 0.0f;
-	/**
-	 * Defines the interval, in seconds, between periodic polling operations.
-	 * This variable determines how often certain tasks, such as device state checks
-	 * or updates, are performed within the system.
-	 */
-	float PollInterval = 0.033f;
-	/**
-	 * Stores a mapping of connection states for devices, where the key represents
-	 * a device ID (int32) and the value indicates whether a connection change
-	 * has occurred (true or false).
-	 * This data structure is used to track and update connection status dynamically.
-	 */
-	TMap<int32, bool> IsConnectionChange = TMap<int32, bool>();
+
 	/**
 	 * Handles application-level messages and events, facilitating communication
 	 * between the application framework and platform-specific input systems.
@@ -185,10 +239,4 @@ private:
 	 * within the application.
 	 */
 	const TSharedRef<FGenericApplicationMessageHandler>& MessageHandler;
-	// /**
-	//  * Represents a shared reference to the audio haptics listener, used for managing
-	//  * audio-driven haptic feedback functionality. This reference allows reactive haptic
-	//  * responses synchronized with audio events or signals.
-	//  */
-	// const TSharedRef<FAudioHapticsListener>& AudioHapticsListener;
 };

@@ -7,7 +7,7 @@
 #include "CoreMinimal.h"
 #include "DeviceManager.h"
 #include "IInputDeviceModule.h"
-#include "InputCoreTypes.h"
+#include "Templates/Function.h"
 #if PLATFORM_LINUX || PLATFORM_MAC
 #include "Framework/Application/SlateApplication.h"
 #endif
@@ -17,7 +17,7 @@
  * on the Windows platform. It integrates with the Unreal Engine input device system, allowing
  * for seamless management and input device creation.
  */
-class FWindowsDualsense_ds5wModule : public IInputDeviceModule
+class WINDOWSDUALSENSE_DS5W_API FWindowsDualsense_ds5wModule : public IInputDeviceModule
 {
 	/**
 	 * Initializes the FWindowsDualsense_ds5wModule during the startup of the module.
@@ -53,6 +53,20 @@ public:
 	 */
 	virtual TSharedPtr<IInputDevice> CreateInputDevice(
 	    const TSharedRef<FGenericApplicationMessageHandler>& InCustomMessageHandler) override;
+
+	using FCustomInputDeviceFactory = TFunction<TSharedPtr<IInputDevice>(const TSharedRef<FGenericApplicationMessageHandler>&)>;
+
+	/**
+	 * Sets a custom factory function to create the input device.
+	 * This allows the user to inject their own implementation of DeviceManager or any class
+	 * implementing IInputDevice and optionally IHapticDevice.
+	 *
+	 * @param Factory The factory function that returns a shared pointer to an IInputDevice.
+	 */
+	static void SetCustomInputDeviceFactory(FCustomInputDeviceFactory Factory);
+
+private:
+	static FCustomInputDeviceFactory CustomInputDeviceFactory;
 
 	/**
 	 * A shared pointer that manages an instance of the DualSense input device.
