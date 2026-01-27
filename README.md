@@ -45,7 +45,7 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 </p>
 
 > [!IMPORTANT]
-> **v2.0.2 is now available!**
+> **v2 is now available!**
 > 
 > You can now extend the plugin to implement custom logic for the **Gyroscope, Accelerometer, and Touchpad**, or even integrate native Unreal Engine assets. 
 > - **Extensible Architecture:** The plugin features a pre-configured IMU filter that can be fully overridden.
