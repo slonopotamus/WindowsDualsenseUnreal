@@ -87,7 +87,7 @@ Designed to bridge the gap left by generic controller support, this asset empowe
 3.  Activate the plugin in Unreal Engine:
     * Open your project.
     * Go to `Edit > Plugins`.
-    * Search for **Windows Dualsense Plugin** and check the box.
+    * Search for **Dualsense** and check the box.
 4.  Restart Unreal Engine when prompted.
 
 ### Manual Installation
