@@ -246,28 +246,51 @@ class FMyCustomDeviceManager : public DeviceManager
 {
 public:
     using DeviceManager::DeviceManager;
+	/** * Map to track the previous frame's touch state per DeviceID.
+	 * Marked as 'mutable' so it can be updated within const methods.
+	 */
+	mutable TMap<int32, bool> DeviceTouchStates;
+	    
+	virtual void TouchpadImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId,
+	                          const FInputDeviceId InputDeviceId, float DeltaTime) const override
+	{
+	    // --- 1. Basic Touch Mapping (Unreal Message Handler) ---
+	    if (Context->bEnableTouch)
+	    {
+	        bool& bWasTouchDown = DeviceTouchStates.FindOrAdd(InputDeviceId.GetId(), false);
+	
+	        if (FrameInput.bIsTouching && !bWasTouchDown)
+	        {
+	            MessageHandler->OnTouchStarted(nullptr, FrameInput.TouchPosition, 1.0f, FrameInput.TouchId, UserId, InputDeviceId);
+	        }
+	        else if (FrameInput.bIsTouching && bWasTouchDown)
+	        {
+	            MessageHandler->OnTouchMoved(FrameInput.TouchPosition, 1.0f, FrameInput.TouchId, UserId, InputDeviceId);
+	        }
+	        else if (!FrameInput.bIsTouching && bWasTouchDown)
+	        {
+	            MessageHandler->OnTouchEnded(FrameInput.TouchPosition, FrameInput.TouchId, UserId, InputDeviceId);
+	        }
+	
+	        bWasTouchDown = FrameInput.bIsTouching;
+	    }
+	
+	    // --- 2. Gesture Mapping (Two-Finger Scroll) ---
+	    if (Context->bEnableGesture)
+	    {
+	        // Check if exactly 2 fingers are touching the pad
+	        if (FrameInput.bIsTouching && FrameInput.TouchFingerCount == 2)
+	        {
+	            MessageHandler->OnTouchGesture(
+	                EGestureEvent::Scroll,
+	                ScrollDelta,
+	                0.0f,   /* Value / Total movement if needed */
+	                false   /* IsInverted */
+	            );
+	        }
+	    }
+	}
 
-    virtual void TouchpadImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId,
-                              const FInputDeviceId InputDeviceId, float DeltaTime) const override
-    {
-        if (Context->bEnableTouch || Context->bEnableGesture)
-        {
-            std::int32_t ID = FrameInput.TouchId;
-            std::int32_t FingerCount = FrameInput.TouchFingerCount;
-            std::uint8_t RawDir = FrameInput.DirectionRaw;
-            bool bTouching = FrameInput.bIsTouching;
-
-            DSCoreTypes::DSVector2D Radius = FrameInput.TouchRadius;
-            DSCoreTypes::DSVector2D Pos = FrameInput.TouchPosition;
-            DSCoreTypes::DSVector2D Relative = FrameInput.TouchRelative;
-
-            UE_LOG(LogTemp, Log, TEXT("Custom Touchpad Event: ID=%d, FingerCount=%d, RawDir=%d, Touching=%d"),
-                   ID, FingerCount, RawDir, bTouching);
-            UE_LOG(LogTemp, Log, TEXT("Custom Touchpad Radius: x:%f y:%f"), Radius.X, Radius.Y);
-            UE_LOG(LogTemp, Log, TEXT("Custom Touchpad Pos: x:%f y:%f"), Pos.X, Pos.Y);
-            UE_LOG(LogTemp, Log, TEXT("Custom Touchpad Relative: x:%f y:%f"), Relative.X, Relative.Y);
-        }
-    }
 };
 
 ```
