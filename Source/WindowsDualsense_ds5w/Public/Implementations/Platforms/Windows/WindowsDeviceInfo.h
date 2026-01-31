@@ -148,6 +148,20 @@ public:
 	 * @param Context Pointer to the device context that holds relevant device information.
 	 */
 	static void InitializeAudioDevice(FDeviceContext* Context);
+	/**
+	 * @brief Gets the container ID for a HID device path.
+	 *
+	 * @param DevicePath The path of the HID device.
+	 * @return The container ID as a string, or an empty string if not found.
+	 */
+	static std::string GetContainerId(const std::string& DevicePath);
+	/**
+	 * @brief Gets the container ID for a WASAPI audio device ID.
+	 *
+	 * @param AudioDeviceId The WASAPI device ID.
+	 * @return The container ID as a string, or an empty string if not found.
+	 */
+	static std::string GetAudioContainerId(const wchar_t* AudioDeviceId);
 
 	/**
 	 * @brief Determines whether the given error code should be treated as a device disconnection.
