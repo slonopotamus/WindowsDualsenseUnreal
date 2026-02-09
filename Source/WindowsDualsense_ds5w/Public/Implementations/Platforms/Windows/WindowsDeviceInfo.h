@@ -8,9 +8,13 @@
 #define NOMINMAX
 #include "CoreMinimal.h"
 #include "GCore/Types/DSCoreTypes.h"
+
+// clang-format off
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include "Windows/HideWindowsPlatformTypes.h"
 #include <Windows.h>
+#include "Windows/HideWindowsPlatformTypes.h"
+// clang-format on
+
 #endif
 
 #include "GCore/Types/Structs/Context/DeviceContext.h"
