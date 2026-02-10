@@ -6,6 +6,7 @@
 #include "API/SonyGamepadProxyHelpers.h"
 #include "Async/Async.h"
 #include "AudioDevice.h"
+#include "Sound/SoundSubmix.h"
 #if PLATFORM_WINDOWS
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
 #elif PLATFORM_LINUX
@@ -90,6 +91,7 @@ void FHapticsRegistry::CreateListenerForDevice(int32 DeviceId, USoundSubmix* Sub
 		AudioDevice->RegisterSubmixBufferListener(Listener.Get(), Submix);
 #endif
 
+		UE_LOG(LogDualSense, Log, TEXT("Controller %d Listener %s"), DeviceId, *Submix->GetName());
 		ControllerListeners.Add(DeviceId, Listener);
 	}
 }

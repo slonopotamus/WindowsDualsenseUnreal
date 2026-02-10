@@ -50,7 +50,6 @@ class FWindowsDeviceInfo
 
 public:
 	virtual ~FWindowsDeviceInfo() = default;
-	static void ProcessAudioHaptic(FDeviceContext* Context);
 	/**
 	 * @brief Configures Bluetooth-specific features for a given HID device.
 	 *
@@ -143,6 +142,19 @@ public:
 	 * @return An enumeration value of type EPollResult indicating the result of the polling operation.
 	 */
 	static EPollResult PollTick(HANDLE Handle, unsigned char* Buffer, std::int32_t Length, DWORD& OutBytesRead);
+	/**
+	 * @brief Processes audio haptic feedback for the given device context.
+	 *
+	 * This method is responsible for handling audio-based haptic feedback by writing
+	 * audio data from the device context to the appropriate output handle.
+	 * It validates the context state, ensures proper connection type, and writes
+	 * data using system APIs to enable device-specific functionality.
+	 *
+	 * @param Context Pointer to the device context containing audio buffer, platform handle,
+	 *                and connection details. Must not be null and must represent
+	 *                a valid Bluetooth-connected device.
+	 */
+	static void ProcessAudioHaptic(FDeviceContext* Context);
 	/**
 	 * @brief Initializes the audio device associated with the given device context.
 	 *

@@ -11,7 +11,7 @@ namespace FWindowsPlatform
 {
 	struct FWindowsHardwarePolicy;
 	using FWindowsHardware = GamepadCore::TGenericHardwareInfo<FWindowsHardwarePolicy>;
-	
+
 	/**
 	 * @brief Global registry to track which audio devices are currently in use
 	 * to ensure multiple DualSense controllers get separate audio channels.
@@ -170,13 +170,9 @@ namespace FWindowsPlatform
 				}
 			}
 
-			// Initialize audio context with found device (or default if not found)
 			Context->AudioContext = std::make_shared<FAudioDeviceContext>();
-
 			if (pFoundDeviceId)
 			{
-				// Initialize with specific DualSense device
-				// DualSense haptics use 4 channels at 48000 Hz
 				Context->AudioContext->InitializeWithDeviceId(pFoundDeviceId, 48000, 4);
 			}
 

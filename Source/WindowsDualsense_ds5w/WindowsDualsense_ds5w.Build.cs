@@ -17,8 +17,14 @@ public class WindowsDualsense_ds5w : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[] {"AudioMixer", "SignalProcessing", "AudioExtensions", "AudioPlatformConfiguration" });
 		
 		var gamepadCoreRoot = Path.Combine(ModuleDirectory, "Private", "GamepadCore");
+		var sanitizedPath = gamepadCoreRoot.Replace("\\", "/");
+		PublicDefinitions.Add($"GAMEPAD_CORE_PROJECT_ROOT=\"{sanitizedPath}\"");
+		PublicDefinitions.Add("GAMEPAD_CORE_HAS_AUDIO=1");
+		
 		PublicIncludePaths.Add(Path.Combine(gamepadCoreRoot, "Source", "Public"));
 		PrivateIncludePaths.Add(Path.Combine(gamepadCoreRoot, "Source", "Private"));
+		PublicIncludePaths.Add(Path.Combine(gamepadCoreRoot, "Libs"));
+		PrivateIncludePaths.Add(Path.Combine(gamepadCoreRoot, "Libs", "miniaudio"));
 		
 		
 		if (Target.Platform == UnrealTargetPlatform.Win64)
