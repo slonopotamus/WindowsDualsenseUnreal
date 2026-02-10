@@ -4,31 +4,30 @@
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
 #if PLATFORM_WINDOWS
+
+// clang-format off
 #include "GCore/Types/Structs/Config/GamepadCalibration.h"
 #include "GImplementations/Utils/GamepadSensors.h"
 #include "Helpers/DualSenseLog.h"
-#include <Functiondiscoverykeys_devpkey.h>
 #include <filesystem>
 #include <hidsdi.h>
 #include <mmdeviceapi.h>
 #include <propsys.h>
 #include <setupapi.h>
+#include <Functiondiscoverykeys_devpkey.h>
 
-#if PLATFORM_WINDOWS
 
 // If you already have UE's Windows wrapper includes, keep them.
 // The important bit is: include initguid.h BEFORE devpkey.h in ONE .cpp.
 
 #ifndef INITGUID
 #define INITGUID
-#endif
 
-#include <devpkey.h>
 #include <initguid.h>
+#include <devpkey.h>
 
-// ... existing code ...
-
-#endif // PLATFORM_WINDOWS
+#endif // INITGUID
+// clang-format on
 
 using namespace FGamepadAudio;
 
