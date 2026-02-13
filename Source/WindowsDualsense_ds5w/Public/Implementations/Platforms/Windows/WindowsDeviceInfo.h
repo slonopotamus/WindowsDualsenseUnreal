@@ -50,7 +50,6 @@ class FWindowsDeviceInfo
 
 public:
 	virtual ~FWindowsDeviceInfo() = default;
-	static void ProcessAudioHaptic(FDeviceContext* Context);
 	/**
 	 * @brief Configures Bluetooth-specific features for a given HID device.
 	 *
@@ -144,6 +143,19 @@ public:
 	 */
 	static EPollResult PollTick(HANDLE Handle, unsigned char* Buffer, std::int32_t Length, DWORD& OutBytesRead);
 	/**
+	 * @brief Processes audio haptic feedback for the given device context.
+	 *
+	 * This method is responsible for handling audio-based haptic feedback by writing
+	 * audio data from the device context to the appropriate output handle.
+	 * It validates the context state, ensures proper connection type, and writes
+	 * data using system APIs to enable device-specific functionality.
+	 *
+	 * @param Context Pointer to the device context containing audio buffer, platform handle,
+	 *                and connection details. Must not be null and must represent
+	 *                a valid Bluetooth-connected device.
+	 */
+	static void ProcessAudioHaptic(FDeviceContext* Context);
+	/**
 	 * @brief Initializes the audio device associated with the given device context.
 	 *
 	 * This method is responsible for setting up and configuring the audio device
@@ -152,6 +164,20 @@ public:
 	 * @param Context Pointer to the device context that holds relevant device information.
 	 */
 	static void InitializeAudioDevice(FDeviceContext* Context);
+	/**
+	 * @brief Gets the container ID for a HID device path.
+	 *
+	 * @param DevicePath The path of the HID device.
+	 * @return The container ID as a string, or an empty string if not found.
+	 */
+	static std::string GetContainerId(const std::string& DevicePath);
+	/**
+	 * @brief Gets the container ID for a WASAPI audio device ID.
+	 *
+	 * @param AudioDeviceId The WASAPI device ID.
+	 * @return The container ID as a string, or an empty string if not found.
+	 */
+	static std::string GetAudioContainerId(const wchar_t* AudioDeviceId);
 
 	/**
 	 * @brief Determines whether the given error code should be treated as a device disconnection.

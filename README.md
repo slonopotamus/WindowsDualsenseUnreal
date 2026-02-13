@@ -39,9 +39,6 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
   <br>
   <a href="#-core-maintainers">💖 Why should your Studio sponsor this project? 💖</a>
 	<br>
-<a href="#-core-maintainers">🏛️ LTS & Legacy Support (UE 4.27 - 5.1) </a>
-	<br>
-	<br>
 </p>
 
 > [!IMPORTANT]
@@ -96,13 +93,17 @@ To ensure the plugin compiles correctly within Unreal Engine, you must configure
 
 Please run the following commands in your terminal (Git Bash, PowerShell, or CMD):
 ```bash
-# 1. Clone the repository at version v2.0.3 (tag)
-git clone -b v2.0.3 --single-branch --recursive https://github.com/rafaelvaloto/Unreal-Dualsense.git
+# Clone the repository at version (tag)
+git clone -b [tag] --single-branch --recursive https://github.com/rafaelvaloto/Unreal-Dualsense.git
+```
+```bash
+# Clone the repository at master branch
+git clone --recursive https://github.com/rafaelvaloto/Unreal-Dualsense.git
 
-# 2. Enter the repository folder
+# Enter the repository folder
 cd Unreal-Dualsense
 
-# 3. Init the submodule to the latest version
+# Init the submodule to the latest version
 git submodule update --init --recursive
 ```
     
@@ -431,45 +432,29 @@ This plugin is actively maintained by:
 <br>
 This is a professional-grade, open-source tool built to bring advanced controller features to all developers—from indies to AAA studios.
 
-### 🔒 NDA-Safe Architecture (PlayStation SDK Compatible)
+---
 
-**You can inject your licensed/proprietary SDKs without modifying the plugin's source code.**
-
-The plugin uses a Policy-Based Design that acts as a "bridge":  your NDA-covered platform code (PlayStation SDK, custom HID implementations, etc.) stays in **your project**, not in the plugin.  This means: 
-- ✅ No NDA violations or license conflicts
-- ✅ Official Sony SDKs can be integrated safely
-- ✅ Your proprietary code remains under your control
-
-### Why Studios Choose This Plugin:
-
-- **🌍 Cross-Platform API** – Unified input logic for Windows, Linux, macOS, and PlayStation
-- **⚡ Production-Ready** – C++20 zero-overhead architecture, used in shipped titles
-- **🚀 Faster Development** – Real-time haptic prototyping via console commands
-
-**Looking for custom features or priority support?**
-📧 Reach out via [GitHub Sponsors](https://github.com/sponsors/rafaelvaloto) or [Discussions](https://github.com/rafaelvaloto/Unreal-Dualsense/discussions)
+## 📉 Massive Engineering Savings
+Maintaining separate hardware implementations for different platforms is a silent budget killer. This plugin eliminates that overhead:
+* **Unified Codebase:** Write your haptic and trigger logic once. A single code path for all platforms.
+* **Hardware Abstraction:** Save **hundreds of engineering hours** otherwise spent on low-level HID maintenance and firmware edge cases.
+* **Zero-Overhead Maintenance:** When a platform updates its SDK, you only update the bridge, not your entire game’s input system.
 
 ---
-## 🏛️ LTS & Legacy Support (UE 4.27 - 5.1)
 
-Are you shipping a title on **Unreal Engine 4.27** or **5.0/5.1** and need reliable DualSense support?
+### 🔒 NDA-Safe Architecture (PlayStation SDK Compatible)
+**Inject licensed/proprietary SDKs without modifying the plugin's source code.**
 
-Thanks to our new [Policy-Based Architecture](#-about-the-project), we have successfully backported the entire **v2.0.0 core** to older engine versions. This means you get the stability, zero-overhead performance, and features of the modern plugin without upgrading your engine.
+The plugin uses a Policy-Based Design that acts as a "bridge": your NDA-covered platform code stays in **your project**.
+- ✅ No NDA violations or license conflicts.
+- ✅ Official Sony SDKs can be integrated safely.
+- ✅ Your proprietary code remains under your control.
 
-> [!TIP]
-> **Why use this backport instead of v1.x?**
-> * **Stability**: Uses the new `GamepadHardwareBridge` architecture.
-> * **Features**: Includes Audio Haptics (USB/BT) and improved Adaptive Triggers.
-> * **Safety**: Full NDA-Safe implementation.
+### Why Studios Choose This Plugin:
+- **🌍 Cross-Platform API** – Unified input logic for Windows, Linux, macOS, and PlayStation.
+- **⚡ Production-Ready** – C++20 zero-overhead architecture.
+- **🚀 Faster Development** – Real-time haptic prototyping via console commands.
 
-### 🔒 How to Access LTS Builds
-Access to the **Unreal Engine 4.27 LTS repository** source code is available exclusively to our **Studio Sponsors**.
-
-<div align="center">
-  <a href="https://github.com/sponsors/rafaelvaloto">
-    <img src="https://img.shields.io/static/v1?label=Get%20UE%204.27%20Support&message=Become%20a%20Sponsor&color=blue&style=for-the-badge&logo=github" alt="Sponsor for LTS Access">
-  </a>
-</div>
 
 ---
 ## 📄 License

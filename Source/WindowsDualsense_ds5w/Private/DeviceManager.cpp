@@ -264,6 +264,7 @@ void DeviceManager::SetDeviceProperty(int32 ControllerId, const FInputDeviceProp
 			if (IGamepadTrigger* GamepadTrigger = GetTriggerInterface(ControllerId))
 			{
 				GamepadTrigger->SetResistance(FeedbackProperty->Position, FeedbackProperty->Strengh, static_cast<EDSGamepadHand>(HandMask));
+				GetGamepad(ControllerId)->UpdateOutput();
 			}
 		}
 	}
@@ -277,9 +278,16 @@ void DeviceManager::SetChannelValues(int32 ControllerId, const FForceFeedbackVal
 {
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
-		const float LeftRumble = FMath::Clamp(FMath::Max(Values.LeftLarge, Values.LeftSmall), 0.f, 1.f);
-		const float RightRumble = FMath::Clamp(FMath::Max(Values.RightLarge, Values.RightSmall), 0.f, 1.f);
-		Gamepad->SetVibration(static_cast<uint8>(LeftRumble * 255.f), static_cast<uint8>(RightRumble * 255.f));
+		auto GetRumbleByte = [](const float Small, const float Large) -> std::uint8_t {
+			std::uint8_t SmallNib = FMath::Clamp(Small, 0.f, 1.f) * 15;
+			std::uint8_t LargeNib = FMath::Clamp(Large, 0.f, 1.f) * 15;
+			return (LargeNib << 4) | SmallNib & 0x0f;
+		};
+
+		const std::uint8_t LeftRumble = GetRumbleByte(Values.LeftSmall, Values.LeftLarge);
+		const std::uint8_t RightRumble = GetRumbleByte(Values.RightSmall, Values.RightLarge);
+		Gamepad->SetVibration(LeftRumble, RightRumble);
+		Gamepad->UpdateOutput();
 	}
 }
 
@@ -288,6 +296,7 @@ void DeviceManager::SetLightColor(const int32 ControllerId, const FColor Color)
 	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
 	{
 		Gamepad->SetLightbar({Color.R, Color.G, Color.B, Color.A});
+		Gamepad->UpdateOutput();
 	}
 }
 

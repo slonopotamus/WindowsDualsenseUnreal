@@ -4,12 +4,30 @@
 
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
 #if PLATFORM_WINDOWS
+
+// clang-format off
 #include "GCore/Types/Structs/Config/GamepadCalibration.h"
 #include "GImplementations/Utils/GamepadSensors.h"
 #include "Helpers/DualSenseLog.h"
 #include <filesystem>
 #include <hidsdi.h>
+#include <mmdeviceapi.h>
+#include <propsys.h>
 #include <setupapi.h>
+#include <Functiondiscoverykeys_devpkey.h>
+
+
+// If you already have UE's Windows wrapper includes, keep them.
+// The important bit is: include initguid.h BEFORE devpkey.h in ONE .cpp.
+
+#ifndef INITGUID
+#define INITGUID
+
+#include <initguid.h>
+#include <devpkey.h>
+
+#endif // INITGUID
+// clang-format on
 
 using namespace FGamepadAudio;
 
@@ -257,6 +275,8 @@ void FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)
 		return;
 	}
 
+	std::string TargetContainerId = GetContainerId(Context->Path);
+
 	// Get playback devices
 	ma_device_info* pPlaybackInfos;
 	ma_uint32 playbackCount;
@@ -269,35 +289,32 @@ void FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)
 		return;
 	}
 
-	// Search for DualSense audio device
-	ma_device_id* pFoundDeviceId = nullptr;
-	ma_device_id foundDeviceId;
+	// Helper: stringify ma_device_id as HEX (backend-specific blob)
+	auto DeviceIdToHex = [](const ma_device_id& InId) -> FString {
+		const uint8* Bytes = reinterpret_cast<const uint8*>(&InId);
+		constexpr int32 NumBytes = static_cast<int32>(sizeof(ma_device_id));
+
+		FString Out;
+		Out.Reserve(NumBytes * 2);
+
+		for (int32 i = 0; i < NumBytes; ++i)
+		{
+			Out += FString::Printf(TEXT("%02X"), Bytes[i]);
+		}
+		return Out;
+	};
 
 	for (ma_uint32 i = 0; i < playbackCount; i++)
 	{
-		std::string deviceName(pPlaybackInfos[i].name);
-
-		// Check if device name contains DualSense identifiers
-		// DualSense appears as "Wireless Controller" or "DualSense Wireless Controller"
-		if (deviceName.find("DualSense") != std::string::npos ||
-		    deviceName.find("Wireless Controller") != std::string::npos)
+		std::string AudioContainerId = GetAudioContainerId(pPlaybackInfos[i].id.wasapi);
+		if (TargetContainerId == AudioContainerId)
 		{
-			// Verify it has 4 channels (stereo + haptic L/R)
-			// DualSense audio device typically has 4 channels for haptics
-			foundDeviceId = pPlaybackInfos[i].id;
-			pFoundDeviceId = &foundDeviceId;
-			break;
+			// DualSense haptics use 4 channels at 48000 Hz
+			const FString DevName = UTF8_TO_TCHAR(pPlaybackInfos[i].name);
+			const FString DevIdHex = DeviceIdToHex(pPlaybackInfos[i].id);
+			UE_LOG(LogDualSense, Log, TEXT("  [%u] name='%s' id(hex)=%s"), i, *DevName, *DevIdHex);
+			Context->AudioContext->InitializeWithDeviceId(&pPlaybackInfos[i].id, 48000, 4);
 		}
-	}
-
-	// Initialize audio context with found device (or default if not found)
-	Context->AudioContext = std::make_shared<FAudioDeviceContext>();
-
-	if (pFoundDeviceId)
-	{
-		// Initialize with specific DualSense device
-		// DualSense haptics use 4 channels at 48000 Hz
-		Context->AudioContext->InitializeWithDeviceId(pFoundDeviceId, 48000, 4);
 	}
 
 	ma_context_uninit(&maContext);
@@ -403,6 +420,89 @@ void FWindowsDeviceInfo::ConfigureFeatures(FDeviceContext* Context)
 		DualSenseCalibrationSensors(FeatureBuffer, Calibration);
 		Context->Calibration = Calibration;
 	}
+}
+
+std::string FWindowsDeviceInfo::GetContainerId(const std::string& DevicePath)
+{
+	std::wstring WPath(DevicePath.begin(), DevicePath.end());
+	GUID HidGuid;
+	HidD_GetHidGuid(&HidGuid);
+
+	HDEVINFO DeviceInfoSet = SetupDiGetClassDevsW(&HidGuid, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+	if (DeviceInfoSet == INVALID_HANDLE_VALUE)
+	{
+		return "";
+	}
+
+	SP_DEVICE_INTERFACE_DATA DeviceInterfaceData = {sizeof(SP_DEVICE_INTERFACE_DATA)};
+	if (SetupDiOpenDeviceInterfaceW(DeviceInfoSet, WPath.c_str(), 0, &DeviceInterfaceData))
+	{
+		SP_DEVINFO_DATA DeviceInfoData = {sizeof(SP_DEVINFO_DATA)};
+		// DetailData is needed to get the DevInfoData associated with the interface
+		DWORD RequiredSize = 0;
+		SetupDiGetDeviceInterfaceDetailW(DeviceInfoSet, &DeviceInterfaceData, nullptr, 0, &RequiredSize, nullptr);
+		if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+		{
+			std::vector<char> Buffer(RequiredSize);
+			PSP_DEVICE_INTERFACE_DETAIL_DATA_W pDetail = (PSP_DEVICE_INTERFACE_DETAIL_DATA_W)Buffer.data();
+			pDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_W);
+			if (SetupDiGetDeviceInterfaceDetailW(DeviceInfoSet, &DeviceInterfaceData, pDetail, RequiredSize, nullptr, &DeviceInfoData))
+			{
+				DEVPROPTYPE PropType;
+				GUID ContainerId = {0};
+				if (SetupDiGetDevicePropertyW(DeviceInfoSet, &DeviceInfoData, &DEVPKEY_Device_ContainerId, &PropType, (PBYTE)&ContainerId, sizeof(GUID), nullptr, 0))
+				{
+					wchar_t GuidString[40];
+					StringFromGUID2(ContainerId, GuidString, 40);
+					SetupDiDestroyDeviceInfoList(DeviceInfoSet);
+
+					char GuidStr[40];
+					WideCharToMultiByte(CP_ACP, 0, GuidString, -1, GuidStr, 40, nullptr, nullptr);
+					return std::string(GuidStr);
+				}
+			}
+		}
+	}
+	SetupDiDestroyDeviceInfoList(DeviceInfoSet);
+	return "";
+}
+
+std::string FWindowsDeviceInfo::GetAudioContainerId(const wchar_t* AudioDeviceId)
+{
+	IMMDeviceEnumerator* pEnumerator = nullptr;
+	IMMDevice* pDevice = nullptr;
+	IPropertyStore* pProps = nullptr;
+	std::string Result = "";
+
+	HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
+	if (SUCCEEDED(hr))
+	{
+		hr = pEnumerator->GetDevice(AudioDeviceId, &pDevice);
+		if (SUCCEEDED(hr))
+		{
+			hr = pDevice->OpenPropertyStore(STGM_READ, &pProps);
+			if (SUCCEEDED(hr))
+			{
+				PROPVARIANT var;
+				PropVariantInit(&var);
+				hr = pProps->GetValue(PKEY_Device_ContainerId, &var);
+				if (SUCCEEDED(hr) && var.vt == VT_CLSID)
+				{
+					wchar_t GuidString[40];
+					StringFromGUID2(*var.puuid, GuidString, 40);
+
+					char GuidStr[40];
+					WideCharToMultiByte(CP_ACP, 0, GuidString, -1, GuidStr, 40, nullptr, nullptr);
+					Result = std::string(GuidStr);
+				}
+				PropVariantClear(&var);
+				pProps->Release();
+			}
+			pDevice->Release();
+		}
+		pEnumerator->Release();
+	}
+	return Result;
 }
 
 #endif PLATFORM_WINDOWS
