@@ -93,17 +93,20 @@ Para garantir que o plugin compile corretamente na Unreal Engine, você deve con
 Por favor, execute os seguintes comandos no seu terminal (Git Bash, PowerShell ou CMD):
 ```bash
 # Clone the repository at version (tag)
-git clone -b [tag] --single-branch --recursive https://github.com/rafaelvaloto/Unreal-Dualsense.git
+git clone -b [tag] --single-branch https://github.com/rafaelvaloto/Unreal-Dualsense.git
 ```
 ```bash
 # Clone the repository at master branch
-git clone --recursive https://github.com/rafaelvaloto/Unreal-Dualsense.git
+git clone https://github.com/rafaelvaloto/Unreal-Dualsense.git
 
 # Enter the repository folder
 cd Unreal-Dualsense
 
 # Init the submodule to the latest version
-git submodule update --init --recursive
+git submodule update --init
+
+# Init the submodule miniaudio
+git -C Source/WindowsDualsense_ds5w/Private/GamepadCore submodule update --init Libs/miniaudio
 ```
 
 ## 💻 Uso Básico
