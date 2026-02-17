@@ -338,7 +338,8 @@ public class NewDeveloper : ModuleRules
 }
 ```
 
-## 🛠️ Extending for Other Platforms (e.g., PlayStation)
+# Extending for Other Platforms (e.g., PlayStation)
+
 The plugin features a decoupled architecture using Policy-Based Design, allowing developers to integrate other platform SDKs (such as the official Sony PlayStation® SDK) or custom HID wrappers directly from their Game Project.
 
 The primary advantage is that you do not need to modify the plugin's source code. You can inject your implementation during the application startup.
