@@ -33,7 +33,7 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
   <a href="#-basic-usage">Basic Usage</a> •
   <a href="#-example-project-arena-shooter-ue-56">Example Project</a> •
 <a href="#-live-haptic-prototyping-console-to-blueprint">Prototyping</a> •
-  <a href="#%EF%B8%8F-extending-for-other-platforms-eg-playstation">Extending</a> •
+  <a href="#extending-for-other-platforms-eg-playstation">Extending</a> •
 <a href="#-injecting-custom-device-logic-custom-devicemanager">Injecting Custom Device</a>
   <br>
   <br>
@@ -338,7 +338,8 @@ public class NewDeveloper : ModuleRules
 }
 ```
 
-## 🛠️ Extending for Other Platforms (e.g., PlayStation)
+# Extending for Other Platforms (e.g., PlayStation)
+
 The plugin features a decoupled architecture using Policy-Based Design, allowing developers to integrate other platform SDKs (such as the official Sony PlayStation® SDK) or custom HID wrappers directly from their Game Project.
 
 The primary advantage is that you do not need to modify the plugin's source code. You can inject your implementation during the application startup.
