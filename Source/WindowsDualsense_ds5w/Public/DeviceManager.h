@@ -6,7 +6,7 @@
 
 #include "Algorithms/MadgwickAhrs.h"
 #include "CoreMinimal.h"
-#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GCore/Interfaces/Segregations/IGamepadBase.h"
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "GenericPlatform/IInputInterface.h"
 #include "IHapticDevice.h"

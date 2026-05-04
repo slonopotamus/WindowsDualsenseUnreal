@@ -156,14 +156,18 @@ public:
 	 */
 	static void ProcessAudioHaptic(FDeviceContext* Context);
 	/**
-	 * @brief Initializes the audio device associated with the given device context.
+	 * @brief Finds and returns the WASAPI audio device that belongs to the same physical
+	 *        device as the given HID context.
 	 *
-	 * This method is responsible for setting up and configuring the audio device
-	 * based on the provided device context and device identifier.
+	 * Internally calls GetContainerId() on the HID path and iterates all active render
+	 * endpoints, calling GetAudioContainerId() on each one.  When both GUIDs match the
+	 * returned FAudioDeviceInfo is populated with the WASAPI Id and a friendly name;
+	 * on failure an empty FAudioDeviceInfo is returned.
 	 *
-	 * @param Context Pointer to the device context that holds relevant device information.
+	 * @param Context Pointer to the device context (must have a valid Path).
+	 * @return FAudioDeviceInfo with Id/FriendlyName if found, empty otherwise.
 	 */
-	static void InitializeAudioDevice(FDeviceContext* Context);
+	static FAudioDeviceInfo InitializeAudioDevice(FDeviceContext* Context);
 	/**
 	 * @brief Gets the container ID for a HID device path.
 	 *

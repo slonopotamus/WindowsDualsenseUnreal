@@ -4,17 +4,16 @@
 
 #pragma once
 
-#include "GCore/Interfaces/ISonyGamepad.h"
-#include "GenericPlatform/GenericApplicationMessageHandler.h"
-#include "Helpers/DualSenseLog.h"
+#include "GCore/Interfaces/Segregations/IGamepadBase.h"
+#include "GCore/Interfaces/Segregations/IGamepadHaptics.h"
+#include "GCore/Interfaces/Segregations/IGamepadTrigger.h"
 #include "Implementations/Adapters/DeviceRegistry.h"
 #include "Types/Enums/EDeviceCommons.h"
 #include "Types/Enums/EDeviceConnection.h"
+#include "GenericPlatform/GenericApplicationMessageHandler.h"
+#include "Helpers/DualSenseLog.h"
 
 // Forward declarations
-class IGamepadTrigger;
-class IGamepadAudioHaptics;
-
 static_assert(static_cast<uint8>(EDeviceType::DualSense) == static_cast<uint8>(EDSDeviceType::DualSense), "Enum mismatch: DualSense value differs between Core and API!");
 static_assert(static_cast<uint8>(EDeviceType::DualShock4) == static_cast<uint8>(EDSDeviceType::DualShock4), "Enum mismatch: DualShock4 value differs between Core and API!");
 static_assert(static_cast<uint8>(EDeviceType::DualSenseEdge) == static_cast<uint8>(EDSDeviceType::DualSenseEdge), "Enum mismatch: DualSenseEdge value differs between Core and API!");
@@ -54,7 +53,7 @@ namespace SonyGamepadProxyHelpers
 	 * @param ControllerId The platform user ID (0-3 typically)
 	 * @return ISonyGamepad pointer or nullptr if not found
 	 */
-	inline ISonyGamepad* GetGamepad(int32 ControllerId)
+	inline IGamepadBase* GetGamepad(int32 ControllerId)
 	{
 		check(IsInGameThread());
 
@@ -66,7 +65,7 @@ namespace SonyGamepadProxyHelpers
 		FDeviceRegistry* Registry = FDeviceRegistry::Get();
 		for (const FInputDeviceId& DeviceId : Devices)
 		{
-			if (ISonyGamepad* Gamepad = Registry->GetLibraryInstance(DeviceId))
+			if (IGamepadBase* Gamepad = Registry->GetLibraryInstance(DeviceId))
 			{
 				return Gamepad;
 			}
@@ -82,7 +81,7 @@ namespace SonyGamepadProxyHelpers
 	 */
 	inline IGamepadTrigger* GetTriggerInterface(int32 ControllerId)
 	{
-		ISonyGamepad* Gamepad = GetGamepad(ControllerId);
+		IGamepadBase* Gamepad = GetGamepad(ControllerId);
 		if (!Gamepad)
 		{
 			return nullptr;
@@ -101,17 +100,17 @@ namespace SonyGamepadProxyHelpers
 	 * @brief Gets the audio haptics interface for a controller.
 	 *
 	 * @param ControllerId The controller ID
-	 * @return IGamepadAudioHaptics pointer or nullptr
+	 * @return IGamepadHaptics pointer or nullptr
 	 */
-	inline IGamepadAudioHaptics* GetAudioHapticsInterface(int32 ControllerId)
+	inline IGamepadHaptics* GetAudioHapticsInterface(int32 ControllerId)
 	{
-		ISonyGamepad* Gamepad = GetGamepad(ControllerId);
+		IGamepadBase* Gamepad = GetGamepad(ControllerId);
 		if (!Gamepad)
 		{
 			return nullptr;
 		}
 
-		IGamepadAudioHaptics* AudioInterface = Gamepad->GetIGamepadHaptics();
+		IGamepadHaptics* AudioInterface = Gamepad->GetIGamepadHaptics();
 		if (!AudioInterface)
 		{
 			return nullptr;

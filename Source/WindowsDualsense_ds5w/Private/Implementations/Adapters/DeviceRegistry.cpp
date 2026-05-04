@@ -3,7 +3,7 @@
 // Planned Release Year: 2025
 
 #include "Implementations/Adapters/DeviceRegistry.h"
-#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GCore/Interfaces/Segregations/IGamepadBase.h"
 
 TUniquePtr<FDeviceRegistry> FDeviceRegistry::Instance;
 std::unique_ptr<FDeviceRegistry::FRegistryLogic> FDeviceRegistry::RegistryImplementation = nullptr;
@@ -41,15 +41,15 @@ void FDeviceRegistry::DiscoverDevices(float DeltaTime)
 {
 	if (RegistryImplementation)
 	{
-		return RegistryImplementation->PlugAndPlay(DeltaTime);
+		RegistryImplementation->PlugAndPlay(DeltaTime);
 	}
 }
 
-ISonyGamepad* FDeviceRegistry::GetLibraryInstance(FInputDeviceId DeviceId)
+IGamepadBase* FDeviceRegistry::GetLibraryInstance(FInputDeviceId DeviceId)
 {
 	if (RegistryImplementation)
 	{
-		if (ISonyGamepad* Lib = RegistryImplementation->GetLibrary(DeviceId))
+		if (IGamepadBase* Lib = RegistryImplementation->GetLibrary(DeviceId))
 		{
 			return Lib;
 		}

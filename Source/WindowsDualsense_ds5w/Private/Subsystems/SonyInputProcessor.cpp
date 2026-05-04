@@ -3,7 +3,7 @@
 // Planned Release Year: 2025
 
 #include "Subsystems/SonyInputProcessor.h"
-#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GCore/Interfaces/Segregations/IGamepadBase.h"
 #include "Implementations/Adapters/DeviceRegistry.h"
 
 bool FSonyInputProcessor::HandleKeyDownEvent(FSlateApplication& SlateApp, const FKeyEvent& InKeyEvent)
@@ -27,8 +27,7 @@ bool FSonyInputProcessor::HandleAnalogInputEvent(FSlateApplication& SlateApp,
 
 bool FSonyInputProcessor::IsSonyController(const FInputDeviceId& DeviceId) const
 {
-	ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId);
-	if (Gamepad)
+	if (auto* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(DeviceId))
 	{
 		return true;
 	}

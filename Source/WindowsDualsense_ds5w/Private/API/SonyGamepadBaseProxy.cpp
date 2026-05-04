@@ -5,15 +5,14 @@
 #include "API/SonyGamepadBaseProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
 #include "API/Types/Enums/EDeviceConnection.h"
-#include "GCore/Interfaces/ISonyGamepad.h"
-#include "GImplementations/Libraries/DualSense/DualSenseLibrary.h"
+#include "GCore/Interfaces/Segregations/IGamepadBase.h"
 #include "Misc/CoreDelegates.h"
 
 using namespace SonyGamepadProxyHelpers;
 
 EDeviceType USonyGamepadBaseProxy::GetDeviceType(int32 ControllerId)
 {
-	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
+	IGamepadBase* Gamepad = GetGamepad(ControllerId);
 	if (!Gamepad)
 	{
 		return EDeviceType::NotFound;
@@ -23,7 +22,7 @@ EDeviceType USonyGamepadBaseProxy::GetDeviceType(int32 ControllerId)
 }
 EDeviceConnection USonyGamepadBaseProxy::GetConnectionType(int32 ControllerId)
 {
-	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
+	IGamepadBase* Gamepad = GetGamepad(ControllerId);
 	if (!Gamepad)
 	{
 		return EDeviceConnection::Unrecognized;
@@ -33,7 +32,7 @@ EDeviceConnection USonyGamepadBaseProxy::GetConnectionType(int32 ControllerId)
 }
 void USonyGamepadBaseProxy::UpdateOutput(int32 ControllerId)
 {
-	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
+	IGamepadBase* Gamepad = GetGamepad(ControllerId);
 	if (!Gamepad)
 	{
 		return;
@@ -43,7 +42,7 @@ void USonyGamepadBaseProxy::UpdateOutput(int32 ControllerId)
 }
 bool USonyGamepadBaseProxy::DeviceIsConnected(int32 ControllerId)
 {
-	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
+	IGamepadBase* Gamepad = GetGamepad(ControllerId);
 	if (!Gamepad)
 	{
 		return false;
@@ -53,7 +52,7 @@ bool USonyGamepadBaseProxy::DeviceIsConnected(int32 ControllerId)
 }
 float USonyGamepadBaseProxy::BatteryLevelDevice(int32 ControllerId)
 {
-	ISonyGamepad* Gamepad = GetGamepad(ControllerId);
+	IGamepadBase* Gamepad = GetGamepad(ControllerId);
 	if (!Gamepad)
 	{
 		return 0.0f;

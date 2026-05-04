@@ -4,7 +4,7 @@
 
 #include "WindowsDualsense_ds5w/Public/WindowsDualsense_ds5w.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "GCore/Interfaces/IPlatformHardwareInfo.h"
+#include "GCore/Interfaces/IPlatformHardware.h"
 #include "Helpers/DualSenseLog.h"
 #include "Implementations/Adapters/DeviceRegistry.h"
 #include "Implementations/Platforms/Commons/LinuxHardwarePolicy.h"
@@ -28,8 +28,8 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 
 #if PLATFORM_WINDOWS
 	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
-	std::unique_ptr<IPlatformHardwareInfo> WindowsInstance = std::make_unique<FWindowsPlatform::FWindowsHardware>();
-	IPlatformHardwareInfo::SetInstance(std::move(WindowsInstance));
+	std::unique_ptr<IPlatformHardware> WindowsInstance = std::make_unique<FWindowsPlatform::FWindowsHardware>();
+	IPlatformHardware::SetInstance(std::move(WindowsInstance));
 
 	// Initialize FDeviceRegistry
 	FDeviceRegistry::Initialize();
@@ -47,8 +47,8 @@ void FWindowsDualsense_ds5wModule::StartupModule()
 	}
 
 	// Initialize PlatformHardware, (e.g., FLinuxHardware FWindowsHardware FMacHardware, FSonyHardware)
-	std::unique_ptr<IPlatformHardwareInfo> LinuxInstance = std::make_unique<FLinuxPlatform::FLinuxHardware>();
-	IPlatformHardwareInfo::SetInstance(std::move(LinuxInstance));
+	std::unique_ptr<IPlatformHardware> LinuxInstance = std::make_unique<FLinuxPlatform::FLinuxHardware>();
+	IPlatformHardware::SetInstance(std::move(LinuxInstance));
 
 	FDeviceRegistry::Initialize();
 #endif

@@ -6,12 +6,12 @@
 #include "Helpers/DualSenseLog.h"
 #include "Implementations/Adapters/DeviceRegistry.h"
 
-void FGamepadHardwareBridge::InjectHardwarePlatform(std::unique_ptr<IPlatformHardwareInfo> InPlatform)
+void FGamepadHardwareBridge::InjectHardwarePlatform(std::unique_ptr<IPlatformHardware> InPlatform)
 {
 	if (InPlatform)
 	{
 		// Initialize PlatformHardware, (e.g., FMacHardware, FSonyHardware)
-		IPlatformHardwareInfo::SetInstance(std::move(InPlatform));
+		IPlatformHardware::SetInstance(std::move(InPlatform));
 
 		// Re-Initialize devices
 		FDeviceRegistry::Initialize();

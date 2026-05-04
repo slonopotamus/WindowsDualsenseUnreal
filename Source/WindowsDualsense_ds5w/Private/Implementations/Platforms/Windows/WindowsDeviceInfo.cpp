@@ -29,8 +29,6 @@
 #endif // INITGUID
 // clang-format on
 
-using namespace FGamepadAudio;
-
 void FWindowsDeviceInfo::Detect(std::vector<FDeviceContext>& Devices)
 {
 	Devices.clear();
@@ -234,7 +232,7 @@ void FWindowsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		std::memset(RawOutput, 0, 78);
 		std::memset(Context->Buffer, 0, 78);
 		std::memset(Context->BufferDS4, 0, 547);
-		std::memset(Context->BufferAudio, 0, 142);
+		std::memset(Context->BufferHapitcs, 0, 142);
 	}
 }
 
@@ -261,63 +259,114 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, s
  *
  * @param Context The device context to store the audio device in
  */
-void FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)
+FAudioDeviceInfo FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)
 {
-	if (!Context)
+	if (!Context || Context->Path.empty())
 	{
-		return;
+		return {};
 	}
 
-	// Initialize miniaudio context for device enumeration
-	ma_context maContext;
-	if (ma_context_init(nullptr, 0, nullptr, &maContext) != MA_SUCCESS)
+	// Step 1: Get the Container ID of the HID (gamepad) device.
+	// This is a GUID that Windows assigns to every logical node of the same physical device.
+	const std::string TargetContainerId = GetContainerId(Context->Path);
+	if (TargetContainerId.empty())
 	{
-		return;
+		UE_LOG(LogDualSense, Warning, TEXT("InitializeAudioDevice: Could not read ContainerId for HID path."));
+		return {};
 	}
 
-	std::string TargetContainerId = GetContainerId(Context->Path);
-
-	// Get playback devices
-	ma_device_info* pPlaybackInfos;
-	ma_uint32 playbackCount;
-	ma_device_info* pCaptureInfos;
-	ma_uint32 captureCount;
-
-	if (ma_context_get_devices(&maContext, &pPlaybackInfos, &playbackCount, &pCaptureInfos, &captureCount) != MA_SUCCESS)
+	// Step 2: Enumerate all active WASAPI render endpoints.
+	IMMDeviceEnumerator* pEnumerator = nullptr;
+	HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+	                              __uuidof(IMMDeviceEnumerator), reinterpret_cast<void**>(&pEnumerator));
+	if (FAILED(hr) || !pEnumerator)
 	{
-		ma_context_uninit(&maContext);
-		return;
+		UE_LOG(LogDualSense, Warning, TEXT("InitializeAudioDevice: CoCreateInstance IMMDeviceEnumerator failed (0x%08X)."), hr);
+		return {};
 	}
 
-	// Helper: stringify ma_device_id as HEX (backend-specific blob)
-	auto DeviceIdToHex = [](const ma_device_id& InId) -> FString {
-		const uint8* Bytes = reinterpret_cast<const uint8*>(&InId);
-		constexpr int32 NumBytes = static_cast<int32>(sizeof(ma_device_id));
+	IMMDeviceCollection* pCollection = nullptr;
+	hr = pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection);
+	pEnumerator->Release();
+	if (FAILED(hr) || !pCollection)
+	{
+		UE_LOG(LogDualSense, Warning, TEXT("InitializeAudioDevice: EnumAudioEndpoints failed (0x%08X)."), hr);
+		return {};
+	}
 
-		FString Out;
-		Out.Reserve(NumBytes * 2);
+	UINT Count = 0;
+	pCollection->GetCount(&Count);
 
-		for (int32 i = 0; i < NumBytes; ++i)
+	FAudioDeviceInfo Result;
+
+	// Step 3: For each render endpoint, get its Container ID and compare with the HID one.
+	// When they match, both nodes belong to the same physical DualSense.
+	for (UINT i = 0; i < Count; ++i)
+	{
+		IMMDevice* pDevice = nullptr;
+		if (FAILED(pCollection->Item(i, &pDevice)) || !pDevice)
 		{
-			Out += FString::Printf(TEXT("%02X"), Bytes[i]);
+			continue;
 		}
-		return Out;
-	};
 
-	for (ma_uint32 i = 0; i < playbackCount; i++)
-	{
-		std::string AudioContainerId = GetAudioContainerId(pPlaybackInfos[i].id.wasapi);
-		if (TargetContainerId == AudioContainerId)
+		LPWSTR pwszId = nullptr;
+		if (FAILED(pDevice->GetId(&pwszId)) || !pwszId)
 		{
-			// DualSense haptics use 4 channels at 48000 Hz
-			const FString DevName = UTF8_TO_TCHAR(pPlaybackInfos[i].name);
-			const FString DevIdHex = DeviceIdToHex(pPlaybackInfos[i].id);
-			UE_LOG(LogDualSense, Log, TEXT("  [%u] name='%s' id(hex)=%s"), i, *DevName, *DevIdHex);
-			Context->AudioContext->InitializeWithDeviceId(&pPlaybackInfos[i].id, 48000, 4);
+			pDevice->Release();
+			continue;
 		}
+
+		// Step 3a: get the audio endpoint's Container ID via MMDevice / PKEY_Device_ContainerId.
+		const std::string AudioContainerId = GetAudioContainerId(pwszId);
+
+		if (AudioContainerId == TargetContainerId)
+		{
+			// Found the audio endpoint that belongs to this DualSense.
+			Result.Id = std::wstring(pwszId);
+
+			// Also grab the friendly name (e.g. "Speakers (Wireless Controller)").
+			IPropertyStore* pProps = nullptr;
+			if (SUCCEEDED(pDevice->OpenPropertyStore(STGM_READ, &pProps)))
+			{
+				PROPVARIANT var;
+				PropVariantInit(&var);
+				// PKEY_DeviceInterface_FriendlyName gives the interface-level name.
+				// Fallback: PKEY_Device_FriendlyName gives the device-level name.
+				if (SUCCEEDED(pProps->GetValue(PKEY_DeviceInterface_FriendlyName, &var)) && var.pwszVal)
+				{
+					Result.FriendlyName = std::wstring(var.pwszVal);
+				}
+				else if (SUCCEEDED(pProps->GetValue(PKEY_Device_FriendlyName, &var)) && var.pwszVal)
+				{
+					Result.FriendlyName = std::wstring(var.pwszVal);
+				}
+				PropVariantClear(&var);
+				pProps->Release();
+			}
+
+			CoTaskMemFree(pwszId);
+			pDevice->Release();
+			break; // Only one audio device per physical controller.
+		}
+
+		CoTaskMemFree(pwszId);
+		pDevice->Release();
 	}
 
-	ma_context_uninit(&maContext);
+	pCollection->Release();
+
+	if (Result.Id.empty())
+	{
+		UE_LOG(LogDualSense, Warning, TEXT("InitializeAudioDevice: No matching WASAPI endpoint found for ContainerId %s."),
+		       *FString(TargetContainerId.c_str()));
+	}
+	else
+	{
+		UE_LOG(LogDualSense, Log, TEXT("InitializeAudioDevice: Matched audio endpoint '%s'."),
+		       *FString(Result.FriendlyName.c_str()));
+	}
+
+	return Result;
 }
 
 bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, std::int32_t* OutLastError)
@@ -357,7 +406,7 @@ void FWindowsDeviceInfo::ProcessAudioHaptic(FDeviceContext* Context)
 
 	unsigned long BytesWritten = 0;
 	constexpr size_t BufferSize = 142;
-	if (!WriteFile(Context->Handle, Context->BufferAudio, BufferSize, &BytesWritten, nullptr))
+	if (!WriteFile(Context->Handle, Context->BufferHapitcs, BufferSize, &BytesWritten, nullptr))
 	{
 		const unsigned long Error = GetLastError();
 		if (Error != ERROR_IO_PENDING)

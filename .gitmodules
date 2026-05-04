@@ -1,3 +1,4 @@
-[submodule "Source/WindowsDualsense_ds5w/Private/GamepadCore"]
-	path = Source/WindowsDualsense_ds5w/Private/GamepadCore
-	url = https://github.com/rafaelvaloto/GamepadCore_
+
+[submodule "Source/WindowsDualsense_ds5w/Private/Gamepad-Core"]
+	path = Source/WindowsDualsense_ds5w/Private/Gamepad-Core
+	url = https://github.com/rafaelvaloto/Gamepad-Core.git

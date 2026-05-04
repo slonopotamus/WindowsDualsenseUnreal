@@ -50,7 +50,7 @@ void DeviceManager::Tick(float DeltaTime)
 	IPlatformInputDeviceMapper::Get().GetAllConnectedInputDevices(OutInputDevices);
 	for (const FInputDeviceId& Device : OutInputDevices)
 	{
-		if (ISonyGamepad* Gamepad = Registry->GetLibraryInstance(Device); Gamepad)
+		if (auto* Gamepad = Registry->GetLibraryInstance(Device); Gamepad)
 		{
 			const FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(Device);
 			if (const int32 ControllerId = FPlatformMisc::GetUserIndexForPlatformUser(UserId); ControllerId == -1)
@@ -59,7 +59,7 @@ void DeviceManager::Tick(float DeltaTime)
 			}
 
 			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [=]() {
-				if (ISonyGamepad* Ref = Registry->GetLibraryInstance(Device); Ref)
+				if (auto* Ref = Registry->GetLibraryInstance(Device); Ref)
 				{
 					Ref->UpdateInput(PluginSettings::PollInterval);
 				}
@@ -77,7 +77,7 @@ void DeviceManager::SendControllerEvents(float DeltaTime)
 	IPlatformInputDeviceMapper::Get().GetAllConnectedInputDevices(OutInputDevices);
 	for (const FInputDeviceId& Device : OutInputDevices)
 	{
-		if (ISonyGamepad* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(Device); Gamepad)
+		if (auto* Gamepad = FDeviceRegistry::Get()->GetLibraryInstance(Device); Gamepad)
 		{
 			const FPlatformUserId UserId = IPlatformInputDeviceMapper::Get().GetUserForInputDevice(Device);
 			if (const int32 ControllerId = FPlatformMisc::GetUserIndexForPlatformUser(UserId); ControllerId == -1)
@@ -276,7 +276,7 @@ void DeviceManager::SetHapticFeedbackValues(const int32 ControllerId, const int3
 
 void DeviceManager::SetChannelValues(int32 ControllerId, const FForceFeedbackValues& Values)
 {
-	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
+	if (auto* Gamepad = GetGamepad(ControllerId))
 	{
 		auto GetRumbleByte = [](const float Small, const float Large) -> std::uint8_t {
 			std::uint8_t SmallNib = FMath::Clamp(Small, 0.f, 1.f) * 15;
@@ -286,16 +286,24 @@ void DeviceManager::SetChannelValues(int32 ControllerId, const FForceFeedbackVal
 
 		const std::uint8_t LeftRumble = GetRumbleByte(Values.LeftSmall, Values.LeftLarge);
 		const std::uint8_t RightRumble = GetRumbleByte(Values.RightSmall, Values.RightLarge);
-		Gamepad->SetVibration(LeftRumble, RightRumble);
+		if (auto* Rumble = Gamepad->GetIGamepadRumbles())
+		{
+			Rumble->SetVibration(LeftRumble, RightRumble);
+		}
+		
 		Gamepad->UpdateOutput();
 	}
 }
 
 void DeviceManager::SetLightColor(const int32 ControllerId, const FColor Color)
 {
-	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
+	if (auto* Gamepad = GetGamepad(ControllerId))
 	{
-		Gamepad->SetLightbar({Color.R, Color.G, Color.B, Color.A});
+		if (auto* Light= Gamepad->GetIGamepadLightbar())
+		{
+			Light->SetLightbar({Color.R, Color.G, Color.B, Color.A});
+		}
+		
 		Gamepad->UpdateOutput();
 	}
 }
