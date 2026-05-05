@@ -323,7 +323,20 @@ std::string FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)
 		if (AudioContainerId == TargetContainerId)
 		{
 			// Found the audio endpoint that belongs to this DualSense.
-			Result.Id = AudioContainerId;
+			Result.Id = TCHAR_TO_UTF8(pwszId);
+
+			IPropertyStore* pProps = nullptr;
+			if (SUCCEEDED(pDevice->OpenPropertyStore(STGM_READ, &pProps)) && pProps)
+			{
+				PROPVARIANT varName;
+				PropVariantInit(&varName);
+				if (SUCCEEDED(pProps->GetValue(PKEY_Device_FriendlyName, &varName)) && varName.vt == VT_LPWSTR && varName.pwszVal)
+				{
+					Result.FriendlyName = TCHAR_TO_UTF8(varName.pwszVal);
+				}
+				PropVariantClear(&varName);
+				pProps->Release();
+			}
 
 			CoTaskMemFree(pwszId);
 			pDevice->Release();

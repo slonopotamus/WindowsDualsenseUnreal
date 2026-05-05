@@ -8,6 +8,7 @@
 // clang-format off
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
+#include <Windows.h>
 #include <mmdeviceapi.h>
 #include <audioclient.h>
 #include "Windows/HideWindowsPlatformTypes.h"
@@ -94,8 +95,7 @@ public:
 		DevicePath = InDevicePath;
 		if (InDeviceId)
 		{
-			DeviceId = *InDeviceId;
-			bHasDeviceId = true;
+			InitializeWithDeviceId(InDeviceId, SampleRate, NumChannels);
 		}
 	}
 
@@ -222,8 +222,7 @@ public:
 		// Send the pending buffer to the WASAPI endpoint
 		const float* BufferData = RingBuffer.data();
 		int FrameCount = RingBuffer.size() / NumChannels;
-	
-		const bool bWriteOk = WriteToWasapiEndpoint(DeviceId, BufferData, FrameCount, NumChannels, SampleRate);
+		const bool bWriteOk = WriteToWasapiEndpoint(BufferData, FrameCount, NumChannels, SampleRate);
 
 		// Clear the buffer after sending
 		RingBuffer.clear();
@@ -236,38 +235,39 @@ public:
 	 * Opens the specified WASAPI audio endpoint by device ID and writes the float buffer
 	 * to it. Returns true if successful, false otherwise.
 	 *
-	 * @param WasapiDeviceId The WASAPI device ID (from PKEY_Device_FriendlyName or similar)
 	 * @param inAudioBuffer Pointer to float data to write
 	 * @param inFrameCount Number of audio frames to write
 	 * @param inNumChannels Number of audio channels (2 or 4)
 	 * @param inSampleRate Sample rate in Hz (typically 48000)
 	 * @return true if write succeeded, false on error
 	 */
-	bool WriteToWasapiEndpoint(const std::string& WasapiDeviceId, const float* inAudioBuffer, int inFrameCount, int inNumChannels, int inSampleRate)
+	bool WriteToWasapiEndpoint(const float* inAudioBuffer, int inFrameCount, int inNumChannels, int inSampleRate)
 	{
-		if (!inAudioBuffer || inFrameCount <= 0 || inNumChannels < 2 || WasapiDeviceId.empty())
+		if (!inAudioBuffer || inFrameCount <= 0 || inNumChannels < 2)
 		{
 			return false;
 		}
 
-		if (!AudioClient || !AudioRenderClient || WasapiDeviceId != DeviceId || inNumChannels != NumChannels || inSampleRate != SampleRate)
+		if (!AudioClient || !AudioRenderClient || !bHasDeviceId || DeviceId.empty())
 		{
-			AudioDeviceIdType RequestedId = WasapiDeviceId;
-			if (!InitializeWithDeviceId(&RequestedId, inSampleRate, inNumChannels))
-			{
-				return false;
-			}
+			return false;
+		}
+
+		if (inNumChannels != NumChannels || inSampleRate != SampleRate)
+		{
+			return false;
 		}
 
 		UINT32 CurrentPadding = 0;
 		HRESULT hr = AudioClient->GetCurrentPadding(&CurrentPadding);
 		if (FAILED(hr))
 		{
+			UE_LOG(LogDualSense, Warning, TEXT("WriteToWasapiEndpoint: GetCurrentPadding failed (0x%08X)"), hr);
 			return false;
 		}
 
-		const UINT32 FramesAvailable = (WasapiBufferFrameCount > CurrentPadding) ? (WasapiBufferFrameCount - CurrentPadding) : 0;
-		const UINT32 FramesToWrite = static_cast<UINT32>(FMath::Min(inFrameCount, static_cast<int>(FramesAvailable)));
+		const UINT32 FramesAvailable = WasapiBufferFrameCount > CurrentPadding ? (WasapiBufferFrameCount - CurrentPadding) : 0;
+		const UINT32 FramesToWrite = static_cast<UINT32>(FramesAvailable < static_cast<UINT32>(inFrameCount) ? FramesAvailable : static_cast<UINT32>(inFrameCount));
 		if (FramesToWrite == 0)
 		{
 			return true;
@@ -277,45 +277,52 @@ public:
 		hr = AudioRenderClient->GetBuffer(FramesToWrite, &OutBuffer);
 		if (FAILED(hr) || !OutBuffer)
 		{
+			UE_LOG(LogDualSense, Warning, TEXT("WriteToWasapiEndpoint: GetBuffer failed (0x%08X)"), hr);
 			return false;
 		}
 
-		const uint32 BytesToCopy = FramesToWrite * static_cast<uint32>(inNumChannels) * sizeof(float);
+		const SIZE_T BytesToCopy = static_cast<SIZE_T>(FramesToWrite) * static_cast<SIZE_T>(inNumChannels) * sizeof(float);
 		FMemory::Memcpy(OutBuffer, inAudioBuffer, BytesToCopy);
 
 		hr = AudioRenderClient->ReleaseBuffer(FramesToWrite, 0);
-		return SUCCEEDED(hr);
+		if (FAILED(hr))
+		{
+			UE_LOG(LogDualSense, Warning, TEXT("WriteToWasapiEndpoint: ReleaseBuffer failed (0x%08X)"), hr);
+			return false;
+		}
+
+		return true;
 	}
 
 private:
-	bool ConvertToWide(const std::string& InUtf8OrAnsi, std::wstring& OutWide) const
+	bool ConvertToWide(const std::string& InValue, std::wstring& OutValue) const
 	{
-		if (InUtf8OrAnsi.empty())
+		if (InValue.empty())
 		{
 			return false;
 		}
 
-		int WideCount = MultiByteToWideChar(CP_UTF8, 0, InUtf8OrAnsi.c_str(), -1, nullptr, 0);
+		int WideCount = MultiByteToWideChar(CP_UTF8, 0, InValue.c_str(), -1, nullptr, 0);
 		UINT CodePage = CP_UTF8;
 		if (WideCount <= 0)
 		{
 			CodePage = CP_ACP;
-			WideCount = MultiByteToWideChar(CodePage, 0, InUtf8OrAnsi.c_str(), -1, nullptr, 0);
+			WideCount = MultiByteToWideChar(CodePage, 0, InValue.c_str(), -1, nullptr, 0);
 		}
 		if (WideCount <= 0)
 		{
 			return false;
 		}
 
-		OutWide.resize(static_cast<size_t>(WideCount));
-		if (MultiByteToWideChar(CodePage, 0, InUtf8OrAnsi.c_str(), -1, OutWide.data(), WideCount) <= 0)
+		OutValue.resize(static_cast<size_t>(WideCount));
+		if (MultiByteToWideChar(CodePage, 0, InValue.c_str(), -1, OutValue.data(), WideCount) <= 0)
 		{
 			return false;
 		}
 
-		if (!OutWide.empty() && OutWide.back() == L'\0')
+		if (!OutValue.empty() && OutValue.back() == L'\0')
 		{
-			OutWide.pop_back();
+			OutValue.pop_back();
 		}
 
 		return true;
@@ -332,12 +339,12 @@ private:
 		}
 
 		HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-		if (FAILED(hr))
+		if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
 		{
 			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: CoInitializeEx failed (0x%08X)"), hr);
 			return false;
 		}
-		bComInitialized = true;
+		bComInitialized = SUCCEEDED(hr);
 
 		hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), reinterpret_cast<void**>(&DeviceEnumerator));
 		if (FAILED(hr) || !DeviceEnumerator)
