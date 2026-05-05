@@ -166,7 +166,11 @@ void FHapticsDeviceRegistry::InitializeAudioContainer(FDeviceContext* Context)
 	auto Policy = std::make_shared<GamepadCore::TAudioDeviceRegistry<AudioHapticsHardwarePolicy>>();
 	Policy->Policy.Device = AudioDeviceInfo;
 	Policy->Policy.DevicePath = Context->Path;
-	Policy->Policy.InitializeWithDeviceId(&AudioDeviceInfo.Id, 48000, 2);
+	if (!Policy->Policy.InitializeWithDeviceId(&AudioDeviceInfo.Id, 48000, 2))
+	{
+		UE_LOG(LogDualSense, Error, TEXT("InitializeAudioContainer: Failed to initialize WASAPI policy for %s."), *FString(AudioInfo.c_str()));
+		return;
+	}
 	DevicePolicies.emplace(Context->Path, Policy);
 
 	FString DeviceName(AudioInfo.c_str());
@@ -175,7 +179,7 @@ void FHapticsDeviceRegistry::InitializeAudioContainer(FDeviceContext* Context)
 
 void FHapticsDeviceRegistry::ProcessAudioHaptic(FDeviceContext* Context, const std::vector<std::int16_t>& AudioData)
 {
-	if (!Context)
+	if (!Context || AudioData.empty())
 	{
 		return;
 	}
@@ -194,7 +198,7 @@ void FHapticsDeviceRegistry::ProcessAudioHaptic(FDeviceContext* Context, const s
 	}
 
 	auto& Policy = it->second;
-	if (!Policy->IsValid() || Policy->Policy.RingBuffer.empty())
+	if (!Policy->IsValid())
 	{
 		return;
 	}

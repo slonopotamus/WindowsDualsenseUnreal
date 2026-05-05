@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "Helpers/DualSenseLog.h"
 #include <cstdint>
-#include <filesystem>
 #include <limits>
 #include <string>
 #include <vector>
@@ -33,15 +32,30 @@ public:
 	using AudioRingBufferType = std::vector<float>;
 	using AudioFrameCountType = int;
 
-	int NumChannels;
-	int SampleRate;
+	int NumChannels = 2;
+	int SampleRate = 48000;
 	bool bInitialized = false;
 	bool bHasDeviceId = false;
+	bool bComInitialized = false;
+	bool bAudioStarted = false;
 
 	DevicePathType DevicePath;
 	AudioDeviceType Device{};
 	AudioRingBufferType RingBuffer{};
 	AudioDeviceIdType DeviceId;
+
+#if PLATFORM_WINDOWS
+	IMMDeviceEnumerator* DeviceEnumerator = nullptr;
+	IMMDevice* DeviceEndpoint = nullptr;
+	IAudioClient* AudioClient = nullptr;
+	IAudioRenderClient* AudioRenderClient = nullptr;
+	UINT32 WasapiBufferFrameCount = 0;
+#endif
+
+	~WasApiPolicy()
+	{
+		Close();
+	}
 
 	bool Initialize()
 	{
@@ -50,21 +64,29 @@ public:
 
 	bool InitializeWithDeviceId(const AudioDeviceIdType* InDeviceId, int InSampleRate = 48000, int InNumChannels = 2)
 	{
+		Close();
+
+		SampleRate = InSampleRate;
+		NumChannels = InNumChannels;
+
 		if (InDeviceId)
 		{
 			DeviceId = *InDeviceId;
-			SampleRate = InSampleRate;
-			NumChannels = InNumChannels;
 			bHasDeviceId = true;
 		}
 		else
 		{
 			DeviceId.clear();
-			SampleRate = InSampleRate;
-			NumChannels = InNumChannels;
 			bHasDeviceId = false;
 		}
-		return true;
+
+		if (!bHasDeviceId)
+		{
+			return false;
+		}
+
+		bInitialized = InitializeWasapiClient();
+		return bInitialized;
 	}
 
 	void RegisterAudioDevice(const DevicePathType& InDevicePath, const AudioDeviceIdType* InDeviceId = nullptr)
@@ -88,9 +110,52 @@ public:
 	void Close()
 	{
 		bInitialized = false;
+
+#if PLATFORM_WINDOWS
+		if (AudioClient && bAudioStarted)
+		{
+			AudioClient->Stop();
+			bAudioStarted = false;
+		}
+
+		if (AudioRenderClient)
+		{
+			AudioRenderClient->Release();
+			AudioRenderClient = nullptr;
+		}
+
+		if (AudioClient)
+		{
+			AudioClient->Release();
+			AudioClient = nullptr;
+		}
+
+		if (DeviceEndpoint)
+		{
+			DeviceEndpoint->Release();
+			DeviceEndpoint = nullptr;
+		}
+
+		if (DeviceEnumerator)
+		{
+			DeviceEnumerator->Release();
+			DeviceEnumerator = nullptr;
+		}
+
+		WasapiBufferFrameCount = 0;
+
+		if (bComInitialized)
+		{
+			CoUninitialize();
+			bComInitialized = false;
+		}
+#endif
+
+		bInitialized = false;
 		bHasDeviceId = false;
 		Device = AudioDeviceType{};
-		
+		bAudioStarted = false;
+
 		DeviceId.clear();
 		DevicePath.clear();
 		RingBuffer.clear();
@@ -158,11 +223,11 @@ public:
 		const float* BufferData = RingBuffer.data();
 		int FrameCount = RingBuffer.size() / NumChannels;
 	
-		WriteToWasapiEndpoint(DeviceId, BufferData, FrameCount, NumChannels, SampleRate);
+		const bool bWriteOk = WriteToWasapiEndpoint(DeviceId, BufferData, FrameCount, NumChannels, SampleRate);
 
 		// Clear the buffer after sending
 		RingBuffer.clear();
-		return true;
+		return bWriteOk;
 	}
 	
 	/**
@@ -180,145 +245,175 @@ public:
 	 */
 	bool WriteToWasapiEndpoint(const std::string& WasapiDeviceId, const float* inAudioBuffer, int inFrameCount, int inNumChannels, int inSampleRate)
 	{
-		std::wstring inDeviceId = std::filesystem::path(WasapiDeviceId).wstring();
-		
-		if (!inAudioBuffer || inFrameCount == 0 || inNumChannels < 2)
+		if (!inAudioBuffer || inFrameCount <= 0 || inNumChannels < 2 || WasapiDeviceId.empty())
 		{
 			return false;
 		}
 
-		// Initialize COM
+		if (!AudioClient || !AudioRenderClient || WasapiDeviceId != DeviceId || inNumChannels != NumChannels || inSampleRate != SampleRate)
+		{
+			AudioDeviceIdType RequestedId = WasapiDeviceId;
+			if (!InitializeWithDeviceId(&RequestedId, inSampleRate, inNumChannels))
+			{
+				return false;
+			}
+		}
+
+		UINT32 CurrentPadding = 0;
+		HRESULT hr = AudioClient->GetCurrentPadding(&CurrentPadding);
+		if (FAILED(hr))
+		{
+			return false;
+		}
+
+		const UINT32 FramesAvailable = (WasapiBufferFrameCount > CurrentPadding) ? (WasapiBufferFrameCount - CurrentPadding) : 0;
+		const UINT32 FramesToWrite = static_cast<UINT32>(FMath::Min(inFrameCount, static_cast<int>(FramesAvailable)));
+		if (FramesToWrite == 0)
+		{
+			return true;
+		}
+
+		BYTE* OutBuffer = nullptr;
+		hr = AudioRenderClient->GetBuffer(FramesToWrite, &OutBuffer);
+		if (FAILED(hr) || !OutBuffer)
+		{
+			return false;
+		}
+
+		const uint32 BytesToCopy = FramesToWrite * static_cast<uint32>(inNumChannels) * sizeof(float);
+		FMemory::Memcpy(OutBuffer, inAudioBuffer, BytesToCopy);
+
+		hr = AudioRenderClient->ReleaseBuffer(FramesToWrite, 0);
+		return SUCCEEDED(hr);
+	}
+
+private:
+	bool ConvertToWide(const std::string& InUtf8OrAnsi, std::wstring& OutWide) const
+	{
+		if (InUtf8OrAnsi.empty())
+		{
+			return false;
+		}
+
+		int WideCount = MultiByteToWideChar(CP_UTF8, 0, InUtf8OrAnsi.c_str(), -1, nullptr, 0);
+		UINT CodePage = CP_UTF8;
+		if (WideCount <= 0)
+		{
+			CodePage = CP_ACP;
+			WideCount = MultiByteToWideChar(CodePage, 0, InUtf8OrAnsi.c_str(), -1, nullptr, 0);
+		}
+		if (WideCount <= 0)
+		{
+			return false;
+		}
+
+		OutWide.resize(static_cast<size_t>(WideCount));
+		if (MultiByteToWideChar(CodePage, 0, InUtf8OrAnsi.c_str(), -1, OutWide.data(), WideCount) <= 0)
+		{
+			return false;
+		}
+
+		if (!OutWide.empty() && OutWide.back() == L'\0')
+		{
+			OutWide.pop_back();
+		}
+
+		return true;
+	}
+
+	bool InitializeWasapiClient()
+	{
+#if !PLATFORM_WINDOWS
+		return false;
+#else
+		if (DeviceId.empty())
+		{
+			return false;
+		}
+
 		HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-		bool bComInitialized = SUCCEEDED(hr) || hr == S_FALSE;
-		if (!bComInitialized)
+		if (FAILED(hr))
 		{
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: CoInitializeEx failed (0x%08X)"), hr);
+			return false;
+		}
+		bComInitialized = true;
+
+		hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), reinterpret_cast<void**>(&DeviceEnumerator));
+		if (FAILED(hr) || !DeviceEnumerator)
+		{
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: CoCreateInstance failed (0x%08X)"), hr);
+			Close();
 			return false;
 		}
 
-		IMMDeviceEnumerator* pEnumerator = nullptr;
-		IMMDevice* pDevice = nullptr;
-		IAudioClient* pAudioClient = nullptr;
-		IAudioRenderClient* pRenderClient = nullptr;
-		bool bSuccess = false;
-
-		do
+		std::wstring WideDeviceId;
+		if (!ConvertToWide(DeviceId, WideDeviceId))
 		{
-			// Create device enumerator
-			hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
-			if (FAILED(hr) || !pEnumerator)
-			{
-				UE_LOG(LogDualSense, Error, TEXT("WriteToWasapiEndpoint: Failed to create device enumerator (0x%08X)"), hr);
-				break;
-			}
-
-			// Get the specified device
-			hr = pEnumerator->GetDevice(inDeviceId.c_str(), &pDevice);
-			if (FAILED(hr) || !pDevice)
-			{
-				UE_LOG(LogDualSense, Error, TEXT("WriteToWasapiEndpoint: Failed to get device (0x%08X)"), hr);
-				break;
-			}
-
-			// Activate the audio client
-			hr = pDevice->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&pAudioClient);
-			if (FAILED(hr) || !pAudioClient)
-			{
-				UE_LOG(LogDualSense, Error, TEXT("WriteToWasapiEndpoint: Failed to activate audio client (0x%08X)"), hr);
-				break;
-			}
-
-			// Set up wave format
-			WAVEFORMATEX WaveFormat = {};
-			WaveFormat.wFormatTag = WAVE_FORMAT_IEEE_FLOAT;
-			WaveFormat.nChannels = static_cast<WORD>(NumChannels);
-			WaveFormat.nSamplesPerSec = static_cast<DWORD>(SampleRate);
-			WaveFormat.nAvgBytesPerSec = static_cast<DWORD>(SampleRate * NumChannels * sizeof(float));
-			WaveFormat.nBlockAlign = static_cast<WORD>(NumChannels * sizeof(float));
-			WaveFormat.wBitsPerSample = 32;
-			WaveFormat.cbSize = 0;
-
-			// Initialize the audio client
-			hr = pAudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, 10000000, 0, &WaveFormat, nullptr);
-			if (FAILED(hr))
-			{
-				UE_LOG(LogDualSense, Error, TEXT("WriteToWasapiEndpoint: Failed to initialize audio client (0x%08X)"), hr);
-				break;
-			}
-
-			// Get render client
-			hr = pAudioClient->GetService(__uuidof(IAudioRenderClient), reinterpret_cast<void**>(&pRenderClient));
-			if (FAILED(hr) || !pRenderClient)
-			{
-				UE_LOG(LogDualSense, Error, TEXT("WriteToWasapiEndpoint: Failed to get render client (0x%08X)"), hr);
-				break;
-			}
-
-			// Get buffer size
-			UINT32 BufferFrameCount = 0;
-			hr = pAudioClient->GetBufferSize(&BufferFrameCount);
-			if (FAILED(hr))
-			{
-				UE_LOG(LogDualSense, Error, TEXT("WriteToWasapiEndpoint: Failed to get buffer size (0x%08X)"), hr);
-				break;
-			}
-
-			// Fill initial buffer
-			BYTE* pBuffer = nullptr;
-			hr = pRenderClient->GetBuffer(BufferFrameCount, &pBuffer);
-			if (FAILED(hr) || !pBuffer)
-			{
-				UE_LOG(LogDualSense, Error, TEXT("WriteToWasapiEndpoint: Failed to get buffer (0x%08X)"), hr);
-				break;
-			}
-
-			// Copy audio data
-			uint32 BytesToCopy = BufferFrameCount * static_cast<uint32>(NumChannels) * sizeof(float);
-			FMemory::Memcpy(pBuffer, inAudioBuffer, BytesToCopy);
-
-			// Release buffer
-			hr = pRenderClient->ReleaseBuffer(BufferFrameCount, 0);
-			if (FAILED(hr))
-			{
-				UE_LOG(LogDualSense, Error, TEXT("WriteToWasapiEndpoint: Failed to release buffer (0x%08X)"), hr);
-				break;
-			}
-
-			// Start playback
-			hr = pAudioClient->Start();
-			if (FAILED(hr))
-			{
-				UE_LOG(LogDualSense, Warning, TEXT("WriteToWasapiEndpoint: Audio client already started or failed to start (0x%08X)"), hr);
-				// This might not be a fatal error if already running
-			}
-
-			bSuccess = true;
-
-		} while (false);
-
-		// Cleanup
-		if (pRenderClient)
-		{
-			pRenderClient->Release();
-		}
-		if (pAudioClient)
-		{
-			pAudioClient->Stop();
-			pAudioClient->Release();
-		}
-		if (pDevice)
-		{
-			pDevice->Release();
-		}
-		if (pEnumerator)
-		{
-			pEnumerator->Release();
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: Failed converting device id to wide string."));
+			Close();
+			return false;
 		}
 
-		if (bComInitialized)
+		hr = DeviceEnumerator->GetDevice(WideDeviceId.c_str(), &DeviceEndpoint);
+		if (FAILED(hr) || !DeviceEndpoint)
 		{
-			CoUninitialize();
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: GetDevice failed (0x%08X)"), hr);
+			Close();
+			return false;
 		}
 
-		return bSuccess;
+		hr = DeviceEndpoint->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr, reinterpret_cast<void**>(&AudioClient));
+		if (FAILED(hr) || !AudioClient)
+		{
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: Activate(IAudioClient) failed (0x%08X)"), hr);
+			Close();
+			return false;
+		}
+
+		const WAVEFORMATEX WaveFormat = {
+			WAVE_FORMAT_IEEE_FLOAT,
+			static_cast<WORD>(NumChannels),
+			static_cast<DWORD>(SampleRate),
+			static_cast<DWORD>(SampleRate * NumChannels * sizeof(float)),
+			static_cast<WORD>(NumChannels * sizeof(float)),
+			32,
+			0};
+
+		hr = AudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, 10000000, 0, &WaveFormat, nullptr);
+		if (FAILED(hr))
+		{
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: AudioClient->Initialize failed (0x%08X)"), hr);
+			Close();
+			return false;
+		}
+
+		hr = AudioClient->GetService(__uuidof(IAudioRenderClient), reinterpret_cast<void**>(&AudioRenderClient));
+		if (FAILED(hr) || !AudioRenderClient)
+		{
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: GetService(IAudioRenderClient) failed (0x%08X)"), hr);
+			Close();
+			return false;
+		}
+
+		hr = AudioClient->GetBufferSize(&WasapiBufferFrameCount);
+		if (FAILED(hr) || WasapiBufferFrameCount == 0)
+		{
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: GetBufferSize failed (0x%08X)"), hr);
+			Close();
+			return false;
+		}
+
+		hr = AudioClient->Start();
+		if (FAILED(hr))
+		{
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: AudioClient->Start failed (0x%08X)"), hr);
+			Close();
+			return false;
+		}
+
+		bAudioStarted = true;
+		return true;
+#endif
 	}
 };
