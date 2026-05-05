@@ -33,12 +33,6 @@ enum class EPollResult
 	Disconnected
 };
 
-struct FAudioDeviceInfo
-{
-	std::wstring Id;           // O ID maluco que o WASAPI precisa: "{0.0.0.0000}..."
-	std::wstring FriendlyName; // O nome legível: "Speakers (Wireless Controller)"
-};
-
 /**
  * @brief Represents a static class for HID device management and operations.
  *
@@ -167,7 +161,7 @@ public:
 	 * @param Context Pointer to the device context (must have a valid Path).
 	 * @return FAudioDeviceInfo with Id/FriendlyName if found, empty otherwise.
 	 */
-	static FAudioDeviceInfo InitializeAudioDevice(FDeviceContext* Context);
+	static std::string InitializeAudioDevice(FDeviceContext* Context);
 	/**
 	 * @brief Gets the container ID for a HID device path.
 	 *

@@ -9,6 +9,7 @@
 #include "GCore/Types/Structs/Config/GamepadCalibration.h"
 #include "GImplementations/Utils/GamepadSensors.h"
 #include "Helpers/DualSenseLog.h"
+#include "Implementations/Managers/HapticsDeviceRegistry.h"
 #include <filesystem>
 #include <hidsdi.h>
 #include <mmdeviceapi.h>
@@ -259,7 +260,7 @@ EPollResult FWindowsDeviceInfo::PollTick(HANDLE Handle, unsigned char* Buffer, s
  *
  * @param Context The device context to store the audio device in
  */
-FAudioDeviceInfo FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)
+std::string FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)
 {
 	if (!Context || Context->Path.empty())
 	{
@@ -322,27 +323,7 @@ FAudioDeviceInfo FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Conte
 		if (AudioContainerId == TargetContainerId)
 		{
 			// Found the audio endpoint that belongs to this DualSense.
-			Result.Id = std::wstring(pwszId);
-
-			// Also grab the friendly name (e.g. "Speakers (Wireless Controller)").
-			IPropertyStore* pProps = nullptr;
-			if (SUCCEEDED(pDevice->OpenPropertyStore(STGM_READ, &pProps)))
-			{
-				PROPVARIANT var;
-				PropVariantInit(&var);
-				// PKEY_DeviceInterface_FriendlyName gives the interface-level name.
-				// Fallback: PKEY_Device_FriendlyName gives the device-level name.
-				if (SUCCEEDED(pProps->GetValue(PKEY_DeviceInterface_FriendlyName, &var)) && var.pwszVal)
-				{
-					Result.FriendlyName = std::wstring(var.pwszVal);
-				}
-				else if (SUCCEEDED(pProps->GetValue(PKEY_Device_FriendlyName, &var)) && var.pwszVal)
-				{
-					Result.FriendlyName = std::wstring(var.pwszVal);
-				}
-				PropVariantClear(&var);
-				pProps->Release();
-			}
+			Result.Id = AudioContainerId;
 
 			CoTaskMemFree(pwszId);
 			pDevice->Release();
@@ -366,7 +347,7 @@ FAudioDeviceInfo FWindowsDeviceInfo::InitializeAudioDevice(FDeviceContext* Conte
 		       *FString(Result.FriendlyName.c_str()));
 	}
 
-	return Result;
+	return Result.Id;
 }
 
 bool FWindowsDeviceInfo::PingOnce(HANDLE Handle, std::int32_t* OutLastError)
