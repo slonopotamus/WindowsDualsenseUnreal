@@ -1,35 +1,40 @@
 ﻿#pragma once
 #include "Helpers/DualSenseLog.h"
+#include <SetupAPI.h>
+#include <audioclient.h>
 #include <cstdint>
+#include <devpkey.h>
+#include <hidsdi.h>
 #include <limits>
+#include <mmdeviceapi.h>
+#include <mutex>
+#include <propsys.h>
 #include <string>
 #include <vector>
+#include <cstring>
 
 // clang-format off
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
 #include <Windows.h>
-#include <mmdeviceapi.h>
-#include <audioclient.h>
+#include <Functiondiscoverykeys_devpkey.h>
 #include "Windows/HideWindowsPlatformTypes.h"
 #endif
 // clang-format on
 
-
-struct FAudioDeviceInfo
-{
-	std::string Id;           // O ID maluco que o WASAPI precisa: "{0.0.0.0000}..."
-	std::string FriendlyName; // O nome legível: "Speakers (Wireless Controller)"
-};
+#pragma comment(lib, "Propsys.lib")
 
 struct WasApiPolicy
 {
 public:
-	using DevicePathType = std::string;
-	using AudioDeviceType = FAudioDeviceInfo;
-	using AudioDeviceIdType = std::string;
+	using Policy = WasApiPolicy;
 
-	// In this policy we keep a software staging buffer. The actual WASAPI write happens elsewhere.
+	using DevicePathType = std::string;
+	using AudioDeviceType = IAudioClient*;
+	using AudioDeviceIdType = std::wstring;
+	using ContextType = FDeviceContext;
+
+	// Send-only path: Unreal already provides samples from submix; this policy only writes to WASAPI output.
 	using AudioRingBufferType = std::vector<float>;
 	using AudioFrameCountType = int;
 
@@ -37,13 +42,14 @@ public:
 	int SampleRate = 48000;
 	bool bInitialized = false;
 	bool bHasDeviceId = false;
+	bool bRingBufferInitialized = false;
+	bool bFoundDevice = false;
 	bool bComInitialized = false;
 	bool bAudioStarted = false;
 
 	DevicePathType DevicePath;
-	AudioDeviceType Device{};
-	AudioRingBufferType RingBuffer{};
 	AudioDeviceIdType DeviceId;
+	AudioRingBufferType RingBuffer;
 
 #if PLATFORM_WINDOWS
 	IMMDeviceEnumerator* DeviceEnumerator = nullptr;
@@ -53,63 +59,47 @@ public:
 	UINT32 WasapiBufferFrameCount = 0;
 #endif
 
+	std::mutex WriteMutex;
+
+	WasApiPolicy() = default;
 	~WasApiPolicy()
 	{
 		Close();
 	}
 
-	bool Initialize()
+	bool InitializeWithDeviceId(const AudioDeviceIdType& InDeviceId)
 	{
-		return InitializeWithDeviceId(nullptr, 48000, 2);
+		return InitializeWithDeviceId(&InDeviceId, SampleRate, NumChannels);
 	}
 
-	bool InitializeWithDeviceId(const AudioDeviceIdType* InDeviceId, int InSampleRate = 48000, int InNumChannels = 2)
+	bool InitializeWithDeviceId(const AudioDeviceIdType* InDeviceId, int InSampleRate = 48000, int InNumChannels = 4)
 	{
 		Close();
 
-		SampleRate = InSampleRate;
-		NumChannels = InNumChannels;
-
-		if (InDeviceId)
-		{
-			DeviceId = *InDeviceId;
-			bHasDeviceId = true;
-		}
-		else
-		{
-			DeviceId.clear();
-			bHasDeviceId = false;
-		}
-
-		if (!bHasDeviceId)
+		if (!InDeviceId || InDeviceId->empty())
 		{
 			return false;
 		}
 
-		bInitialized = InitializeWasapiClient();
-		return bInitialized;
-	}
+		DeviceId = *InDeviceId;
+		SampleRate = InSampleRate;
+		NumChannels = InNumChannels;
+		bHasDeviceId = true;
 
-	void RegisterAudioDevice(const DevicePathType& InDevicePath, const AudioDeviceIdType* InDeviceId = nullptr)
-	{
-		DevicePath = InDevicePath;
-		if (InDeviceId)
-		{
-			InitializeWithDeviceId(InDeviceId, SampleRate, NumChannels);
-		}
-	}
-
-	void UnregisterAudioDevice(const DevicePathType& InDevicePath)
-	{
-		if (DevicePath == InDevicePath)
+		if (!InitializeWasapiClient())
 		{
 			Close();
+			return false;
 		}
+
+		bRingBufferInitialized = true;
+		bInitialized = true;
+		return true;
 	}
 
 	void Close()
 	{
-		bInitialized = false;
+		std::lock_guard<std::mutex> Lock(WriteMutex);
 
 #if PLATFORM_WINDOWS
 		if (AudioClient && bAudioStarted)
@@ -142,8 +132,6 @@ public:
 			DeviceEnumerator = nullptr;
 		}
 
-		WasapiBufferFrameCount = 0;
-
 		if (bComInitialized)
 		{
 			CoUninitialize();
@@ -151,222 +139,304 @@ public:
 		}
 #endif
 
-		bInitialized = false;
-		bHasDeviceId = false;
-		Device = AudioDeviceType{};
-		bAudioStarted = false;
-
+		WasapiBufferFrameCount = 0;
+		RingBuffer.clear();
 		DeviceId.clear();
 		DevicePath.clear();
-		RingBuffer.clear();
+		bInitialized = false;
+		bHasDeviceId = false;
+		bRingBufferInitialized = false;
+		bFoundDevice = false;
+		bAudioStarted = false;
 	}
 
 	[[nodiscard]] bool IsValid() const
 	{
-		return bInitialized;
+		return bInitialized && bRingBufferInitialized;
 	}
 
-	static AudioFrameCountType GetAvailableWriteFrames()
+	void RegisterAudioDevice(const DevicePathType& InDevicePath, const AudioDeviceIdType* InDeviceId = nullptr)
 	{
-		return std::numeric_limits<AudioFrameCountType>::max();
+		DevicePath = InDevicePath;
+		if (InDeviceId)
+		{
+			InitializeWithDeviceId(InDeviceId, SampleRate, NumChannels);
+		}
 	}
 
-	/**
-	 * @brief Converts interleaved audio data to a normalized float buffer and sends it to a WASAPI endpoint.
-	 *
-	 * This function processes interleaved audio input data, converts it to a normalized float format,
-	 * and writes it to an internal buffer. It then sends the buffer to a WASAPI render endpoint. This
-	 * function supports stereo and quad-channel configurations, with proper normalization and mapping
-	 * of channels, and clears the internal buffer after transmission.
-	 *
-	 * @param InterleavedData A vector of int16_t interleaved audio samples, where every two samples represent
-	 *        left and right channel data in stereo.
-	 * @return true if haptic data is successfully written to the WASAPI endpoint, false otherwise.
-	 */
+	void UnregisterAudioDevice(const DevicePathType& InDevicePath)
+	{
+		if (DevicePath == InDevicePath)
+		{
+			Close();
+		}
+	}
+
 	bool WriteHapticData(const std::vector<std::int16_t>& InterleavedData)
 	{
+		std::lock_guard<std::mutex> Lock(WriteMutex);
+
 		if (!IsValid() || InterleavedData.empty() || NumChannels < 2)
 		{
 			return false;
 		}
 
-		const AudioFrameCountType FramesToWrite = static_cast<AudioFrameCountType>(InterleavedData.size() / 2);
-		if (FramesToWrite == 0)
+		const AudioFrameCountType framesToWrite = static_cast<AudioFrameCountType>(InterleavedData.size() / 2);
+
+		if (framesToWrite == 0)
 		{
 			return true;
 		}
 
-		RingBuffer.resize(static_cast<size_t>(FramesToWrite) * static_cast<size_t>(NumChannels));
-
+		RingBuffer.resize(static_cast<size_t>(framesToWrite) * static_cast<size_t>(NumChannels));
+		auto* pOutputBuffer = RingBuffer.data();
 		constexpr float kNormalization = 1.0f / 32768.0f;
-		for (AudioFrameCountType i = 0; i < FramesToWrite; ++i)
+		for (AudioFrameCountType i = 0; i < framesToWrite; i++)
 		{
 			const float LeftFloat = static_cast<float>(InterleavedData[static_cast<size_t>(i) * 2]) * kNormalization;
 			const float RightFloat = static_cast<float>(InterleavedData[(static_cast<size_t>(i) * 2) + 1]) * kNormalization;
-			const size_t BaseIndex = static_cast<size_t>(i) * static_cast<size_t>(NumChannels);
+			const AudioFrameCountType baseIndex = i * NumChannels;
 
 			if (NumChannels >= 4)
 			{
-				RingBuffer[BaseIndex + 0] = 0.f;
-				RingBuffer[BaseIndex + 1] = 0.f;
-				RingBuffer[BaseIndex + 2] = LeftFloat;
-				RingBuffer[BaseIndex + 3] = RightFloat;
+				pOutputBuffer[baseIndex + 0] = 0.0f;
+				pOutputBuffer[baseIndex + 1] = 0.0f;
+				pOutputBuffer[baseIndex + 2] = LeftFloat;
+				pOutputBuffer[baseIndex + 3] = RightFloat;
 			}
 			else
 			{
-				RingBuffer[BaseIndex + 0] = LeftFloat;
-				RingBuffer[BaseIndex + 1] = RightFloat;
+				pOutputBuffer[baseIndex + 0] = LeftFloat;
+				pOutputBuffer[baseIndex + 1] = RightFloat;
 			}
 		}
-		
-		// Send the pending buffer to the WASAPI endpoint
-		const float* BufferData = RingBuffer.data();
-		int FrameCount = RingBuffer.size() / NumChannels;
-		const bool bWriteOk = WriteToWasapiEndpoint(BufferData, FrameCount, NumChannels, SampleRate);
 
-		// Clear the buffer after sending
+		const bool bResult = WriteToWasapiEndpoint(RingBuffer.data(), framesToWrite);
 		RingBuffer.clear();
-		return bWriteOk;
+		return bResult;
 	}
-	
-	/**
-	 * @brief Sends haptic audio data to a WASAPI render endpoint.
-	 *
-	 * Opens the specified WASAPI audio endpoint by device ID and writes the float buffer
-	 * to it. Returns true if successful, false otherwise.
-	 *
-	 * @param inAudioBuffer Pointer to float data to write
-	 * @param inFrameCount Number of audio frames to write
-	 * @param inNumChannels Number of audio channels (2 or 4)
-	 * @param inSampleRate Sample rate in Hz (typically 48000)
-	 * @return true if write succeeded, false on error
-	 */
-	bool WriteToWasapiEndpoint(const float* inAudioBuffer, int inFrameCount, int inNumChannels, int inSampleRate)
+
+	bool InitializeAudioContainer(const ContextType* Context)
 	{
-		if (!inAudioBuffer || inFrameCount <= 0 || inNumChannels < 2)
+		if (!Context)
 		{
 			return false;
 		}
 
-		if (!AudioClient || !AudioRenderClient || !bHasDeviceId || DeviceId.empty())
+		DevicePath = Context->Path;
+		if (DevicePath.empty())
 		{
 			return false;
 		}
 
-		if (inNumChannels != NumChannels || inSampleRate != SampleRate)
+		const std::string TargetContainerId = get_container_id(DevicePath);
+		if (TargetContainerId.empty())
 		{
+			UE_LOG(LogDualSense, Warning, TEXT("InitializeAudioContainer: Failed to get HID container id."));
 			return false;
 		}
 
-		UINT32 CurrentPadding = 0;
-		HRESULT hr = AudioClient->GetCurrentPadding(&CurrentPadding);
-		if (FAILED(hr))
+#if PLATFORM_WINDOWS
+		HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+		const bool bTempComInitialized = SUCCEEDED(hr);
+		if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
 		{
-			UE_LOG(LogDualSense, Warning, TEXT("WriteToWasapiEndpoint: GetCurrentPadding failed (0x%08X)"), hr);
+			UE_LOG(LogDualSense, Error, TEXT("InitializeAudioContainer: CoInitializeEx failed (0x%08X)"), hr);
 			return false;
 		}
 
-		const UINT32 FramesAvailable = WasapiBufferFrameCount > CurrentPadding ? (WasapiBufferFrameCount - CurrentPadding) : 0;
-		const UINT32 FramesToWrite = static_cast<UINT32>(FramesAvailable < static_cast<UINT32>(inFrameCount) ? FramesAvailable : static_cast<UINT32>(inFrameCount));
-		if (FramesToWrite == 0)
+		IMMDeviceEnumerator* pEnumerator = nullptr;
+		hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+		                      __uuidof(IMMDeviceEnumerator), reinterpret_cast<void**>(&pEnumerator));
+		if (FAILED(hr) || !pEnumerator)
 		{
-			return true;
-		}
-
-		BYTE* OutBuffer = nullptr;
-		hr = AudioRenderClient->GetBuffer(FramesToWrite, &OutBuffer);
-		if (FAILED(hr) || !OutBuffer)
-		{
-			UE_LOG(LogDualSense, Warning, TEXT("WriteToWasapiEndpoint: GetBuffer failed (0x%08X)"), hr);
+			if (bTempComInitialized)
+			{
+				CoUninitialize();
+			}
+			UE_LOG(LogDualSense, Error, TEXT("InitializeAudioContainer: CoCreateInstance failed (0x%08X)"), hr);
 			return false;
 		}
 
-		const SIZE_T BytesToCopy = static_cast<SIZE_T>(FramesToWrite) * static_cast<SIZE_T>(inNumChannels) * sizeof(float);
-		FMemory::Memcpy(OutBuffer, inAudioBuffer, BytesToCopy);
-
-		hr = AudioRenderClient->ReleaseBuffer(FramesToWrite, 0);
-		if (FAILED(hr))
+		IMMDeviceCollection* pCollection = nullptr;
+		hr = pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection);
+		pEnumerator->Release();
+		if (FAILED(hr) || !pCollection)
 		{
-			UE_LOG(LogDualSense, Warning, TEXT("WriteToWasapiEndpoint: ReleaseBuffer failed (0x%08X)"), hr);
+			if (bTempComInitialized)
+			{
+				CoUninitialize();
+			}
+			UE_LOG(LogDualSense, Error, TEXT("InitializeAudioContainer: EnumAudioEndpoints failed (0x%08X)"), hr);
 			return false;
 		}
 
-		return true;
+		UINT Count = 0;
+		pCollection->GetCount(&Count);
+
+		AudioDeviceIdType FoundEndpointId;
+		for (UINT i = 0; i < Count; ++i)
+		{
+			IMMDevice* pDevice = nullptr;
+			if (FAILED(pCollection->Item(i, &pDevice)) || !pDevice)
+			{
+				continue;
+			}
+
+			LPWSTR pwszId = nullptr;
+			if (SUCCEEDED(pDevice->GetId(&pwszId)) && pwszId)
+			{
+				const std::string AudioContainerId = get_audio_container_id(pwszId);
+				if (AudioContainerId == TargetContainerId)
+				{
+					FoundEndpointId = pwszId;
+					CoTaskMemFree(pwszId);
+					pDevice->Release();
+					break;
+				}
+				CoTaskMemFree(pwszId);
+			}
+
+			pDevice->Release();
+		}
+
+		pCollection->Release();
+
+		if (bTempComInitialized)
+		{
+			CoUninitialize();
+		}
+
+		if (FoundEndpointId.empty())
+		{
+			UE_LOG(LogDualSense, Warning, TEXT("InitializeAudioContainer: No audio endpoint matched HID container id."));
+			return false;
+		}
+
+		bFoundDevice = true;
+		return InitializeWithDeviceId(&FoundEndpointId, SampleRate, NumChannels);
+#else
+		return false;
+#endif
+	}
+
+	std::string get_container_id(const std::string& InDevicePath)
+	{
+		std::wstring WPath(InDevicePath.begin(), InDevicePath.end());
+		GUID HidGuid;
+		HidD_GetHidGuid(&HidGuid);
+
+		HDEVINFO DeviceInfoSet = SetupDiGetClassDevsW(&HidGuid, nullptr, nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+		if (DeviceInfoSet == INVALID_HANDLE_VALUE)
+		{
+			return "";
+		}
+
+		SP_DEVICE_INTERFACE_DATA DeviceInterfaceData = {sizeof(SP_DEVICE_INTERFACE_DATA)};
+		if (SetupDiOpenDeviceInterfaceW(DeviceInfoSet, WPath.c_str(), 0, &DeviceInterfaceData))
+		{
+			SP_DEVINFO_DATA DeviceInfoData = {sizeof(SP_DEVINFO_DATA)};
+			// DetailData is needed to get the DevInfoData associated with the interface
+			DWORD RequiredSize = 0;
+			SetupDiGetDeviceInterfaceDetailW(DeviceInfoSet, &DeviceInterfaceData, nullptr, 0, &RequiredSize, nullptr);
+			if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			{
+				std::vector<char> Buffer(RequiredSize);
+				PSP_DEVICE_INTERFACE_DETAIL_DATA_W pDetail = (PSP_DEVICE_INTERFACE_DETAIL_DATA_W)Buffer.data();
+				pDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_W);
+				if (SetupDiGetDeviceInterfaceDetailW(DeviceInfoSet, &DeviceInterfaceData, pDetail, RequiredSize, nullptr, &DeviceInfoData))
+				{
+					DEVPROPTYPE PropType;
+					GUID ContainerId = {0};
+					if (SetupDiGetDevicePropertyW(DeviceInfoSet, &DeviceInfoData, &DEVPKEY_Device_ContainerId, &PropType, (PBYTE)&ContainerId, sizeof(GUID), nullptr, 0))
+					{
+						wchar_t GuidString[40];
+						StringFromGUID2(ContainerId, GuidString, 40);
+						SetupDiDestroyDeviceInfoList(DeviceInfoSet);
+
+						char GuidStr[40];
+						WideCharToMultiByte(CP_ACP, 0, GuidString, -1, GuidStr, 40, nullptr, nullptr);
+						return std::string(GuidStr);
+					}
+				}
+			}
+		}
+		SetupDiDestroyDeviceInfoList(DeviceInfoSet);
+		return "";
+	}
+
+	std::string get_audio_container_id(const wchar_t* AudioDeviceId)
+	{
+		IMMDeviceEnumerator* pEnumerator = nullptr;
+		IMMDevice* pDevice = nullptr;
+		IPropertyStore* pProps = nullptr;
+		std::string Result;
+
+		HRESULT hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
+		if (SUCCEEDED(hr))
+		{
+			hr = pEnumerator->GetDevice(AudioDeviceId, &pDevice);
+			if (SUCCEEDED(hr))
+			{
+				hr = pDevice->OpenPropertyStore(STGM_READ, &pProps);
+				if (SUCCEEDED(hr))
+				{
+					PROPVARIANT var;
+					PropVariantInit(&var);
+					hr = pProps->GetValue(PKEY_Device_ContainerId, &var);
+					if (SUCCEEDED(hr) && var.vt == VT_CLSID)
+					{
+						wchar_t GuidString[40];
+						StringFromGUID2(*var.puuid, GuidString, 40);
+
+						char GuidStr[40];
+						WideCharToMultiByte(CP_ACP, 0, GuidString, -1, GuidStr, 40, nullptr, nullptr);
+						Result = std::string(GuidStr);
+					}
+					PropVariantClear(&var);
+					pProps->Release();
+				}
+				pDevice->Release();
+			}
+			pEnumerator->Release();
+		}
+
+		return Result;
 	}
 
 private:
-	bool ConvertToWide(const std::string& InValue, std::wstring& OutValue) const
-	{
-		if (InValue.empty())
-		{
-			return false;
-		}
-
-		int WideCount = MultiByteToWideChar(CP_UTF8, 0, InValue.c_str(), -1, nullptr, 0);
-		UINT CodePage = CP_UTF8;
-		if (WideCount <= 0)
-		{
-			CodePage = CP_ACP;
-			WideCount = MultiByteToWideChar(CodePage, 0, InValue.c_str(), -1, nullptr, 0);
-		}
-		if (WideCount <= 0)
-		{
-			return false;
-		}
-
-		OutValue.resize(static_cast<size_t>(WideCount));
-		if (MultiByteToWideChar(CodePage, 0, InValue.c_str(), -1, OutValue.data(), WideCount) <= 0)
-		{
-			return false;
-		}
-
-		if (!OutValue.empty() && OutValue.back() == L'\0')
-		{
-			OutValue.pop_back();
-		}
-
-		return true;
-	}
-
 	bool InitializeWasapiClient()
 	{
-#if !PLATFORM_WINDOWS
-		return false;
-#else
-		if (DeviceId.empty())
+#if PLATFORM_WINDOWS
+		if (!bHasDeviceId || DeviceId.empty())
 		{
 			return false;
 		}
 
 		HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+		const bool bComCallSucceeded = SUCCEEDED(hr);
 		if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
 		{
 			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: CoInitializeEx failed (0x%08X)"), hr);
 			return false;
 		}
-		bComInitialized = SUCCEEDED(hr);
+		if (bComCallSucceeded)
+		{
+			bComInitialized = true;
+		}
 
-		hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), reinterpret_cast<void**>(&DeviceEnumerator));
+		hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
+		                      __uuidof(IMMDeviceEnumerator), reinterpret_cast<void**>(&DeviceEnumerator));
 		if (FAILED(hr) || !DeviceEnumerator)
 		{
 			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: CoCreateInstance failed (0x%08X)"), hr);
-			Close();
 			return false;
 		}
 
-		std::wstring WideDeviceId;
-		if (!ConvertToWide(DeviceId, WideDeviceId))
-		{
-			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: Failed converting device id to wide string."));
-			Close();
-			return false;
-		}
-
-		hr = DeviceEnumerator->GetDevice(WideDeviceId.c_str(), &DeviceEndpoint);
+		hr = DeviceEnumerator->GetDevice(DeviceId.c_str(), &DeviceEndpoint);
 		if (FAILED(hr) || !DeviceEndpoint)
 		{
 			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: GetDevice failed (0x%08X)"), hr);
-			Close();
 			return false;
 		}
 
@@ -374,24 +444,25 @@ private:
 		if (FAILED(hr) || !AudioClient)
 		{
 			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: Activate(IAudioClient) failed (0x%08X)"), hr);
-			Close();
 			return false;
 		}
 
-		const WAVEFORMATEX WaveFormat = {
-			WAVE_FORMAT_IEEE_FLOAT,
-			static_cast<WORD>(NumChannels),
-			static_cast<DWORD>(SampleRate),
-			static_cast<DWORD>(SampleRate * NumChannels * sizeof(float)),
-			static_cast<WORD>(NumChannels * sizeof(float)),
-			32,
-			0};
+		WAVEFORMATEX* MixFormat = nullptr;
+		hr = AudioClient->GetMixFormat(&MixFormat);
+		if (FAILED(hr) || !MixFormat)
+		{
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: GetMixFormat failed (0x%08X)"), hr);
+			return false;
+		}
 
-		hr = AudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, 10000000, 0, &WaveFormat, nullptr);
+		NumChannels = MixFormat->nChannels;
+		SampleRate = MixFormat->nSamplesPerSec;
+
+		hr = AudioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, 0, 0, 0, MixFormat, nullptr);
+		CoTaskMemFree(MixFormat);
 		if (FAILED(hr))
 		{
-			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: AudioClient->Initialize failed (0x%08X)"), hr);
-			Close();
+			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: IAudioClient::Initialize failed (0x%08X)"), hr);
 			return false;
 		}
 
@@ -399,7 +470,6 @@ private:
 		if (FAILED(hr) || !AudioRenderClient)
 		{
 			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: GetService(IAudioRenderClient) failed (0x%08X)"), hr);
-			Close();
 			return false;
 		}
 
@@ -407,7 +477,6 @@ private:
 		if (FAILED(hr) || WasapiBufferFrameCount == 0)
 		{
 			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: GetBufferSize failed (0x%08X)"), hr);
-			Close();
 			return false;
 		}
 
@@ -415,12 +484,54 @@ private:
 		if (FAILED(hr))
 		{
 			UE_LOG(LogDualSense, Error, TEXT("InitializeWasapiClient: AudioClient->Start failed (0x%08X)"), hr);
-			Close();
 			return false;
 		}
 
 		bAudioStarted = true;
 		return true;
+#else
+		return false;
+#endif
+	}
+
+	bool WriteToWasapiEndpoint(const float* InAudioBuffer, AudioFrameCountType InFrameCount)
+	{
+#if PLATFORM_WINDOWS
+		// Write-only render path. No capture/readback is used by this policy.
+		if (!InAudioBuffer || InFrameCount <= 0 || !AudioClient || !AudioRenderClient || !bAudioStarted || NumChannels <= 0)
+		{
+			return false;
+		}
+
+		UINT32 Padding = 0;
+		HRESULT hr = AudioClient->GetCurrentPadding(&Padding);
+		if (FAILED(hr) || Padding > WasapiBufferFrameCount)
+		{
+			return false;
+		}
+
+		const UINT32 AvailableFrames = WasapiBufferFrameCount - Padding;
+		const UINT32 FramesToWrite = static_cast<UINT32>(
+		    std::min<AudioFrameCountType>(static_cast<AudioFrameCountType>(AvailableFrames), InFrameCount));
+		if (FramesToWrite == 0)
+		{
+			return true;
+		}
+
+		BYTE* pData = nullptr;
+		hr = AudioRenderClient->GetBuffer(FramesToWrite, &pData);
+		if (FAILED(hr) || !pData)
+		{
+			return false;
+		}
+
+		const size_t BytesToCopy = static_cast<size_t>(FramesToWrite) * static_cast<size_t>(NumChannels) * sizeof(float);
+		std::memcpy(pData, InAudioBuffer, BytesToCopy);
+
+		hr = AudioRenderClient->ReleaseBuffer(FramesToWrite, 0);
+		return SUCCEEDED(hr);
+#else
+		return false;
 #endif
 	}
 };

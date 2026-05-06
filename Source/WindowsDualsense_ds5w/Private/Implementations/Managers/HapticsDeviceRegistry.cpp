@@ -154,23 +154,16 @@ void FHapticsDeviceRegistry::InitializeAudioContainer(FDeviceContext* Context)
 		return;
 	}
 	
-	std::string AudioInfo = FWindowsDeviceInfo::InitializeAudioDevice(Context);
-	if (AudioInfo.empty())
+	auto Policy = std::make_shared<GamepadCore::TAudioDeviceRegistry<AudioHapticsHardwarePolicy>>();
+	if (!Policy->InitializeAudioContainer(Context))
 	{
-		UE_LOG(LogDualSense, Warning, TEXT("InitializeAudioContainer: No audio endpoint matched for this device."));
+		UE_LOG(LogDualSense, Error, TEXT("InitializeAudioContainer: Failed to initialize audio container for path %s."),
+		       *FString(Context->Path.c_str()));
 		return;
 	}
-
-	FAudioDeviceInfo AudioDeviceInfo;
-	AudioDeviceInfo.Id = AudioInfo;
-	
-	auto Policy = std::make_shared<GamepadCore::TAudioDeviceRegistry<AudioHapticsHardwarePolicy>>();
-	Policy->Policy.Device = AudioDeviceInfo;
-	Policy->RegisterAudioDevice(Context->Path, &AudioInfo);
 	DevicePolicies.emplace(Context->Path, Policy);
-
-	FString DeviceName(AudioInfo.c_str());
-	UE_LOG(LogDualSense, Log, TEXT("InitializeAudioContainer: Registered audio policy for %s."), *DeviceName);
+	UE_LOG(LogDualSense, Log, TEXT("InitializeAudioContainer: Registered audio policy for path %s."),
+	       *FString(Context->Path.c_str()));
 }
 
 void FHapticsDeviceRegistry::ProcessAudioHaptic(FDeviceContext* Context, const std::vector<std::int16_t>& AudioData)
@@ -200,5 +193,5 @@ void FHapticsDeviceRegistry::ProcessAudioHaptic(FDeviceContext* Context, const s
 		return;
 	}
 
-	Policy->WriteHapticData(AudioData);
+	Policy->Policy.WriteHapticData(AudioData);
 }
