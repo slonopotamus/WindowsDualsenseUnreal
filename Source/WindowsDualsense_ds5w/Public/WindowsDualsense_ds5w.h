@@ -11,6 +11,7 @@
 #if PLATFORM_LINUX || PLATFORM_MAC
 #include "Framework/Application/SlateApplication.h"
 #endif
+using namespace GCDevice;
 
 /**
  * The FWindowsDualsense_ds5wModule class represents a module for handling DualSense input devices

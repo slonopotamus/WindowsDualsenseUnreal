@@ -6,7 +6,7 @@
 
 #include "Subsystems/AudioHapticsListener.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "GCore/Interfaces/Segregations/IGamepadAudioHaptics.h"
+#include "GCore/Interfaces/Segregations/IGamepadHaptics.h"
 
 constexpr float kLowPassAlpha = 0.98f;
 constexpr float one_minus_alpha = 1.0f - kLowPassAlpha;
@@ -151,7 +151,7 @@ void FAudioHapticsListener::OnNewSubmixBuffer(const USoundSubmix* OwningSubmix, 
 	AudioPacketQueue.Enqueue(Packet2);
 }
 
-void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHaptics)
+void FAudioHapticsListener::ConsumeHapticsQueue(IGamepadHaptics* AudioHaptics)
 {
 
 	if (AudioHaptics && bIsWireless)

@@ -4,14 +4,14 @@
 
 #include "API/SonyGamepadHapticsProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "Implementations/Managers/HapticsRegistry.h"
+#include "Implementations/Managers/HapticsDeviceRegistry.h"
 
 using namespace SonyGamepadProxyHelpers;
 void USonyGamepadHapticsProxy::RegisterSubmixForDevice(int32 ControllerId, USoundSubmix* Submix)
 {
 	if (GetAudioHapticsInterface(ControllerId))
 	{
-		FHapticsRegistry::Get()->CreateListenerForDevice(ControllerId, Submix);
+		FHapticsDeviceRegistry::Get()->CreateListenerForDevice(ControllerId, Submix);
 	}
 }
 
@@ -19,6 +19,6 @@ void USonyGamepadHapticsProxy::UnregisterSubmixForDevice(int32 ControllerId)
 {
 	if (GetAudioHapticsInterface(ControllerId))
 	{
-		FHapticsRegistry::Get()->RemoveListenerForDevice(ControllerId);
+		FHapticsDeviceRegistry::Get()->RemoveListenerForDevice(ControllerId);
 	}
 }

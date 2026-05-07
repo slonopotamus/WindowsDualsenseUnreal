@@ -6,7 +6,7 @@
 #include "Async/TaskGraphInterfaces.h"
 #include "CoreMinimal.h"
 #include "DeviceRegistryPolicy.h"
-#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GCore/Interfaces/Segregations/IGamepadBase.h"
 #include "GCore/Templates/TBasicDeviceRegistry.h"
 #include "GenericPlatform/GenericPlatformInputDeviceMapper.h"
 #include "HAL/PlatformProcess.h"
@@ -57,14 +57,14 @@ public:
 	 * Retrieves the library instance associated with a specific input device ID.
 	 *
 	 * This function queries the internal registry implementation to obtain a valid instance
-	 * of an ISonyGamepad associated with the given FInputDeviceId. If no such instance exists
+	 * of an IGamepadBase associated with the given FInputDeviceId. If no such instance exists
 	 * or the registry implementation is uninitialized, it returns nullptr.
 	 *
 	 * @param DeviceId The unique identifier of the input device for which the library instance is requested.
-	 * @return A pointer to the ISonyGamepad instance associated with the specified input device,
+	 * @return A pointer to the IGamepadBase instance associated with the specified input device,
 	 *         or nullptr if none exists or the registry is not initialized.
 	 */
-	static ISonyGamepad* GetLibraryInstance(FInputDeviceId DeviceId);
+	static IGamepadBase* GetLibraryInstance(FInputDeviceId DeviceId);
 
 	/**
 	 * Requests an immediate device scan on the next PlugAndPlay call.

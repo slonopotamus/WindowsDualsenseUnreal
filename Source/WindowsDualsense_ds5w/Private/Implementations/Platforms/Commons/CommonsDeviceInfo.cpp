@@ -66,7 +66,7 @@ void FCommonsDeviceInfo::ProcessAudioHaptic(FDeviceContext* Context)
 	SDL_hid_device* DeviceHandle = static_cast<SDL_hid_device*>(Context->Handle);
 
 	constexpr size_t Report = 142;
-	int BytesWritten = SDL_hid_write(DeviceHandle, Context->BufferAudio, Report);
+	int BytesWritten = SDL_hid_write(DeviceHandle, Context->BufferHapitcs, Report);
 	if (BytesWritten < 0)
 	{
 	}
@@ -241,7 +241,7 @@ void FCommonsDeviceInfo::InvalidateHandle(FDeviceContext* Context)
 		std::memset(RawOutput, 0, 78);
 		std::memset(Context->Buffer, 0, 78);
 		std::memset(Context->BufferDS4, 0, 547);
-		std::memset(Context->BufferAudio, 0, 142);
+		std::memset(Context->BufferHapitcs, 0, 142);
 	}
 }
 void FCommonsDeviceInfo::InitializeAudioDevice(FDeviceContext* Context)

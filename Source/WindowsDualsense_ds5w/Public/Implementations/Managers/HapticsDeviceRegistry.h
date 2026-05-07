@@ -6,24 +6,74 @@
 #include "Containers/Ticker.h"
 #include "CoreMinimal.h"
 #include "Engine/Engine.h"
+#include "GCore/Interfaces/IAudioDevice.h"
+#include "GCore/Templates/TAudioDeviceRegistry.h"
 #include "Misc/CoreDelegates.h"
 #include "Subsystems/AudioHapticsListener.h"
 #include "Templates/SharedPointer.h"
+// clang-format off
+struct FNullPolicy
+{
+public:
+	using Policy = FNullPolicy;
 
-class FHapticsRegistry final : public TSharedFromThis<FHapticsRegistry>, public FNoncopyable
+	using DevicePathType = std::string;
+	using AudioDeviceType = FNullPolicy;
+	using AudioDeviceIdType = std::string;
+	using ContextType = FDeviceContext;
+
+	// Send-only path: Unreal already provides samples from submix; this policy only writes to pcm audio device channel output.
+	using AudioRingBufferType = std::vector<float>;
+	using AudioFrameCountType = int;
+
+	int NumChannels = 2;
+	int SampleRate = 48000;
+	bool bInitialized = false;
+	bool bHasDeviceId = false;
+	bool bRingBufferInitialized = false;
+	bool bFoundDevice = false;
+	bool bComInitialized = false;
+	bool bAudioStarted = false;
+
+	DevicePathType DevicePath;
+	AudioDeviceIdType DeviceId;
+	AudioRingBufferType RingBuffer;
+
+	void Close(){}
+	[[nodiscard]] bool IsValid() const { return false; }
+	bool InitializeWithDeviceId(const AudioDeviceIdType& InDeviceId) { return false; }
+	bool InitializeWithDeviceId(const AudioDeviceIdType* InDeviceId, int InSampleRate = 48000, int InNumChannels = 4) { return false; }
+	void RegisterAudioDevice(const DevicePathType& InDevicePath, const AudioDeviceIdType* InDeviceId = nullptr) {}
+	void UnregisterAudioDevice(const DevicePathType& InDevicePath){}
+	bool WriteHapticData(const std::vector<std::int16_t>& InterleavedData) { return false; }
+	bool InitializeAudioContainer(const ContextType* Context) { return false; }
+};
+
+#if PLATFORM_WINDOWS
+#include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
+#include "Implementations/Platforms/Windows/WasApiPolicy.h"
+using AudioHapticsHardwarePolicy = WasApiPolicy;
+#elif PLATFORM_LINUX
+#include "Implementations/Platforms/Commons/CommonsDeviceInfo.h"
+using AudioHapticsHardwarePolicy = FNullPolicy;
+#elif
+using AudioHapticsHardwarePolicy = FNullPolicy;
+#endif
+// clang-format on
+class FHapticsDeviceRegistry final : public TSharedFromThis<FHapticsDeviceRegistry>, public FNoncopyable, public IAudioDevice
 {
 	/**
-	 * Retrieves the singleton instance of the FHapticsRegistry.
+	 * Retrieves the singleton instance of the FHapticsDeviceRegistry.
 	 *
 	 * This method ensures that there is only a single shared instance
-	 * of FHapticsRegistry available. If the instance has not been created yet,
+	 * of FHapticsDeviceRegistry available. If the instance has not been created yet,
 	 * it initializes and returns a newly created shared instance. This is a thread-safe way
 	 * to manage a centralized registry for haptics-related operations.
 	 *
 	 * @return A shared pointer to the singleton instance of FHapticsRegistry.
 	 */
 public:
-	static TSharedPtr<FHapticsRegistry> Get();
+	static TSharedPtr<FHapticsDeviceRegistry> Get();
 	/**
 	 * Creates and associates a new audio haptics listener for a specified input device and submix.
 	 *
@@ -47,16 +97,16 @@ public:
 	 */
 	void RemoveListenerForDevice(int32 DeviceId);
 	/**
-	 * Destructor for the FHapticsRegistry class.
+	 * Destructor for the FHapticsDeviceRegistry class.
 	 *
-	 * Cleans up and releases all resources managed by this instance of FHapticsRegistry.
+	 * Cleans up and releases all resources managed by this instance of FHapticsDeviceRegistry.
 	 * Specifically, it iterates through all registered listeners in the ControllerListeners map
 	 * and ensures that all associated listeners are properly removed.
 	 *
 	 * This method guarantees that the resources used for managing haptics-related listeners are
 	 * de-allocated in a safe and orderly manner, avoiding resource leaks or dangling listeners.
 	 */
-	~FHapticsRegistry();
+	virtual ~FHapticsDeviceRegistry() override;
 	/**
 	 * Checks whether there is a registered listener for the specified input device.
 	 *
@@ -92,6 +142,9 @@ public:
 	 * @return Always returns true to indicate the tick was successful.
 	 */
 	bool Tick(float DeltaTime);
+	virtual void UnregisterAudioDevice(std::string Path) override {}
+	virtual void InitializeAudioContainer(FDeviceContext* Context) override;
+	virtual void ProcessAudioHaptic(FDeviceContext* Context, const std::vector<std::int16_t>& AudioData) override;
 
 	/**
 	 * Handle for a delegate registered to the game thread ticker.
@@ -104,15 +157,15 @@ public:
 	FTSTicker::FDelegateHandle GameThreadTickerHandle;
 
 	/**
-	 * Holds the singleton instance of FHapticsRegistry.
+	 * Holds the singleton instance of FHapticsDeviceRegistry.
 	 *
 	 * This static member variable is used to ensure that only one instance
-	 * of the FHapticsRegistry class exists during the application's runtime.
+	 * of the FHapticsDeviceRegistry class exists during the application's runtime.
 	 * It is initialized the first time the Get() method is called and remains
 	 * valid until the application terminates or the instance is explicitly destroyed.
 	 */
 private:
-	static TSharedPtr<FHapticsRegistry> Instance;
+	static TSharedPtr<FHapticsDeviceRegistry> Instance;
 	/**
 	 * Maps input device identifiers to their associated audio haptics listeners.
 	 *
@@ -121,8 +174,21 @@ private:
 	 * (represented by TSharedPtr<FAudioHapticsListener>). It ensures that each device
 	 * has a corresponding listener, allowing for device-specific haptics handling.
 	 *
-	 * The map is used primarily within the FHapticsRegistry class to register, retrieve,
+	 * The map is used primarily within the FHapticsDeviceRegistry class to register, retrieve,
 	 * and remove audio haptics listeners as devices are added or removed.
 	 */
 	TMap<int32, TSharedPtr<FAudioHapticsListener>> ControllerListeners;
+
+	/**
+	 * Maintains a collection of device-specific haptics policies mapped by device identifiers.
+	 *
+	 * This data structure is used for managing and storing policy configurations
+	 * associated with individual haptics devices. Each device identifier (string) acts
+	 * as a unique key, and its corresponding value is a shared pointer to a
+	 * HapticsDevicePolicy instance that encapsulates the policy for that specific device.
+	 *
+	 * The unordered map allows efficient access to policies based on device identifiers,
+	 * enabling quick retrieval and modification of configuration settings for specific devices.
+	 */
+	std::unordered_map<std::string, std::shared_ptr<GamepadCore::TAudioDeviceRegistry<AudioHapticsHardwarePolicy>>> DevicePolicies;
 };

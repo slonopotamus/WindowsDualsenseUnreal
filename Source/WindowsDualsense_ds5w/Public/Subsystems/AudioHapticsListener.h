@@ -7,7 +7,7 @@
 #include "AudioResampler.h"
 #include "Containers/Queue.h"
 #include "CoreMinimal.h"
-#include "GCore/Interfaces/Segregations/IGamepadAudioHaptics.h"
+#include "GCore/Interfaces/Segregations/IGamepadHaptics.h"
 #include "ISubmixBufferListener.h"
 
 /**
@@ -55,7 +55,7 @@ public:
 	 It integrates with device-specific haptic systems using interfaces like ISonyGamepadTriggerInterface to achieve real-time
 	 audio-haptic feedback conversion.
 	 */
-	void ConsumeHapticsQueue(IGamepadAudioHaptics* AudioHaptics);
+	void ConsumeHapticsQueue(IGamepadHaptics* AudioHaptics);
 
 	/**
 	 Returns the associated audio submix instance.

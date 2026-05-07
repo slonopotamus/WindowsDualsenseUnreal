@@ -3,7 +3,8 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include "GCore/Interfaces/IPlatformHardwareInfo.h"
+#include "GCore/Interfaces/IPlatformHardware.h"
+#include "GCore/Types/DSCoreTypes.h"
 
 class WINDOWSDUALSENSE_DS5W_API FGamepadHardwareBridge
 {
@@ -17,5 +18,5 @@ class WINDOWSDUALSENSE_DS5W_API FGamepadHardwareBridge
 	 *                   not be null.
 	 */
 public:
-	static void InjectHardwarePlatform(std::unique_ptr<IPlatformHardwareInfo> InPlatform);
+	static void InjectHardwarePlatform(std::unique_ptr<IPlatformHardware> InPlatform);
 };

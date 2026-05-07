@@ -4,7 +4,7 @@
 
 #include "Helpers/CommandHelpers.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GCore/Interfaces/Segregations/IGamepadBase.h"
 #include "GCore/Types/Structs/Context/DeviceContext.h"
 #include "GImplementations/Utils/GamepadOutput.h"
 #include "HAL/IConsoleManager.h"
@@ -129,7 +129,7 @@ void FCommandHelpers::HandleSetAudioByte(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -152,8 +152,8 @@ void FCommandHelpers::HandleSetAudioByte(const TArray<FString>& Args)
 		UE_LOG(LogDualSense, Warning, TEXT("Index out of range (0-9)"));
 		return;
 	}
-	Ctx->BufferAudio[Index] = ClampByte(Value);
-	UE_LOG(LogDualSense, Log, TEXT("Audio byte[%d] = %d"), Index, (int32)Ctx->BufferAudio[Index]);
+	Ctx->BufferHapitcs[Index] = ClampByte(Value);
+	UE_LOG(LogDualSense, Log, TEXT("Audio byte[%d] = %d"), Index, (int32)Ctx->BufferHapitcs[Index]);
 	FGamepadOutput::OutputDualSense(Ctx);
 }
 
@@ -164,7 +164,7 @@ void FCommandHelpers::HandleSetAudioLR(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -185,12 +185,12 @@ void FCommandHelpers::HandleSetAudioLR(const TArray<FString>& Args)
 	int32 R1 = FCString::Atoi(*Args[3]);
 	int32 R2 = FCString::Atoi(*Args[4]);
 	int32 X = FCString::Atoi(*Args[5]);
-	Ctx->BufferAudio[5] = ClampByte(L1);
-	Ctx->BufferAudio[6] = ClampByte(L2);
-	Ctx->BufferAudio[7] = ClampByte(R1);
-	Ctx->BufferAudio[8] = ClampByte(R2);
-	Ctx->BufferAudio[9] = ClampByte(X);
-	UE_LOG(LogDualSense, Log, TEXT("Audio [5..9] = %d, %d, %d, %d, %d"), (int32)Ctx->BufferAudio[5], (int32)Ctx->BufferAudio[6], (int32)Ctx->BufferAudio[7], (int32)Ctx->BufferAudio[8], (int32)Ctx->BufferAudio[9]);
+	Ctx->BufferHapitcs[5] = ClampByte(L1);
+	Ctx->BufferHapitcs[6] = ClampByte(L2);
+	Ctx->BufferHapitcs[7] = ClampByte(R1);
+	Ctx->BufferHapitcs[8] = ClampByte(R2);
+	Ctx->BufferHapitcs[9] = ClampByte(X);
+	UE_LOG(LogDualSense, Log, TEXT("Audio [5..9] = %d, %d, %d, %d, %d"), (int32)Ctx->BufferHapitcs[5], (int32)Ctx->BufferHapitcs[6], (int32)Ctx->BufferHapitcs[7], (int32)Ctx->BufferHapitcs[8], (int32)Ctx->BufferHapitcs[9]);
 	FGamepadOutput::OutputDualSense(Ctx);
 }
 
@@ -201,7 +201,7 @@ void FCommandHelpers::HandleDumpAudioBytes(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -214,7 +214,7 @@ void FCommandHelpers::HandleDumpAudioBytes(const TArray<FString>& Args)
 	}
 	for (int32 i = 0; i < 10; ++i)
 	{
-		UE_LOG(LogDualSense, Log, TEXT("Audio byte[%d] = %d"), i, (int32)Ctx->BufferAudio[i]);
+		UE_LOG(LogDualSense, Log, TEXT("Audio byte[%d] = %d"), i, (int32)Ctx->BufferHapitcs[i]);
 	}
 }
 
@@ -225,7 +225,7 @@ void FCommandHelpers::HandleSetTrigR(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -259,7 +259,7 @@ void FCommandHelpers::HandleSetTrigL(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -293,7 +293,7 @@ void FCommandHelpers::HandleDumpTrig(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -326,7 +326,7 @@ void FCommandHelpers::HandleClearTrig(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -439,7 +439,7 @@ void FCommandHelpers::HandleBowTrigR(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -478,7 +478,7 @@ void FCommandHelpers::HandleBowTrigL(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -517,7 +517,7 @@ void FCommandHelpers::HandleGallopTrigR(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;
@@ -557,7 +557,7 @@ void FCommandHelpers::HandleGallopTrigL(const TArray<FString>& Args)
 	{
 		return;
 	}
-	ISonyGamepad* Gamepad = GetGamepad(DeviceId.GetId());
+	IGamepadBase* Gamepad = GetGamepad(DeviceId.GetId());
 	if (!Gamepad)
 	{
 		return;

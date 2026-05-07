@@ -4,21 +4,27 @@
 
 #include "API/SonyGamepadTouchProxy.h"
 #include "API/SonyGamepadProxyHelpers.h"
-#include "GCore/Interfaces/ISonyGamepad.h"
+#include "GCore/Interfaces/Segregations/IGamepadBase.h"
 
 using namespace SonyGamepadProxyHelpers;
 void USonyGamepadTouchProxy::EnableTouch(int32 ControllerId, bool bEnableTouch)
 {
-	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
+	if (IGamepadBase* Gamepad = GetGamepad(ControllerId))
 	{
-		Gamepad->EnableTouch(bEnableTouch);
+		if (auto* Touch = Gamepad->GetIGamepadTouch())
+		{
+			Touch->EnableTouch(bEnableTouch);
+		}
 	}
 }
 
 void USonyGamepadTouchProxy::EnableGesture(int32 ControllerId, bool bEnableGesture)
 {
-	if (ISonyGamepad* Gamepad = GetGamepad(ControllerId))
+	if (IGamepadBase* Gamepad = GetGamepad(ControllerId))
 	{
-		Gamepad->EnableGesture(bEnableGesture);
+		if (auto* Touch = Gamepad->GetIGamepadTouch())
+		{
+			Touch->EnableGesture(bEnableGesture);
+		}
 	}
 }

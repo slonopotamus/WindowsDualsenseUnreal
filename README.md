@@ -41,15 +41,26 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 	<br>
 </p>
 
-> [!IMPORTANT]
-> **v2 is now available!**
-> 
-> You can now extend the plugin to implement custom logic for the **Gyroscope, Accelerometer, and Touchpad**, or even integrate native Unreal Engine assets. 
-> - **Extensible Architecture:** The plugin features a pre-configured IMU filter that can be fully overridden.
-> - **Custom Implementation:** Tailor the device behavior to your project's needs in the [Customization Section](#-injecting-custom-device-logic-custom-devicemanager).
-> 
-> 🔄 **Upgrading from v1.x?** Please read our [Migration Guide](https://github.com/rafaelvaloto/Unreal-Dualsense/wiki/Migration-Guide:-Unreal%E2%80%90Dualsense-v1.x-to-v2.0).
+---
 
+> [!IMPORTANT]
+> Update Notes (v2.0.4)
+> This release introduces key architectural improvements, portability refactoring, and critical fixes. **Please review the changes below before updating:** 
+
+### 1. `DeviceManager` Namespace Change
+To improve code organization, the `DeviceManager` implementation has been wrapped inside the `GCDevice` namespace.
+* **Action Required:** If you extend or reference this class, you must now add the `GCDevice` namespace declaration to your file headers.
+
+### 2. Removal of `miniaudio` Dependency
+The hard dependency on the `miniaudio` library has been completely removed. It has been replaced by a highly portable, platform-specific abstract implementation driven by a **Policy-Based Design** pattern.
+* **Action Required:** You must now define and include your platform-specific hardware policies (such as `WasApiPolicy` for Windows or `FNullPolicy` as a fallback) using preprocessor directives in your configuration headers.
+
+### 3. Native Force Feedback Fix
+* Fixed an issue affecting vibration when using **Unreal Engine's native Force Feedback** system. The integration now works seamlessly without conflicts.
+
+---
+
+> 🔄 **Upgrading from v1.x?** Please read our [Migration Guide](https://github.com/rafaelvaloto/Unreal-Dualsense/wiki/Migration-Guide:-Unreal%E2%80%90Dualsense-v1.x-to-v2.0).
 
 ## 📖 About the Project
 
@@ -106,8 +117,6 @@ cd Unreal-Dualsense
 # Init the submodule to the latest version
 git submodule update --init
 
-# Init the submodule miniaudio
-git -C Source/WindowsDualsense_ds5w/Private/GamepadCore submodule update --init Libs/miniaudio
 ```
     
 ## 💻 Basic Usage
@@ -129,11 +138,6 @@ The functions are divided into two main categories for easy access:
 * **DualSense Effects**: Contains methods specific to DualSense exclusive features, such as Adaptive Triggers configuration.
 
 Call functions directly to control DualSense features. Some available effects include:
-
-* 🐎 **Galloping**: Simulates a horse's trot.
-* 💪 **Resistance**: Applies constant opposing force when pressing the trigger.
-* 🔫 **Weapon**: Creates a recoil effect for semi-automatic weapons.
-* 🔥 **Automatic Gun**: Vibrates rapidly to simulate an automatic weapon.
 
 ### 📚 For the full documentation, please see the **[Wiki](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki)**.
 
@@ -237,62 +241,60 @@ If you want your custom manager to support native Unreal features, ensure it imp
 ### Custom implementation example:
 
 1. Create your custom class inheriting from `DeviceManager`:
+
 ```cpp
-// Fill out your copyright notice in the Description page of Project Settings.
-
-#include "MyProject.h"
-
 #include "DeviceManager.h"
 #include "Modules/ModuleManager.h"
 #include "WindowsDualsense_ds5w.h"
 
+using namespace GCDevice;
 class FMyCustomDeviceManager : public DeviceManager
 {
 public:
-    using DeviceManager::DeviceManager;
+	using DeviceManager::DeviceManager;
 	/** * Map to track the previous frame's touch state per DeviceID.
 	 * Marked as 'mutable' so it can be updated within const methods.
 	 */
 	mutable TMap<int32, bool> DeviceTouchStates;
 	    
 	virtual void TouchpadImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId,
-	                          const FInputDeviceId InputDeviceId, float DeltaTime) const override
+							  const FInputDeviceId InputDeviceId, float DeltaTime) const override
 	{
-	    // --- 1. Basic Touch Mapping (Unreal Message Handler) ---
-	    if (Context->bEnableTouch)
-	    {
-	        bool& bWasTouchDown = DeviceTouchStates.FindOrAdd(InputDeviceId.GetId(), false);
+		// --- 1. Basic Touch Mapping (Unreal Message Handler) ---
+		if (Context->bEnableTouch)
+		{
+			bool& bWasTouchDown = DeviceTouchStates.FindOrAdd(InputDeviceId.GetId(), false);
 	
-	        if (FrameInput.bIsTouching && !bWasTouchDown)
-	        {
-	            MessageHandler->OnTouchStarted(nullptr, FrameInput.TouchPosition, 1.0f, FrameInput.TouchId, UserId, InputDeviceId);
-	        }
-	        else if (FrameInput.bIsTouching && bWasTouchDown)
-	        {
-	            MessageHandler->OnTouchMoved(FrameInput.TouchPosition, 1.0f, FrameInput.TouchId, UserId, InputDeviceId);
-	        }
-	        else if (!FrameInput.bIsTouching && bWasTouchDown)
-	        {
-	            MessageHandler->OnTouchEnded(FrameInput.TouchPosition, FrameInput.TouchId, UserId, InputDeviceId);
-	        }
+			if (FrameInput.bIsTouching && !bWasTouchDown)
+			{
+				MessageHandler->OnTouchStarted(nullptr, FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y), 1.0f, FrameInput.TouchId, UserId, InputDeviceId);
+			}
+			else if (FrameInput.bIsTouching && bWasTouchDown)
+			{
+				MessageHandler->OnTouchMoved(FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y), 1.0f, FrameInput.TouchId, UserId, InputDeviceId);
+			}
+			else if (!FrameInput.bIsTouching && bWasTouchDown)
+			{
+				MessageHandler->OnTouchEnded(FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y), FrameInput.TouchId, UserId, InputDeviceId);
+			}
 	
-	        bWasTouchDown = FrameInput.bIsTouching;
-	    }
-	
-	    // --- 2. Gesture Mapping (Two-Finger Scroll) ---
-	    if (Context->bEnableGesture)
-	    {
-	        // Check if exactly 2 fingers are touching the pad
-	        if (FrameInput.bIsTouching && FrameInput.TouchFingerCount == 2)
-	        {
-	            MessageHandler->OnTouchGesture(
-	                EGestureEvent::Scroll,
-	                ScrollDelta,
-	                0.0f,   /* Value / Total movement if needed */
-	                false   /* IsInverted */
-	            );
-	        }
-	    }
+			bWasTouchDown = FrameInput.bIsTouching;
+		}
+		
+		// --- 2. Gesture Mapping (Two-Finger Scroll) ---
+		if (Context->bEnableGesture)
+		{
+			// Check if exactly 2 fingers are touching the pad
+			if (FrameInput.bIsTouching && FrameInput.TouchFingerCount == 2)
+			{
+				MessageHandler->OnTouchGesture(
+					EGestureEvent::Scroll,
+					ScrollDelta,
+					0.0f,   /* Value / Total movement if needed */
+					false   /* IsInverted */
+				);
+			}
+		}
 	}
 
 };
