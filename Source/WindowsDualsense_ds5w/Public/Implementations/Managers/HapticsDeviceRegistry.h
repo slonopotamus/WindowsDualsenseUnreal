@@ -11,7 +11,7 @@
 #include "Misc/CoreDelegates.h"
 #include "Subsystems/AudioHapticsListener.h"
 #include "Templates/SharedPointer.h"
-
+// clang-format off
 struct FNullPolicy
 {
 public:
@@ -59,7 +59,7 @@ using AudioHapticsHardwarePolicy = FNullPolicy;
 #elif
 using AudioHapticsHardwarePolicy = FNullPolicy;
 #endif
-
+// clang-format on
 class FHapticsDeviceRegistry final : public TSharedFromThis<FHapticsDeviceRegistry>, public FNoncopyable, public IAudioDevice
 {
 	/**
@@ -142,7 +142,7 @@ public:
 	 * @return Always returns true to indicate the tick was successful.
 	 */
 	bool Tick(float DeltaTime);
-	virtual void UnregisterAudioDevice(std::string Path) override {};
+	virtual void UnregisterAudioDevice(std::string Path) override {}
 	virtual void InitializeAudioContainer(FDeviceContext* Context) override;
 	virtual void ProcessAudioHaptic(FDeviceContext* Context, const std::vector<std::int16_t>& AudioData) override;
 
@@ -155,7 +155,6 @@ public:
 	 * game thread over time.
 	 */
 	FTSTicker::FDelegateHandle GameThreadTickerHandle;
-	
 
 	/**
 	 * Holds the singleton instance of FHapticsDeviceRegistry.

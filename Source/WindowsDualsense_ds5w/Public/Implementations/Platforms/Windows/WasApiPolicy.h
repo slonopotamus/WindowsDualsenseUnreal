@@ -1,8 +1,12 @@
-﻿#pragma once
+﻿// Copyright (c) 2025 Rafael Valoto/Publisher. All rights reserved.
+// Created for: WindowsDualsense_ds5w - Plugin to support DualSense controller on Windows.
+// Planned Release Year: 2025
+#pragma once
 #include "Helpers/DualSenseLog.h"
 #include <SetupAPI.h>
 #include <audioclient.h>
 #include <cstdint>
+#include <cstring>
 #include <devpkey.h>
 #include <hidsdi.h>
 #include <limits>
@@ -11,7 +15,6 @@
 #include <propsys.h>
 #include <string>
 #include <vector>
-#include <cstring>
 
 // clang-format off
 #if PLATFORM_WINDOWS

@@ -3,8 +3,8 @@
 // Planned Release Year: 2025
 
 #pragma once
-#include "GCore/Types/DSCoreTypes.h"
 #include "GCore/Interfaces/IPlatformHardware.h"
+#include "GCore/Types/DSCoreTypes.h"
 
 class WINDOWSDUALSENSE_DS5W_API FGamepadHardwareBridge
 {

@@ -290,7 +290,7 @@ void DeviceManager::SetChannelValues(int32 ControllerId, const FForceFeedbackVal
 		{
 			Rumble->SetVibration(LeftRumble, RightRumble);
 		}
-		
+
 		Gamepad->UpdateOutput();
 	}
 }
@@ -299,11 +299,11 @@ void DeviceManager::SetLightColor(const int32 ControllerId, const FColor Color)
 {
 	if (auto* Gamepad = GetGamepad(ControllerId))
 	{
-		if (auto* Light= Gamepad->GetIGamepadLightbar())
+		if (auto* Light = Gamepad->GetIGamepadLightbar())
 		{
 			Light->SetLightbar({Color.R, Color.G, Color.B, Color.A});
 		}
-		
+
 		Gamepad->UpdateOutput();
 	}
 }

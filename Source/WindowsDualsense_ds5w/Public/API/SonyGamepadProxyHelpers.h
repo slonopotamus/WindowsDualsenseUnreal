@@ -7,11 +7,11 @@
 #include "GCore/Interfaces/Segregations/IGamepadBase.h"
 #include "GCore/Interfaces/Segregations/IGamepadHaptics.h"
 #include "GCore/Interfaces/Segregations/IGamepadTrigger.h"
+#include "GenericPlatform/GenericApplicationMessageHandler.h"
+#include "Helpers/DualSenseLog.h"
 #include "Implementations/Adapters/DeviceRegistry.h"
 #include "Types/Enums/EDeviceCommons.h"
 #include "Types/Enums/EDeviceConnection.h"
-#include "GenericPlatform/GenericApplicationMessageHandler.h"
-#include "Helpers/DualSenseLog.h"
 
 // Forward declarations
 static_assert(static_cast<uint8>(EDeviceType::DualSense) == static_cast<uint8>(EDSDeviceType::DualSense), "Enum mismatch: DualSense value differs between Core and API!");
