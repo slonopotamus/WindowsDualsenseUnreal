@@ -236,62 +236,60 @@ Se você deseja que seu gerenciador personalizado suporte recursos nativos da Un
 ### Exemplo de implementação personalizada:
 
 1. Crie sua classe personalizada herdando de `DeviceManager`:
+
 ```cpp
-// Preencha o aviso de direitos autorais na página de Configurações do Projeto.
-
-#include "MyProject.h"
-
 #include "DeviceManager.h"
 #include "Modules/ModuleManager.h"
 #include "WindowsDualsense_ds5w.h"
 
+using namespace GCDevice;
 class FMyCustomDeviceManager : public DeviceManager
 {
 public:
-    using DeviceManager::DeviceManager;
+	using DeviceManager::DeviceManager;
 	/** * Map to track the previous frame's touch state per DeviceID.
 	 * Marked as 'mutable' so it can be updated within const methods.
 	 */
 	mutable TMap<int32, bool> DeviceTouchStates;
-    
+	    
 	virtual void TouchpadImpl(FDeviceContext* Context, FInputContext& FrameInput, const FPlatformUserId UserId,
-	                          const FInputDeviceId InputDeviceId, float DeltaTime) const override
+							  const FInputDeviceId InputDeviceId, float DeltaTime) const override
 	{
-	    // --- 1. Basic Touch Mapping (Unreal Message Handler) ---
-	    if (Context->bEnableTouch)
-	    {
-	        bool& bWasTouchDown = DeviceTouchStates.FindOrAdd(InputDeviceId.GetId(), false);
+		// --- 1. Basic Touch Mapping (Unreal Message Handler) ---
+		if (Context->bEnableTouch)
+		{
+			bool& bWasTouchDown = DeviceTouchStates.FindOrAdd(InputDeviceId.GetId(), false);
 	
-	        if (FrameInput.bIsTouching && !bWasTouchDown)
-	        {
-	            MessageHandler->OnTouchStarted(nullptr, FrameInput.TouchPosition, 1.0f, FrameInput.TouchId, UserId, InputDeviceId);
-	        }
-	        else if (FrameInput.bIsTouching && bWasTouchDown)
-	        {
-	            MessageHandler->OnTouchMoved(FrameInput.TouchPosition, 1.0f, FrameInput.TouchId, UserId, InputDeviceId);
-	        }
-	        else if (!FrameInput.bIsTouching && bWasTouchDown)
-	        {
-	            MessageHandler->OnTouchEnded(FrameInput.TouchPosition, FrameInput.TouchId, UserId, InputDeviceId);
-	        }
+			if (FrameInput.bIsTouching && !bWasTouchDown)
+			{
+				MessageHandler->OnTouchStarted(nullptr, FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y), 1.0f, FrameInput.TouchId, UserId, InputDeviceId);
+			}
+			else if (FrameInput.bIsTouching && bWasTouchDown)
+			{
+				MessageHandler->OnTouchMoved(FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y), 1.0f, FrameInput.TouchId, UserId, InputDeviceId);
+			}
+			else if (!FrameInput.bIsTouching && bWasTouchDown)
+			{
+				MessageHandler->OnTouchEnded(FVector2D(FrameInput.TouchPosition.X, FrameInput.TouchPosition.Y), FrameInput.TouchId, UserId, InputDeviceId);
+			}
 	
-	        bWasTouchDown = FrameInput.bIsTouching;
-	    }
-	
-	    // --- 2. Gesture Mapping (Two-Finger Scroll) ---
-	    if (Context->bEnableGesture)
-	    {
-	        // Check if exactly 2 fingers are touching the pad
-	        if (FrameInput.bIsTouching && FrameInput.TouchFingerCount == 2)
-	        {
-	            MessageHandler->OnTouchGesture(
-	                EGestureEvent::Scroll,
-	                ScrollDelta,
-	                0.0f,   /* Value / Total movement if needed */
-	                false   /* IsInverted */
-	            );
-	        }
-	    }
+			bWasTouchDown = FrameInput.bIsTouching;
+		}
+		
+		// --- 2. Gesture Mapping (Two-Finger Scroll) ---
+		if (Context->bEnableGesture)
+		{
+			// Check if exactly 2 fingers are touching the pad
+			if (FrameInput.bIsTouching && FrameInput.TouchFingerCount == 2)
+			{
+				MessageHandler->OnTouchGesture(
+					EGestureEvent::Scroll,
+					ScrollDelta,
+					0.0f,   /* Value / Total movement if needed */
+					false   /* IsInverted */
+				);
+			}
+		}
 	}
 
 };
