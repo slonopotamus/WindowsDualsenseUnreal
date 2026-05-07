@@ -41,15 +41,26 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 	<br>
 </p>
 
-> [!IMPORTANT]
-> **v2 is now available!**
-> 
-> You can now extend the plugin to implement custom logic for the **Gyroscope, Accelerometer, and Touchpad**, or even integrate native Unreal Engine assets. 
-> - **Extensible Architecture:** The plugin features a pre-configured IMU filter that can be fully overridden.
-> - **Custom Implementation:** Tailor the device behavior to your project's needs in the [Customization Section](#-injecting-custom-device-logic-custom-devicemanager).
-> 
-> 🔄 **Upgrading from v1.x?** Please read our [Migration Guide](https://github.com/rafaelvaloto/Unreal-Dualsense/wiki/Migration-Guide:-Unreal%E2%80%90Dualsense-v1.x-to-v2.0).
+---
 
+> [!IMPORTANT]
+> Update Notes (v2.0.4)
+> This release introduces key architectural improvements, portability refactoring, and critical fixes. **Please review the changes below before updating:** 
+
+### 1. `DeviceManager` Namespace Change
+To improve code organization, the `DeviceManager` implementation has been wrapped inside the `GCDevice` namespace.
+* **Action Required:** If you extend or reference this class, you must now add the `GCDevice` namespace declaration to your file headers.
+
+### 2. Removal of `miniaudio` Dependency
+The hard dependency on the `miniaudio` library has been completely removed. It has been replaced by a highly portable, platform-specific abstract implementation driven by a **Policy-Based Design** pattern.
+* **Action Required:** You must now define and include your platform-specific hardware policies (such as `WasApiPolicy` for Windows or `FNullPolicy` as a fallback) using preprocessor directives in your configuration headers.
+
+### 3. Native Force Feedback Fix
+* Fixed an issue affecting vibration when using **Unreal Engine's native Force Feedback** system. The integration now works seamlessly without conflicts.
+
+---
+
+> 🔄 **Upgrading from v1.x?** Please read our [Migration Guide](https://github.com/rafaelvaloto/Unreal-Dualsense/wiki/Migration-Guide:-Unreal%E2%80%90Dualsense-v1.x-to-v2.0).
 
 ## 📖 About the Project
 
@@ -106,8 +117,6 @@ cd Unreal-Dualsense
 # Init the submodule to the latest version
 git submodule update --init
 
-# Init the submodule miniaudio
-git -C Source/WindowsDualsense_ds5w/Private/GamepadCore submodule update --init Libs/miniaudio
 ```
     
 ## 💻 Basic Usage
@@ -129,11 +138,6 @@ The functions are divided into two main categories for easy access:
 * **DualSense Effects**: Contains methods specific to DualSense exclusive features, such as Adaptive Triggers configuration.
 
 Call functions directly to control DualSense features. Some available effects include:
-
-* 🐎 **Galloping**: Simulates a horse's trot.
-* 💪 **Resistance**: Applies constant opposing force when pressing the trigger.
-* 🔫 **Weapon**: Creates a recoil effect for semi-automatic weapons.
-* 🔥 **Automatic Gun**: Vibrates rapidly to simulate an automatic weapon.
 
 ### 📚 For the full documentation, please see the **[Wiki](https://github.com/rafaelvaloto/WindowsDualsenseUnreal/wiki)**.
 
