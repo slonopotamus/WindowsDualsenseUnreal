@@ -60,7 +60,6 @@ The hard dependency on the `miniaudio` library has been completely removed. It h
 
 ---
 
-> 🔄 **Upgrading from v1.x?** Please read our [Migration Guide](https://github.com/rafaelvaloto/Unreal-Dualsense/wiki/Migration-Guide:-Unreal%E2%80%90Dualsense-v1.x-to-v2.0).
 
 ## 📖 About the Project
 
