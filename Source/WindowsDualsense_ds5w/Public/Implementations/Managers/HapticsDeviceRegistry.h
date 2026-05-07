@@ -12,6 +12,42 @@
 #include "Subsystems/AudioHapticsListener.h"
 #include "Templates/SharedPointer.h"
 
+struct FNullPolicy
+{
+public:
+	using Policy = FNullPolicy;
+
+	using DevicePathType = std::string;
+	using AudioDeviceType = FNullPolicy;
+	using AudioDeviceIdType = std::string;
+	using ContextType = FDeviceContext;
+
+	// Send-only path: Unreal already provides samples from submix; this policy only writes to pcm audio device channel output.
+	using AudioRingBufferType = std::vector<float>;
+	using AudioFrameCountType = int;
+
+	int NumChannels = 2;
+	int SampleRate = 48000;
+	bool bInitialized = false;
+	bool bHasDeviceId = false;
+	bool bRingBufferInitialized = false;
+	bool bFoundDevice = false;
+	bool bComInitialized = false;
+	bool bAudioStarted = false;
+
+	DevicePathType DevicePath;
+	AudioDeviceIdType DeviceId;
+	AudioRingBufferType RingBuffer;
+
+	void Close(){}
+	[[nodiscard]] bool IsValid() const { return false; }
+	bool InitializeWithDeviceId(const AudioDeviceIdType& InDeviceId) { return false; }
+	bool InitializeWithDeviceId(const AudioDeviceIdType* InDeviceId, int InSampleRate = 48000, int InNumChannels = 4) { return false; }
+	void RegisterAudioDevice(const DevicePathType& InDevicePath, const AudioDeviceIdType* InDeviceId = nullptr) {}
+	void UnregisterAudioDevice(const DevicePathType& InDevicePath){}
+	bool WriteHapticData(const std::vector<std::int16_t>& InterleavedData) { return false; }
+	bool InitializeAudioContainer(const ContextType* Context) { return false; }
+};
 
 #if PLATFORM_WINDOWS
 #include "Implementations/Platforms/Windows/WindowsDeviceInfo.h"
@@ -19,7 +55,9 @@
 using AudioHapticsHardwarePolicy = WasApiPolicy;
 #elif PLATFORM_LINUX
 #include "Implementations/Platforms/Commons/CommonsDeviceInfo.h"
-using AudioHapticsHardwarePolicy = nullptr;
+using AudioHapticsHardwarePolicy = FNullPolicy;
+#elif
+using AudioHapticsHardwarePolicy = FNullPolicy;
 #endif
 
 class FHapticsDeviceRegistry final : public TSharedFromThis<FHapticsDeviceRegistry>, public FNoncopyable, public IAudioDevice

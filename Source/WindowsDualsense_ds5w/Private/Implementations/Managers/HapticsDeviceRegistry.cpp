@@ -37,6 +37,8 @@ TSharedPtr<FHapticsDeviceRegistry> FHapticsDeviceRegistry::Get()
 
 		Instance->GameThreadTickerHandle = FTSTicker::GetCoreTicker().AddTicker(
 		    FTickerDelegate::CreateSP(Instance.Get(), &FHapticsDeviceRegistry::Tick));
+		
+		SetInstance(Instance.Get());
 	}
 	return Instance;
 }
@@ -100,6 +102,7 @@ void FHapticsDeviceRegistry::RemoveAllListeners()
 #else
 			AudioDevice->UnregisterSubmixBufferListener(Pair.Value.Get());
 #endif
+			UE_LOG(LogDualSense, Warning, TEXT("Unregistered listener for controller %d"), Pair.Key);
 		}
 	}
 	ControllerListeners.Empty();
@@ -112,7 +115,7 @@ bool FHapticsDeviceRegistry::Tick(float DeltaTime)
 		if (Pair.Value.IsValid())
 		{
 			TSharedPtr<FAudioHapticsListener> Context = Pair.Value;
-			if (IGamepadHaptics* HapticsInterface = SonyGamepadProxyHelpers::GetAudioHapticsInterface(Pair.Key))
+			if (auto* HapticsInterface = SonyGamepadProxyHelpers::GetGamepad(Pair.Key)->GetIGamepadHaptics())
 			{
 				AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [NewContext = MoveTemp(Context), NewHapticsInterface = MoveTemp(HapticsInterface)]() {
 					NewContext->ConsumeHapticsQueue(NewHapticsInterface);
@@ -136,6 +139,20 @@ void FHapticsDeviceRegistry::RemoveListenerForDevice(int32 DeviceId)
 #endif
 		}
 		ControllerListeners.Remove(DeviceId);
+		
+		using namespace SonyGamepadProxyHelpers;
+		auto* Gamepad = GetGamepad(DeviceId);
+		if (!Gamepad)
+		{
+			return;
+		}
+		
+		if (const auto it = DevicePolicies.find(Gamepad->GetMutableDeviceContext()->Path); it != DevicePolicies.end())
+		{
+			UE_LOG(LogDualSense, Log, TEXT("Unregister audio policy for Controller Id %d path %s"), DeviceId, *FString(it->first.c_str()));
+			DevicePolicies.erase(it);
+		}
+		
 	}
 }
 
@@ -161,14 +178,14 @@ void FHapticsDeviceRegistry::InitializeAudioContainer(FDeviceContext* Context)
 		       *FString(Context->Path.c_str()));
 		return;
 	}
+	
 	DevicePolicies.emplace(Context->Path, Policy);
-	UE_LOG(LogDualSense, Log, TEXT("InitializeAudioContainer: Registered audio policy for path %s."),
-	       *FString(Context->Path.c_str()));
+	UE_LOG(LogDualSense, Log, TEXT("InitializeAudioContainer: %llu Registered audio policy for path %s."),
+	       DevicePolicies.size(), *FString(Context->Path.c_str()));
 }
 
 void FHapticsDeviceRegistry::ProcessAudioHaptic(FDeviceContext* Context, const std::vector<std::int16_t>& AudioData)
 {
-	UE_LOG(LogDualSense, Log, TEXT("ProcessAudioHaptic: "));
 	if (!Context || AudioData.empty())
 	{
 		return;

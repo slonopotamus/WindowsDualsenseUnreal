@@ -287,7 +287,7 @@ void FWindowsDeviceInfo::ProcessAudioHaptic(FDeviceContext* Context)
 	}
 
 	unsigned long BytesWritten = 0;
-	constexpr size_t BufferSize = 142;
+	constexpr size_t BufferSize = sizeof(Context->BufferHapitcs);
 	if (!WriteFile(Context->Handle, Context->BufferHapitcs, BufferSize, &BytesWritten, nullptr))
 	{
 		const unsigned long Error = GetLastError();

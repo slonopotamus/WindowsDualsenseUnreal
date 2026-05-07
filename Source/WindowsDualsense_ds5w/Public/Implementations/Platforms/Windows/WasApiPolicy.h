@@ -286,7 +286,7 @@ public:
 			LPWSTR pwszId = nullptr;
 			if (SUCCEEDED(pDevice->GetId(&pwszId)) && pwszId)
 			{
-				const std::string AudioContainerId = get_audio_container_id(pwszId);
+				const std::string AudioContainerId = GetAudioContainerId(pwszId);
 				if (AudioContainerId == TargetContainerId)
 				{
 					FoundEndpointId = pwszId;
@@ -365,7 +365,7 @@ public:
 		return "";
 	}
 
-	std::string get_audio_container_id(const wchar_t* AudioDeviceId)
+	std::string GetAudioContainerId(const wchar_t* AudioDeviceId)
 	{
 		IMMDeviceEnumerator* pEnumerator = nullptr;
 		IMMDevice* pDevice = nullptr;
