@@ -11,26 +11,44 @@ using namespace SonyGamepadProxyHelpers;
 
 void USonyGamepadLightsProxy::Lightbar(int32 ControllerId, FColor Color)
 {
-	if (auto* Gamepad = GetGamepad(ControllerId)->GetIGamepadLightbar())
+	auto* Gamepad = GetGamepad(ControllerId);
+	if (!Gamepad)
+	{
+		return;
+	}
+	
+	if (auto Lights = Gamepad->GetIGamepadLightbar())
 	{
 		FDSColor CastColor = {Color.R, Color.G, Color.B, Color.A};
-		Gamepad->SetLightbar(CastColor);
+		Lights->SetLightbar(CastColor);
 	}
 }
 
 void USonyGamepadLightsProxy::LightbarFlash(int32 ControllerId, FColor Color, float BrightnessTime, float ToggleTime)
 {
-	if (auto* Gamepad = GetGamepad(ControllerId)->GetIGamepadLightbar())
+	auto* Gamepad = GetGamepad(ControllerId);
+	if (!Gamepad)
+	{
+		return;
+	}
+	
+	if (auto  Lights = Gamepad->GetIGamepadLightbar())
 	{
 		FDSColor CastColor = {Color.R, Color.G, Color.B, Color.A};
-		Gamepad->SetLightbarFlash(CastColor, BrightnessTime, ToggleTime);
+		Lights->SetLightbarFlash(CastColor, BrightnessTime, ToggleTime);
 	}
 }
 
 void USonyGamepadLightsProxy::PlayerLed(int32 ControllerId, ELedPlayerEnum Value, ELedBrightnessEnum Brightness)
 {
-	if (auto* Gamepad = GetGamepad(ControllerId)->GetIGamepadLightbar())
+	auto* Gamepad = GetGamepad(ControllerId);
+	if (!Gamepad)
 	{
-		Gamepad->SetPlayerLed(static_cast<EDSPlayer>(Value), static_cast<std::uint8_t>(Brightness));
+		return;
+	}
+	
+	if (auto  Lights = Gamepad->GetIGamepadLightbar())
+	{
+		Lights->SetPlayerLed(static_cast<EDSPlayer>(Value), static_cast<std::uint8_t>(Brightness));
 	}
 }

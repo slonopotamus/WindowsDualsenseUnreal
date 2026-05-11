@@ -9,16 +9,28 @@ using namespace SonyGamepadProxyHelpers;
 
 void USonyGamepadSensorsProxy::ResetGyroOrientation(int32 ControllerId)
 {
-	if (auto* Gamepad = GetGamepad(ControllerId)->GetIGamepadSensors())
+	auto* Gamepad = GetGamepad(ControllerId);
+	if (!Gamepad)
 	{
-		Gamepad->ResetGyroOrientation();
+		return;
+	}
+	
+	if (auto* Sensors = Gamepad->GetIGamepadSensors())
+	{
+		Sensors->ResetGyroOrientation();
 	}
 }
 
 void USonyGamepadSensorsProxy::EnableGyroscopeValues(int32 ControllerId, bool bEnableGyroscope)
 {
-	if (auto* Gamepad = GetGamepad(ControllerId)->GetIGamepadSensors())
+	auto* Gamepad = GetGamepad(ControllerId);
+	if (!Gamepad)
 	{
-		Gamepad->EnableMotionSensor(bEnableGyroscope);
+		return;
+	}
+	
+	if (auto* Sensors = Gamepad->GetIGamepadSensors())
+	{
+		Sensors->EnableMotionSensor(bEnableGyroscope);
 	}
 }
