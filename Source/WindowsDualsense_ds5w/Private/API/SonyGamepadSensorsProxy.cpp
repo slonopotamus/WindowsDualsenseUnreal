@@ -14,7 +14,7 @@ void USonyGamepadSensorsProxy::ResetGyroOrientation(int32 ControllerId)
 	{
 		return;
 	}
-	
+
 	if (auto* Sensors = Gamepad->GetIGamepadSensors())
 	{
 		Sensors->ResetGyroOrientation();
@@ -28,7 +28,7 @@ void USonyGamepadSensorsProxy::EnableGyroscopeValues(int32 ControllerId, bool bE
 	{
 		return;
 	}
-	
+
 	if (auto* Sensors = Gamepad->GetIGamepadSensors())
 	{
 		Sensors->EnableMotionSensor(bEnableGyroscope);

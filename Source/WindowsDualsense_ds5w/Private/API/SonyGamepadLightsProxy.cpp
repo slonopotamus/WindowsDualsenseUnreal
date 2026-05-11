@@ -16,7 +16,7 @@ void USonyGamepadLightsProxy::Lightbar(int32 ControllerId, FColor Color)
 	{
 		return;
 	}
-	
+
 	if (auto Lights = Gamepad->GetIGamepadLightbar())
 	{
 		FDSColor CastColor = {Color.R, Color.G, Color.B, Color.A};
@@ -31,8 +31,8 @@ void USonyGamepadLightsProxy::LightbarFlash(int32 ControllerId, FColor Color, fl
 	{
 		return;
 	}
-	
-	if (auto  Lights = Gamepad->GetIGamepadLightbar())
+
+	if (auto Lights = Gamepad->GetIGamepadLightbar())
 	{
 		FDSColor CastColor = {Color.R, Color.G, Color.B, Color.A};
 		Lights->SetLightbarFlash(CastColor, BrightnessTime, ToggleTime);
@@ -46,8 +46,8 @@ void USonyGamepadLightsProxy::PlayerLed(int32 ControllerId, ELedPlayerEnum Value
 	{
 		return;
 	}
-	
-	if (auto  Lights = Gamepad->GetIGamepadLightbar())
+
+	if (auto Lights = Gamepad->GetIGamepadLightbar())
 	{
 		Lights->SetPlayerLed(static_cast<EDSPlayer>(Value), static_cast<std::uint8_t>(Brightness));
 	}
