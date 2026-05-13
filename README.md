@@ -175,6 +175,7 @@ The foundation of this Middleware was built upon the research and code from seve
 
 * [DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows) - Initial DS5 implementation logic.
 * [SAxense](https://github.com/egormanga/SAxense) - Base for Bluetooth Audio Haptics.
+* [Awalol/DS5Dongle](https://github.com/Awalol/DS5Dongle) - Reference Bluetooth Audio (Headset/Speaker) opus codec and buffer sizes.
 * [Ryochan7/DS4Windows](https://github.com/Ryochan7/DS4Windows) - Industry standard for DualShock/DualSense on Windows.
 * [linux/drivers/hid/hid-playstation.c](https://github.com/torvalds/linux/blob/master/drivers/hid/hid-playstation.c#L1709) - Reference for calibration, gyroscope, and Linux driver standards.
 
