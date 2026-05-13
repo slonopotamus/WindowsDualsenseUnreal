@@ -1,4 +1,4 @@
-<h1 align="center">Dualsense Unreal Middleware</h1>
+<h1 align="center">Middleware Unreal-Dualsense</h1>
 
 <p align="center">
 Integrate all the features of Sony's DualSense™ and DualShock 4® controllers into your Unreal Engine project.
