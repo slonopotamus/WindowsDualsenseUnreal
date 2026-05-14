@@ -137,7 +137,7 @@ We've created a detailed, step-by-step tutorial that breaks down the entire impl
 
 Take your immersion to the next level! This update enhances the advanced Audio Haptics feature, allowing it to work seamlessly via both USB and wirelessly via Bluetooth (previously USB-only). This new example project demonstrates how to harness this power, featuring a complete implementation for real-time haptic feedback based on in-game audio.
 
-- [**Download the example project for the editor here**](https://github.com/rafaelvaloto/Unreal-Dualsense-Gold-Edition)
+- [**Download the example project compiled "Win64-Shipping" here.**](https://github.com/rafaelvaloto/Unreal-Dualsense-Gold-Edition)
 
 ![Audio Haptics (USB & Wireless)](https://github.com/user-attachments/assets/7ceea1f5-4955-40e6-9dda-3fa9e3ab9808)
 
