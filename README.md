@@ -139,7 +139,7 @@ Take your immersion to the next level! This update enhances the advanced Audio H
 
 - [**Download the example project for the editor here**](https://github.com/rafaelvaloto/Unreal-Dualsense-Gold-Edition)
 
-![Audio Haptics (USB & Wireless)](https://private-user-images.githubusercontent.com/6644601/591437685-ac2fd49e-77cb-487f-8820-534b8b4f84ff.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3Nzg2ODcwNzUsIm5iZiI6MTc3ODY4Njc3NSwicGF0aCI6Ii82NjQ0NjAxLzU5MTQzNzY4NS1hYzJmZDQ5ZS03N2NiLTQ4N2YtODgyMC01MzRiOGI0Zjg0ZmYucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI2MDUxMyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNjA1MTNUMTUzOTM1WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9YjlmYmExN2FmODM2YWU5ZGJlOWE5YTJjOGUzZjlmZmQ2MDI3NjJjMDg0NmNkMWI3Mjc0ODY2Y2FkYTA0Y2I0YSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmcmVzcG9uc2UtY29udGVudC10eXBlPWltYWdlJTJGcG5nIn0.xPg3WaTvNDNyqJgkOSnYcj3KfPv_z_gedo4psYjaNCI)
+![Audio Haptics (USB & Wireless)](https://github.com/user-attachments/assets/7ceea1f5-4955-40e6-9dda-3fa9e3ab9808)
 
 
 
