@@ -60,7 +60,7 @@ Designed to bridge the gap left by generic controller support, this asset empowe
 ### Quick Installation
 
 1.  Go to the official middleware page on the Unreal Engine Marketplace (FAB): [Middleware Page - FAB](https://www.fab.com/listings/cbc8b9df-12ea-4c52-949c-7ab79aa93928)
-2.  Go to the official **Middleware Gold Edition**, Audio and Audio-Haptics via Bluetooth page on the Unreal Engine Marketplace (FAB): [Middleware Gold Edition - FAB](https://www.fab.com/listings/da18b448-4bc8-487c-98eb-03fb96cb9f39)
+2.  Go to the official **Middleware Gold Edition**, Audio and Audio-Haptics via Bluetooth page on the Unreal Engine Marketplace (FAB): [Middleware Gold Edition - FAB](https://www.fab.com/listings/d0836635-91a8-42cb-a78f-d34456cc042c)
 
 ### Manual Installation
 
