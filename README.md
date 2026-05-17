@@ -188,6 +188,12 @@ Contributions are welcome! If you have ideas, suggestions, or bug fixes, feel fr
 ---
 ## ⭐ Credits and Acknowledgments
 
+## Special thanks to the community members who helped improve this Middleware:
+
+* **[Marat Radchenko (slonopotamus)](https://github.com/slonopotamus)** - For his invaluable help and dedication to maintaining this repository.
+* **[yncat](https://github.com/yncat)**: For the extensive research and implementation logic regarding **USB Audio Haptics**, which was crucial for supporting high-fidelity haptics via USB ([Issue #105](https://github.com/rafaelvaloto/Unreal-Dualsense/issues/105)).
+
+
 The foundation of this Middleware was built upon the research and code from several amazing projects in the community:
 
 * [DualSense on Windows API](https://github.com/Ohjurot/DualSense-Windows) - Initial DS5 implementation logic.
@@ -195,10 +201,6 @@ The foundation of this Middleware was built upon the research and code from seve
 * [Awalol/DS5Dongle](https://github.com/Awalol/DS5Dongle) - Reference Bluetooth Audio (Headset/Speaker) opus codec and buffer sizes.
 * [Ryochan7/DS4Windows](https://github.com/Ryochan7/DS4Windows) - Industry standard for DualShock/DualSense on Windows.
 * [linux/drivers/hid/hid-playstation.c](https://github.com/torvalds/linux/blob/master/drivers/hid/hid-playstation.c#L1709) - Reference for calibration, gyroscope, and Linux driver standards.
-
-Special thanks to the community members who helped improve this Middleware:
-
-* **[yncat](https://github.com/yncat)**: For the extensive research and implementation logic regarding **USB Audio Haptics**, which was crucial for supporting high-fidelity haptics via USB ([Issue #105](https://github.com/rafaelvaloto/Unreal-Dualsense/issues/105)).
 
 A special thanks to the Unreal Engine team for providing the Arena Shooter templates, which served as an excellent foundation for the example project demonstrating this Middleware's features.
 
