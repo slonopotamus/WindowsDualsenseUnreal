@@ -31,7 +31,7 @@ Integrate all the features of Sony's DualSense™ and DualShock 4® controllers 
 <p align="center">
   <a href="#-getting-started">Getting Started</a> •
   <a href="#-basic-usage">Basic Usage</a> •
-  <a href="#-example-project-arena-shooter-ue-56">Example Project</a> •
+  <a href="#-example-project-arena-shooter-ue-56">Example Project</a>
   <br>
 </p>
 
@@ -59,8 +59,24 @@ Designed to bridge the gap left by generic controller support, this asset empowe
 
 ### Quick Installation
 
-1.  Go to the official middleware page on the Unreal Engine Marketplace (FAB): [Middleware Page - FAB](https://www.fab.com/listings/cbc8b9df-12ea-4c52-949c-7ab79aa93928)
-2.  Go to the official **Middleware Gold Edition**, Audio and Audio-Haptics via Bluetooth page on the Unreal Engine Marketplace (FAB): [Middleware Gold Edition - FAB](https://www.fab.com/listings/d0836635-91a8-42cb-a78f-d34456cc042c)
+Go to the official page on the Unreal Engine Marketplace (FAB): **[Middleware Gold Edition - FAB](https://www.fab.com/listings/d0836635-91a8-42cb-a78f-d34456cc042c)**
+
+### 🔒 V2 Gold Version Access (Exclusive for Buyers)
+
+If you have purchased the Gold version, your purchase verification grants you full access to the private GitHub repository, which includes:
+
+* **Full & Detailed Documentation:** Comprehensive guides to get you started quickly.
+* **Practical Examples:** Hands-on integration samples for features like high-fidelity audio and audio-based haptics (vibration) over both Bluetooth and USB.
+
+### ⚠️ Important: How to Request Access
+
+Click the link below to provide your GitHub username and Order ID:
+👉 **[Fill out the Access Form](https://forms.gle/bis7RqWbweis1UyZA)**
+
+* **Already bought the Gold Edition?** Just fill out the form with your Gold Order ID.
+* **Upgrading from Controller Support v2?** If you purchased the v2 version on FAB up until **May 16th, 2026**, you are eligible for a free migration. Simply fill out the form using your v2 Order ID.
+
+*Access is usually granted within 24 hours. You will receive a GitHub invitation via email or directly in your platform notifications.*
 
 ### Manual Installation
 
