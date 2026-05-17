@@ -185,14 +185,15 @@ If you want your custom manager to support native Unreal features, ensure it imp
 
 Contributions are welcome! If you have ideas, suggestions, or bug fixes, feel free to open an *Issue* or submit a *Pull Request*.
 
----
-## ⭐ Credits and Acknowledgments
+## ⭐ Special Thanks
 
-## Special thanks to the community members who helped improve this Middleware:
+A special thanks to the following contributors who help maintain and improve this repository:
 
 * **[Marat Radchenko (slonopotamus)](https://github.com/slonopotamus)** - For his invaluable help and dedication to maintaining this repository.
 * **[yncat](https://github.com/yncat)**: For the extensive research and implementation logic regarding **USB Audio Haptics**, which was crucial for supporting high-fidelity haptics via USB ([Issue #105](https://github.com/rafaelvaloto/Unreal-Dualsense/issues/105)).
 
+
+## ⭐ Credits and Acknowledgments
 
 The foundation of this Middleware was built upon the research and code from several amazing projects in the community:
 
